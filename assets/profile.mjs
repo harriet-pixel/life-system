@@ -121,9 +121,9 @@ const desktopPanels = matchMedia('(min-width:1024px)');
 function positionResponsiveContent() {
   const status = $('#operation-status');
   (desktopPanels.matches ? $('.profile-portrait-column') : $('.profile-content')).append(status);
-  const pagination = $('#history-pagination'), list = $('#history-list');
-  if (desktopPanels.matches) { list.after(pagination); pagination.prepend($('#history-previous')); }
-  else { list.before(pagination); $('.history-step-controls').prepend($('#history-previous')); }
+  const pagination = $('#history-pagination'), list = $('#history-list'), retention = $('#history-retention-note');
+  if (desktopPanels.matches) { list.before(retention); list.after(pagination); pagination.prepend($('#history-previous')); }
+  else { list.before(pagination); list.after(retention); $('.history-step-controls').prepend($('#history-previous')); }
 }
 positionResponsiveContent();
 desktopPanels.addEventListener('change', positionResponsiveContent);
