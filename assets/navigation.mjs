@@ -1,5 +1,6 @@
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
+  { id: 'home', label: '首頁', href: new URL('../', import.meta.url).href, available: true, desktopOnly: true },
   { id: 'tasks', label: '待辦事項', href: null, available: false },
   { id: 'habits', label: '習慣打卡', href: null, available: false },
   { id: 'reading', label: '陪讀系統', href: null, available: false },
@@ -22,6 +23,7 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   const desktopLinks = document.querySelector('#desktop-links');
   const mobileLinks = document.querySelector('#mobile-links');
   const toggle = document.querySelector('#navigation-toggle');
+  const currentPage = document.querySelector('#current-page-name');
   const feedback = document.querySelector('#operation-status');
   const mobileBar = document.querySelector('.mobile-navigation');
   const undoButtons = [...document.querySelectorAll('[data-undo]')];
@@ -35,7 +37,7 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   const build = (nav) => {
     const list = document.createElement('div');
     list.className = 'navigation-list';
-    navigationItems.forEach((item) => {
+    navigationItems.filter(item => !item.desktopOnly || nav === desktopLinks).forEach((item) => {
       const element = document.createElement(item.available ? 'a' : 'span');
       element.className = 'navigation-item';
       element.textContent = item.label;
@@ -61,13 +63,17 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
     nav.replaceChildren(list);
     revealCurrent(nav);
   };
-  const refreshRoutes = () => { build(desktopLinks); build(mobileLinks); };
+  const refreshRoutes = () => {
+    build(desktopLinks); build(mobileLinks);
+    currentPage.textContent = navigationItems.find(item => item.available && isCurrentRoute(item.href, window.location.href))?.label || '';
+  };
   refreshRoutes();
   window.addEventListener('popstate', refreshRoutes);
   window.addEventListener('pageshow', refreshRoutes);
 
   const setExpanded = () => {
     desktopLinks.hidden = !expanded;
+    currentPage.hidden = expanded;
     toggle.setAttribute('aria-expanded', String(expanded));
     toggle.setAttribute('aria-label', expanded ? '收合導覽選項' : '展開導覽選項');
     if (expanded) revealCurrent(desktopLinks);
