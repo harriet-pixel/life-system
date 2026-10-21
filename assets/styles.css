@@ -179,7 +179,8 @@ body[data-navigation="ready"] .page-shell { padding-bottom: calc(var(--bottom-na
   .mobile-navigation { display: none; }
   body[data-navigation="ready"] .page-shell { padding-bottom: 0; }
   .desktop-navigation { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-width: 0; width: 100%; }
-  .desktop-navigation .navigation-list { justify-content: flex-end; }
+  .current-page-name { flex: 1 1 auto; min-width: 0; color: var(--color-primary); font-size: 1.375rem; font-weight: 400; letter-spacing: .08em; overflow-wrap: anywhere; }
+  .desktop-navigation .navigation-list { justify-content: flex-start; }
   .desktop-navigation .navigation-item { padding-inline: 4px; }
   .desktop-navigation .navigation-item + .navigation-item::before { content: "｜"; margin-right: 8px; color: #a4abb0; }
   .desktop-navigation .navigation-unavailable { font-size: .625rem; }

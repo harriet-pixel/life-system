@@ -8,8 +8,8 @@
     <title>今日生活 · Life System</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
-    <link rel="stylesheet" href="assets/styles.css?v=full-width-navigation-3">
-    <script type="module" src="assets/home.js?v=navigation-eight-2"></script>
+    <link rel="stylesheet" href="assets/styles.css?v=current-page-navigation-4">
+    <script type="module" src="assets/home.js?v=current-page-navigation-4"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
@@ -22,6 +22,7 @@
 
         <div class="dashboard">
         <div class="desktop-navigation" aria-label="電腦版導覽工具列">
+          <span id="current-page-name" class="current-page-name"></span>
           <nav id="desktop-links" class="navigation-options" aria-label="主要導覽" hidden></nav>
           <button id="navigation-toggle" class="toolbar-button" type="button" aria-controls="desktop-links" aria-expanded="false" aria-label="展開導覽選項"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
           <button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button>
