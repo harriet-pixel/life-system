@@ -2,7 +2,7 @@ import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
 import { createAvatarCropper, readImageFile, decodeImage } from './avatar-crop.mjs?v=profile-5';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=profile-5';
 import { undoManager } from './undo.mjs?v=motto-11';
-import { dataStore, formatSI, validateProfile, abilityRatios, abilityShares, profileSummary } from './data.mjs?v=motto-11';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=motto-11';
 import { initializeNavigation } from './navigation.mjs?v=profile-5';
 const $ = selector => document.querySelector(selector);
 const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
@@ -30,14 +30,47 @@ function renderPhoto() {
   }
 }
 function element(tag, text) { const el = document.createElement(tag); el.textContent = text; return el; }
-function syncRadarLabelSize() {
-  const svg=$('#ability-radar svg'), label=$('.ability-row > span');
-  if (!svg || !label || !svg.getBoundingClientRect().width) return;
-  const fontSize=parseFloat(getComputedStyle(label).fontSize);
-  const scale=svg.getBoundingClientRect().width/320;
-  svg.querySelectorAll('text').forEach(text=>{text.style.fontSize=`${fontSize/scale}px`;});
+function renderRadar() {
+  const container = $('#ability-radar');
+  const abilities = dataStore.get().stats.abilities;
+  const width = container.getBoundingClientRect().width;
+  if (!width || abilities.length !== 5) return;
+  // Work in rendered pixels so labels retain the normal body size at every width.
+  const fontSize = parseFloat(getComputedStyle(container).fontSize);
+  const values = abilities.map(a => formatSI(a.value));
+  const canvas = document.createElement('canvas'), context = canvas.getContext('2d');
+  context.font = `${fontSize}px ${getComputedStyle(container).fontFamily}`;
+  let labelWidth = Math.max(...abilities.map(a => context.measureText(a.name).width));
+  context.font = `${fontSize * .75}px ${getComputedStyle(container).fontFamily}`;
+  labelWidth = Math.max(labelWidth, ...values.map(value => context.measureText(value).width));
+  const availableRadius = Math.max(0, (width / 2 - labelWidth / 2 - 12) / Math.sin(2*Math.PI/5));
+  const gap = Math.min(Math.max(36, fontSize * 2.5), availableRadius / 2);
+  const radius = Math.min(width * .255, availableRadius - gap);
+  const labelRadius = radius + gap, verticalLabelRadius = Math.max(labelRadius, fontSize * 4);
+  const cx = width / 2, cy = verticalLabelRadius + fontSize + 12;
+  const height = cy + verticalLabelRadius + fontSize * 2.5 + 12;
+  const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', abilities.map(a => `${a.name}：${a.value}`).join('，'));
+  const draw = (tag, attrs) => { const node = document.createElementNS(ns, tag); Object.entries(attrs).forEach(([key,value]) => node.setAttribute(key,value)); svg.append(node); return node; };
+  const point = (i, distance) => { const angle = -Math.PI/2 + i*2*Math.PI/5; return [cx+Math.cos(angle)*distance, cy+Math.sin(angle)*distance]; };
+  for (const scale of [.25,.5,.75,1]) draw('polygon', {points: abilities.map((_,i)=>point(i,radius*scale).join(',')).join(' '),fill:'none',stroke:'var(--color-border)'});
+  abilities.forEach((_,i)=>{const [x,y]=point(i,radius);draw('line',{x1:cx,y1:cy,x2:x,y2:y,stroke:'var(--color-border)'});});
+  draw('polygon', {class:'ability-shape',points:abilityRatios(abilities).map((ratio,i)=>point(i,radius*ratio).join(',')).join(' '),fill:'var(--color-primary)','fill-opacity':'.15',stroke:'var(--color-primary)'});
+  abilities.forEach((ability,i)=>{
+    const angle = -Math.PI/2 + i*2*Math.PI/5;
+    const x = cx + Math.cos(angle)*labelRadius, y = cy + Math.sin(angle)*verticalLabelRadius;
+    const name = draw('text',{class:'ability-name',x,y,'text-anchor':'middle','dominant-baseline':'middle'});
+    name.style.fontSize = `${fontSize}px`; name.textContent = ability.name;
+    const value = draw('text',{class:'ability-value',x,y:y+fontSize*1.4,'text-anchor':'middle','dominant-baseline':'middle'});
+    value.style.fontSize = `${fontSize*.75}px`; value.textContent = values[i];
+    const title = document.createElementNS(ns,'title'); title.textContent = String(ability.value); value.append(title);
+  });
+  container.replaceChildren(svg);
 }
-new ResizeObserver(syncRadarLabelSize).observe($('#ability-radar'));
+new ResizeObserver(renderRadar).observe($('#ability-radar'));
+document.fonts.ready.then(renderRadar);
 function render() {
   const state = dataStore.get();
   $('#profile-name').textContent = state.profile.name || '尚未設定稱呼';
@@ -51,24 +84,7 @@ function render() {
   $('#profile-stats').title = `累積總經驗值：${experience}，等級：${level}，貨幣：${currency}`;
   const valid = abilities.length === 5;
   $('#abilities-missing').hidden = valid; $('.ability-charts').hidden = !valid;
-  if (valid) {
-    const ratios = abilityRatios(abilities), shares = abilityShares(abilities);
-    $('#ability-bars').replaceChildren(...abilities.map((ability, index) => {
-      const row = element('div', ''); row.className = 'ability-row';
-      const value = element('span', formatSI(ability.value)); value.title = String(ability.value); value.setAttribute('aria-label', `${ability.name}：${ability.value}`);
-      const track = element('div', ''); track.className = 'ability-track'; track.setAttribute('aria-hidden', 'true');
-      const fill = element('div', ''); fill.className = 'ability-fill'; fill.style.width = `${shares[index] * 100}%`; track.append(fill);
-      row.append(element('span', ability.name), value, track); return row;
-    }));
-    const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', '0 0 320 320'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', abilities.map(a => `${a.name}：${a.value}`).join('，'));
-    const point = (i, ratio) => { const angle = -Math.PI/2 + i * 2*Math.PI/5; return [160 + Math.cos(angle)*65*ratio, 160 + Math.sin(angle)*65*ratio]; };
-    const draw = (tag, attrs) => { const node = document.createElementNS(ns, tag); Object.entries(attrs).forEach(([k,v]) => node.setAttribute(k,v)); svg.append(node); return node; };
-    for (const scale of [.25,.5,.75,1]) draw('polygon', { points: abilities.map((_,i)=>point(i,scale).join(',')).join(' '), fill:'none', stroke:'var(--color-border)' });
-    abilities.forEach((a,i) => { const [x,y] = point(i,1); draw('line',{x1:160,y1:160,x2:x,y2:y,stroke:'var(--color-border)'}); const [tx,ty] = point(i,110/65); const label=draw('text',{x:tx,y:ty,'text-anchor':'middle','dominant-baseline':'middle'});label.textContent=a.name; });
-    draw('polygon', { points: ratios.map((ratio,i)=>point(i,ratio).join(',')).join(' '), fill:'var(--color-primary)', 'fill-opacity':'.15', stroke:'var(--color-primary)' });
-    $('#ability-radar').replaceChildren(svg);
-    syncRadarLabelSize();
-  }
+  if (valid) renderRadar();
   renderHistory(state);
 }
 const HISTORY_PAGE_SIZE = 5;
