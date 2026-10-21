@@ -7,16 +7,17 @@
     <meta name="description" content="Life System 首頁視覺提案，以清楚而平靜的方式整理日常。">
     <title>今日生活 · Life System</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="assets/styles.css?v=serif-spacing24">
-    <script type="module" src="assets/home.js?v=serif-spacing24"></script>
+    <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
+    <link rel="stylesheet" href="assets/styles.css?v=date-and-subtitles-font">
+    <script type="module" src="assets/home.js?v=date-and-subtitles-font"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
     <div class="page-shell">
       <main id="main" tabindex="-1">
         <div class="intro">
-          <div><h1>慢慢成長，慢慢變好</h1><p class="eyebrow" lang="en">A little space for everyday life</p></div>
           <div class="date-block"><span class="date-caption">示意日期</span><time datetime="2026-10-21"><span class="date-numbers">10<span class="date-divider">/</span>21</span><span class="date-detail">2026 年・星期三</span></time></div>
+          <div class="welcome-copy"><h1>慢慢成長，慢慢變好</h1><p class="eyebrow" lang="en">A little space for everyday life</p></div>
         </div>
 
         <section class="companion" aria-label="夥伴對話" data-mode="mock">
@@ -43,8 +44,8 @@
         <p class="demo-notice"><span class="demo-mark">示意資料</span><span>本頁為排版預覽；勾選僅供體驗，重新整理後會重設。</span></p>
 
         <div class="activity-tabs" aria-label="今日行動切換" hidden>
-          <button type="button" id="tasks-tab" data-panel="tasks-panel"><span>今日待辦</span><span class="tab-caption" lang="en">One thing at a time</span></button>
-          <button type="button" id="habits-tab" data-panel="habits-panel"><span>彈性打卡</span><span class="tab-caption" lang="en">Small steps, your own pace</span></button>
+          <button type="button" id="tasks-tab" data-panel="tasks-panel"><span>今日待辦</span></button>
+          <button type="button" id="habits-tab" data-panel="habits-panel"><span>彈性打卡</span></button>
         </div>
         <div class="home-grid">
           <section id="tasks-panel" class="tasks" aria-labelledby="tasks-title">

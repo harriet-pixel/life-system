@@ -20,12 +20,22 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    await page.evaluate(() => document.fonts.ready);
    await page.waitForFunction(() => document.querySelector('#companion-status').textContent.includes('尚未產生'));
    assert.equal(await page.locator('button:disabled').count(), 1);
+   assert.equal(await page.locator('.activity-tabs .tab-caption').count(), 0);
+   assert.equal(await page.locator('.tasks .section-kicker').isVisible(), true);
+   assert.ok(await page.evaluate(() => document.fonts.check('16px "Noto Serif TC Variable"', '慢慢成長')));
+   const introPosition = await page.evaluate(() => {
+    const d=document.querySelector('.date-block').getBoundingClientRect(), c=document.querySelector('.welcome-copy').getBoundingClientRect();
+    return { dateBottom:d.bottom, copyTop:c.top, dateLeft:d.left, copyRight:c.right };
+   });
+   if (mobile) assert.ok(introPosition.dateBottom <= introPosition.copyTop);
+   else assert.ok(introPosition.copyRight < introPosition.dateLeft);
+
    assert.ok(await page.locator('h1,h2,p,span,button,label').evaluateAll(es => {
     const family=getComputedStyle(document.querySelector('h1')).fontFamily;
     return es.every(e => getComputedStyle(e).fontFamily === family);
    }));
    for (const section of ['.tasks', '.habits']) {
-    assert.equal(await page.locator(section+' .section-heading > div').isVisible(), !mobile && true);
+    assert.equal(await page.locator(section+' .section-heading h2').isVisible(), !mobile);
    }
    assert.equal(await page.locator('#main').evaluate(e => getComputedStyle(e).rowGap), '24px');
 
@@ -40,7 +50,7 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
 
    assert.equal(await page.locator('footer, .site-footer, .intro-copy').count(), 0);
    assert.equal(await page.locator('h1').textContent(), '慢慢成長，慢慢變好');
-   assert.equal(await page.locator('.intro > div:first-child > :first-child').evaluate(e => e.tagName), 'H1');
+   assert.equal(await page.locator('.welcome-copy > :first-child').evaluate(e => e.tagName), 'H1');
    assert.equal(await page.locator('.companion').evaluate(e => getComputedStyle(e).borderTopWidth), '1px');
    assert.equal(await page.locator('.companion-banner').evaluate(e => getComputedStyle(e).alignItems), 'center');
    assert.ok(await page.locator('.demo-notice').evaluate(e => { const s=getComputedStyle(e); return s.borderTopWidth==='0px' && s.borderBottomWidth==='0px'; }));
