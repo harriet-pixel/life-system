@@ -10,6 +10,9 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
  try {
   for (const width of [320, 390, 768, 1280]) {
    const page = await browser.newPage({ viewport: { width, height: 900 } });
+   const mobile = width < 1024;
+   const showTasks = async () => { if (mobile) await page.locator('#tasks-tab').click(); };
+   const showHabits = async () => { if (mobile) await page.locator('#habits-tab').click(); };
    const errors = [], failedResponses = [];
    page.on('pageerror', (e) => errors.push(e.message));
    page.on('response', (r) => { if (r.status() >= 400) failedResponses.push(`${r.status()} ${r.url()}`); });
@@ -37,7 +40,7 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    const checkLayout = async () => {
     const layout = await page.evaluate(() => {
      const boxes = {};
-     for (const name of ['companion', 'intro', 'profile-summary', 'tasks', 'habits', 'companion-portrait', 'dialogue-bubble']) {
+     for (const name of ['companion', 'intro', 'profile-summary', 'home-grid', 'tasks', 'habits', 'companion-portrait', 'dialogue-bubble']) {
       const r = document.querySelector('.' + name).getBoundingClientRect();
       boxes[name] = { x: r.x, y: r.y, right: r.right, bottom: r.bottom };
      }
@@ -47,12 +50,15 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
     const p = layout.boxes;
     assert.ok(p.intro.bottom <= p.companion.y);
     assert.ok(p.companion.bottom <= p['profile-summary'].y);
-    assert.ok(p['profile-summary'].bottom <= p.tasks.y);
+    assert.ok(p['profile-summary'].bottom <= p['home-grid'].y);
     assert.ok(p['companion-portrait'].right < p['dialogue-bubble'].x, 'avatar stays left of bubble');
     assert.ok(Math.abs((p['companion-portrait'].y+p['companion-portrait'].bottom)/2 - (p['dialogue-bubble'].y+p['dialogue-bubble'].bottom)/2) < 1, 'avatar and bubble centers align');
     assert.equal(p.companion.x, p['profile-summary'].x, 'separator aligns with main content');
     assert.equal(p.companion.right, p['profile-summary'].right);
-    if (width < 1024) assert.ok(p.tasks.y < p.habits.y);
+    if (width < 1024) {
+      assert.equal(await page.locator('[role=tab]').count(), 2);
+      assert.equal(await page.locator('.home-grid > section:visible').count(), 1);
+    }
     else assert.ok(p.tasks.right < p.habits.x && p.tasks.y === p.habits.y);
    };
    await checkLayout();
@@ -83,7 +89,16 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    assert.equal(await page.evaluate(() => document.activeElement.className), 'skip-link');
    await page.keyboard.press('Enter');
    assert.equal(await page.evaluate(() => document.activeElement.id), 'main');
-   for (let i = 0; i < 7; i++) {
+   if (mobile) {
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'tasks-tab');
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.locator('#habits-tab').getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('#habits-panel').isVisible(), true);
+    await page.keyboard.press('Home');
+    assert.equal(await page.locator('#tasks-tab').getAttribute('aria-selected'), 'true');
+   }
+   for (let i = 0; i < (mobile ? 4 : 7); i++) {
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.tagName), 'INPUT');
     assert.equal(await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle), 'solid');
@@ -92,6 +107,7 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    assert.equal(await page.locator('#task-count').textContent(), '2 / 4 完成');
    assert.equal(await page.locator('#companion-dialogue').textContent(), original, 'preserve dialogue while waiting');
    assert.ok(await page.locator('[data-task]').first().evaluate(e => getComputedStyle(e).transitionDuration.split(', ').every(t => t === '0.18s')));
+   await showHabits();
    await page.locator('[data-habit]').first().check();
    await page.waitForFunction(() => document.querySelector('#companion-status').textContent.includes('已更新'));
    assert.match(await page.locator('#companion-dialogue').textContent(), /2 項示意完成操作/);
@@ -103,9 +119,12 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    assert.equal(bubbleBefore.height, bubbleAfter.height, 'fade does not animate bubble height');
    assert.equal(await page.locator('.habit-state').first().textContent(), '已打卡');
    const previous = await page.locator('#companion-dialogue').textContent();
+   await showTasks();
+   assert.equal(await page.locator('[data-task]').first().isChecked(), true, 'tab switches preserve state');
    await page.locator('[data-task]').first().uncheck();
    await page.waitForTimeout(1100);
    assert.equal(await page.locator('#companion-dialogue').textContent(), previous, 'undo does not generate');
+   await showHabits();
    await page.locator('[data-habit]').nth(2).check();
    await page.waitForFunction(() => document.querySelector('.companion-portrait').dataset.emotion === 'calm');
    assert.equal(await page.locator('#portrait-emotion').textContent(), '放鬆');
@@ -120,7 +139,17 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
    assert.equal(await page.locator('[data-task]').first().evaluate(e => getComputedStyle(e).transitionDuration), '0s');
    assert.equal(await page.locator('#companion-dialogue').evaluate(e => getComputedStyle(e).animationName), 'none');
-   assert.ok(await page.locator('label').evaluateAll((els) => els.every((e) => { const r=e.getBoundingClientRect(); return r.width >= 44 && r.height >= 44; })));
+   assert.ok(await page.locator('label:visible').evaluateAll((els) => els.every((e) => { const r=e.getBoundingClientRect(); return r.width >= 44 && r.height >= 44; })));
+   if (mobile) {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.waitForFunction(() => [...document.querySelectorAll('.home-grid > section')].every(e => !e.hidden));
+    assert.equal(await page.locator('.home-grid > section:visible').count(), 2);
+    assert.equal(await page.locator('.activity-tabs').isVisible(), false);
+    await page.setViewportSize({ width, height: 900 });
+    await page.waitForFunction(() => [...document.querySelectorAll('.home-grid > section')].filter(e => !e.hidden).length === 1);
+    assert.equal(await page.locator('.home-grid > section:visible').count(), 1);
+    assert.equal(await page.locator('[data-habit]').nth(2).isChecked(), true);
+   }
    await page.reload();
    assert.equal(await page.locator('#task-count').textContent(), '1 / 4 完成');
    assert.equal(await page.locator('#companion-dialogue').textContent(), original);

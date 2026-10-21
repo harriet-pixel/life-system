@@ -88,3 +88,60 @@ document.querySelectorAll('[data-habit]').forEach((input, index) => {
   update();
 });
 updateTaskCount();
+
+// Responsive tabs share the existing DOM, so switching never resets selections
+// and never emits a successful-action event or triggers companion generation.
+const activityTabs = document.querySelector('.activity-tabs');
+const tabButtons = [...activityTabs.querySelectorAll('button')];
+const activityPanels = tabButtons.map((button) => document.getElementById(button.dataset.panel));
+const desktopLayout = window.matchMedia('(min-width: 1024px)');
+let selectedPanel = 0;
+function syncActivityTabs() {
+  const mobile = !desktopLayout.matches;
+  activityTabs.hidden = !mobile;
+  if (mobile) activityTabs.setAttribute('role', 'tablist');
+  else activityTabs.removeAttribute('role');
+  tabButtons.forEach((button, index) => {
+    const panel = activityPanels[index];
+    panel.hidden = mobile && index !== selectedPanel;
+    if (mobile) {
+      button.setAttribute('role', 'tab');
+      button.setAttribute('aria-controls', panel.id);
+      button.setAttribute('aria-selected', String(index === selectedPanel));
+      button.tabIndex = index === selectedPanel ? 0 : -1;
+      panel.setAttribute('role', 'tabpanel');
+      panel.setAttribute('aria-labelledby', button.id);
+    } else {
+      button.removeAttribute('role');
+      button.removeAttribute('aria-controls');
+      button.removeAttribute('aria-selected');
+      button.removeAttribute('tabindex');
+      panel.removeAttribute('role');
+      panel.setAttribute('aria-labelledby', index === 0 ? 'tasks-title' : 'habits-title');
+    }
+  });
+}
+function selectActivity(index) {
+  selectedPanel = index;
+  syncActivityTabs();
+}
+tabButtons.forEach((button, index) => {
+  button.addEventListener('click', () => selectActivity(index));
+  button.addEventListener('keydown', (event) => {
+    if (desktopLayout.matches) return;
+    const targets = { ArrowRight: (index + 1) % 2, ArrowLeft: (index + 1) % 2, Home: 0, End: 1 };
+    if (!(event.key in targets)) return;
+    event.preventDefault();
+    selectActivity(targets[event.key]);
+    tabButtons[selectedPanel].focus();
+  });
+});
+desktopLayout.addEventListener('change', () => {
+  const focusedPanel = activityPanels.findIndex((panel) => panel.contains(document.activeElement));
+  if (!desktopLayout.matches && focusedPanel >= 0) selectedPanel = focusedPanel;
+  const tabHadFocus = activityTabs.contains(document.activeElement);
+  syncActivityTabs();
+  // A focused tab disappears on desktop; keep focus on its corresponding input.
+  if (desktopLayout.matches && tabHadFocus) activityPanels[selectedPanel].querySelector('input').focus();
+});
+syncActivityTabs();

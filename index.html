@@ -7,8 +7,8 @@
     <meta name="description" content="Life System 首頁視覺提案，以清楚而平靜的方式整理日常。">
     <title>今日生活 · Life System</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="assets/styles.css?v=welcome-space16">
-    <script type="module" src="assets/home.js"></script>
+    <link rel="stylesheet" href="assets/styles.css?v=mobile-tabs-20261021">
+    <script type="module" src="assets/home.js?v=mobile-tabs-20261021"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
@@ -23,7 +23,7 @@
           <div class="companion-banner">
             <div class="companion-portrait" data-emotion="neutral" role="img" aria-label="夥伴頭像佔位：平靜，尚未提供情緒立繪">
               <img id="companion-image" alt="" hidden>
-              <div id="portrait-placeholder"><span class="portrait-symbol" aria-hidden="true">＋</span><span>頭像佔位</span><span id="portrait-emotion">平靜</span></div>
+              <div id="portrait-placeholder"><span>頭像佔位</span><span id="portrait-emotion">平靜</span></div>
             </div>
             <div class="dialogue-column">
               <div class="dialogue-bubble" aria-live="polite" aria-atomic="true"><p id="companion-dialogue">完成待辦或習慣打卡後，這裡會顯示模擬回應。</p></div>
@@ -42,8 +42,12 @@
 
         <p class="demo-notice"><span class="demo-mark">示意資料</span><span>本頁為排版預覽；勾選僅供體驗，重新整理後會重設。</span></p>
 
+        <div class="activity-tabs" aria-label="今日行動切換" hidden>
+          <button type="button" id="tasks-tab" data-panel="tasks-panel">今日待辦</button>
+          <button type="button" id="habits-tab" data-panel="habits-panel">彈性打卡</button>
+        </div>
         <div class="home-grid">
-          <section class="tasks" aria-labelledby="tasks-title">
+          <section id="tasks-panel" class="tasks" aria-labelledby="tasks-title">
             <div class="section-heading"><div><h2 id="tasks-title">今日待辦</h2><p class="section-kicker" lang="en">One thing at a time</p></div><span class="count" id="task-count" aria-live="polite" aria-atomic="true">1 / 4 完成</span></div>
             <ul class="task-list">
               <li><label class="task-row"><input type="checkbox" data-task><span class="task-content"><span class="task-name">整理桌面，留出一小塊空間</span><span class="task-detail">讓今天有個舒服的開始</span></span><span class="task-time">上午</span></label></li>
@@ -54,7 +58,7 @@
             <div class="section-bottom"><span class="small-note">以上皆為示意待辦</span><button class="text-button" type="button" disabled><span aria-hidden="true">＋</span> 新增待辦 <span>尚未啟用</span></button></div>
           </section>
 
-          <section class="habits" aria-labelledby="habits-title">
+          <section id="habits-panel" class="habits" aria-labelledby="habits-title">
             <div class="section-heading"><div><h2 id="habits-title">今日彈性習慣</h2><p class="section-kicker" lang="en">Small steps, your own pace</p></div><span class="section-label">示意打卡</span></div>
             <ul class="habit-list">
               <li><label class="habit-row"><span class="habit-index" aria-hidden="true">01</span><span class="habit-content"><span class="habit-name">喝一杯水</span><span class="habit-detail">停一下，照顧自己</span></span><input type="checkbox" data-habit><span class="habit-state" aria-hidden="true">未打卡</span></label></li>
