@@ -6,12 +6,22 @@ const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人�
 const notice = message => { $('#operation-status').hidden = false; $('#operation-status').textContent = message; };
 let pendingPhoto = null;
 let photoSelection = 0;
+const photoFrame = $('.photo-frame');
+const photoImage = $('#user-photo');
+const defaultAvatar = $('#default-avatar');
 function renderPhoto() {
   const photo = pendingPhoto ?? dataStore.get().photo;
-  $('#user-photo').toggleAttribute('hidden', !photo);
-  // SVG elements do not consistently reflect the HTML .hidden property.
-  $('#default-avatar').toggleAttribute('hidden', Boolean(photo));
-  if (photo) $('#user-photo').src = photo; else $('#user-photo').removeAttribute('src');
+  // Keep only one element in the frame. A stale stylesheet or SVG visibility
+  // difference cannot leave the placeholder occupying a second grid row.
+  if (photo) {
+    photoImage.removeAttribute('hidden');
+    if (photoImage.getAttribute('src') !== photo) photoImage.src = photo;
+    photoFrame.replaceChildren(photoImage);
+  } else {
+    photoImage.removeAttribute('src');
+    defaultAvatar.removeAttribute('hidden');
+    photoFrame.replaceChildren(defaultAvatar);
+  }
 }
 function element(tag, text) { const el = document.createElement(tag); el.textContent = text; return el; }
 function render() {
