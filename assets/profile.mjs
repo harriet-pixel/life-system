@@ -8,7 +8,9 @@ let pendingPhoto = null;
 let photoSelection = 0;
 function renderPhoto() {
   const photo = pendingPhoto ?? dataStore.get().photo;
-  $('#user-photo').hidden = !photo; $('#default-avatar').hidden = Boolean(photo);
+  $('#user-photo').toggleAttribute('hidden', !photo);
+  // SVG elements do not consistently reflect the HTML .hidden property.
+  $('#default-avatar').toggleAttribute('hidden', Boolean(photo));
   if (photo) $('#user-photo').src = photo; else $('#user-photo').removeAttribute('src');
 }
 function element(tag, text) { const el = document.createElement(tag); el.textContent = text; return el; }
