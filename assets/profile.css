@@ -140,3 +140,13 @@ textarea { resize: vertical; }
 .ability-charts { grid-template-columns: minmax(0,1fr); justify-items: center; }
 #ability-radar { width: min(100%, 480px); min-width: 0; font-size: 1rem; }
 #ability-radar svg { display: block; }
+
+#ability-radar .ability-name { fill: var(--color-text); }
+#ability-radar .ability-value { fill: var(--color-muted); }
+#manual-abilities { display: grid; gap: 16px; min-width: 0; }
+#ability-edit-details summary { cursor: pointer; min-height: 44px; padding-block: 8px; color: var(--color-primary); }
+.history-metadata > span { display: block; }
+@media (min-width:1024px) {
+  .history-metadata > span { display: inline; }
+  .history-metadata > span + span::before { content: ' ｜ '; white-space: pre; }
+}

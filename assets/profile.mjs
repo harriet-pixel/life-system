@@ -1,6 +1,6 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
 import { createAvatarCropper, readImageFile, decodeImage } from './avatar-crop.mjs?v=profile-5';
-import { ABILITIES, validateManualStats } from './abilities.mjs?v=profile-5';
+import { ABILITIES, validateManualStats } from './abilities.mjs?v=manual-14';
 import { undoManager } from './undo.mjs?v=motto-11';
 import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=motto-11';
 import { initializeNavigation } from './navigation.mjs?v=profile-5';
@@ -45,7 +45,7 @@ function renderRadar() {
   labelWidth = Math.max(labelWidth, ...values.map(value => context.measureText(value).width));
   const availableRadius = Math.max(0, (width / 2 - labelWidth / 2 - 12) / Math.sin(2*Math.PI/5));
   const gap = Math.min(Math.max(36, fontSize * 2.5), availableRadius / 2);
-  const radius = Math.min(width * .255, availableRadius - gap);
+  const radius = Math.min(width * .26775, availableRadius - gap);
   const labelRadius = radius + gap, verticalLabelRadius = Math.max(labelRadius, fontSize * 4);
   const cx = width / 2, cy = verticalLabelRadius + fontSize + 12;
   const height = cy + verticalLabelRadius + fontSize * 2.5 + 12;
@@ -111,8 +111,9 @@ function historyRow(record,state) {
     li.append(time, element('p', record.fields.length===1&&record.fields[0]==='motto' ? '一句話已變更' : `${record.label}${record.fields.length ? `（${record.fields.map(key=>fields[key] ?? key).join('、')}）` : ''}`));
     const deltas = Object.entries(record.delta).filter(([key,value])=>key !== 'abilities' && value).map(([key,value])=>`${({experience:'Exp',level:'Lv',currency:'$'})[key]} ${value>0?'+':''}${value}`);
     record.delta.abilities.filter(a=>a.value).forEach(a=>deltas.push(`${state.stats.abilities.find(x=>x.id===a.id)?.name ?? a.id} ${a.value>0?'+':''}${a.value}`));
-    li.append(element('p', deltas.join(' ｜ ') || '數值無變動'));
-    li.append(element('p', record.undone ? `已撤銷 · ${new Date(record.undoneAt).toLocaleString('zh-TW')}` : '尚未撤銷'));
+    const metadata = element('p',''); metadata.className = 'history-metadata';
+    metadata.append(element('span', deltas.join(' ｜ ') || '數值無變動'), element('span', record.undone ? `已撤銷 · ${new Date(record.undoneAt).toLocaleString('zh-TW')}` : '尚未撤銷'));
+    li.append(metadata);
     return li;
 }
 
@@ -129,7 +130,7 @@ function syncDesktopPanels(state = dataStore.get()) {
   const list=element('ol','');list.className='history-list';probe.append(list);
   const footer=$('#history-pagination').cloneNode(true);footer.removeAttribute('hidden');footer.removeAttribute('id');footer.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));footer.querySelectorAll('[aria-live]').forEach(el=>el.removeAttribute('aria-live'));const selectStyle=getComputedStyle($('#history-jump'));const probeSelect=footer.querySelector('select');for(const property of ['font','min-width','min-height','padding','border'])probeSelect.style.setProperty(property,selectStyle.getPropertyValue(property));probe.append(footer);content.append(probe);
   const blanks=Array.from({length:HISTORY_PAGE_SIZE},()=>{
-    const li=element('li','');li.append(element('time','\u00a0'),...Array.from({length:3},()=>element('p','\u00a0')));return li;
+    const li=element('li',''),metadata=element('p','');metadata.className='history-metadata';metadata.append(element('span','\u00a0'),element('span','\u00a0'));li.append(element('time','\u00a0'),element('p','\u00a0'),metadata);return li;
   });
   list.replaceChildren(...blanks);let maximum=probe.getBoundingClientRect().height;
   const records=[...state.history].reverse();
@@ -149,12 +150,12 @@ desktopPanels.addEventListener('change',()=>syncDesktopPanels());
 document.fonts.ready.then(()=>syncDesktopPanels());
 const dialog = $('#profile-dialog'), form = $('#profile-form');
 const personalKeys = ['name', 'age', 'gender', 'bio', 'boundaries', 'motto'];
-const numericFields = [{ id:'currency', name:'貨幣量' }, { id:'level', name:'等級' }];
+const numericFields = [{ id:'currency', name:'貨幣量' }, { id:'level', name:'等級' }, ...ABILITIES];
 for (const field of numericFields) {
   const label = element('label', field.name);
   const input = document.createElement('input'); input.name = field.id; input.inputMode = 'numeric'; input.setAttribute('aria-describedby', `${field.id}-error`);
   const error = element('span', ''); error.id = `${field.id}-error`; error.className = 'field-error';
-  label.append(input,error); $('#manual-fields').append(label);
+  label.append(input,error); $(ABILITIES.some(a=>a.id===field.id) ? '#manual-abilities' : '#manual-fields').append(label);
 }
 const settingTabs = [...$('#settings-tabs').querySelectorAll('button')];
 function selectSetting(index) {
@@ -192,13 +193,14 @@ function clearErrors() {
   $('#form-error').textContent='';
 }
 function fieldError(key,message,index) {
-  selectSetting(index);if(key==='photo')selectImage(0);if(key==='avatar')selectImage(1); $('#form-error').textContent = message;
+  selectSetting(index);if(ABILITIES.some(a=>a.id===key)) $('#ability-edit-details').open=true;if(key==='photo')selectImage(0);if(key==='avatar')selectImage(1); $('#form-error').textContent = message;
   const input = key === 'photo' ? $('#photo-input') : key === 'avatar' ? $('#avatar-input') : form.elements[key];
   document.getElementById(`${key}-error`).textContent = message;
   input.setAttribute('aria-invalid','true'); input.focus();
 }
 $('#edit-profile').addEventListener('click', () => {
   baseState = dataStore.get();
+  $('#ability-edit-details').open=false;
   personalKeys.forEach(key => { form.elements[key].value = baseState.profile[key]; });
   numericFields.forEach(({id})=>{ form.elements[id].value = id in baseState.stats ? baseState.stats[id] : baseState.stats.abilities.find(a=>a.id===id).value; });
   draftPhoto = baseState.photo; draftAvatar = baseState.avatar; photoError = ''; avatarError = ''; loadingPhoto = false; loadingAvatar = false; photoSelection++; avatarSelection++;closeCrop();

@@ -13,7 +13,7 @@ export const ALLOCATION_PRINCIPLES = Object.freeze([
   '能力值代表累積投入，不是對人格、健康或真實能力的診斷與評分。',
   '獎勵總點數由各功能的獎勵規則提供，AI 只分配至能力，各能力分配量加總必須等於該次獎勵總點數。',
 ]);
-export const VALUE_RULES = Object.freeze({ initialValue: 0, experiencePerLevel: 100, growth: Object.freeze({ experienceMultiplier: 1, currencyMultiplier: 1, abilityAllocationMustEqualReward: true, description: '貨幣增加量 = 總經驗值增加量 = 五項能力增加量合計' }), manual: '貨幣與等級獨立修改；等級保存校正並隨每 100 經驗成長', spending: '只扣貨幣且不得低於 0', activityRewards: null });
+export const VALUE_RULES = Object.freeze({ initialValue: 0, experiencePerLevel: 100, growth: Object.freeze({ experienceMultiplier: 1, currencyMultiplier: 1, abilityAllocationMustEqualReward: true, description: '貨幣增加量 = 總經驗值增加量 = 五項能力增加量合計' }), manual: '貨幣、等級與五項能力獨立修改；等級保存校正並隨每 100 經驗成長', spending: '只扣貨幣且不得低於 0', activityRewards: null });
 export const levelFromExperience = experience => Math.floor(experience / VALUE_RULES.experiencePerLevel);
 export function integerValue(value, field) {
   const text = String(value ?? '').trim();
@@ -47,5 +47,6 @@ export function validateManualStats(values, current = {}) {
   const stats = normalizeStats(current);
   const currency = integerValue(values.currency, 'currency');
   const level = integerValue(values.level, 'level');
-  return { ...stats, currency, level, levelOffset: level - levelFromExperience(stats.experience) };
+  const abilities = stats.abilities.map(ability => ({ ...ability, value: Object.hasOwn(values, ability.id) ? integerValue(values[ability.id], ability.id) : ability.value }));
+  return { ...stats, currency, level, abilities, levelOffset: level - levelFromExperience(stats.experience) };
 }
