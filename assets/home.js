@@ -98,6 +98,7 @@ const desktopLayout = window.matchMedia('(min-width: 1024px)');
 let selectedPanel = 0;
 function syncActivityTabs() {
   const mobile = !desktopLayout.matches;
+  document.querySelector('#main').dataset.activityTabs = String(mobile);
   activityTabs.hidden = !mobile;
   if (mobile) activityTabs.setAttribute('role', 'tablist');
   else activityTabs.removeAttribute('role');
