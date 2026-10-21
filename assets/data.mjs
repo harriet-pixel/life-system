@@ -1,4 +1,4 @@
-import { normalizeStats, validateStats } from './abilities.mjs?v=profile-5';
+import { normalizeStats, validateStats } from './abilities.mjs?v=rules-15';
 // A single atomic localStorage document owns data and its reversible journal.
 export const HISTORY_LIMIT = 50;
 const retainedHistory = history => [...history].sort((a,b) => Date.parse(a.time) - Date.parse(b.time)).slice(-HISTORY_LIMIT);
@@ -49,7 +49,7 @@ export function createDataStore(storage) {
       for (const [key, rawValue] of Object.entries(changes)) {
         let value = rawValue;
         if (key === 'stats') {
-          value = validateStats(rawValue);
+          value = validateStats(rawValue, state.stats);
         }
         if (!['profile', 'photo', 'avatar', 'activities', 'stats'].includes(key)) throw new Error('不支援的資料類型');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;

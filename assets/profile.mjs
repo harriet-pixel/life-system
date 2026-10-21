@@ -1,8 +1,8 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
 import { createAvatarCropper, readImageFile, decodeImage } from './avatar-crop.mjs?v=profile-5';
-import { ABILITIES, validateManualStats } from './abilities.mjs?v=manual-14';
-import { undoManager } from './undo.mjs?v=motto-11';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=motto-11';
+import { ABILITIES, validateManualStats } from './abilities.mjs?v=rules-15';
+import { undoManager } from './undo.mjs?v=rules-15';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=rules-15';
 import { initializeNavigation } from './navigation.mjs?v=profile-5';
 const $ = selector => document.querySelector(selector);
 const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
@@ -118,6 +118,13 @@ function historyRow(record,state) {
 }
 
 const desktopPanels = matchMedia('(min-width:1024px)');
+function positionNotice() {
+  const status = $('#operation-status');
+  (desktopPanels.matches ? $('.profile-portrait-column') : $('.profile-content')).append(status);
+}
+positionNotice();
+desktopPanels.addEventListener('change', positionNotice);
+
 function syncDesktopPanels(state = dataStore.get()) {
   const content=$('.profile-content'), tabs=content.querySelector('.activity-tabs');
   if (!desktopPanels.matches) { content.style.removeProperty('--profile-panel-height'); return; }

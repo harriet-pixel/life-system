@@ -150,3 +150,7 @@ textarea { resize: vertical; }
   .history-metadata > span { display: inline; }
   .history-metadata > span + span::before { content: ' ｜ '; white-space: pre; }
 }
+
+@media (min-width:1024px) {
+  .profile-portrait-column > #operation-status { padding-top: 12px; overflow-wrap: anywhere; }
+}
