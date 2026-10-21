@@ -1,11 +1,11 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
 import { createAvatarCropper, readImageFile, decodeImage } from './avatar-crop.mjs?v=profile-5';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=profile-5';
-import { undoManager } from './undo.mjs?v=summary-10';
-import { dataStore, formatSI, validateProfile, abilityRatios, abilityShares, profileSummary } from './data.mjs?v=summary-10';
+import { undoManager } from './undo.mjs?v=motto-11';
+import { dataStore, formatSI, validateProfile, abilityRatios, abilityShares, profileSummary } from './data.mjs?v=motto-11';
 import { initializeNavigation } from './navigation.mjs?v=profile-5';
 const $ = selector => document.querySelector(selector);
-const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '無法接受的事情', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
+const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
 const notice = message => { $('#operation-status').hidden = false; $('#operation-status').textContent = message; };
 let photoSelection = 0;
 const photoFrame = $('.photo-frame');
@@ -42,6 +42,8 @@ function render() {
   const state = dataStore.get();
   $('#profile-name').textContent = state.profile.name || '尚未設定稱呼';
   $('#profile-age').textContent = state.profile.age === '' ? '' : `${state.profile.age} 歲`;
+  const motto=(state.profile.motto ?? '').trim();
+  $('#profile-motto').textContent=motto;$('#profile-motto').hidden=!motto;
   renderPhoto();
   const { experience, level, currency, abilities } = state.stats;
   $('#profile-stats').textContent = profileSummary(state.stats);
@@ -90,7 +92,7 @@ function renderHistory(state = dataStore.get()) {
 }
 function historyRow(record,state) {
     const li = element('li', ''); const time = element('time', new Intl.DateTimeFormat('zh-TW',{dateStyle:'short',timeStyle:'medium'}).format(new Date(record.time))); time.dateTime = record.time;
-    li.append(time, element('p', `${record.label}${record.fields.length ? `（${record.fields.map(key=>fields[key] ?? key).join('、')}）` : ''}`));
+    li.append(time, element('p', record.fields.length===1&&record.fields[0]==='motto' ? '一句話已變更' : `${record.label}${record.fields.length ? `（${record.fields.map(key=>fields[key] ?? key).join('、')}）` : ''}`));
     const deltas = Object.entries(record.delta).filter(([key,value])=>key !== 'abilities' && value).map(([key,value])=>`${({experience:'Exp',level:'Lv',currency:'$'})[key]} ${value>0?'+':''}${value}`);
     record.delta.abilities.filter(a=>a.value).forEach(a=>deltas.push(`${state.stats.abilities.find(x=>x.id===a.id)?.name ?? a.id} ${a.value>0?'+':''}${a.value}`));
     li.append(element('p', deltas.join(' ｜ ') || '數值無變動'));
@@ -103,7 +105,7 @@ function syncDesktopPanels(state = dataStore.get()) {
   const content=$('.profile-content'), tabs=content.querySelector('.activity-tabs');
   if (!desktopPanels.matches) { content.style.removeProperty('--profile-panel-height'); return; }
   const dashboard=$('.profile-dashboard');dashboard.style.removeProperty('--profile-tabs-height');
-  const tabHeight=Math.max(tabs.getBoundingClientRect().height,$('#profile-stats').getBoundingClientRect().height);
+  const tabHeight=Math.max(tabs.getBoundingClientRect().height,$('.profile-summary-area').getBoundingClientRect().height);
   dashboard.style.setProperty('--profile-tabs-height',`${tabHeight}px`);
   // Measure every retained page without showing it or changing the selected tab.
   const probe=element('div','');probe.className='history-measure';probe.inert=true;probe.setAttribute('aria-hidden','true');probe.style.width=`${content.getBoundingClientRect().width}px`;
@@ -130,7 +132,7 @@ panelObserver.observe($('.profile-content'));panelObserver.observe($('.profile-c
 desktopPanels.addEventListener('change',()=>syncDesktopPanels());
 document.fonts.ready.then(()=>syncDesktopPanels());
 const dialog = $('#profile-dialog'), form = $('#profile-form');
-const personalKeys = ['name', 'age', 'gender', 'bio', 'boundaries'];
+const personalKeys = ['name', 'age', 'gender', 'bio', 'boundaries', 'motto'];
 const numericFields = [{ id:'currency', name:'貨幣量' }, { id:'level', name:'等級' }];
 for (const field of numericFields) {
   const label = element('label', field.name);
@@ -150,6 +152,14 @@ settingTabs.forEach((tab,i) => {
     event.preventDefault();selectSetting(target);settingTabs[target].focus();
   });
 });
+const imageTabs=[...$('#image-tabs').querySelectorAll('button')];
+function selectImage(index) {
+  imageTabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;document.getElementById(tab.getAttribute('aria-controls')).hidden=i!==index;});
+}
+imageTabs.forEach((tab,index)=>{
+  tab.addEventListener('click',()=>selectImage(index));
+  tab.addEventListener('keydown',event=>{const next={ArrowLeft:1-index,ArrowRight:1-index,Home:0,End:1}[event.key];if(next===undefined)return;event.preventDefault();selectImage(next);imageTabs[next].focus();});
+});
 let draftPhoto = null, draftAvatar = null, photoError = '', avatarError = '', loadingPhoto = false, loadingAvatar = false, baseState;
 let avatarSelection = 0, cropActive = false, cropDirty = false;
 function renderDraftPhoto() {
@@ -166,7 +176,7 @@ function clearErrors() {
   $('#form-error').textContent='';
 }
 function fieldError(key,message,index) {
-  selectSetting(index); $('#form-error').textContent = message;
+  selectSetting(index);if(key==='photo')selectImage(0);if(key==='avatar')selectImage(1); $('#form-error').textContent = message;
   const input = key === 'photo' ? $('#photo-input') : key === 'avatar' ? $('#avatar-input') : form.elements[key];
   document.getElementById(`${key}-error`).textContent = message;
   input.setAttribute('aria-invalid','true'); input.focus();
@@ -177,7 +187,7 @@ $('#edit-profile').addEventListener('click', () => {
   numericFields.forEach(({id})=>{ form.elements[id].value = id in baseState.stats ? baseState.stats[id] : baseState.stats.abilities.find(a=>a.id===id).value; });
   draftPhoto = baseState.photo; draftAvatar = baseState.avatar; photoError = ''; avatarError = ''; loadingPhoto = false; loadingAvatar = false; photoSelection++; avatarSelection++;closeCrop();
   $('#photo-input').value = ''; $('#avatar-input').value = ''; $('#save-settings').disabled = false;
-  clearErrors(); renderDraftPhoto();selectSetting(0);dialog.showModal();
+  clearErrors(); renderDraftPhoto();selectSetting(0);selectImage(0);dialog.showModal();
 });
 $('#cancel-profile').addEventListener('click', () => dialog.close());
 dialog.addEventListener('close', () => { photoSelection++;avatarSelection++;closeCrop(); draftPhoto = null; draftAvatar = null; photoError = ''; avatarError = ''; loadingPhoto = false; loadingAvatar = false; $('#edit-profile').focus(); });

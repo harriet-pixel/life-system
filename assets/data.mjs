@@ -4,7 +4,7 @@ export const HISTORY_LIMIT = 50;
 const retainedHistory = history => [...history].sort((a,b) => Date.parse(a.time) - Date.parse(b.time)).slice(-HISTORY_LIMIT);
 export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
-const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '' }, photo: null, avatar: null, activities: {}, stats: normalizeStats(), history: [] });
+const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, activities: {}, stats: normalizeStats(), history: [] });
 export function createDataStore(storage) {
   let state;
   const listeners = new Set();
@@ -13,10 +13,12 @@ export function createDataStore(storage) {
     if (!raw) return initial();
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
+    value.profile.motto ??= '';
     value.avatar ??= null;
     value.stats = normalizeStats(value.stats);
     // Normalize historical snapshots too so pre-upgrade Undo remains consistent.
     for (const record of value.history) for (const snapshot of [record.before, record.after]) {
+      if (snapshot.profile) snapshot.profile.motto ??= '';
       if (snapshot.stats) snapshot.stats = normalizeStats(snapshot.stats);
     }
     if (value.history.length > HISTORY_LIMIT) {
@@ -88,7 +90,7 @@ export function formatSI(value) {
   return `${value < 0 ? '-' : ''}${n}${units[i]}`;
 }
 export function validateProfile(value) {
-  const result = Object.fromEntries(['name', 'age', 'gender', 'bio', 'boundaries'].map(key => [key, String(value[key] ?? '').trim()]));
+  const result = Object.fromEntries(['name', 'age', 'gender', 'bio', 'boundaries', 'motto'].map(key => [key, String(value[key] ?? '').trim()]));
   if (result.age && (!/^\d+$/.test(result.age) || !Number.isSafeInteger(Number(result.age)))) throw new Error('年紀請填寫有效的非負整數，或留白。');
   if (result.age) result.age = String(Number(result.age));
   return result;

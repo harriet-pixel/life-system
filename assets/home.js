@@ -1,7 +1,7 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { undoManager } from './undo.mjs?v=summary-10';
+import { undoManager } from './undo.mjs?v=motto-11';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { dataStore, profileSummary } from './data.mjs?v=summary-10';
+import { dataStore, profileSummary } from './data.mjs?v=motto-11';
 import { initializeNavigation } from './navigation.mjs?v=profile-5';
 
 // Development slots, not approved character emotions. Only use licensed assets.
