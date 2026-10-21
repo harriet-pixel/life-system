@@ -69,9 +69,8 @@ input[type="checkbox"] { appearance: none; flex-shrink: 0; width: 20px; height: 
 input[type="checkbox"]:checked { background: var(--color-primary); border-color: var(--color-primary); }
 input[type="checkbox"]:checked::after { content: ""; width: 9px; height: 5px; border: solid #fff; border-width: 0 0 2px 2px; transform: translateY(-1px) rotate(-45deg); }
 .task-content, .habit-content { min-width: 0; flex: 1; }
-.task-name, .task-detail, .habit-name, .habit-detail { display: block; }
+.task-name, .habit-name { display: block; }
 .task-name, .habit-name { font-size: var(--text-secondary); }
-.task-detail, .habit-detail { margin-top: var(--space-1); font-size: var(--text-small); color: var(--color-muted); }
 .task-time { font-size: var(--text-small); color: var(--color-muted); flex-shrink: 0; }
 .task-row:has(input:checked) .task-name { text-decoration: line-through; text-decoration-thickness: 1px; color: var(--color-muted); }
 .section-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
