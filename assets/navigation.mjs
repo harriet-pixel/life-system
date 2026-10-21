@@ -1,6 +1,6 @@
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
-  { id: 'home', label: '首頁', href: new URL('../', import.meta.url).href, available: true, desktopOnly: true },
+  { id: 'home', label: '首頁', href: new URL('../', import.meta.url).href, available: true },
   { id: 'tasks', label: '待辦事項', href: null, available: false },
   { id: 'habits', label: '習慣打卡', href: null, available: false },
   { id: 'reading', label: '陪讀系統', href: null, available: false },
@@ -37,7 +37,7 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   const build = (nav) => {
     const list = document.createElement('div');
     list.className = 'navigation-list';
-    navigationItems.filter(item => !item.desktopOnly || nav === desktopLinks).forEach((item) => {
+    navigationItems.forEach((item) => {
       const element = document.createElement(item.available ? 'a' : 'span');
       element.className = 'navigation-item';
       element.textContent = item.label;
