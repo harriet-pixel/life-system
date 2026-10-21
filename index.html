@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="description" content="Life System 首頁視覺提案，以清楚而平靜的方式整理日常。">
+    <title>今日生活 · Life System</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="assets/home.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳至主要內容</a>
+    <div class="page-shell">
+      <header class="site-header">
+        <div class="wordmark" aria-label="Life System 生活系統"><span lang="en">Life System</span><span class="wordmark-caption">生活系統</span></div>
+        <span class="edition">首頁視覺提案 <span aria-hidden="true">／</span> 01</span>
+      </header>
+
+      <main id="main" tabindex="-1">
+        <div class="intro">
+          <div><p class="eyebrow" lang="en">A little space for everyday life</p><h1>把日子，慢慢理好。</h1><p class="intro-copy">從眼前的一件小事開始，留一點空間給自己。</p></div>
+          <div class="date-block"><span class="date-caption">示意日期</span><time datetime="2026-10-21"><span class="date-numbers">10<span class="date-divider">/</span>21</span><span class="date-detail">2026 年・星期三</span></time></div>
+        </div>
+
+        <p class="demo-notice"><span class="demo-mark">示意資料</span><span>本頁為排版預覽；勾選僅供體驗，重新整理後會重設。</span></p>
+
+        <div class="home-grid">
+          <section class="profile" aria-labelledby="profile-title">
+            <div class="section-heading"><h2 id="profile-title">我的資料卡</h2><span class="section-english" lang="en">My space</span></div>
+            <div class="profile-content"><div class="avatar" aria-hidden="true">我</div><div><p class="profile-name">生活練習者 <span class="small-note">（示意暱稱）</span></p><p class="profile-motto">照自己的步調，過好今天。</p></div></div>
+            <button class="text-button" type="button" disabled>編輯資料 <span>尚未啟用</span></button>
+          </section>
+
+          <section class="tasks" aria-labelledby="tasks-title">
+            <div class="section-heading"><div><p class="section-kicker" lang="en">One thing at a time</p><h2 id="tasks-title">今日待辦</h2></div><span class="count" id="task-count" aria-live="polite" aria-atomic="true">1 / 4 完成</span></div>
+            <p class="section-description">不必一次做好所有事，先完成眼前這一件。</p>
+            <ul class="task-list">
+              <li><label class="task-row"><input type="checkbox" data-task><span class="task-content"><span class="task-name">整理桌面，留出一小塊空間</span><span class="task-detail">讓今天有個舒服的開始</span></span><span class="task-time">上午</span></label></li>
+              <li><label class="task-row"><input type="checkbox" data-task><span class="task-content"><span class="task-name">讀幾頁想讀的書</span><span class="task-detail">一頁也很好</span></span><span class="task-time">午後</span></label></li>
+              <li><label class="task-row"><input type="checkbox" data-task><span class="task-content"><span class="task-name">寫下今天想記住的一件事</span><span class="task-detail">留給晚一點的自己</span></span><span class="task-time">晚上</span></label></li>
+              <li><label class="task-row"><input type="checkbox" data-task checked><span class="task-content"><span class="task-name">為自己準備一份早餐</span><span class="task-detail">好好吃飯，好好開始</span></span><span class="task-time">上午</span></label></li>
+            </ul>
+            <div class="section-bottom"><span class="small-note">以上皆為示意待辦</span><button class="text-button" type="button" disabled><span aria-hidden="true">＋</span> 新增待辦 <span>尚未啟用</span></button></div>
+          </section>
+
+          <section class="habits" aria-labelledby="habits-title">
+            <div class="section-heading"><div><p class="section-kicker" lang="en">Small steps, your own pace</p><h2 id="habits-title">今日彈性習慣</h2></div><span class="section-label">示意打卡</span></div>
+            <p class="section-description">依照今天的狀態，做一點喜歡的小事。</p>
+            <ul class="habit-list">
+              <li><label class="habit-row"><span class="habit-index" aria-hidden="true">01</span><span class="habit-content"><span class="habit-name">喝一杯水</span><span class="habit-detail">停一下，照顧自己</span></span><input type="checkbox" data-habit><span class="habit-state" aria-hidden="true">未打卡</span></label></li>
+              <li><label class="habit-row"><span class="habit-index" aria-hidden="true">02</span><span class="habit-content"><span class="habit-name">起身舒展</span><span class="habit-detail">讓身體換個姿勢</span></span><input type="checkbox" data-habit checked><span class="habit-state" aria-hidden="true">已打卡</span></label></li>
+              <li><label class="habit-row"><span class="habit-index" aria-hidden="true">03</span><span class="habit-content"><span class="habit-name">留一點安靜</span><span class="habit-detail">深呼吸，回到當下</span></span><input type="checkbox" data-habit><span class="habit-state" aria-hidden="true">未打卡</span></label></li>
+            </ul>
+            <p class="small-note habit-note">以上皆為示意習慣，尚未設定打卡規則。</p>
+          </section>
+
+          <section class="companion" aria-labelledby="companion-title">
+            <div class="section-heading"><h2 id="companion-title">夥伴與你</h2><span class="section-english" lang="en">A quiet company</span></div>
+            <div class="portrait-placeholder" role="img" aria-label="夥伴立繪佔位，目前尚未提供素材"><span class="placeholder-cross" aria-hidden="true">＋</span><span class="placeholder-title">留一個位置，給你的夥伴。</span><span class="small-note">立繪佔位・尚未提供素材</span></div>
+            <div class="chat-entry"><div><h3>想聊聊今天嗎？</h3><p>聊天室尚未啟用</p></div><button class="chat-button" type="button" disabled aria-describedby="chat-note">開啟聊天室 <span aria-hidden="true">↗</span></button></div>
+            <p class="small-note" id="chat-note">目前僅展示入口，尚未連接聊天服務。</p>
+          </section>
+        </div>
+      </main>
+      <footer class="site-footer"><span lang="en">Life System</span><p>讓生活，有自己的節奏。</p><span class="footer-note">首頁第一版・示意預覽</span></footer>
+    </div>
+  </body>
+</html>
