@@ -18,6 +18,12 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:3000/';
    assert.equal(await page.locator('.profile-display-name').count(),0);
    assert.deepEqual(await page.locator('.summary-stat').allTextContents(),['Lv—','｜$ —']);
    if(!mobile) {
+    const bar=await page.locator('.desktop-navigation').boundingBox();
+    const dashboard=await page.locator('.dashboard').boundingBox();
+    const portrait=await page.locator('.companion').boundingBox();
+    const content=await page.locator('.daily-panel').boundingBox();
+    assert.equal(bar.x,dashboard.x);assert.equal(bar.width,dashboard.width);
+    assert.equal(portrait.y,content.y);assert.equal(portrait.y-bar.y-bar.height,24);
     const before=await page.locator('.daily-panel').boundingBox();
     assert.equal(await page.locator('#navigation-toggle').getAttribute('aria-expanded'),'false');
     await page.locator('#navigation-toggle').click();
