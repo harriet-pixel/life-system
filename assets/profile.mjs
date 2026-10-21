@@ -1,16 +1,16 @@
-import { undoManager } from './undo.mjs';
-import { dataStore, formatSI, validateProfile, abilityRatios } from './data.mjs';
+import { ABILITIES, validateManualStats, integerValue, levelFromExperience } from './abilities.mjs?v=settings-4';
+import { undoManager } from './undo.mjs?v=settings-4';
+import { dataStore, formatSI, validateProfile, abilityRatios } from './data.mjs?v=settings-4';
 import { initializeNavigation } from './navigation.mjs?v=profile-1';
 const $ = selector => document.querySelector(selector);
-const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '無法接受的事情' };
+const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '無法接受的事情', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
 const notice = message => { $('#operation-status').hidden = false; $('#operation-status').textContent = message; };
-let pendingPhoto = null;
 let photoSelection = 0;
 const photoFrame = $('.photo-frame');
 const photoImage = $('#user-photo');
 const defaultAvatar = $('#default-avatar');
 function renderPhoto() {
-  const photo = pendingPhoto ?? dataStore.get().photo;
+  const photo = dataStore.get().photo;
   // Keep only one element in the frame. A stale stylesheet or SVG visibility
   // difference cannot leave the placeholder occupying a second grid row.
   if (photo) {
@@ -64,35 +64,98 @@ function render() {
   }));
 }
 const dialog = $('#profile-dialog'), form = $('#profile-form');
-$('#edit-profile').addEventListener('click', () => { const profile = dataStore.get().profile; Object.keys(fields).forEach(key => { form.elements[key].value = profile[key]; }); $('#form-error').textContent = ''; dialog.showModal(); });
+const personalKeys = ['name', 'age', 'gender', 'bio', 'boundaries'];
+const numericFields = [{ id:'experience', name:'總經驗值' }, { id:'currency', name:'貨幣' }, ...ABILITIES];
+for (const field of numericFields) {
+  const label = element('label', field.name);
+  const input = document.createElement('input'); input.name = field.id; input.inputMode = 'numeric'; input.setAttribute('aria-describedby', `${field.id}-error`);
+  const error = element('span', ''); error.id = `${field.id}-error`; error.className = 'field-error';
+  label.append(input,error); $('#manual-fields').append(label);
+}
+const settingTabs = [...$('#settings-tabs').querySelectorAll('button')];
+function selectSetting(index) {
+  settingTabs.forEach((tab,i) => { tab.setAttribute('aria-selected',String(i===index)); tab.tabIndex = i===index ? 0 : -1; document.getElementById(tab.getAttribute('aria-controls')).hidden = i!==index; });
+}
+settingTabs.forEach((tab,i) => {
+  tab.addEventListener('click',()=>selectSetting(i));
+  tab.addEventListener('keydown',event=>{
+    const target={ArrowLeft:(i+2)%3,ArrowRight:(i+1)%3,Home:0,End:2}[event.key];
+    if (target === undefined) return;
+    event.preventDefault();selectSetting(target);settingTabs[target].focus();
+  });
+});
+let draftPhoto = null, photoError = '', loadingPhoto = false, baseState;
+function renderDraftPhoto() {
+  const image = $('#draft-photo'); image.hidden = !draftPhoto; $('#draft-photo-empty').hidden = Boolean(draftPhoto);
+  if (draftPhoto) image.src = draftPhoto; else image.removeAttribute('src');
+}
+function clearErrors() {
+  form.querySelectorAll('.field-error').forEach(el=>{el.textContent='';});
+  form.querySelectorAll('[aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
+  $('#form-error').textContent='';
+}
+function fieldError(key,message,index) {
+  selectSetting(index); $('#form-error').textContent = message;
+  const input = key === 'photo' ? $('#photo-input') : form.elements[key];
+  document.getElementById(`${key}-error`).textContent = message;
+  input.setAttribute('aria-invalid','true'); input.focus();
+}
+function updateLevel() {
+  try { $('#draft-level').textContent = `Lv${levelFromExperience(integerValue(form.elements.experience.value,'experience'))}`; }
+  catch { $('#draft-level').textContent = '—'; }
+}
+form.elements.experience.addEventListener('input',updateLevel);
+$('#edit-profile').addEventListener('click', () => {
+  baseState = dataStore.get();
+  personalKeys.forEach(key => { form.elements[key].value = baseState.profile[key]; });
+  numericFields.forEach(({id})=>{ form.elements[id].value = id in baseState.stats ? baseState.stats[id] : baseState.stats.abilities.find(a=>a.id===id).value; });
+  draftPhoto = baseState.photo; photoError = ''; loadingPhoto = false; photoSelection++;
+  $('#photo-input').value = ''; $('#save-settings').disabled = false;
+  clearErrors(); renderDraftPhoto();updateLevel();selectSetting(0);dialog.showModal();
+});
 $('#cancel-profile').addEventListener('click', () => dialog.close());
-dialog.addEventListener('close', () => $('#edit-profile').focus());
+dialog.addEventListener('close', () => { photoSelection++; draftPhoto = null; photoError = ''; loadingPhoto = false; $('#edit-profile').focus(); });
 form.addEventListener('submit', event => {
-  event.preventDefault();
+  event.preventDefault(); clearErrors();
+  let profile,stats;
+  try { profile = validateProfile(Object.fromEntries(new FormData(form))); }
+  catch(error) { fieldError('age',error.message,0); return; }
+  try { stats = validateManualStats(Object.fromEntries(new FormData(form)),baseState.stats); }
+  catch(error) { fieldError(error.field,error.message,1); return; }
+  if (loadingPhoto || photoError) { fieldError('photo',photoError || '圖片讀取中，請稍候。',2); return; }
   try {
-    const profile = validateProfile(Object.fromEntries(new FormData(form))); const before = dataStore.get().profile;
-    dataStore.transact({type:'profile.edit',label:'已更新個人資料',target:'profile',fields:Object.keys(fields).filter(key=>profile[key]!==before[key]),changes:{profile}});
-    dialog.close(); notice('個人資料已儲存。');
+    if (dataStore.get().revision !== baseState.revision) throw new Error('資料已在其他頁面更新；草稿已保留，請取消後重新開啟設定，以免覆蓋新資料。');
+    const changed = personalKeys.filter(key=>profile[key]!==baseState.profile[key]);
+    for (const {id} of numericFields) {
+      const before = id in baseState.stats ? baseState.stats[id] : baseState.stats.abilities.find(a=>a.id===id).value;
+      const after = id in stats ? stats[id] : stats.abilities.find(a=>a.id===id).value;
+      if (before !== after) changed.push(id);
+    }
+    if (draftPhoto !== baseState.photo) changed.push('photo');
+    const saved = dataStore.transact({type:'settings.update',label:'已更新使用者設定',target:'user',fields:changed,changes:{profile,stats,photo:draftPhoto}});
+    dialog.close(); notice(saved ? '使用者設定已儲存。' : '沒有變更需要儲存。');
   } catch(error) { $('#form-error').textContent = error.message; }
 });
 $('#photo-input').addEventListener('change', async event => {
   const file = event.target.files[0]; if (!file) return;
-  const selection = ++photoSelection;
-  pendingPhoto = null; renderPhoto(); $('#photo-actions').hidden = true;
+  const selection = ++photoSelection; loadingPhoto = true; photoError = ''; $('#photo-error').textContent = ''; $('#save-settings').disabled = true;
   try {
     if (!['image/jpeg','image/png','image/webp'].includes(file.type)) throw new Error('請選擇 JPEG、PNG 或 WebP 圖片。');
     if (file.size > 500*1024) throw new Error('照片不可超過 500 KB，請縮小後重試。');
     const url = await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('圖片讀取失敗。'));reader.readAsDataURL(file);});
-    const image = new Image(); image.src = url; await image.decode();
-    if (selection !== photoSelection) return;
-    pendingPhoto = url; renderPhoto(); $('#photo-actions').hidden = false;
-  } catch(error) { if (selection !== photoSelection) return; notice(error.message === 'The source image cannot be decoded.' ? '圖片損壞或格式不受支援。' : error.message); event.target.value = ''; }
+    const image = new Image(); image.src = url;
+    try { await image.decode(); } catch { throw new Error('圖片損壞或格式不受支援。'); }
+    if (selection !== photoSelection || !dialog.open) return;
+    draftPhoto = url; $('#photo-input').removeAttribute('aria-invalid');renderDraftPhoto();
+  } catch(error) {
+    if (selection !== photoSelection || !dialog.open) return;
+    photoError = error.message; fieldError('photo',photoError,2);
+  } finally {
+    if (selection === photoSelection) { loadingPhoto = false; $('#save-settings').disabled = false; }
+  }
 });
-function cancelPhoto() { photoSelection++; pendingPhoto = null; $('#photo-actions').hidden = true; $('#photo-input').value = ''; renderPhoto(); }
-$('#cancel-photo').addEventListener('click',cancelPhoto);
-$('#save-photo').addEventListener('click', () => { try { dataStore.transact({type:'photo.set',label:'已更新照片',target:'profile.photo',changes:{photo:pendingPhoto}}); cancelPhoto(); notice('照片已儲存。'); } catch(error) { notice(error.message); } });
 const tabs = [$('#abilities-tab'),$('#history-tab')];
 function select(index) { tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;document.getElementById(tab.getAttribute('aria-controls')).hidden=i!==index;}); }
 tabs.forEach((tab,i)=>{tab.addEventListener('click',()=>select(i));tab.addEventListener('keydown',e=>{const map={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(e.key in map){e.preventDefault();select(map[e.key]);tabs[map[e.key]].focus();}});});
-initializeNavigation({undoManager,onUndoSuccess:cancelPhoto});
+initializeNavigation({undoManager});
 dataStore.subscribe(render);

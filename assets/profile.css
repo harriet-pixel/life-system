@@ -22,11 +22,19 @@ dialog::backdrop { background: #0005; }
 #profile-form label { display: grid; gap: 4px; min-width: 0; }
 #profile-form input, textarea { width: 100%; min-width: 0; padding: 8px; border: 1px solid var(--color-control-border); border-radius: 2px; font: inherit; background: white; color: inherit; }
 textarea { resize: vertical; }
-.form-actions, #photo-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-.form-actions button, #photo-actions button { min-height: 44px; padding: 8px 16px; font: inherit; color: var(--color-primary); border: 1px solid var(--color-primary); background: white; }
-.form-actions button[type=submit], #save-photo { background: var(--color-primary); color: white; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.form-actions button { min-height: 44px; padding: 8px 16px; font: inherit; color: var(--color-primary); border: 1px solid var(--color-primary); background: white; }
+.form-actions button[type=submit] { background: var(--color-primary); color: white; }
 #form-error { color: var(--color-danger); }
 @media (min-width:1024px) { .ability-charts { grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; } }
 .photo-section { grid-template-columns: minmax(0, 1fr); }
 .photo-section > * { min-width: 0; overflow-wrap: anywhere; }
 #photo-input { width: 100%; }
+
+#profile-form [role="tabpanel"], #manual-fields { display: grid; gap: 16px; min-width: 0; }
+#settings-tabs { gap: 4px; }
+#settings-tabs button { font-size: 1rem; padding-inline: 4px; }
+.field-error { color: var(--color-danger); font-size: .875rem; }
+[aria-invalid="true"] { border-color: var(--color-danger) !important; }
+.draft-photo-frame { width: min(100%, 240px); justify-self: center; }
+.form-actions { position: sticky; bottom: -24px; background: white; padding-block: 12px; border-top: 1px solid var(--color-border); }

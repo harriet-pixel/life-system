@@ -1,7 +1,8 @@
+import { normalizeStats, validateManualStats, levelFromExperience } from './abilities.mjs?v=settings-4';
 // A single atomic localStorage document owns data and its reversible journal.
 export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
-const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '' }, photo: null, activities: {}, stats: { experience: null, level: null, currency: null, abilities: [] }, history: [] });
+const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '' }, photo: null, activities: {}, stats: normalizeStats(), history: [] });
 export function createDataStore(storage) {
   let state;
   const listeners = new Set();
@@ -10,6 +11,11 @@ export function createDataStore(storage) {
     if (!raw) return initial();
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
+    value.stats = normalizeStats(value.stats);
+    // Normalize historical snapshots too so pre-upgrade Undo remains consistent.
+    for (const record of value.history) for (const snapshot of [record.before, record.after]) {
+      if (snapshot.stats) snapshot.stats = normalizeStats(snapshot.stats);
+    }
     return value;
   };
   state = load();
@@ -28,7 +34,12 @@ export function createDataStore(storage) {
     refresh() { state = load(); notify(); },
     transact({ type, label, target, changes, fields = [] }) {
       const next = copy(state), before = {}, after = {};
-      for (const [key, value] of Object.entries(changes)) {
+      for (const [key, rawValue] of Object.entries(changes)) {
+        let value = rawValue;
+        if (key === 'stats') {
+          const normalized = normalizeStats(rawValue);
+          value = validateManualStats({ experience: normalized.experience, currency: normalized.currency, ...Object.fromEntries(normalized.abilities.map(a => [a.id, a.value])) }, normalized);
+        }
         if (!['profile', 'photo', 'activities', 'stats'].includes(key)) throw new Error('不支援的資料類型');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
@@ -36,7 +47,7 @@ export function createDataStore(storage) {
       if (!Object.keys(after).length) return false;
       const delta = {};
       for (const key of ['experience', 'level', 'currency']) delta[key] = typeof next.stats[key] === 'number' && typeof state.stats[key] === 'number' ? next.stats[key] - state.stats[key] : 0;
-      delta.abilities = next.stats.abilities.map((a, i) => ({ id: a.id, value: a.value - (state.stats.abilities[i]?.value ?? 0) }));
+      delta.abilities = next.stats.abilities.map(a => ({ id: a.id, value: a.value - (state.stats.abilities.find(x => x.id === a.id)?.value ?? 0) }));
       next.history.push({ id: crypto.randomUUID(), time: new Date().toISOString(), type, label, target, fields, before, after, delta, undone: false, undoneAt: null });
       persist(next); return true;
     },
@@ -49,6 +60,7 @@ export function createDataStore(storage) {
           if (JSON.stringify(state[key]) !== JSON.stringify(record.after[key])) throw new Error('資料已改變，無法安全撤銷。');
           next[key] = copy(record.before[key]);
         }
+        next.stats.level = levelFromExperience(next.stats.experience);
         record.undone = true; record.undoneAt = new Date().toISOString();
         persist(next); return { ok: true, label: record.label };
       } catch (error) { return { ok: false, reason: 'failed', error }; }

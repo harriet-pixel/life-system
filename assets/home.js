@@ -1,6 +1,6 @@
-import { undoManager } from './undo.mjs';
+import { undoManager } from './undo.mjs?v=settings-4';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { dataStore } from './data.mjs';
+import { dataStore } from './data.mjs?v=settings-4';
 import { initializeNavigation } from './navigation.mjs?v=profile-1';
 
 // Development slots, not approved character emotions. Only use licensed assets.
