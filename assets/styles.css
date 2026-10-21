@@ -55,10 +55,11 @@ h2 { color: var(--color-primary); font: 1.375rem/1.6 var(--font-serif); letter-s
 .section-kicker { font: .875rem/1.5 var(--font-latin); color: var(--color-muted); margin-bottom: var(--space-1); }
 .section-description { color: var(--color-muted); font-size: var(--text-secondary); margin-top: var(--space-3); }
 .count, .section-label { font-size: var(--text-small); color: var(--color-primary); }
-.profile-summary { display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-6); margin: var(--space-4) 0 0; padding: var(--space-4); background: var(--color-tint); border-block: 1px solid var(--color-border); }
-.profile-summary > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-3); }
-.profile-summary dt { color: var(--color-muted); }
-.profile-summary dd { margin: 0; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+.profile-summary { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3) var(--space-4); margin: var(--space-4) 0 0; padding: var(--space-4); background: var(--color-primary); color: #fff; }
+.profile-display-name { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.summary-stat { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; max-width: 100%; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.summary-stat::before { content: ""; height: 1em; border-left: 1px solid currentColor; margin-right: var(--space-2); }
+.summary-stat svg { width: 20px; height: 20px; flex-shrink: 0; }
 .small-note { color: var(--color-muted); font-size: var(--text-small); }
 .text-button { min-height: 44px; display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); color: var(--color-muted); background: transparent; border: 0; padding: var(--space-2) 0; font-size: var(--text-secondary); text-align: left; }
 .text-button > span:not([aria-hidden]) { font-size: var(--text-small); }
@@ -82,7 +83,7 @@ input[type="checkbox"]:checked::after { content: ""; width: 9px; height: 5px; bo
 .habit-state { font-size: var(--text-small); color: var(--color-muted); }
 .habit-row:has(input:checked) .habit-state { color: var(--color-primary); }
 .habit-note { margin-top: var(--space-3); }
-.companion { padding: var(--space-4); background: var(--color-tint); border-block: 1px solid var(--color-border); }
+.companion { padding: var(--space-4); background: var(--color-background); border-block: 1px solid var(--color-border); }
 .companion-banner { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--space-3); align-items: start; }
 .companion-portrait { width: 100%; aspect-ratio: 1; border: 1px solid var(--color-border); background: var(--color-tint); color: var(--color-primary); overflow: hidden; }
 .companion-portrait img { width: 100%; height: 100%; object-fit: contain; }
