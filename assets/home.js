@@ -1,6 +1,6 @@
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
 import { undoManager, createActivityStore } from './undo.mjs';
-import { initializeNavigation } from './navigation.mjs';
+import { initializeNavigation } from './navigation.mjs?v=eight-2';
 
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {
