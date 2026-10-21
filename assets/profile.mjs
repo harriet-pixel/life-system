@@ -1,9 +1,9 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
 import { createAvatarCropper, readImageFile, decodeImage } from './avatar-crop.mjs?v=profile-5';
-import { ABILITIES, validateManualStats } from './abilities.mjs?v=rules-15';
-import { undoManager } from './undo.mjs?v=rules-15';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=rules-15';
-import { initializeNavigation } from './navigation.mjs?v=profile-5';
+import { ABILITIES, validateManualStats } from './abilities.mjs?v=redo-17';
+import { undoManager } from './undo.mjs?v=redo-17';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=redo-17';
+import { initializeNavigation } from './navigation.mjs?v=redo-17';
 const $ = selector => document.querySelector(selector);
 const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
 const notice = message => { $('#operation-status').hidden = false; $('#operation-status').textContent = message; };
@@ -87,7 +87,7 @@ function render() {
   if (valid) renderRadar();
   renderHistory(state);
 }
-const HISTORY_PAGE_SIZE = 5;
+const HISTORY_PAGE_SIZE = 10;
 let historyPage = 1, lastHistoryId = null;
 function renderHistory(state = dataStore.get()) {
   const newest = state.history.at(-1)?.id ?? null;

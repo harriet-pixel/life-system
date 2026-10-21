@@ -1,9 +1,11 @@
-import { normalizeStats, validateStats } from './abilities.mjs?v=rules-15';
+import { normalizeStats, validateStats } from './abilities.mjs?v=redo-17';
 // A single atomic localStorage document owns data and its reversible journal.
 export const HISTORY_LIMIT = 50;
 const retainedHistory = history => [...history].sort((a,b) => Date.parse(a.time) - Date.parse(b.time)).slice(-HISTORY_LIMIT);
 export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
+const undoRecord = history => [...history].reverse().find(record => !record.undone);
+const redoRecord = history => history.filter(record => record.undone && record.redoable === true && Number.isSafeInteger(record.undoOrder)).sort((a,b) => b.undoOrder-a.undoOrder)[0];
 const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, activities: {}, stats: normalizeStats(), history: [] });
 export function createDataStore(storage) {
   let state;
@@ -20,6 +22,21 @@ export function createDataStore(storage) {
     for (const record of value.history) for (const snapshot of [record.before, record.after]) {
       if (snapshot.profile) snapshot.profile.motto ??= '';
       if (snapshot.stats) snapshot.stats = normalizeStats(snapshot.stats);
+    }
+    // Pre-Redo journals have no branch metadata. Recover only a provable chain:
+    // each Undo must be newer than every saved transaction, and each before
+    // snapshot must match the state reached by replaying the previous candidate.
+    if (value.history.every(record => !Object.hasOwn(record,'redoable'))) {
+      const latestTransaction = Math.max(0,...value.history.map(record => Date.parse(record.time)));
+      const candidates = value.history.map((record,index)=>({record,index}))
+        .filter(({record})=>record.undone && Date.parse(record.undoneAt)>latestTransaction)
+        .sort((a,b)=>Date.parse(b.record.undoneAt)-Date.parse(a.record.undoneAt) || a.index-b.index);
+      const replayState = copy(value);
+      for (const [index,{record}] of candidates.entries()) {
+        if (!Object.keys(record.before).every(key=>JSON.stringify(replayState[key])===JSON.stringify(record.before[key]))) break;
+        record.redoable=true;record.undoOrder=-index;
+        Object.assign(replayState,copy(record.after));
+      }
     }
     if (value.history.length > HISTORY_LIMIT) {
       value.history = retainedHistory(value.history);
@@ -56,27 +73,40 @@ export function createDataStore(storage) {
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
       }
       if (!Object.keys(after).length) return false;
+      // Only a successful, non-empty transaction discards the redo branch.
+      next.history.forEach(record => { if (record.undone && record.redoable) record.redoable = false; });
       const delta = {};
       for (const key of ['experience', 'level', 'currency']) delta[key] = typeof next.stats[key] === 'number' && typeof state.stats[key] === 'number' ? next.stats[key] - state.stats[key] : 0;
       delta.abilities = next.stats.abilities.map(a => ({ id: a.id, value: a.value - (state.stats.abilities.find(x => x.id === a.id)?.value ?? 0) }));
       next.history.push({ id: crypto.randomUUID(), time: new Date().toISOString(), type, label, target, fields, before, after, delta, undone: false, undoneAt: null });
       persist(next); return true;
     },
-    getState() { const record = [...state.history].reverse().find(x => !x.undone); return { available: Boolean(record), busy: false, label: record?.label ?? null }; },
-    async undo() {
-      const next = copy(state), record = [...next.history].reverse().find(x => !x.undone);
-      if (!record) return { ok: false, reason: 'unavailable' };
-      try {
-        for (const key of Object.keys(record.after)) {
-          if (JSON.stringify(state[key]) !== JSON.stringify(record.after[key])) throw new Error('資料已改變，無法安全撤銷。');
-          next[key] = copy(record.before[key]);
-        }
-        next.stats = normalizeStats(next.stats);
-        record.undone = true; record.undoneAt = new Date().toISOString();
-        persist(next); return { ok: true, label: record.label };
-      } catch (error) { return { ok: false, reason: 'failed', error }; }
+    getState() {
+      const undo = undoRecord(state.history), redo = redoRecord(state.history);
+      return { available: Boolean(undo), redoAvailable: Boolean(redo), busy: false, label: undo?.label ?? null, redoLabel: redo?.label ?? null };
     },
+    async undo() { return replay(false); },
+    async redo() { return replay(true); },
   };
+  function replay(redo) {
+    const next = copy(state), record = redo ? redoRecord(next.history) : undoRecord(next.history);
+    if (!record) return { ok: false, reason: 'unavailable' };
+    try {
+      const expected = redo ? record.before : record.after, restored = redo ? record.after : record.before;
+      for (const key of Object.keys(expected)) {
+        if (JSON.stringify(state[key]) !== JSON.stringify(expected[key])) throw new Error(`資料已改變，無法安全${redo ? '恢復' : '撤銷'}。`);
+        next[key] = copy(restored[key]);
+      }
+      // Replay snapshots directly; never validate as a new edit or award rewards.
+      next.stats = normalizeStats(next.stats);
+      record.undone = !redo;
+      record.undoneAt = redo ? null : new Date().toISOString();
+      record.redoable = !redo;
+      if (redo) delete record.undoOrder;
+      else record.undoOrder = state.revision + 1;
+      persist(next); return { ok: true, label: record.label };
+    } catch (error) { return { ok: false, reason: 'failed', error }; }
+  }
   return api;
 }
 export function formatSI(value) {
@@ -109,7 +139,7 @@ function openBrowserStore() {
   }
 }
 export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : null;
-export const persistentUndo = dataStore && { getState: () => dataStore.getState(), undo: () => dataStore.undo(), subscribe: fn => dataStore.subscribe(() => fn(dataStore.getState())) };
+export const persistentUndo = dataStore && { getState: () => dataStore.getState(), undo: () => dataStore.undo(), redo: () => dataStore.redo(), subscribe: fn => dataStore.subscribe(() => fn(dataStore.getState())) };
 if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === STORAGE_KEY || e.key === null) dataStore.refresh(); });
 
 export function profileSummary(stats) {

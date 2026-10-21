@@ -1,3 +1,3 @@
 // Both pages use the same durable transaction journal. There is no separate
-// in-memory undo stack: data and undo flags are persisted in one atomic write.
-export { persistentUndo as undoManager, createDataStore } from './data.mjs?v=rules-15';
+// in-memory undo stack: data and Undo/Redo branch flags are persisted in one atomic write.
+export { persistentUndo as undoManager, createDataStore } from './data.mjs?v=redo-17';

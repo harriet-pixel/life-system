@@ -19,13 +19,21 @@ export function isCurrentRoute(href, locationURL) {
   return target.origin === current.origin && normalize(target.pathname) === normalize(current.pathname);
 }
 
-export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, onBusyChange = () => {} }) {
+export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, onRedoSuccess = () => {}, onBusyChange = () => {} }) {
   const desktopLinks = document.querySelector('#desktop-links');
   const mobileLinks = document.querySelector('#mobile-links');
   const currentPage = document.querySelector('#current-page-name');
   const feedback = document.querySelector('#operation-status');
   const mobileBar = document.querySelector('.mobile-navigation');
   const undoButtons = [...document.querySelectorAll('[data-undo]')];
+  const redoButtons = undoButtons.map(undo => {
+    const redo = undo.cloneNode(true); redo.removeAttribute('data-undo'); redo.setAttribute('data-redo','');
+    redo.classList.replace('undo-button','redo-button');
+    redo.querySelector('path').setAttribute('d','m15 5 6 6-6 6M21 11H11a7 7 0 0 0-7 7');
+    redo.setAttribute('aria-label','目前沒有可恢復的操作'); redo.title='目前沒有可恢復的操作';
+    undo.after(redo); return redo;
+  });
+  let pending = false;
   const revealCurrent = (nav) => {
     const current = nav.querySelector('[aria-current="page"]');
     if (current && nav.getClientRects().length) current.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -70,26 +78,33 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
 
   desktopLinks.hidden = false;
   currentPage.hidden = false;
-  undoManager.subscribe(({ available, busy }) => {
-    undoButtons.forEach((button) => {
-      button.disabled = !available;
-      button.setAttribute('aria-label', available ? '撤銷最近一筆尚未撤銷的資料操作' : '目前沒有可撤銷的操作');
-      button.title = available ? '撤銷最近一筆尚未撤銷的資料操作' : '目前沒有可撤銷的操作';
-      button.setAttribute('aria-busy', String(busy));
-    });
-    onBusyChange(busy);
-  });
-  undoButtons.forEach((button) => button.addEventListener('click', async () => {
-    const result = await undoManager.undo();
-    if (result.reason === 'unavailable') return;
-    feedback.hidden = false;
-    if (result.ok) {
-      onUndoSuccess();
-      feedback.textContent = `已撤銷「${result.label}」。`;
-    } else {
-      feedback.textContent = result.error?.message || '撤銷失敗，請重試。';
+  const refreshControls = () => {
+    const {available,redoAvailable,busy} = undoManager.getState();
+    for (const [buttons,enabled,action] of [[undoButtons,available,'撤銷'],[redoButtons,redoAvailable,'恢復']]) {
+      buttons.forEach(button => {
+        button.disabled = !enabled || pending || busy;
+        const label = enabled ? `${action}最近一筆可${action}的資料操作` : `目前沒有可${action}的操作`;
+        button.setAttribute('aria-label',label); button.title=label;
+        button.setAttribute('aria-busy',String(pending || busy));
+      });
     }
-  }));
+    onBusyChange(pending || busy);
+  };
+  undoManager.subscribe(refreshControls);
+  for (const [buttons,method,onSuccess,action] of [[undoButtons,'undo',onUndoSuccess,'撤銷'],[redoButtons,'redo',onRedoSuccess,'恢復']]) {
+    buttons.forEach(button => button.addEventListener('click',async()=>{
+      if (pending || undoManager.getState().busy) return;
+      pending=true;refreshControls();
+      try {
+        const result = await undoManager[method]();
+        if (result.reason === 'unavailable') return;
+        feedback.hidden=false;
+        if (result.ok) { onSuccess();feedback.textContent=`已${action}「${result.label}」。`; }
+        else feedback.textContent=result.error?.message || `${action}失敗，請重試。`;
+      } catch(error) { feedback.hidden=false;feedback.textContent=error.message || `${action}失敗，請重試。`; }
+      finally { pending=false;refreshControls(); }
+    }));
+  }
   mobileBar.hidden = false;
   document.body.dataset.navigation = 'ready';
   const updateBarHeight = () => {

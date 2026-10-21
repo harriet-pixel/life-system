@@ -1,8 +1,8 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { undoManager } from './undo.mjs?v=rules-15';
+import { undoManager } from './undo.mjs?v=redo-17';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { dataStore, profileSummary } from './data.mjs?v=rules-15';
-import { initializeNavigation } from './navigation.mjs?v=profile-5';
+import { dataStore, profileSummary } from './data.mjs?v=redo-17';
+import { initializeNavigation } from './navigation.mjs?v=redo-17';
 
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {
@@ -103,6 +103,7 @@ entries.forEach((entry) => entry.input.addEventListener('change', () => {
 initializeNavigation({
   undoManager,
   onUndoSuccess: () => companion.cancelPending(),
+  onRedoSuccess: () => companion.cancelPending(),
   onBusyChange: (busy) => entries.forEach(({ input }) => { input.disabled = busy; }),
 });
 dataStore.subscribe(() => {
