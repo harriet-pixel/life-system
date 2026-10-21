@@ -29,6 +29,14 @@ function renderPhoto() {
   }
 }
 function element(tag, text) { const el = document.createElement(tag); el.textContent = text; return el; }
+function syncRadarLabelSize() {
+  const svg=$('#ability-radar svg'), label=$('.ability-row > span');
+  if (!svg || !label || !svg.getBoundingClientRect().width) return;
+  const fontSize=parseFloat(getComputedStyle(label).fontSize);
+  const scale=svg.getBoundingClientRect().width/320;
+  svg.querySelectorAll('text').forEach(text=>{text.style.fontSize=`${fontSize/scale}px`;});
+}
+new ResizeObserver(syncRadarLabelSize).observe($('#ability-radar'));
 function render() {
   const state = dataStore.get();
   $('#profile-name').textContent = state.profile.name || '尚未設定稱呼';
@@ -53,25 +61,30 @@ function render() {
     const point = (i, ratio) => { const angle = -Math.PI/2 + i * 2*Math.PI/5; return [160 + Math.cos(angle)*65*ratio, 160 + Math.sin(angle)*65*ratio]; };
     const draw = (tag, attrs) => { const node = document.createElementNS(ns, tag); Object.entries(attrs).forEach(([k,v]) => node.setAttribute(k,v)); svg.append(node); return node; };
     for (const scale of [.25,.5,.75,1]) draw('polygon', { points: abilities.map((_,i)=>point(i,scale).join(',')).join(' '), fill:'none', stroke:'var(--color-border)' });
-    abilities.forEach((a,i) => { const [x,y] = point(i,1); draw('line',{x1:160,y1:160,x2:x,y2:y,stroke:'var(--color-border)'}); const [tx,ty] = point(i,110/65); draw('text',{x:tx,y:ty,'text-anchor':'middle','dominant-baseline':'middle'}).textContent = a.name; });
+    abilities.forEach((a,i) => { const [x,y] = point(i,1); draw('line',{x1:160,y1:160,x2:x,y2:y,stroke:'var(--color-border)'}); const [tx,ty] = point(i,110/65); const label=draw('text',{x:tx,y:ty,'text-anchor':'middle','dominant-baseline':'middle'});label.textContent=a.name; });
     draw('polygon', { points: ratios.map((ratio,i)=>point(i,ratio).join(',')).join(' '), fill:'var(--color-primary)', 'fill-opacity':'.15', stroke:'var(--color-primary)' });
     $('#ability-radar').replaceChildren(svg);
+    syncRadarLabelSize();
   }
   renderHistory(state);
 }
+const HISTORY_PAGE_SIZE = 5;
 let historyPage = 1, lastHistoryId = null;
 function renderHistory(state = dataStore.get()) {
   const newest = state.history.at(-1)?.id ?? null;
   if (newest !== lastHistoryId) historyPage = 1;
   lastHistoryId = newest;
-  const pageCount = Math.ceil(state.history.length / 10);
+  const pageCount = Math.ceil(state.history.length / HISTORY_PAGE_SIZE);
   historyPage = Math.max(1,Math.min(historyPage,pageCount));
   $('#history-empty').hidden = state.history.length > 0;
   $('#history-pagination').hidden = !pageCount;
   $('#history-page').textContent = pageCount ? `${historyPage} / ${pageCount}` : '';
+  $('#history-jump').replaceChildren(...Array.from({length:pageCount},(_,i)=>{const option=element('option',String(i+1));option.value=String(i+1);return option;}));
+  $('#history-jump').value=String(historyPage);
   $('#history-previous').disabled = historyPage <= 1;
   $('#history-next').disabled = historyPage >= pageCount;
-  $('#history-list').replaceChildren(...[...state.history].reverse().slice((historyPage-1)*10,historyPage*10).map(record => {
+  $('#history-list').start=(historyPage-1)*HISTORY_PAGE_SIZE+1;
+  $('#history-list').replaceChildren(...[...state.history].reverse().slice((historyPage-1)*HISTORY_PAGE_SIZE,historyPage*HISTORY_PAGE_SIZE).map(record => {
     const li = element('li', ''); const time = element('time', new Intl.DateTimeFormat('zh-TW',{dateStyle:'short',timeStyle:'medium'}).format(new Date(record.time))); time.dateTime = record.time;
     li.append(time, element('p', `${record.label}${record.fields.length ? `（${record.fields.map(key=>fields[key] ?? key).join('、')}）` : ''}`));
     const deltas = Object.entries(record.delta).filter(([key,value])=>key !== 'abilities' && value).map(([key,value])=>`${({experience:'Exp',level:'Lv',currency:'$'})[key]} ${value>0?'+':''}${value}`);
@@ -189,6 +202,7 @@ $('#confirm-crop').addEventListener('click',()=>{
   catch(error){avatarError=error.message;fieldError('avatar',avatarError,1);}
 });
 $('#cancel-crop').addEventListener('click',()=>{avatarSelection++;loadingAvatar=false;avatarError='';closeCrop();$('#avatar-error').textContent='';$('#avatar-input').value='';$('#save-settings').disabled=loadingPhoto;$('#avatar-input').focus();});
+$('#history-jump').addEventListener('change',event=>{historyPage=Number(event.target.value);renderHistory();});
 $('#history-previous').addEventListener('click',()=>{historyPage--;renderHistory();});
 $('#history-next').addEventListener('click',()=>{historyPage++;renderHistory();});
 const tabs = [$('#abilities-tab'),$('#history-tab')];

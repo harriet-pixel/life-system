@@ -53,7 +53,7 @@ textarea { resize: vertical; }
 .profile-page #profile-stats { gap: 0; white-space: pre-wrap; }
 .profile-page #profile-stats > span { min-width: 0; overflow-wrap: anywhere; }
 .tab-english { font-size: .875rem; letter-spacing: normal; }
-#ability-radar text { font-size: 30px; }
+#ability-radar text { font-size: 1rem; }
 .history-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
 .history-pagination button, #photo-settings button { min-height: 44px; font: inherit; padding: 8px 12px; color: var(--color-primary); border: 1px solid var(--color-primary); background: white; }
 .history-pagination button:disabled, #photo-settings button:disabled { color: var(--color-muted); opacity: .6; }
@@ -88,4 +88,16 @@ textarea { resize: vertical; }
   .profile-page .personal-heading { grid-template-columns: 44px minmax(0,1fr) 44px; }
   .profile-page #profile-name, .profile-page #profile-age { grid-column: 2; }
   .profile-page #edit-profile { grid-column: 3; }
+}
+
+/* Profile revision: portrait summary column and inset tab contents. */
+.profile-portrait-column { display: contents; min-width: 0; }
+.profile-page .personal-heading { padding-bottom: 16px; border-bottom: 1px solid var(--color-border); }
+#abilities-panel, #history-panel { padding-inline: 1em; min-width: 0; }
+.history-pagination button { border: 0; }
+.history-jump { display: inline-flex; align-items: center; gap: .5em; }
+#history-jump { min-height: 44px; min-width: 3.5em; font: inherit; color: var(--color-primary); background: white; border: 0; padding: 8px; }
+@media (min-width:1024px) {
+  .profile-portrait-column { display: flex; flex-direction: column; gap: 24px; grid-column: 1; grid-row: 2; align-self: start; }
+  .profile-page .profile-content { grid-column: 2; grid-row: 2; }
 }
