@@ -1,13 +1,13 @@
-// Only the existing root/index.html route is enabled. Future pages must supply
-// a real implemented href before changing available to true.
-const homeURL = new URL('../', import.meta.url);
+// Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
-  { id: 'home', label: '首頁', href: homeURL.href, available: true },
   { id: 'tasks', label: '待辦事項', href: null, available: false },
-  { id: 'habits', label: '習慣追蹤', href: null, available: false },
-  { id: 'goals', label: '目標管理', href: null, available: false },
-  { id: 'finance', label: '財務管理', href: null, available: false },
-  { id: 'character', label: '我的角色', href: null, available: false },
+  { id: 'habits', label: '習慣打卡', href: null, available: false },
+  { id: 'reading', label: '陪讀系統', href: null, available: false },
+  { id: 'wallet', label: '錢包帳本', href: null, available: false },
+  { id: 'companion', label: '我的夥伴', href: null, available: false },
+  { id: 'profile', label: '我的資料', href: null, available: false },
+  { id: 'chat', label: '聊天室', href: null, available: false },
+  { id: 'settings', label: '設定', href: null, available: false },
 ].map(Object.freeze));
 
 export function isCurrentRoute(href, locationURL) {
