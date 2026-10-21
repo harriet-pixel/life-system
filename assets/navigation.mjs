@@ -22,14 +22,10 @@ export function isCurrentRoute(href, locationURL) {
 export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, onBusyChange = () => {} }) {
   const desktopLinks = document.querySelector('#desktop-links');
   const mobileLinks = document.querySelector('#mobile-links');
-  const toggle = document.querySelector('#navigation-toggle');
   const currentPage = document.querySelector('#current-page-name');
   const feedback = document.querySelector('#operation-status');
   const mobileBar = document.querySelector('.mobile-navigation');
   const undoButtons = [...document.querySelectorAll('[data-undo]')];
-  let expanded = false;
-  try { expanded = sessionStorage.getItem('life-system.navigation-expanded') === 'true'; } catch { /* Optional preference storage. */ }
-
   const revealCurrent = (nav) => {
     const current = nav.querySelector('[aria-current="page"]');
     if (current && nav.getClientRects().length) current.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -72,19 +68,8 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   window.addEventListener('popstate', refreshRoutes);
   window.addEventListener('pageshow', refreshRoutes);
 
-  const setExpanded = () => {
-    desktopLinks.hidden = !expanded;
-    currentPage.hidden = expanded;
-    toggle.setAttribute('aria-expanded', String(expanded));
-    toggle.setAttribute('aria-label', expanded ? '收合導覽選項' : '展開導覽選項');
-    if (expanded) revealCurrent(desktopLinks);
-  };
-  toggle.addEventListener('click', () => {
-    expanded = !expanded;
-    try { sessionStorage.setItem('life-system.navigation-expanded', String(expanded)); } catch { /* Preference is optional. */ }
-    setExpanded();
-  });
-  setExpanded();
+  desktopLinks.hidden = false;
+  currentPage.hidden = false;
   undoManager.subscribe(({ available, busy }) => {
     undoButtons.forEach((button) => {
       button.disabled = !available;

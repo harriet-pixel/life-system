@@ -1,7 +1,7 @@
-import { undoManager } from './undo.mjs?v=settings-4';
+import { undoManager } from './undo.mjs?v=profile-5';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { dataStore } from './data.mjs?v=settings-4';
-import { initializeNavigation } from './navigation.mjs?v=profile-1';
+import { dataStore } from './data.mjs?v=profile-5';
+import { initializeNavigation } from './navigation.mjs?v=profile-5';
 
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {

@@ -1,8 +1,10 @@
-import { normalizeStats, validateManualStats, levelFromExperience } from './abilities.mjs?v=settings-4';
+import { normalizeStats, validateStats } from './abilities.mjs?v=profile-5';
 // A single atomic localStorage document owns data and its reversible journal.
+export const HISTORY_LIMIT = 50;
+const retainedHistory = history => [...history].sort((a,b) => Date.parse(a.time) - Date.parse(b.time)).slice(-HISTORY_LIMIT);
 export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
-const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '' }, photo: null, activities: {}, stats: normalizeStats(), history: [] });
+const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '' }, photo: null, avatar: null, activities: {}, stats: normalizeStats(), history: [] });
 export function createDataStore(storage) {
   let state;
   const listeners = new Set();
@@ -11,10 +13,17 @@ export function createDataStore(storage) {
     if (!raw) return initial();
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
+    value.avatar ??= null;
     value.stats = normalizeStats(value.stats);
     // Normalize historical snapshots too so pre-upgrade Undo remains consistent.
     for (const record of value.history) for (const snapshot of [record.before, record.after]) {
       if (snapshot.stats) snapshot.stats = normalizeStats(snapshot.stats);
+    }
+    if (value.history.length > HISTORY_LIMIT) {
+      value.history = retainedHistory(value.history);
+      value.revision++;
+      try { storage.setItem(STORAGE_KEY, JSON.stringify(value)); }
+      catch { throw new Error('無法保存歷史紀錄保留上限；原資料未清除，請確認儲存空間與權限。'); }
     }
     return value;
   };
@@ -23,6 +32,7 @@ export function createDataStore(storage) {
   const persist = next => {
     const current = load();
     if (current.revision !== state.revision) { state = current; notify(); throw new Error('資料已在其他頁面更新，請重試。'); }
+    next.history = retainedHistory(next.history);
     next.revision = state.revision + 1;
     try { storage.setItem(STORAGE_KEY, JSON.stringify(next)); }
     catch { throw new Error('無法儲存，可能是瀏覽器儲存空間不足或儲存權限受限。資料尚未變更。'); }
@@ -37,10 +47,9 @@ export function createDataStore(storage) {
       for (const [key, rawValue] of Object.entries(changes)) {
         let value = rawValue;
         if (key === 'stats') {
-          const normalized = normalizeStats(rawValue);
-          value = validateManualStats({ experience: normalized.experience, currency: normalized.currency, ...Object.fromEntries(normalized.abilities.map(a => [a.id, a.value])) }, normalized);
+          value = validateStats(rawValue);
         }
-        if (!['profile', 'photo', 'activities', 'stats'].includes(key)) throw new Error('不支援的資料類型');
+        if (!['profile', 'photo', 'avatar', 'activities', 'stats'].includes(key)) throw new Error('不支援的資料類型');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
       }
@@ -60,7 +69,7 @@ export function createDataStore(storage) {
           if (JSON.stringify(state[key]) !== JSON.stringify(record.after[key])) throw new Error('資料已改變，無法安全撤銷。');
           next[key] = copy(record.before[key]);
         }
-        next.stats.level = levelFromExperience(next.stats.experience);
+        next.stats = normalizeStats(next.stats);
         record.undone = true; record.undoneAt = new Date().toISOString();
         persist(next); return { ok: true, label: record.label };
       } catch (error) { return { ok: false, reason: 'failed', error }; }
@@ -100,3 +109,12 @@ function openBrowserStore() {
 export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : null;
 export const persistentUndo = dataStore && { getState: () => dataStore.getState(), undo: () => dataStore.undo(), subscribe: fn => dataStore.subscribe(() => fn(dataStore.getState())) };
 if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === STORAGE_KEY || e.key === null) dataStore.refresh(); });
+
+export function profileSummary(stats) {
+  const shown = value => value > 0 ? String(value) : '—';
+  return `Exp${stats.experience > 0 ? formatSI(stats.experience) : '—'} ｜ Lv${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
+}
+export function abilityShares(abilities) {
+  const total = abilities.reduce((sum,a) => sum + a.value, 0);
+  return abilities.map(a => total > 0 ? a.value / total : 0);
+}

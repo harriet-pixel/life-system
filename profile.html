@@ -8,45 +8,59 @@
     <title>我的資料 · Life System</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
-    <link rel="stylesheet" href="assets/styles.css?v=current-page-navigation-4">
-    <link rel="stylesheet" href="assets/profile.css?v=settings-4">
-    <script type="module" src="assets/profile.mjs?v=settings-4"></script>
+    <link rel="stylesheet" href="assets/styles.css?v=profile-5">
+    <link rel="stylesheet" href="assets/profile.css?v=profile-5">
+    <script type="module" src="assets/profile.mjs?v=profile-5"></script>
   </head>
-  <body><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" tabindex="-1"><div class="dashboard">        <div class="desktop-navigation" aria-label="電腦版導覽工具列">
-          <span id="current-page-name" class="current-page-name"></span>
-          <nav id="desktop-links" class="navigation-options" aria-label="主要導覽" hidden></nav>
-          <button id="navigation-toggle" class="toolbar-button" type="button" aria-controls="desktop-links" aria-expanded="false" aria-label="展開導覽選項"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <body class="profile-page"><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" tabindex="-1">
+        <div class="desktop-navigation" aria-label="電腦版導覽工具列">
+          <nav id="desktop-links" class="navigation-options" aria-label="主要導覽"></nav>
           <button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button>
         </div>
+<span id="current-page-name" class="current-page-name desktop-page-name"></span>
+<div class="dashboard profile-dashboard">
+<section class="avatar-section" aria-label="使用者頭像"><div class="user-avatar-frame"><svg id="avatar-placeholder" viewBox="0 0 160 200" role="img" aria-label="預設頭像"><circle cx="80" cy="65" r="28"/><path d="M25 170c0-65 110-65 110 0"/></svg><img id="user-avatar" alt="使用者頭像" hidden></div></section>
+<section class="personal-heading"><h1 id="profile-name">尚未設定稱呼</h1><span id="profile-age"></span><button id="edit-profile" class="toolbar-button" type="button" aria-label="編輯個人資料"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 4 5 5-11 11H4v-5ZM13 6l5 5"/></svg></button></section>
+<div class="profile-summary" id="profile-stats" role="group" aria-label="累積經驗、等級與貨幣"></div>
 <section class="photo-section" aria-label="使用者照片">
 <div class="photo-frame"><svg id="default-avatar" viewBox="0 0 160 200" role="img" aria-label="預設頭像"><circle cx="80" cy="65" r="28"/><path d="M25 170c0-65 110-65 110 0"/></svg><img id="user-photo" alt="使用者照片" hidden></div>
 </section>
-<div class="daily-panel"><section class="personal-heading"><h1 id="profile-name">尚未設定稱呼</h1><span id="profile-age"></span><button id="edit-profile" class="toolbar-button" type="button" aria-label="編輯個人資料"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 4 5 5-11 11H4v-5ZM13 6l5 5"/></svg></button></section>
-<div class="profile-summary" id="profile-stats" role="group" aria-label="累積經驗、等級與貨幣"></div>
-<div class="activity-tabs" role="tablist" aria-label="我的資料內容"><button id="abilities-tab" role="tab" aria-controls="abilities-panel" aria-selected="true">能力值</button><button id="history-tab" role="tab" aria-controls="history-panel" aria-selected="false" tabindex="-1">歷史紀錄</button></div>
-<section id="abilities-panel" role="tabpanel" aria-labelledby="abilities-tab" tabindex="0"><p id="abilities-missing" class="small-note">尚未定義五項能力，待確認名稱、順序與資料來源。</p><div class="ability-charts" hidden><div id="ability-bars"></div><div id="ability-radar"></div></div></section>
-<section id="history-panel" role="tabpanel" aria-labelledby="history-tab" tabindex="0" hidden><p id="history-empty" class="small-note">尚無操作紀錄。</p><ol id="history-list"></ol></section>
+<div class="profile-content"><div class="activity-tabs" role="tablist" aria-label="我的資料內容"><button id="abilities-tab" role="tab" aria-controls="abilities-panel" aria-selected="true"><span>能力值</span><span class="tab-english" lang="en">Attributes</span></button><button id="history-tab" role="tab" aria-controls="history-panel" aria-selected="false" tabindex="-1"><span>歷史紀錄</span><span class="tab-english" lang="en">History</span></button></div>
+<section id="abilities-panel" role="tabpanel" aria-labelledby="abilities-tab" tabindex="0"><p id="abilities-missing" class="small-note">尚未定義五項能力，待確認名稱、順序與資料來源。</p><div class="ability-charts" hidden><div><p class="small-note">長條表示各能力占總能力值的比例</p><div id="ability-bars"></div></div><div id="ability-radar"></div></div></section>
+<section id="history-panel" role="tabpanel" aria-labelledby="history-tab" tabindex="0" hidden><p id="history-empty" class="small-note">尚無操作紀錄。</p><p class="small-note">保留最近 50 筆操作紀錄</p><ol id="history-list"></ol><nav id="history-pagination" class="history-pagination" aria-label="歷史紀錄分頁" hidden><button id="history-previous" type="button">上一頁</button><span id="history-page" aria-live="polite"></span><button id="history-next" type="button">下一頁</button></nav></section>
 <p id="operation-status" class="small-note" role="status" hidden></p></div>
 </div></main></div>    <div class="mobile-navigation" hidden><nav id="mobile-links" class="navigation-options" aria-label="主要導覽"></nav><div class="mobile-undo"><button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button></div></div>
 <dialog id="profile-dialog" aria-labelledby="edit-title"><form id="profile-form" novalidate>
 <h2 id="edit-title">使用者設定</h2>
 <div id="settings-tabs" class="activity-tabs" role="tablist" aria-label="使用者設定">
-<button type="button" id="personal-settings-tab" role="tab" aria-controls="personal-settings" aria-selected="true">使用者資料</button>
-<button type="button" id="values-settings-tab" role="tab" aria-controls="values-settings" aria-selected="false" tabindex="-1">數值手動修改</button>
-<button type="button" id="photo-settings-tab" role="tab" aria-controls="photo-settings" aria-selected="false" tabindex="-1">使用者立繪上傳</button>
+<button type="button" id="personal-settings-tab" role="tab" aria-controls="personal-settings" aria-selected="true">基本資料</button>
+<button type="button" id="photo-settings-tab" role="tab" aria-controls="photo-settings" aria-selected="false" tabindex="-1">立繪上傳</button>
+<button type="button" id="values-settings-tab" role="tab" aria-controls="values-settings" aria-selected="false" tabindex="-1">數值修改</button>
 </div>
+<div class="settings-scroll">
 <section id="personal-settings" role="tabpanel" aria-labelledby="personal-settings-tab" tabindex="0">
 <p id="profile-help" class="small-note">可自由留白，填寫內容將作為未來 AI 夥伴生成與互動的參考。</p>
 <label>稱呼<input name="name" autocomplete="nickname"></label><label>年紀<input name="age" inputmode="numeric" aria-describedby="age-error"><span id="age-error" class="field-error"></span></label><label>性別<input name="gender"></label><label>個人簡介<textarea name="bio" rows="3"></textarea></label><label>無法接受的事情<textarea name="boundaries" rows="3"></textarea></label>
 </section>
 <section id="values-settings" role="tabpanel" aria-labelledby="values-settings-tab" tabindex="0" hidden>
-<p class="small-note">手動修改各項數值不會互相連動；等級會依總經驗值自動更新。</p>
-<div id="manual-fields"></div><p>等級：<output id="draft-level">Lv0</output></p>
+<p class="small-note">貨幣量與等級可獨立修改，不影響經驗值或能力值。之後每累積 100 經驗值仍會升一等。</p>
+<div id="manual-fields"></div>
 </section>
 <section id="photo-settings" role="tabpanel" aria-labelledby="photo-settings-tab" tabindex="0" hidden>
+<h3>使用者立繪</h3>
 <div class="photo-frame draft-photo-frame"><img id="draft-photo" alt="使用者立繪草稿預覽" hidden><span id="draft-photo-empty">尚未上傳立繪</span></div>
 <label for="photo-input">選擇／更換立繪</label><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-error">
 <p id="photo-help" class="small-note">JPEG、PNG、WebP，最大 500 KB；僅保存在此瀏覽器。</p><p id="photo-error" class="field-error"></p>
+<h3>使用者頭像</h3><div class="draft-avatar-frame"><img id="draft-avatar" alt="使用者頭像草稿預覽" hidden><span id="draft-avatar-empty">尚未設定頭像</span></div>
+<label for="avatar-input">上傳另一張頭像圖片</label><input id="avatar-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="avatar-help avatar-error">
+<p id="avatar-help" class="small-note">JPEG、PNG、WebP，最大 500 KB；確認裁切後先保留為草稿。</p>
+<button id="crop-from-photo" type="button" aria-describedby="crop-source-help">使用目前立繪裁切</button><p id="crop-source-help" class="small-note"></p><p id="avatar-error" class="field-error"></p>
+<section id="avatar-crop" aria-label="正方形頭像裁切" hidden><p class="small-note">拖曳圖片或調整位置與縮放，完成後確認裁切。</p>
+<canvas id="crop-canvas" width="320" height="320" tabindex="0" aria-label="頭像裁切區，可用方向鍵移動圖片"></canvas>
+<div class="crop-controls"><label>縮放<input id="crop-zoom" type="range" min="1" max="4" step="0.01" value="1"></label><label>水平位置<input id="crop-x" type="range" min="-100" max="100" value="0"></label><label>垂直位置<input id="crop-y" type="range" min="-100" max="100" value="0"></label></div>
+<p class="small-note">裁切預覽</p><canvas id="crop-preview" width="96" height="96" role="img" aria-label="正方形頭像裁切預覽"></canvas>
+<div class="crop-actions"><button id="confirm-crop" type="button">確認裁切</button><button id="cancel-crop" type="button">取消裁切</button></div>
 </section>
-<p id="form-error" role="alert"></p><div class="form-actions"><button id="save-settings" type="submit">儲存</button><button id="cancel-profile" type="button">取消</button></div>
-</form></dialog></body></html>
+</section>
+</div><div class="settings-footer"><p id="form-error" role="alert"></p><div class="form-actions"><button id="save-settings" type="submit">儲存</button><button id="cancel-profile" type="button">取消</button></div>
+</div></form></dialog></body></html>
