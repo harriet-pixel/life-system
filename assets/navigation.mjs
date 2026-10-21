@@ -1,6 +1,6 @@
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
-  { id: 'home', label: '首頁', href: new URL('../', import.meta.url).href, available: true },
+  { id: 'home', label: '首頁', englishLabel: 'Home', href: new URL('../', import.meta.url).href, available: true },
   { id: 'tasks', label: '待辦事項', href: null, available: false },
   { id: 'habits', label: '習慣打卡', href: null, available: false },
   { id: 'reading', label: '陪讀系統', href: null, available: false },
@@ -65,7 +65,8 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   };
   const refreshRoutes = () => {
     build(desktopLinks); build(mobileLinks);
-    currentPage.textContent = navigationItems.find(item => item.available && isCurrentRoute(item.href, window.location.href))?.label || '';
+    const currentItem = navigationItems.find(item => item.available && isCurrentRoute(item.href, window.location.href));
+    currentPage.textContent = currentItem ? `｜${currentItem.label}${currentItem.englishLabel ? ` ${currentItem.englishLabel}` : ''}` : '';
   };
   refreshRoutes();
   window.addEventListener('popstate', refreshRoutes);
