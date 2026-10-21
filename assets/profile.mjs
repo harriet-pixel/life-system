@@ -118,12 +118,15 @@ function historyRow(record,state) {
 }
 
 const desktopPanels = matchMedia('(min-width:1024px)');
-function positionNotice() {
+function positionResponsiveContent() {
   const status = $('#operation-status');
   (desktopPanels.matches ? $('.profile-portrait-column') : $('.profile-content')).append(status);
+  const pagination = $('#history-pagination'), list = $('#history-list');
+  if (desktopPanels.matches) { list.after(pagination); pagination.prepend($('#history-previous')); }
+  else { list.before(pagination); $('.history-step-controls').prepend($('#history-previous')); }
 }
-positionNotice();
-desktopPanels.addEventListener('change', positionNotice);
+positionResponsiveContent();
+desktopPanels.addEventListener('change', positionResponsiveContent);
 
 function syncDesktopPanels(state = dataStore.get()) {
   const content=$('.profile-content'), tabs=content.querySelector('.activity-tabs');

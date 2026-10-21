@@ -155,3 +155,14 @@ textarea { resize: vertical; }
 @media (min-width:1024px) {
   .profile-portrait-column > #operation-status { padding-top: 12px; overflow-wrap: anywhere; }
 }
+
+.history-page-controls, .history-step-controls { display: contents; }
+@media (max-width:1023px) {
+  .profile-page .personal-heading { padding-bottom: 0; margin-bottom: -12px; }
+  .profile-page #profile-age:empty { display: none; }
+  .profile-page #profile-stats { font-size: 1.125rem; }
+  .history-pagination { flex-direction: column; row-gap: 6px; margin-bottom: 12px; }
+  .history-page-controls, .history-step-controls { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; max-width: 100%; min-width: 0; }
+  .history-jump { flex-wrap: wrap; justify-content: center; }
+  #history-page { white-space: nowrap; }
+}
