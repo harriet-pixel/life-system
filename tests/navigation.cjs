@@ -26,7 +26,7 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:3000/';
     assert.equal(portrait.y,content.y);assert.equal(portrait.y-bar.y-bar.height,24);
     const before=await page.locator('.daily-panel').boundingBox();
     assert.equal(await page.locator('#navigation-toggle').getAttribute('aria-expanded'),'false');
-    assert.equal(await page.locator('#current-page-name').textContent(),'首頁');
+    assert.equal(await page.locator('#current-page-name').textContent(),'｜首頁 Home');
     assert.equal(await page.locator('#current-page-name').isVisible(),true);
     assert.equal(await page.locator('#current-page-name').evaluate(e=>getComputedStyle(e).fontSize),await page.locator('#tasks-tab').evaluate(e=>getComputedStyle(e).fontSize));
     await page.locator('#navigation-toggle').click();
