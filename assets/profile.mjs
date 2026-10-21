@@ -1,3 +1,4 @@
+import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
 import { createAvatarCropper, readImageFile, decodeImage } from './avatar-crop.mjs?v=profile-5';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=profile-5';
 import { undoManager } from './undo.mjs?v=profile-5';
@@ -101,8 +102,9 @@ const desktopPanels = matchMedia('(min-width:1024px)');
 function syncDesktopPanels(state = dataStore.get()) {
   const content=$('.profile-content'), tabs=content.querySelector('.activity-tabs');
   if (!desktopPanels.matches) { content.style.removeProperty('--profile-panel-height'); return; }
-  const tabHeight=tabs.getBoundingClientRect().height;
-  $('.profile-dashboard').style.setProperty('--profile-tabs-height',`${tabHeight}px`);
+  const dashboard=$('.profile-dashboard');dashboard.style.removeProperty('--profile-tabs-height');
+  const tabHeight=Math.max(tabs.getBoundingClientRect().height,$('#profile-stats').getBoundingClientRect().height);
+  dashboard.style.setProperty('--profile-tabs-height',`${tabHeight}px`);
   // Measure every retained page without showing it or changing the selected tab.
   const probe=element('div','');probe.className='history-measure';probe.inert=true;probe.setAttribute('aria-hidden','true');probe.style.width=`${content.getBoundingClientRect().width}px`;
   probe.append(element('p','保留最近 50 筆操作紀錄'));probe.firstChild.className='small-note';
@@ -239,8 +241,9 @@ $('#history-jump').addEventListener('change',event=>{historyPage=Number(event.ta
 $('#history-previous').addEventListener('click',()=>{historyPage--;renderHistory();});
 $('#history-next').addEventListener('click',()=>{historyPage++;renderHistory();});
 const tabs = [$('#abilities-tab'),$('#history-tab')];
+const positionProfileTabs = createMobileTabPositioner(tabs[0].parentElement);
 function select(index) { tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;const panel=document.getElementById(tab.getAttribute('aria-controls'));panel.hidden=i!==index;panel.inert=i!==index;panel.setAttribute('aria-hidden',String(i!==index));}); }
-tabs.forEach((tab,i)=>{tab.addEventListener('click',()=>select(i));tab.addEventListener('keydown',e=>{const map={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(e.key in map){e.preventDefault();select(map[e.key]);tabs[map[e.key]].focus();}});});
+tabs.forEach((tab,i)=>{tab.addEventListener('click',event=>{select(i);positionProfileTabs(event);});tab.addEventListener('keydown',e=>{const map={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(e.key in map){e.preventDefault();select(map[e.key]);tabs[map[e.key]].focus();}});});
 initializeNavigation({undoManager});
 dataStore.subscribe(render);
 select(0);

@@ -117,3 +117,8 @@ textarea { resize: vertical; }
   .profile-content > #operation-status { grid-column: 1; grid-row: 3; }
 }
 .history-measure { position: absolute; top: 0; left: 0; box-sizing: border-box; padding-inline: 1em; visibility: hidden; pointer-events: none; }
+@media (min-width:1024px) {
+  .profile-page #profile-stats { background: var(--color-background); color: var(--color-primary); border-bottom: 2px solid var(--color-primary); font-size: 1.375rem; font-weight: 400; letter-spacing: .08em; }
+}
+
+@media (min-width:1024px) { .profile-content > .activity-tabs { min-height: var(--profile-tabs-height, 80px); } }

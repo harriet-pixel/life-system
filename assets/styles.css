@@ -195,3 +195,8 @@ body[data-navigation="ready"] .page-shell { padding-bottom: calc(var(--bottom-na
   .desktop-navigation { flex: none; }
   .desktop-page-name { display: block; }
 }
+
+/* Let mobile content tabs reach the top even with a short or empty panel. */
+@media (max-width:1023px) {
+  .mobile-tab-scroll-region { min-height: calc(var(--tab-scroll-viewport-height, 100svh) - var(--tab-scroll-top-offset, 12px) - var(--bottom-nav-height, 64px)); }
+}

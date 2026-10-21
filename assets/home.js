@@ -1,3 +1,4 @@
+import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
 import { undoManager } from './undo.mjs?v=profile-5';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
 import { dataStore } from './data.mjs?v=profile-5';
@@ -118,6 +119,7 @@ dataStore.subscribe(() => {
 // and never emits a successful-action event or triggers companion generation.
 const activityTabs = document.querySelector('.activity-tabs');
 const tabButtons = [...activityTabs.querySelectorAll('button')];
+const positionActivityTabs = createMobileTabPositioner(activityTabs);
 const activityPanels = tabButtons.map((button) => document.getElementById(button.dataset.panel));
 const desktopLayout = window.matchMedia('(min-width: 1024px)');
 let selectedPanel = 0;
@@ -142,7 +144,7 @@ function selectActivity(index) {
   syncActivityTabs();
 }
 tabButtons.forEach((button, index) => {
-  button.addEventListener('click', () => selectActivity(index));
+  button.addEventListener('click', (event) => { selectActivity(index); positionActivityTabs(event); });
   button.addEventListener('keydown', (event) => {
     const targets = { ArrowRight: (index + 1) % 2, ArrowLeft: (index + 1) % 2, Home: 0, End: 1 };
     if (!(event.key in targets)) return;
