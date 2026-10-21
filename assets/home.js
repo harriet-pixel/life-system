@@ -24,6 +24,10 @@ const companion = createCompanionController({
     const asset = emotionPortraits[reply.emotion];
     // Both fields are one validated reply, committed synchronously.
     dialogue.textContent = reply.dialogue;
+    // Animate opacity only; text takes its final layout immediately.
+    dialogue.classList.remove('dialogue-arrive');
+    void dialogue.offsetWidth;
+    dialogue.classList.add('dialogue-arrive');
     portrait.dataset.emotion = reply.emotion;
     emotionLabel.textContent = asset.label;
     portraitImage.onerror = () => showPlaceholder(asset.label);

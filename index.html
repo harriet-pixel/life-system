@@ -13,41 +13,35 @@
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
     <div class="page-shell">
-      <header class="site-header">
-        <div class="wordmark" aria-label="Life System 生活系統"><span lang="en">Life System</span><span class="wordmark-caption">生活系統</span></div>
-        <span class="edition">首頁視覺提案 <span aria-hidden="true">／</span> 01</span>
-      </header>
-
       <main id="main" tabindex="-1">
-        <section class="companion" aria-labelledby="companion-title" data-mode="mock">
-          <div class="section-heading"><h2 id="companion-title">夥伴與你</h2><span class="section-label">開發佔位・模擬回應，未串接 AI</span></div>
+        <div class="intro">
+          <div><p class="eyebrow" lang="en">A little space for everyday life</p><h1>把日子，慢慢理好。</h1><p class="intro-copy">從眼前的一件小事開始，留一點空間給自己。</p></div>
+          <div class="date-block"><span class="date-caption">示意日期</span><time datetime="2026-10-21"><span class="date-numbers">10<span class="date-divider">/</span>21</span><span class="date-detail">2026 年・星期三</span></time></div>
+        </div>
+
+        <section class="companion" aria-label="夥伴對話" data-mode="mock">
           <div class="companion-banner">
             <div class="companion-portrait" data-emotion="neutral" role="img" aria-label="夥伴頭像佔位：平靜，尚未提供情緒立繪">
               <img id="companion-image" alt="" hidden>
               <div id="portrait-placeholder"><span class="portrait-symbol" aria-hidden="true">＋</span><span>頭像佔位</span><span id="portrait-emotion">平靜</span></div>
             </div>
             <div class="dialogue-column">
-              <div class="dialogue-bubble" aria-live="polite" aria-atomic="true"><p id="companion-dialogue">這裡會顯示夥伴對話。目前為開發佔位，完成示意待辦或習慣打卡後，可查看模擬回應。</p></div>
-              <p class="small-note" id="companion-status" role="status">角色、好感度來源與情緒立繪尚未設定。</p>
+              <div class="dialogue-bubble" aria-live="polite" aria-atomic="true"><p id="companion-dialogue">完成待辦或習慣打卡後，這裡會顯示模擬回應。</p></div>
+              <p class="sr-only" id="companion-status" role="status">尚未產生新回應。</p>
             </div>
           </div>
-          <div class="companion-footer"><p class="small-note" id="chat-note">示意回應不影響好感度；尚未連接聊天服務。</p><button class="chat-button" type="button" disabled aria-describedby="chat-note">開啟聊天室 <span>尚未啟用</span></button></div>
+          <p class="small-note companion-note">目前為模擬回應，尚未串接 AI</p>
         </section>
 
-        <div class="intro">
-          <div><p class="eyebrow" lang="en">A little space for everyday life</p><h1>把日子，慢慢理好。</h1><p class="intro-copy">從眼前的一件小事開始，留一點空間給自己。</p></div>
-          <div class="date-block"><span class="date-caption">示意日期</span><time datetime="2026-10-21"><span class="date-numbers">10<span class="date-divider">/</span>21</span><span class="date-detail">2026 年・星期三</span></time></div>
-        </div>
+
+        <dl class="profile-summary" aria-label="人物資料摘要">
+          <div><dt>所持貨幣</dt><dd>—</dd></div>
+          <div><dt>人物等級</dt><dd>—</dd></div>
+        </dl>
 
         <p class="demo-notice"><span class="demo-mark">示意資料</span><span>本頁為排版預覽；勾選僅供體驗，重新整理後會重設。</span></p>
 
         <div class="home-grid">
-          <section class="profile" aria-labelledby="profile-title">
-            <div class="section-heading"><h2 id="profile-title">我的資料卡</h2><span class="section-english" lang="en">My space</span></div>
-            <div class="profile-content"><div class="avatar" aria-hidden="true">我</div><div><p class="profile-name">生活練習者 <span class="small-note">（示意暱稱）</span></p><p class="profile-motto">照自己的步調，過好今天。</p></div></div>
-            <button class="text-button" type="button" disabled>編輯資料 <span>尚未啟用</span></button>
-          </section>
-
           <section class="tasks" aria-labelledby="tasks-title">
             <div class="section-heading"><div><p class="section-kicker" lang="en">One thing at a time</p><h2 id="tasks-title">今日待辦</h2></div><span class="count" id="task-count" aria-live="polite" aria-atomic="true">1 / 4 完成</span></div>
             <p class="section-description">不必一次做好所有事，先完成眼前這一件。</p>
