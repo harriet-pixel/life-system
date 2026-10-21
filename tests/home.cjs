@@ -17,6 +17,15 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    await page.evaluate(() => document.fonts.ready);
    await page.waitForFunction(() => document.querySelector('#companion-status').textContent.includes('尚未產生'));
    assert.equal(await page.locator('button:disabled').count(), 1);
+   assert.equal(await page.locator('.section-description').count(), 0);
+   for (const section of ['.tasks', '.habits']) {
+    assert.equal(await page.locator(section+' .section-heading > div > :first-child').evaluate(e => e.tagName), 'H2');
+    assert.equal(await page.locator(section+' .section-heading > div > :nth-child(2)').evaluate(e => e.tagName), 'P');
+   }
+   assert.ok(await page.locator('h1,h2,p,span,button,label').evaluateAll(es => es.every(e => {
+    const s=getComputedStyle(e); return Math.abs(parseFloat(s.lineHeight)/parseFloat(s.fontSize)-1.7)<.01;
+   })));
+
    assert.equal(await page.locator('footer, .site-footer, .intro-copy').count(), 0);
    assert.equal(await page.locator('h1').textContent(), '慢慢成長，慢慢變好');
    assert.equal(await page.locator('.intro > div:first-child > :first-child').evaluate(e => e.tagName), 'H1');
