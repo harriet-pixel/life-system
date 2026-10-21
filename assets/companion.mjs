@@ -92,6 +92,14 @@ export function createCompanionController({
       timer = setTimeout(() => { void flush(expectedVersion); }, debounceMs);
       return true;
     },
+    cancelPending() {
+      if (disposed) return;
+      version += 1;
+      clearTimeout(timer);
+      pending.clear();
+      active?.abort();
+      onStateChange('cancelled');
+    },
     dispose() {
       disposed = true;
       version += 1;

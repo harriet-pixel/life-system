@@ -1,4 +1,6 @@
-import { createCompanionController, generateMockReply } from './companion.mjs';
+import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
+import { undoManager, createActivityStore } from './undo.mjs';
+import { initializeNavigation } from './navigation.mjs';
 
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {
@@ -43,6 +45,7 @@ const companion = createCompanionController({
   },
   onStateChange(state) {
     const messages = {
+      cancelled: '已撤銷操作，保留原對話。',
       queued: '正在合併示意完成事件；保留上一則對話。',
       generating: '正在產生模擬回應；保留上一則對話。',
       ready: '模擬回應已更新・情緒為開發佔位，未串接 AI。',
@@ -64,30 +67,42 @@ function emitDemoSuccess(type, input, index, label) {
   }));
 }
 
-// Existing operations remain memory-only demonstrations; nothing is persisted.
+// Current data source: in-memory demo store. Reloading intentionally resets it.
+// No browser-back calls, backend, or persistence is simulated by Undo.
 const taskInputs = [...document.querySelectorAll('[data-task]')];
+const habitInputs = [...document.querySelectorAll('[data-habit]')];
+const entries = [
+  ...taskInputs.map((input, index) => ({ input, index, id: `task-${index}`, type: 'task', label: input.closest('label').querySelector('.task-name').textContent })),
+  ...habitInputs.map((input, index) => ({ input, index, id: `habit-${index}`, type: 'habit', label: input.closest('label').querySelector('.habit-name').textContent })),
+];
+const activityStore = createActivityStore(entries.map(({ input, id }) => ({ id, checked: input.checked })));
 const taskCount = document.querySelector('#task-count');
-
-function updateTaskCount() {
-  const completed = taskInputs.filter((input) => input.checked).length;
+function renderActivities() {
+  entries.forEach(({ input, id, type }) => {
+    input.checked = activityStore.get(id).checked;
+    if (type === 'habit') input.nextElementSibling.textContent = input.checked ? '已打卡' : '未打卡';
+  });
+  const completed = entries.filter(({ id, type }) => type === 'task' && activityStore.get(id).checked).length;
   taskCount.textContent = `${completed} / ${taskInputs.length} 完成`;
 }
-
-taskInputs.forEach((input, index) => input.addEventListener('change', () => {
-  updateTaskCount();
-  emitDemoSuccess('task.completed', input, index, input.closest('label').querySelector('.task-name').textContent);
-}));
-document.querySelectorAll('[data-habit]').forEach((input, index) => {
-  const update = () => {
-    input.nextElementSibling.textContent = input.checked ? '已打卡' : '未打卡';
-  };
-  input.addEventListener('change', () => {
-    update();
-    emitDemoSuccess('habit.checked-in', input, index, input.closest('label').querySelector('.habit-name').textContent);
+entries.forEach((entry) => entry.input.addEventListener('change', () => {
+  if (undoManager.getState().busy) { renderActivities(); return; }
+  const change = activityStore.set(entry.id, entry.input.checked);
+  if (!change) { renderActivities(); return; }
+  undoManager.record({
+    id: `${entry.id}:${change.after.revision}`,
+    type: `${entry.type}.set-completed`, target: entry.id,
+    before: change.before, after: change.after, label: entry.label,
+    undo: async () => { activityStore.restore(change); companion.cancelPending(); renderActivities(); },
   });
-  update();
+  renderActivities();
+  emitDemoSuccess(entry.type === 'task' ? 'task.completed' : 'habit.checked-in', entry.input, entry.index, entry.label);
+}));
+initializeNavigation({
+  undoManager,
+  onBusyChange: (busy) => entries.forEach(({ input }) => { input.disabled = busy; }),
 });
-updateTaskCount();
+renderActivities();
 
 // Responsive tabs share the existing DOM, so switching never resets selections
 // and never emits a successful-action event or triggers companion generation.

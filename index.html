@@ -2,14 +2,14 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="light">
     <meta name="description" content="Life System 首頁視覺提案，以清楚而平靜的方式整理日常。">
     <title>今日生活 · Life System</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
-    <link rel="stylesheet" href="assets/styles.css?v=desktop-companion-layout">
-    <script type="module" src="assets/home.js?v=desktop-companion-layout"></script>
+    <link rel="stylesheet" href="assets/styles.css?v=navigation-undo-1">
+    <script type="module" src="assets/home.js?v=navigation-undo-1"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
@@ -37,9 +37,15 @@
 
 
         <div class="daily-panel">
+        <div class="desktop-navigation" aria-label="電腦版導覽工具列">
+          <nav id="desktop-links" class="navigation-options" aria-label="主要導覽" hidden></nav>
+          <button id="navigation-toggle" class="toolbar-button" type="button" aria-controls="desktop-links" aria-expanded="false" aria-label="展開導覽選項"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button>
+        </div>
+        <p id="operation-status" class="small-note" role="status" hidden></p>
+
         <div class="profile-summary" role="group" aria-label="個人資料摘要">
-          <span class="profile-display-name">尚未設定稱呼</span>
-          <span class="summary-stat" role="group" aria-label="人物等級：—"><span class="summary-divider" aria-hidden="true">｜</span><span aria-hidden="true">Lv—</span></span>
+          <span class="summary-stat" role="group" aria-label="人物等級：—"><span aria-hidden="true">Lv—</span></span>
           <span class="summary-stat" role="group" aria-label="所持貨幣：—"><span class="summary-divider" aria-hidden="true">｜</span><span aria-hidden="true">$ —</span></span>
         </div>
 
@@ -79,5 +85,6 @@
         </div>
       </main>
     </div>
+    <div class="mobile-navigation" hidden><nav id="mobile-links" class="navigation-options" aria-label="主要導覽"></nav><div class="mobile-undo"><button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button></div></div>
   </body>
 </html>
