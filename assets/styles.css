@@ -62,7 +62,7 @@ h2 { color: var(--color-primary); font: 1.375rem/var(--line-height) var(--font-s
 .small-note { color: var(--color-muted); font-size: var(--text-small); }
 .text-button { min-height: 44px; display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); color: var(--color-muted); background: transparent; border: 0; padding: var(--space-2) 0; font-size: var(--text-secondary); text-align: left; }
 .text-button > span:not([aria-hidden]) { font-size: var(--text-small); }
-.task-list { margin-top: var(--space-5); border-top: 1px solid var(--color-primary); }
+.task-list { margin-top: var(--space-1); border-top: 1px solid var(--color-primary); }
 .task-list li { border-bottom: 1px solid var(--color-border); }
 .task-row { display: flex; align-items: center; gap: var(--space-3); padding-block: 19px; cursor: pointer; min-height: 88px; }
 input[type="checkbox"] { appearance: none; flex-shrink: 0; width: 20px; height: 20px; margin: 0; border: 1px solid var(--color-control-border); border-radius: 2px; background-color: #fff; display: grid; place-content: center; cursor: pointer; }
@@ -75,7 +75,7 @@ input[type="checkbox"]:checked::after { content: ""; width: 9px; height: 5px; bo
 .task-time { font-size: var(--text-small); color: var(--color-muted); flex-shrink: 0; }
 .task-row:has(input:checked) .task-name { text-decoration: line-through; text-decoration-thickness: 1px; color: var(--color-muted); }
 .section-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
-.habit-list { margin-top: var(--space-5); border-top: 1px solid var(--color-primary); }
+.habit-list { margin-top: var(--space-1); border-top: 1px solid var(--color-primary); }
 .habit-list li { border-bottom: 1px solid var(--color-border); }
 .habit-row { display: flex; align-items: center; gap: var(--space-3); min-height: 88px; padding-block: var(--space-4); cursor: pointer; }
 .habit-index { font: 1rem/var(--line-height) var(--font-latin); color: var(--color-primary); }
@@ -83,12 +83,11 @@ input[type="checkbox"]:checked::after { content: ""; width: 9px; height: 5px; bo
 .habit-row:has(input:checked) .habit-state { color: var(--color-primary); }
 .habit-note { margin-top: var(--space-3); }
 .companion { padding: 0 var(--space-4); background: var(--color-background); border: 0; border-top: 1px solid var(--color-border); }
-.intro + .companion { margin-top: 12px; padding-top: 12px; }
+.intro + .companion { margin-top: 12px; padding-top: 24px; }
 .companion-banner { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--space-3); align-items: center; }
 .companion-portrait { width: 100%; aspect-ratio: 1; border: 1px solid var(--color-border); background: var(--color-tint); color: var(--color-primary); overflow: hidden; }
 .companion-portrait img { width: 100%; height: 100%; object-fit: contain; }
 #portrait-placeholder { min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-1); font-size: .625rem; line-height: var(--line-height); }
-.portrait-symbol { font-size: 1.25rem; line-height: var(--line-height); }
 #portrait-emotion { font-size: var(--text-small); }
 .companion-portrait[data-emotion="pleased"] { border-color: var(--color-primary); }
 .companion-portrait[data-emotion="calm"] { background: #fff; border-color: var(--color-control-border); }
@@ -130,3 +129,8 @@ input[type="checkbox"] { transition: background-color 180ms ease, border-color 1
   .home-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; column-gap: var(--space-8); row-gap: var(--space-1); padding-top: 0; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+
+.activity-tabs { display: flex; gap: var(--space-4); border-bottom: 1px solid var(--color-border); }
+.activity-tabs button { flex: 1; min-width: 0; min-height: 44px; padding: var(--space-2); border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: var(--color-muted); background: #fff; cursor: pointer; overflow-wrap: anywhere; }
+.activity-tabs button[aria-selected="true"] { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+@media (min-width: 1024px) { .activity-tabs { display: none; } }
