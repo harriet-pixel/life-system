@@ -1,7 +1,7 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { undoManager } from './undo.mjs?v=profile-5';
+import { undoManager } from './undo.mjs?v=summary-10';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { dataStore } from './data.mjs?v=profile-5';
+import { dataStore, profileSummary } from './data.mjs?v=summary-10';
 import { initializeNavigation } from './navigation.mjs?v=profile-5';
 
 // Development slots, not approved character emotions. Only use licensed assets.
@@ -107,12 +107,11 @@ initializeNavigation({
 });
 dataStore.subscribe(() => {
   renderActivities();
-  const { level, currency } = dataStore.get().stats;
-  const spans = document.querySelectorAll('.summary-stat');
-  [level, currency].forEach((value, i) => {
-    spans[i].setAttribute('aria-label', `${i ? '所持貨幣' : '人物等級'}：${value ?? '—'}`);
-    spans[i].querySelector('span:last-child').textContent = `${i ? '$ ' : 'Lv'}${value ?? '—'}`;
-  });
+  const stats = dataStore.get().stats;
+  const summary = document.querySelector('#home-stats');
+  summary.textContent = profileSummary(stats);
+  summary.setAttribute('aria-label', `累積總經驗值：${stats.experience}，等級：${stats.level}，貨幣：${stats.currency}`);
+  summary.title = summary.getAttribute('aria-label');
 });
 
 // Responsive tabs share the existing DOM, so switching never resets selections

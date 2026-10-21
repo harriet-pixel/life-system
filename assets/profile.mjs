@@ -1,8 +1,8 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
 import { createAvatarCropper, readImageFile, decodeImage } from './avatar-crop.mjs?v=profile-5';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=profile-5';
-import { undoManager } from './undo.mjs?v=profile-5';
-import { dataStore, formatSI, validateProfile, abilityRatios, abilityShares, profileSummary } from './data.mjs?v=profile-5';
+import { undoManager } from './undo.mjs?v=summary-10';
+import { dataStore, formatSI, validateProfile, abilityRatios, abilityShares, profileSummary } from './data.mjs?v=summary-10';
 import { initializeNavigation } from './navigation.mjs?v=profile-5';
 const $ = selector => document.querySelector(selector);
 const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '無法接受的事情', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };

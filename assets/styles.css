@@ -200,3 +200,6 @@ body[data-navigation="ready"] .page-shell { padding-bottom: calc(var(--bottom-na
 @media (max-width:1023px) {
   .mobile-tab-scroll-region { min-height: calc(var(--tab-scroll-viewport-height, 100svh) - var(--tab-scroll-top-offset, 12px) - var(--bottom-nav-height, 64px)); }
 }
+
+#home-stats { white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (min-width:1024px) { .welcome-copy > .desktop-page-name { margin-bottom: 8px; } }
