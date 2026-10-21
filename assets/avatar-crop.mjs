@@ -45,7 +45,7 @@ export function constrainCrop(rect,width,height,square=false) {
   if(square)w=h=Math.min(w,h);
   return{left:Math.max(0,Math.min(width-w,rect.left)),top:Math.max(0,Math.min(height-h,rect.top)),width:w,height:h};
 }
-export function createImageCropper({canvas,preview,zoomInput,widthInput,heightInput,square=false,onChange=()=>{}}) {
+export function createImageCropper({canvas,preview,zoomInput,widthInput,heightInput,square=false,aspectRatio=null,onChange=()=>{}}) {
   let image=null,rect=null,drag=null,lastZoom=1;
   function geometry(){const scale=Math.min(canvas.width/image.naturalWidth,canvas.height/image.naturalHeight);return{scale,x:(canvas.width-image.naturalWidth*scale)/2,y:(canvas.height-image.naturalHeight*scale)/2};}
   function output(maxEdge=square?512:1600){
@@ -54,7 +54,7 @@ export function createImageCropper({canvas,preview,zoomInput,widthInput,heightIn
   function paint(){
     const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
     if(!image){if(preview)preview.getContext('2d').clearRect(0,0,preview.width,preview.height);return;}
-    if(square)ctx.drawImage(image,rect.left,rect.top,rect.width,rect.height,0,0,canvas.width,canvas.height);
+    if(square||aspectRatio)ctx.drawImage(image,rect.left,rect.top,rect.width,rect.height,0,0,canvas.width,canvas.height);
     else{
       const g=geometry();ctx.drawImage(image,g.x,g.y,image.naturalWidth*g.scale,image.naturalHeight*g.scale);
       const x=g.x+rect.left*g.scale,y=g.y+rect.top*g.scale,w=rect.width*g.scale,h=rect.height*g.scale;
@@ -72,22 +72,28 @@ export function createImageCropper({canvas,preview,zoomInput,widthInput,heightIn
   canvas.addEventListener('pointerdown',event=>{
     if(!image||event.button>0)return;canvas.setPointerCapture(event.pointerId);const bounds=canvas.getBoundingClientRect();const x=(event.clientX-bounds.left)*canvas.width/bounds.width,y=(event.clientY-bounds.top)*canvas.height/bounds.height;
     let corner=null;
-    if(!square){const g=geometry();for(const [name,cx,cy]of[['tl',rect.left,rect.top],['tr',rect.left+rect.width,rect.top],['bl',rect.left,rect.top+rect.height],['br',rect.left+rect.width,rect.top+rect.height]])if(Math.hypot(x-g.x-cx*g.scale,y-g.y-cy*g.scale)<20)corner=name;}
+    if(!square&&!aspectRatio){const g=geometry();for(const [name,cx,cy]of[['tl',rect.left,rect.top],['tr',rect.left+rect.width,rect.top],['bl',rect.left,rect.top+rect.height],['br',rect.left+rect.width,rect.top+rect.height]])if(Math.hypot(x-g.x-cx*g.scale,y-g.y-cy*g.scale)<20)corner=name;}
     drag={x:event.clientX,y:event.clientY,rect:{...rect},corner};
   });
   canvas.addEventListener('pointermove',event=>{
-    if(!drag||!image)return;const bounds=canvas.getBoundingClientRect();const scale=square?bounds.width/drag.rect.width:geometry().scale*bounds.width/canvas.width;
+    if(!drag||!image)return;const bounds=canvas.getBoundingClientRect();const scale=(square||aspectRatio)?bounds.width/drag.rect.width:geometry().scale*bounds.width/canvas.width;
     const dx=(event.clientX-drag.x)/scale,dy=(event.clientY-drag.y)/scale;
     if(drag.corner){const r=drag.rect;let left=r.left,top=r.top,right=r.left+r.width,bottom=r.top+r.height;
       if(drag.corner.includes('l'))left=Math.max(0,Math.min(right-1,r.left+dx));else right=Math.min(image.naturalWidth,Math.max(left+1,r.left+r.width+dx));
       if(drag.corner.includes('t'))top=Math.max(0,Math.min(bottom-1,r.top+dy));else bottom=Math.min(image.naturalHeight,Math.max(top+1,r.top+r.height+dy));
       change({left,top,width:right-left,height:bottom-top});
-    }else change({...drag.rect,left:drag.rect.left+dx*(square?-1:1),top:drag.rect.top+dy*(square?-1:1)});
+    }else change({...drag.rect,left:drag.rect.left+dx*((square||aspectRatio)?-1:1),top:drag.rect.top+dy*((square||aspectRatio)?-1:1)});
   });
   for(const type of['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,()=>drag=null);
-  canvas.addEventListener('keydown',event=>{const directions={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};if(!image||!directions[event.key])return;event.preventDefault();const[dx,dy]=directions[event.key];change(event.shiftKey&&!square?{...rect,width:rect.width+dx*image.naturalWidth*.02,height:rect.height+dy*image.naturalHeight*.02}:{...rect,left:rect.left+dx*image.naturalWidth*.02,top:rect.top+dy*image.naturalHeight*.02});});
+  canvas.addEventListener('keydown',event=>{const directions={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};if(!image||!directions[event.key])return;event.preventDefault();const[dx,dy]=directions[event.key];change(event.shiftKey&&!square&&!aspectRatio?{...rect,width:rect.width+dx*image.naturalWidth*.02,height:rect.height+dy*image.naturalHeight*.02}:{...rect,left:rect.left+dx*image.naturalWidth*.02,top:rect.top+dy*image.naturalHeight*.02});});
   return{
-    setImage(value,{crop,top=false}={}){image=value;lastZoom=1;zoomInput.value='1';const w=image.naturalWidth,h=image.naturalHeight,side=Math.min(w,h);rect=constrainCrop(crop??(square?{left:(w-side)/2,top:top?0:(h-side)/2,width:side,height:side}:{left:0,top:0,width:w,height:h}),w,h,square);paint();},
+    setImage(value,{crop,top=false}={}){
+      image=value;const w=image.naturalWidth,h=image.naturalHeight,side=Math.min(w,h);
+      rect=constrainCrop(crop??(square?{left:(w-side)/2,top:top?0:(h-side)/2,width:side,height:side}:{left:0,top:0,width:w,height:h}),w,h,square);
+      if(aspectRatio){const width=Math.min(rect.width,rect.height*aspectRatio),height=width/aspectRatio;rect={left:rect.left+(rect.width-width)/2,top:rect.top+(rect.height-height)/2,width,height};}
+      lastZoom=(square?side:aspectRatio?Math.min(w,h*aspectRatio):rect.width)/rect.width;
+      zoomInput.max=String(Math.max(4,lastZoom));zoomInput.value=String(lastZoom);paint();
+    },
     clear(){image=null;rect=null;drag=null;paint();},get crop(){return rect?{...rect}:null;},get ready(){return Boolean(image);},output,
     async export(){return encodeCanvas(output(),{limit:square?AVATAR_LIMIT:IMAGE_LIMIT,maxEdge:square?512:1600});},
   };

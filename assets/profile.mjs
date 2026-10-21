@@ -1,5 +1,5 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { createProfileImages } from './profile-images.mjs?v=images-21';
+import { createProfileImages } from './profile-images.mjs?v=crop-22';
 import { imageURL, prepareImageReferences } from './image-store.mjs?v=images-21';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=redo-17';
 import { undoManager } from './undo.mjs?v=images-21';

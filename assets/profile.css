@@ -126,7 +126,7 @@ textarea { resize: vertical; }
 .personal-details-row { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
 .image-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 12px; border-bottom: 0; }
 #photo-settings .image-tabs button { font-size: 1rem; border: 2px solid var(--color-primary); border-radius: 0; padding: 8px 12px; background: var(--color-primary); color: white; }
-#photo-settings .image-tabs button[aria-selected="true"] { border-color: white; outline: 2px solid var(--color-primary); outline-offset: 0; text-decoration: underline; text-underline-offset: .25em; }
+#photo-settings .image-tabs button[aria-selected="true"] { border-color: white; outline: 2px solid var(--color-primary); outline-offset: 0; text-decoration: none; }
 @media (min-width:1024px) {
   .profile-summary-area { display: flex; flex-direction: column; justify-content: center; min-height: var(--profile-tabs-height,80px); }
   .profile-page #profile-stats { min-height: 0; }
@@ -168,7 +168,7 @@ textarea { resize: vertical; }
 }
 
 .history-direct-jump { display: none; }
-.photo-frame img { object-fit: contain; }
+.photo-frame img { object-fit: cover; }
 .image-tabs { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,140px),1fr)); }
 .draft-image-preview { display: grid; place-items: center; min-height: 80px; }
 .draft-image-preview img { max-width: 100%; max-height: 180px; object-fit: contain; }
@@ -193,3 +193,12 @@ textarea { resize: vertical; }
 
 #photo-settings .image-tabs button:focus-visible { outline: 3px solid var(--color-text); outline-offset: 3px; }
 #portrait-canvas:focus-visible, #crop-canvas:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+
+.settings-scroll { overflow-y: scroll; scrollbar-gutter: stable; }
+.image-tabs { grid-auto-rows: 1fr; }
+#photo-settings .image-tabs button { text-decoration: none; }
+#portrait-library { grid-template-columns: repeat(auto-fill,minmax(min(100%,96px),1fr)); align-items: start; }
+#portrait-library li { display: grid; gap: 8px; }
+#portrait-library img { aspect-ratio: 3/4; max-height: none; object-fit: cover; }
+#collection-canvas { display: block; width: min(100%,300px); height: auto; touch-action: none; cursor: grab; border: 1px solid var(--color-primary); }
+#collection-canvas:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
