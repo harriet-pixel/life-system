@@ -82,7 +82,7 @@ textarea { resize: vertical; }
   .profile-page .photo-section { display: grid; grid-column: 1; }
   .profile-page .profile-content { grid-column: 2; }
   .profile-page .ability-charts { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
-  #profile-dialog { height: min(780px, calc(100dvh - 48px)); }
+  #profile-dialog { height: min(960px, calc(100dvh - 48px)); max-height: calc(100dvh - 48px); }
 }
 @media (max-width:1023px) {
   .profile-page .personal-heading { grid-template-columns: 44px minmax(0,1fr) 44px; }
@@ -128,7 +128,7 @@ textarea { resize: vertical; }
 .profile-summary-area { display: contents; }
 #profile-motto { display: none; }
 .personal-details-row { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
-.image-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); }
+.image-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 12px; border-bottom: 0; }
 #photo-settings .image-tabs button { font-size: .875rem; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px; }
 #photo-settings .image-tabs button[aria-selected="true"] { border-bottom-color: var(--color-primary); background: var(--color-tint); }
 @media (min-width:1024px) {
@@ -138,3 +138,5 @@ textarea { resize: vertical; }
 }
 @media (max-width:350px) { .personal-details-row { grid-template-columns: minmax(0,1fr); } }
 .personal-details-row { align-items: start; }
+
+#profile-form textarea { height: calc(1.7em + 18px); min-height: calc(1.7em + 18px); padding: 8px; overflow-y: auto; resize: vertical; }
