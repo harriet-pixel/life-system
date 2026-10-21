@@ -6,7 +6,7 @@ export const navigationItems = Object.freeze([
   { id: 'reading', label: '陪讀系統', href: null, available: false },
   { id: 'wallet', label: '錢包帳本', href: null, available: false },
   { id: 'companion', label: '我的夥伴', href: null, available: false },
-  { id: 'profile', label: '我的資料', href: null, available: false },
+  { id: 'profile', label: '我的資料', englishLabel: 'My Profile', href: new URL('../profile.html', import.meta.url).href, available: true },
   { id: 'chat', label: '聊天室', href: null, available: false },
   { id: 'settings', label: '設定', href: null, available: false },
 ].map(Object.freeze));
@@ -88,6 +88,8 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   undoManager.subscribe(({ available, busy }) => {
     undoButtons.forEach((button) => {
       button.disabled = !available;
+      button.setAttribute('aria-label', available ? '撤銷最近一筆尚未撤銷的資料操作' : '目前沒有可撤銷的操作');
+      button.title = available ? '撤銷最近一筆尚未撤銷的資料操作' : '目前沒有可撤銷的操作';
       button.setAttribute('aria-busy', String(busy));
     });
     onBusyChange(busy);

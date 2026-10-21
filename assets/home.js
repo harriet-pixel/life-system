@@ -1,6 +1,7 @@
+import { undoManager } from './undo.mjs';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { undoManager, createActivityStore } from './undo.mjs';
-import { initializeNavigation } from './navigation.mjs?v=bilingual-page-6';
+import { dataStore } from './data.mjs';
+import { initializeNavigation } from './navigation.mjs?v=profile-1';
 
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {
@@ -67,15 +68,15 @@ function emitDemoSuccess(type, input, index, label) {
   }));
 }
 
-// Current data source: in-memory demo store. Reloading intentionally resets it.
-// No browser-back calls, backend, or persistence is simulated by Undo.
+// Shared persistent activity state and journal; demo labels and companion remain unchanged.
 const taskInputs = [...document.querySelectorAll('[data-task]')];
 const habitInputs = [...document.querySelectorAll('[data-habit]')];
 const entries = [
   ...taskInputs.map((input, index) => ({ input, index, id: `task-${index}`, type: 'task', label: input.closest('label').querySelector('.task-name').textContent })),
   ...habitInputs.map((input, index) => ({ input, index, id: `habit-${index}`, type: 'habit', label: input.closest('label').querySelector('.habit-name').textContent })),
 ];
-const activityStore = createActivityStore(entries.map(({ input, id }) => ({ id, checked: input.checked })));
+const defaults = Object.fromEntries(entries.map(({ input, id }) => [id, input.defaultChecked]));
+const activityStore = { get: id => ({ checked: dataStore.get().activities[id] ?? defaults[id] }) };
 const taskCount = document.querySelector('#task-count');
 function renderActivities() {
   entries.forEach(({ input, id, type }) => {
@@ -87,22 +88,31 @@ function renderActivities() {
 }
 entries.forEach((entry) => entry.input.addEventListener('change', () => {
   if (undoManager.getState().busy) { renderActivities(); return; }
-  const change = activityStore.set(entry.id, entry.input.checked);
-  if (!change) { renderActivities(); return; }
-  undoManager.record({
-    id: `${entry.id}:${change.after.revision}`,
-    type: `${entry.type}.set-completed`, target: entry.id,
-    before: change.before, after: change.after, label: entry.label,
-    undo: async () => { activityStore.restore(change); companion.cancelPending(); renderActivities(); },
-  });
+  try {
+    dataStore.transact({ type: `${entry.type}.set-completed`, target: entry.id,
+      label: `${entry.type === 'task' ? (entry.input.checked ? '完成待辦' : '取消完成待辦') : (entry.input.checked ? '習慣打卡' : '取消習慣打卡')}：${entry.label}`,
+      changes: { activities: { ...defaults, ...dataStore.get().activities, [entry.id]: entry.input.checked } } });
+  } catch (error) {
+    const notice = document.querySelector('#operation-status'); notice.hidden = false; notice.textContent = error.message;
+    renderActivities(); return;
+  }
   renderActivities();
   emitDemoSuccess(entry.type === 'task' ? 'task.completed' : 'habit.checked-in', entry.input, entry.index, entry.label);
 }));
 initializeNavigation({
   undoManager,
+  onUndoSuccess: () => companion.cancelPending(),
   onBusyChange: (busy) => entries.forEach(({ input }) => { input.disabled = busy; }),
 });
-renderActivities();
+dataStore.subscribe(() => {
+  renderActivities();
+  const { level, currency } = dataStore.get().stats;
+  const spans = document.querySelectorAll('.summary-stat');
+  [level, currency].forEach((value, i) => {
+    spans[i].setAttribute('aria-label', `${i ? '所持貨幣' : '人物等級'}：${value ?? '—'}`);
+    spans[i].querySelector('span:last-child').textContent = `${i ? '$ ' : 'Lv'}${value ?? '—'}`;
+  });
+});
 
 // Responsive tabs share the existing DOM, so switching never resets selections
 // and never emits a successful-action event or triggers companion generation.
