@@ -101,6 +101,7 @@ function renderHistory(state = dataStore.get()) {
   $('#history-jump').replaceChildren(...Array.from({length:pageCount},(_,i)=>{const option=element('option',String(i+1));option.value=String(i+1);return option;}));
   $('#history-jump').value=String(historyPage);
   $('#history-previous').disabled = historyPage <= 1;
+  $('#history-first').disabled = historyPage <= 1;
   $('#history-next').disabled = historyPage >= pageCount;
   $('#history-list').start=(historyPage-1)*HISTORY_PAGE_SIZE+1;
   $('#history-list').replaceChildren(...[...state.history].reverse().slice((historyPage-1)*HISTORY_PAGE_SIZE,historyPage*HISTORY_PAGE_SIZE).map(record => historyRow(record,state)));
@@ -122,8 +123,17 @@ function positionResponsiveContent() {
   const status = $('#operation-status');
   (desktopPanels.matches ? $('.profile-portrait-column') : $('.profile-content')).append(status);
   const pagination = $('#history-pagination'), list = $('#history-list'), retention = $('#history-retention-note');
-  if (desktopPanels.matches) { list.before(retention); list.after(pagination); pagination.prepend($('#history-previous')); }
-  else { list.before(pagination); list.after(retention); $('.history-step-controls').prepend($('#history-previous')); }
+  const previous=$('#history-previous'), next=$('#history-next'), page=$('#history-page');
+  previous.setAttribute('aria-label','上一頁'); next.setAttribute('aria-label','下一頁');
+  if (desktopPanels.matches) {
+    list.before(retention); list.after(pagination);
+    $('.history-page-controls').append(page); $('.history-step-controls').append(next);
+    pagination.prepend(previous); previous.textContent='上一頁'; next.textContent='下一頁';
+  } else {
+    list.before(pagination); list.after(retention);
+    pagination.append(previous,$('#history-first'),page,next);
+    previous.textContent='◀\uFE0E'; next.textContent='▶\uFE0E';
+  }
 }
 positionResponsiveContent();
 desktopPanels.addEventListener('change', positionResponsiveContent);
@@ -275,6 +285,7 @@ $('#confirm-crop').addEventListener('click',()=>{
   catch(error){avatarError=error.message;fieldError('avatar',avatarError,1);}
 });
 $('#cancel-crop').addEventListener('click',()=>{avatarSelection++;loadingAvatar=false;avatarError='';closeCrop();$('#avatar-error').textContent='';$('#avatar-input').value='';$('#save-settings').disabled=loadingPhoto;$('#avatar-input').focus();});
+$('#history-first').addEventListener('click',()=>{historyPage=1;renderHistory();});
 $('#history-jump').addEventListener('change',event=>{historyPage=Number(event.target.value);renderHistory();});
 $('#history-previous').addEventListener('click',()=>{historyPage--;renderHistory();});
 $('#history-next').addEventListener('click',()=>{historyPage++;renderHistory();});
