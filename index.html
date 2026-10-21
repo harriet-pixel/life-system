@@ -8,8 +8,8 @@
     <title>今日生活 · Life System</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
-    <link rel="stylesheet" href="assets/styles.css?v=date-and-subtitles-font">
-    <script type="module" src="assets/home.js?v=date-and-subtitles-font"></script>
+    <link rel="stylesheet" href="assets/styles.css?v=desktop-companion-layout">
+    <script type="module" src="assets/home.js?v=desktop-companion-layout"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
@@ -20,6 +20,7 @@
           <div class="welcome-copy"><h1>慢慢成長，慢慢變好</h1><p class="eyebrow" lang="en">A little space for everyday life</p></div>
         </div>
 
+        <div class="dashboard">
         <section class="companion" aria-label="夥伴對話" data-mode="mock">
           <div class="companion-banner">
             <div class="companion-portrait" data-emotion="neutral" role="img" aria-label="夥伴頭像佔位：平靜，尚未提供情緒立繪">
@@ -35,6 +36,7 @@
         </section>
 
 
+        <div class="daily-panel">
         <div class="profile-summary" role="group" aria-label="個人資料摘要">
           <span class="profile-display-name">尚未設定稱呼</span>
           <span class="summary-stat" role="group" aria-label="人物等級：—"><span class="summary-divider" aria-hidden="true">｜</span><span aria-hidden="true">Lv—</span></span>
@@ -43,6 +45,7 @@
 
         <p class="demo-notice"><span class="demo-mark">示意資料</span><span>本頁為排版預覽；勾選僅供體驗，重新整理後會重設。</span></p>
 
+        <div class="activity-region">
         <div class="activity-tabs" aria-label="今日行動切換" hidden>
           <button type="button" id="tasks-tab" data-panel="tasks-panel"><span>今日待辦</span></button>
           <button type="button" id="habits-tab" data-panel="habits-panel"><span>彈性打卡</span></button>
@@ -70,6 +73,9 @@
           </section>
 
 
+        </div>
+        </div>
+        </div>
         </div>
       </main>
     </div>
