@@ -43,10 +43,10 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:3000/';
     assert.equal(checkbox.x-row.x,16);
    }
    const nav=page.locator(mobile?'#mobile-links':'#desktop-links');
-   assert.deepEqual(await nav.locator('.navigation-item').evaluateAll(items=>items.map(item=>item.firstChild.textContent)),[...(mobile?[]:['首頁']),'待辦事項','習慣打卡','陪讀系統','錢包帳本','我的夥伴','我的資料','聊天室','設定']);
-   assert.equal(await nav.locator('[aria-current=page]').count(),mobile?0:1);
+   assert.deepEqual(await nav.locator('.navigation-item').evaluateAll(items=>items.map(item=>item.firstChild.textContent)),['首頁','待辦事項','習慣打卡','陪讀系統','錢包帳本','我的夥伴','我的資料','聊天室','設定']);
+   assert.equal(await nav.locator('[aria-current=page]').count(),1);
    assert.equal(await nav.locator('[aria-disabled=true]').count(),8);
-   assert.equal(await nav.locator('a').count(),mobile?0:1);
+   assert.equal(await nav.locator('a').count(),1);
    const beforeScroll=await undo.boundingBox();
    await nav.evaluate(e=>e.scrollLeft=e.scrollWidth);
    const afterScroll=await undo.boundingBox();
