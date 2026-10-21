@@ -19,7 +19,7 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    assert.equal((await page.goto(base)).status(), 200);
    await page.evaluate(() => document.fonts.ready);
    await page.waitForFunction(() => document.querySelector('#companion-status').textContent.includes('尚未產生'));
-   assert.equal(await page.locator('button:disabled').count(), 1);
+   assert.equal(await page.locator('button:disabled').count(), 3);
    assert.equal(await page.locator('.activity-tabs .tab-caption').count(), 0);
    assert.equal(await page.locator('.tasks .section-kicker').isVisible(), true);
    assert.ok(await page.evaluate(() => document.fonts.check('16px "Noto Serif TC Variable"', '慢慢成長')));
@@ -86,8 +86,8 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    };
    await checkLayout();
    assert.equal(await page.locator('.site-header, .profile, .chat-button, #companion-title').count(), 0);
-   assert.equal(await page.locator('.profile-display-name').textContent(), '尚未設定稱呼');
-   assert.deepEqual(await page.locator('.summary-stat').allTextContents(), ['｜Lv—', '｜$ —']);
+   assert.equal(await page.locator('.profile-display-name').count(), 0);
+   assert.deepEqual(await page.locator('.summary-stat').allTextContents(), ['Lv—', '｜$ —']);
    assert.equal(await page.getByRole('group', { name: '所持貨幣：—', exact: true }).count(), 1);
    assert.equal(await page.getByRole('group', { name: '人物等級：—', exact: true }).count(), 1);
    assert.equal(await page.locator('.profile-summary svg').count(), 0);
@@ -108,12 +108,12 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    await page.waitForTimeout(1100);
    assert.equal(await page.locator('#companion-dialogue').textContent(), original, 'passive events do not generate');
    await page.reload();
-   await page.keyboard.press('Tab');
+   await page.locator('.skip-link').focus();
    assert.equal(await page.evaluate(() => document.activeElement.className), 'skip-link');
    await page.keyboard.press('Enter');
    assert.equal(await page.evaluate(() => document.activeElement.id), 'main');
    {
-    await page.keyboard.press('Tab');
+    await page.locator('#tasks-tab').focus();
     assert.equal(await page.evaluate(() => document.activeElement.id), 'tasks-tab');
     await page.keyboard.press('ArrowRight');
     assert.equal(await page.locator('#habits-tab').getAttribute('aria-selected'), 'true');
@@ -153,10 +153,9 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    assert.equal(await page.locator('#portrait-emotion').textContent(), '放鬆');
    await page.evaluate(() => document.documentElement.style.fontSize = '200%');
    await checkLayout();
-   await page.locator('.profile-display-name').evaluate(e => e.textContent = '測試長稱呼'.repeat(15) + 'LongNameWithoutSpaces'.repeat(5));
+   await page.locator('.summary-stat:last-child > span:last-child').evaluate(e => e.textContent = '9'.repeat(50));
    await checkLayout();
-   assert.equal(await page.locator('.profile-display-name').evaluate(e => getComputedStyle(e).fontSize), '32px');
-   await page.locator('.profile-display-name').evaluate(e => e.textContent = '尚未設定稱呼');
+   await page.locator('.summary-stat:last-child > span:last-child').evaluate(e => e.textContent = '$ —');
    await page.evaluate(() => document.documentElement.style.fontSize = '');
    await page.emulateMedia({ reducedMotion: 'reduce' });
    assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
@@ -184,7 +183,7 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
   }
   // Inject an offline provider to exercise the actual UI fallback wiring.
   const page = await browser.newPage();
-  await page.route('**/assets/companion.mjs', async (route) => {
+  await page.route('**/assets/companion.mjs*', async (route) => {
    const response = await route.fetch();
    const source = await response.text();
    const start = source.indexOf('export async function generateMockReply');

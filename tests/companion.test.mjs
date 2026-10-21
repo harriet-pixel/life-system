@@ -92,3 +92,9 @@ test('reply validation refuses empty, oversized or partial responses', () => {
   for (const r of [null, {}, reply(' '), reply('x'.repeat(1001)), { dialogue: '文字' }]) assert.throws(() => validateReply(r));
   assert.deepEqual(validateReply(reply(' 正常 ', 'neutral')), reply('正常', 'neutral'));
 });
+
+test('undo invalidation cancels pending and in-flight replies without generation', async () => {
+ let resolve;const renders=[];const c=createCompanionController({debounceMs:0,generate:()=>new Promise(r=>{resolve=r;}),render:r=>renders.push(r)});
+ try {c.recordSuccess(action('1'));await until(()=>resolve);c.cancelPending();resolve(reply('已撤銷不可顯示'));await pause(10);assert.deepEqual(renders,[]);}
+ finally {c.dispose();}
+});

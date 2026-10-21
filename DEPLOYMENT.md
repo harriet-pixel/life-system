@@ -4,7 +4,7 @@
 
 ## 發布範圍
 
-`gh-pages` 分支只發布 `index.html`、`assets/styles.css`、`assets/home.js`、`assets/companion.mjs`、`assets/fonts/noto-serif-tc/` 與 `.nojekyll`。不發布協作文件、設計文件或截圖。Pages 網站通常公開可讀，即使原始儲存庫為私人；訪客可取得所有已發布的前端程式碼與示意內容。沒有真實個資、登入、資料庫或外部聊天服務。不要為了部署擅自把私人儲存庫改成公開。
+`gh-pages` 分支只發布 `index.html`、`assets/styles.css`、`assets/home.js`、`assets/companion.mjs`、`assets/navigation.mjs`、`assets/undo.mjs`、`assets/fonts/noto-serif-tc/` 與 `.nojekyll`。不發布協作文件、設計文件或截圖。Pages 網站通常公開可讀，即使原始儲存庫為私人；訪客可取得所有已發布的前端程式碼與示意內容。沒有真實個資、登入、資料庫或外部聊天服務。不要為了部署擅自把私人儲存庫改成公開。
 
 ## GitHub 設定
 
@@ -19,7 +19,7 @@
 
 ## 驗證
 
-檢查首頁、三個程式／樣式資產、字型 CSS 及實際用到的 WOFF2 均為 HTTP 200、顯示「慢慢成長，慢慢變好」、歡迎區 → 左頭像右泡泡夥伴橫幅 → 稱呼／貨幣／等級摘要 → 待辦與習慣順序正確，桌面待辦與習慣並排、示意勾選可操作且重新整理重設。新增待辦保持未啟用；編輯與聊天入口已移除。
+檢查首頁、五個程式／樣式資產、字型 CSS 及實際用到的 WOFF2 均為 HTTP 200、顯示「慢慢成長，慢慢變好」、歡迎區 → 左頭像右泡泡夥伴橫幅 → 稱呼／貨幣／等級摘要 → 待辦與習慣順序正確，桌面待辦與習慣並排、示意勾選可操作且重新整理重設。新增待辦保持未啟用；編輯與聊天入口已移除。
 
 先前雲端網路代理曾拒絕 `api.github.com` 與 `harriet-pixel.github.io`。本輪開始時公開首頁已回傳 HTTP 200；後續仍須針對每次發布驗證，不能以 Git 推送成功取代部署確認。若再次受阻，在雲端環境網路設定允許這兩個網域後重試。GitHub 驗證使用平台既有認證，不要把 token 放進文件或對話。
 
