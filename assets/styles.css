@@ -7,7 +7,7 @@
   --color-border: #dadddc;
   --color-control-border: #7b858b;
   --color-tint: #f6f8fa;
-  --font-serif: "toppan-bunkyu-mincho-pr6n", "Noto Serif TC", "Noto Serif CJK TC", "Source Han Serif TC", serif;
+  --font-serif: "Noto Serif TC Variable", "toppan-bunkyu-mincho-pr6n", "Noto Serif TC", "Noto Serif CJK TC", "Source Han Serif TC", serif;
   --font-latin: var(--font-serif);
   --font-body: var(--font-serif);
   --space-1: 4px;
@@ -135,6 +135,10 @@ input[type="checkbox"] { transition: background-color 180ms ease, border-color 1
 @media (min-width: 1024px) { .activity-tabs { display: none; } }
 
 .activity-tabs button { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 1.375rem; font-weight: 400; letter-spacing: .08em; }
-.tab-caption { display: block; font-size: .875rem; letter-spacing: normal; margin-top: 2px; }
-#main[data-activity-tabs="true"] .home-grid .section-heading > div { display: none; }
-#main[data-activity-tabs="true"] .home-grid .section-heading { justify-content: flex-end; }
+
+#main[data-activity-tabs="true"] .home-grid .section-heading h2 { display: none; }
+@media (max-width: 1023px) {
+  .intro { flex-direction: column; align-items: stretch; }
+  .date-block, .date-block time { flex-direction: row; align-items: baseline; }
+}
+@media (min-width: 1024px) { .intro .date-block { order: 1; } }
