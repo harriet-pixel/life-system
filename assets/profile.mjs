@@ -1,19 +1,25 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { createAvatarCropper, readImageFile, decodeImage } from './avatar-crop.mjs?v=profile-5';
+import { createProfileImages } from './profile-images.mjs?v=images-21';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=images-21';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=redo-17';
-import { undoManager } from './undo.mjs?v=redo-17';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=redo-17';
+import { undoManager } from './undo.mjs?v=images-21';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=images-21';
 import { initializeNavigation } from './navigation.mjs?v=redo-17';
 const $ = selector => document.querySelector(selector);
-const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
+const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', portraits:'立繪收藏', photoEdit:'立繪裁切', avatarEdit:'頭像裁切', currentPortraitId:'選用立繪', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
 const notice = message => { $('#operation-status').hidden = false; $('#operation-status').textContent = message; };
-let photoSelection = 0;
+let renderedImageVersion = 0;
 const photoFrame = $('.photo-frame');
 const photoImage = $('#user-photo');
 const defaultAvatar = $('#default-avatar');
 const avatarImage = $('#user-avatar'), avatarPlaceholder = $('#avatar-placeholder');
-function renderPhoto() {
-  const {photo,avatar} = dataStore.get();
+async function renderPhoto() {
+  const version=++renderedImageVersion;
+  const current=dataStore.get();
+  let photo,avatar;
+  try { [photo,avatar]=await Promise.all([imageURL(current.photo),imageURL(current.avatar)]); }
+  catch(error) { notice(error.message);return; }
+  if(version!==renderedImageVersion)return;
   const avatarFrame = $('.user-avatar-frame');
   if (avatar) { avatarImage.removeAttribute('hidden'); if (avatarImage.getAttribute('src') !== avatar) avatarImage.src = avatar; avatarFrame.replaceChildren(avatarImage); }
   else { avatarFrame.replaceChildren(avatarPlaceholder); }
@@ -87,7 +93,7 @@ function render() {
   if (valid) renderRadar();
   renderHistory(state);
 }
-const HISTORY_PAGE_SIZE = 10;
+const HISTORY_PAGE_SIZE = 5;
 let historyPage = 1, lastHistoryId = null;
 function renderHistory(state = dataStore.get()) {
   const newest = state.history.at(-1)?.id ?? null;
@@ -101,7 +107,9 @@ function renderHistory(state = dataStore.get()) {
   $('#history-jump').replaceChildren(...Array.from({length:pageCount},(_,i)=>{const option=element('option',String(i+1));option.value=String(i+1);return option;}));
   $('#history-jump').value=String(historyPage);
   $('#history-previous').disabled = historyPage <= 1;
-  $('#history-first').disabled = historyPage <= 1;
+  $('#history-input').value=String(historyPage);
+  $('#history-input').setAttribute('aria-label',`跳至頁碼，1 至 ${pageCount || 1}`);
+  $('#history-input').removeAttribute('aria-invalid');$('#history-page-error').hidden=true;
   $('#history-next').disabled = historyPage >= pageCount;
   $('#history-list').start=(historyPage-1)*HISTORY_PAGE_SIZE+1;
   $('#history-list').replaceChildren(...[...state.history].reverse().slice((historyPage-1)*HISTORY_PAGE_SIZE,historyPage*HISTORY_PAGE_SIZE).map(record => historyRow(record,state)));
@@ -124,6 +132,7 @@ function positionResponsiveContent() {
   (desktopPanels.matches ? $('.profile-portrait-column') : $('.profile-content')).append(status);
   const pagination = $('#history-pagination'), list = $('#history-list'), retention = $('#history-retention-note');
   const previous=$('#history-previous'), next=$('#history-next'), page=$('#history-page');
+  $('#history-page-error').hidden=true;$('#history-input').removeAttribute('aria-invalid');$('#history-input').value=String(historyPage);
   previous.setAttribute('aria-label','上一頁'); next.setAttribute('aria-label','下一頁');
   if (desktopPanels.matches) {
     list.before(retention); list.after(pagination);
@@ -131,7 +140,7 @@ function positionResponsiveContent() {
     pagination.prepend(previous); previous.textContent='上一頁'; next.textContent='下一頁';
   } else {
     list.before(pagination); list.after(retention);
-    pagination.append(previous,$('#history-first'),page,next);
+    pagination.append(previous,page,next,$('#history-direct-jump'),$('#history-page-error'));
     previous.textContent='◀\uFE0E'; next.textContent='▶\uFE0E';
   }
 }
@@ -195,97 +204,57 @@ function selectImage(index) {
 }
 imageTabs.forEach((tab,index)=>{
   tab.addEventListener('click',()=>selectImage(index));
-  tab.addEventListener('keydown',event=>{const next={ArrowLeft:1-index,ArrowRight:1-index,Home:0,End:1}[event.key];if(next===undefined)return;event.preventDefault();selectImage(next);imageTabs[next].focus();});
+  tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+imageTabs.length-1)%imageTabs.length,ArrowRight:(index+1)%imageTabs.length,Home:0,End:imageTabs.length-1}[event.key];if(next===undefined)return;event.preventDefault();selectImage(next);imageTabs[next].focus();});
 });
-let draftPhoto = null, draftAvatar = null, photoError = '', avatarError = '', loadingPhoto = false, loadingAvatar = false, baseState;
-let avatarSelection = 0, cropActive = false, cropDirty = false;
-function renderDraftPhoto() {
-  const image = $('#draft-photo'); image.hidden = !draftPhoto; $('#draft-photo-empty').hidden = Boolean(draftPhoto);
-  if (draftPhoto) image.src = draftPhoto; else image.removeAttribute('src');
-  $('#draft-avatar').hidden = !draftAvatar; $('#draft-avatar-empty').hidden = Boolean(draftAvatar);
-  if (draftAvatar) $('#draft-avatar').src = draftAvatar; else $('#draft-avatar').removeAttribute('src');
-  $('#crop-from-photo').disabled = !draftPhoto || loadingPhoto;
-  $('#crop-source-help').textContent = draftPhoto ? '以目前設定中的立繪作為裁切來源。' : '尚無可用立繪，請先上傳立繪。';
-}
+let baseState,saving=false,saveVersion=0,imageBusy=false;
 function clearErrors() {
-  form.querySelectorAll('.field-error').forEach(el=>{el.textContent='';});
+  form.querySelectorAll('.field-error').forEach(el=>el.textContent='');
   form.querySelectorAll('[aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
   $('#form-error').textContent='';
 }
 function fieldError(key,message,index) {
-  selectSetting(index);if(ABILITIES.some(a=>a.id===key)) $('#ability-edit-details').open=true;if(key==='photo')selectImage(0);if(key==='avatar')selectImage(1); $('#form-error').textContent = message;
-  const input = key === 'photo' ? $('#photo-input') : key === 'avatar' ? $('#avatar-input') : form.elements[key];
-  document.getElementById(`${key}-error`).textContent = message;
-  input.setAttribute('aria-invalid','true'); input.focus();
+  selectSetting(index);if(ABILITIES.some(a=>a.id===key))$('#ability-edit-details').open=true;
+  if(key==='photo')selectImage(0);if(key==='avatar')selectImage(1);if(key==='portraits')selectImage(2);
+  $('#form-error').textContent=message;const input=key==='photo'?$('#choose-photo'):key==='avatar'?$('#choose-avatar'):key==='portraits'?$('#collection-add'):form.elements[key];
+  document.getElementById(`${key}-error`).textContent=message;input.setAttribute('aria-invalid','true');input.focus();
 }
-$('#edit-profile').addEventListener('click', () => {
-  baseState = dataStore.get();
-  $('#ability-edit-details').open=false;
-  personalKeys.forEach(key => { form.elements[key].value = baseState.profile[key]; });
-  numericFields.forEach(({id})=>{ form.elements[id].value = id in baseState.stats ? baseState.stats[id] : baseState.stats.abilities.find(a=>a.id===id).value; });
-  draftPhoto = baseState.photo; draftAvatar = baseState.avatar; photoError = ''; avatarError = ''; loadingPhoto = false; loadingAvatar = false; photoSelection++; avatarSelection++;closeCrop();
-  $('#photo-input').value = ''; $('#avatar-input').value = ''; $('#save-settings').disabled = false;
-  clearErrors(); renderDraftPhoto();selectSetting(0);selectImage(0);dialog.showModal();
+const imageDraft=createProfileImages({onError:(key,message)=>fieldError(key,message,1),onSelect:selectImage,onBusy:busy=>{imageBusy=busy;$('#save-settings').disabled=saving||busy;}});
+function lockSave(value){saving=value;$('#save-settings').disabled=value||imageBusy;$('.settings-scroll').inert=value;$('#settings-tabs').inert=value;}
+$('#edit-profile').addEventListener('click',()=>{
+  baseState=dataStore.get();saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
+  personalKeys.forEach(key=>form.elements[key].value=baseState.profile[key]);
+  numericFields.forEach(({id})=>form.elements[id].value=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value);
+  clearErrors();selectSetting(0);selectImage(0);dialog.showModal();imageDraft.open(baseState);
 });
-$('#cancel-profile').addEventListener('click', () => dialog.close());
-dialog.addEventListener('close', () => { photoSelection++;avatarSelection++;closeCrop(); draftPhoto = null; draftAvatar = null; photoError = ''; avatarError = ''; loadingPhoto = false; loadingAvatar = false; $('#edit-profile').focus(); });
-form.addEventListener('submit', event => {
-  event.preventDefault(); clearErrors();
+$('#cancel-profile').addEventListener('click',()=>dialog.close());
+dialog.addEventListener('close',()=>{saveVersion++;imageDraft.close();lockSave(false);$('#edit-profile').focus();});
+form.addEventListener('submit',async event=>{
+  event.preventDefault();if(saving)return;clearErrors();
   let profile,stats;
-  try { profile = validateProfile(Object.fromEntries(new FormData(form))); }
-  catch(error) { fieldError('age',error.message,0); return; }
-  try { stats = validateManualStats(Object.fromEntries(new FormData(form)),baseState.stats); }
-  catch(error) { fieldError(error.field,error.message,2); return; }
-  if (loadingPhoto || photoError) { fieldError('photo',photoError || '圖片讀取中，請稍候。',1); return; }
-  if (loadingAvatar || avatarError || cropDirty) { fieldError('avatar',avatarError || (loadingAvatar ? '頭像讀取中，請稍候。' : '請先確認或取消裁切，再儲存設定。'),1); return; }
-  try {
-    if (dataStore.get().revision !== baseState.revision) throw new Error('資料已在其他頁面更新；草稿已保留，請取消後重新開啟設定，以免覆蓋新資料。');
-    const changed = personalKeys.filter(key=>profile[key]!==baseState.profile[key]);
-    for (const {id} of numericFields) {
-      const before = id in baseState.stats ? baseState.stats[id] : baseState.stats.abilities.find(a=>a.id===id).value;
-      const after = id in stats ? stats[id] : stats.abilities.find(a=>a.id===id).value;
-      if (before !== after) changed.push(id);
-    }
-    if (draftPhoto !== baseState.photo) changed.push('photo');
-    if (draftAvatar !== baseState.avatar) changed.push('avatar');
-    const saved = dataStore.transact({type:'settings.update',label:'已更新使用者設定',target:'user',fields:changed,changes:{profile,stats,photo:draftPhoto,avatar:draftAvatar}});
-    dialog.close(); notice(saved ? '使用者設定已儲存。' : '沒有變更需要儲存。');
-  } catch(error) { $('#form-error').textContent = error.message; }
+  try{profile=validateProfile(Object.fromEntries(new FormData(form)));}catch(error){fieldError('age',error.message,0);return;}
+  try{stats=validateManualStats(Object.fromEntries(new FormData(form)),baseState.stats);}catch(error){fieldError(error.field,error.message,2);return;}
+  if(imageBusy){$('#form-error').textContent='圖片處理中，請稍候再儲存。';return;}
+  const version=++saveVersion;lockSave(true);
+  try{
+    const images=await imageDraft.collect();
+    const storedImages=await prepareImageReferences(images);
+    if(!dialog.open||version!==saveVersion)return;
+    if(dataStore.get().revision!==baseState.revision)throw new Error('資料已在其他頁面更新；草稿已保留，請取消後重新開啟設定，以免覆蓋新資料。');
+    const changed=personalKeys.filter(key=>profile[key]!==baseState.profile[key]);
+    for(const{id}of numericFields){const before=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value;const after=id in stats?stats[id]:stats.abilities.find(a=>a.id===id).value;if(before!==after)changed.push(id);}
+    for(const[key,value]of Object.entries(storedImages))if(JSON.stringify(value)!==JSON.stringify(baseState[key]??null))changed.push(key);
+    const saved=dataStore.transact({type:'settings.update',label:'已更新使用者設定',target:'user',fields:changed,changes:{profile,stats,...storedImages}});
+    dialog.close();notice(saved?'使用者設定已儲存。':'沒有變更需要儲存。');
+  }catch(error){if(dialog.open&&version===saveVersion){lockSave(false);if(error.field)fieldError(error.field,error.message,1);else $('#form-error').textContent=error.message;}}
+  finally{if(version===saveVersion)lockSave(false);}
 });
-$('#photo-input').addEventListener('change', async event => {
-  const file = event.target.files[0]; if (!file) return;
-  const selection = ++photoSelection; loadingPhoto = true; photoError = ''; $('#photo-error').textContent = ''; $('#save-settings').disabled = true;
-  try {
-    const {url} = await readImageFile(file);
-    if (selection !== photoSelection || !dialog.open) return;
-    draftPhoto = url; $('#photo-input').removeAttribute('aria-invalid');renderDraftPhoto();
-  } catch(error) {
-    if (selection !== photoSelection || !dialog.open) return;
-    photoError = error.message; fieldError('photo',photoError,1);
-  } finally {
-    if (selection === photoSelection) { loadingPhoto = false; $('#save-settings').disabled = loadingAvatar; renderDraftPhoto(); }
-  }
-});
-const cropper = createAvatarCropper({canvas:$('#crop-canvas'),preview:$('#crop-preview'),zoomInput:$('#crop-zoom'),xInput:$('#crop-x'),yInput:$('#crop-y'),onChange:()=>{if(cropActive)cropDirty=true;}});
-function closeCrop() { cropActive=false;cropDirty=false;$('#avatar-crop').hidden=true;cropper.clear(); }
-async function beginCrop(source) {
-  const selection=++avatarSelection;loadingAvatar=true;avatarError='';$('#save-settings').disabled=true;
-  try {
-    const image=await source();
-    if(selection!==avatarSelection || !dialog.open)return;
-    cropActive=true;cropDirty=true;cropper.setImage(image);$('#avatar-crop').hidden=false;
-    $('#avatar-error').textContent='';$('#avatar-input').removeAttribute('aria-invalid');$('#crop-canvas').focus();
-  }catch(error){if(selection===avatarSelection && dialog.open){avatarError=error.message;fieldError('avatar',avatarError,1);}}
-  finally{if(selection===avatarSelection){loadingAvatar=false;$('#save-settings').disabled=loadingPhoto;}}
+function jumpToHistoryPage(){
+  const text=$('#history-input').value.trim(),total=Math.ceil(dataStore.get().history.length/HISTORY_PAGE_SIZE);
+  if(!/^\d+$/.test(text)||!Number.isSafeInteger(Number(text))||Number(text)<1||Number(text)>total){$('#history-page-error').textContent=`請輸入 1 至 ${total} 的整數頁碼。`;$('#history-page-error').hidden=false;$('#history-input').setAttribute('aria-invalid','true');return;}
+  historyPage=Number(text);renderHistory();
 }
-$('#avatar-input').addEventListener('change',event=>{const file=event.target.files[0];if(file)beginCrop(async()=> (await readImageFile(file)).image);});
-$('#crop-from-photo').addEventListener('click',()=>{if(draftPhoto)beginCrop(()=>decodeImage(draftPhoto));});
-$('#confirm-crop').addEventListener('click',()=>{
-  try{draftAvatar=cropper.export();avatarError='';closeCrop();renderDraftPhoto();$('#avatar-input').value='';$('#avatar-error').textContent='';$('#avatar-input').removeAttribute('aria-invalid');$('#crop-from-photo').focus();}
-  catch(error){avatarError=error.message;fieldError('avatar',avatarError,1);}
-});
-$('#cancel-crop').addEventListener('click',()=>{avatarSelection++;loadingAvatar=false;avatarError='';closeCrop();$('#avatar-error').textContent='';$('#avatar-input').value='';$('#save-settings').disabled=loadingPhoto;$('#avatar-input').focus();});
-$('#history-first').addEventListener('click',()=>{historyPage=1;renderHistory();});
+$('#history-go').addEventListener('click',jumpToHistoryPage);
+$('#history-input').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();jumpToHistoryPage();}});
 $('#history-jump').addEventListener('change',event=>{historyPage=Number(event.target.value);renderHistory();});
 $('#history-previous').addEventListener('click',()=>{historyPage--;renderHistory();});
 $('#history-next').addEventListener('click',()=>{historyPage++;renderHistory();});

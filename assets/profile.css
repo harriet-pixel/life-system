@@ -125,8 +125,8 @@ textarea { resize: vertical; }
 #profile-motto { display: none; }
 .personal-details-row { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
 .image-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 12px; border-bottom: 0; }
-#photo-settings .image-tabs button { font-size: .875rem; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px; }
-#photo-settings .image-tabs button[aria-selected="true"] { border-bottom-color: var(--color-primary); background: var(--color-tint); }
+#photo-settings .image-tabs button { font-size: 1rem; border: 2px solid var(--color-primary); border-radius: 0; padding: 8px 12px; background: var(--color-primary); color: white; }
+#photo-settings .image-tabs button[aria-selected="true"] { border-color: white; outline: 2px solid var(--color-primary); outline-offset: 0; text-decoration: underline; text-underline-offset: .25em; }
 @media (min-width:1024px) {
   .profile-summary-area { display: flex; flex-direction: column; justify-content: center; min-height: var(--profile-tabs-height,80px); }
   .profile-page #profile-stats { min-height: 0; }
@@ -158,18 +158,38 @@ textarea { resize: vertical; }
 
 .history-page-controls, .history-step-controls { display: contents; }
 @media (max-width:1023px) {
-  .profile-page .personal-heading { padding-bottom: 0; margin-bottom: -12px; }
+  .profile-page .personal-heading { padding-bottom: 0; margin-bottom: -18px; }
   .profile-page #profile-age:empty { display: none; }
   .profile-page #profile-stats { font-size: 1.125rem; }
-  .history-pagination { flex-direction: row; flex-wrap: nowrap; gap: 4px; margin-bottom: 12px; container-type: inline-size; }
+  .history-pagination { flex-direction: row; flex-wrap: nowrap; gap: 4px; margin-bottom: 12px;  }
   .history-page-controls, .history-step-controls { display: contents; }
   .history-jump { display: none; }
   #history-page { white-space: nowrap; }
 }
 
-.history-first { display: none; }
+.history-direct-jump { display: none; }
+.photo-frame img { object-fit: contain; }
+.image-tabs { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,140px),1fr)); }
+.draft-image-preview { display: grid; place-items: center; min-height: 80px; }
+.draft-image-preview img { max-width: 100%; max-height: 180px; object-fit: contain; }
+#portrait-editor { display: grid; gap: 12px; min-width: 0; }
+#portrait-canvas { width: min(100%,320px); height: auto; justify-self: center; touch-action: none; cursor: move; border: 1px solid var(--color-control-border); }
+#portrait-preview { max-width: min(100%,180px); max-height: 200px; width: auto; height: auto; justify-self: center; }
+#portrait-library { list-style: none; padding: 0; display: grid; gap: 16px; }
+#portrait-library li { min-width: 0; padding-block: 12px; border-bottom: 1px solid var(--color-border); }
+#portrait-library img { width: 100%; max-height: 180px; object-fit: contain; }
+.portrait-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#portrait-settings, #avatar-settings, #library-settings { align-content: start; }
 @media (max-width:1023px) {
-  .history-pagination button, #history-page { font-size: min(1rem, calc((100cqw - 104px) / 7)); white-space: nowrap; flex: 0 0 auto; }
+  .history-pagination { display: grid; grid-template-columns: 44px auto 44px; gap: 6px; justify-content: center; }
+  .history-pagination button, #history-page { font-size: 1rem; white-space: nowrap; }
   .history-pagination #history-previous, .history-pagination #history-next { width: 44px; min-width: 44px; padding-inline: 0; }
-  .history-pagination .history-first { display: inline-block; min-width: 44px; padding-inline: 2px; }
+  .history-direct-jump { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
+  .history-direct-jump label { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; min-width: 0; }
+  #history-input { width: 3em; max-width: 100%; min-width: 44px; min-height: 44px; font: inherit; color: var(--color-primary); background: white; border: 1px solid var(--color-control-border); padding: 4px; text-align: center; }
+  #history-page-error { grid-column: 1 / -1; overflow-wrap: anywhere; }
+  #history-retention-note { text-align: center; }
 }
+
+#photo-settings .image-tabs button:focus-visible { outline: 3px solid var(--color-text); outline-offset: 3px; }
+#portrait-canvas:focus-visible, #crop-canvas:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }

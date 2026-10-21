@@ -1,3 +1,4 @@
+import { migrateImages, collectUnusedImages } from './image-store.mjs?v=images-21';
 import { normalizeStats, validateStats } from './abilities.mjs?v=redo-17';
 // A single atomic localStorage document owns data and its reversible journal.
 export const HISTORY_LIMIT = 50;
@@ -6,7 +7,7 @@ export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
 const undoRecord = history => [...history].reverse().find(record => !record.undone);
 const redoRecord = history => history.filter(record => record.undone && record.redoable === true && Number.isSafeInteger(record.undoOrder)).sort((a,b) => b.undoOrder-a.undoOrder)[0];
-const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, activities: {}, stats: normalizeStats(), history: [] });
+const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: normalizeStats(), history: [] });
 export function createDataStore(storage) {
   let state;
   const listeners = new Set();
@@ -17,6 +18,7 @@ export function createDataStore(storage) {
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
     value.profile.motto ??= '';
     value.avatar ??= null;
+    value.portraits ??= [];value.photoEdit ??= null;value.avatarEdit ??= null;value.currentPortraitId ??= null;
     value.stats = normalizeStats(value.stats);
     // Normalize historical snapshots too so pre-upgrade Undo remains consistent.
     for (const record of value.history) for (const snapshot of [record.before, record.after]) {
@@ -68,7 +70,8 @@ export function createDataStore(storage) {
         if (key === 'stats') {
           value = validateStats(rawValue, state.stats);
         }
-        if (!['profile', 'photo', 'avatar', 'activities', 'stats'].includes(key)) throw new Error('不支援的資料類型');
+        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'stats'].includes(key)) throw new Error('不支援的資料類型');
+        if (key === 'portraits' && (!Array.isArray(value) || value.length>5 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 5 個立繪，請先刪除或更換既有項目。');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
       }
@@ -138,7 +141,22 @@ function openBrowserStore() {
     throw error;
   }
 }
+if (typeof window !== 'undefined') {
+  const status=document.querySelector('#operation-status');
+  try {
+    const migrationNeeded=window.localStorage.getItem(STORAGE_KEY)?.includes('data:image/');
+    const controls=migrationNeeded?[...document.querySelectorAll('input,button')].map(control=>[control,control.disabled]):[];
+    if(migrationNeeded){controls.forEach(([control])=>control.disabled=true);if(status){status.hidden=false;status.textContent='正在升級本機圖片儲存，請稍候。';}}
+    await migrateImages(window.localStorage,STORAGE_KEY);
+    controls.forEach(([control,disabled])=>control.disabled=disabled);
+    if(migrationNeeded&&status){status.hidden=true;status.textContent='';}
+  } catch(error) {
+    if(status){status.hidden=false;status.textContent=`本機儲存讀取或圖片升級失敗，原資料已保留。${error.message}`;}
+    document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;
+  }
+}
 export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : null;
+if (dataStore) dataStore.subscribe(()=>{collectUnusedImages(window.localStorage,STORAGE_KEY).catch(()=>{});});
 export const persistentUndo = dataStore && { getState: () => dataStore.getState(), undo: () => dataStore.undo(), redo: () => dataStore.redo(), subscribe: fn => dataStore.subscribe(() => fn(dataStore.getState())) };
 if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === STORAGE_KEY || e.key === null) dataStore.refresh(); });
 

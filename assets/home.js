@@ -1,7 +1,7 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { undoManager } from './undo.mjs?v=redo-17';
+import { undoManager } from './undo.mjs?v=images-21';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { dataStore, profileSummary } from './data.mjs?v=redo-17';
+import { dataStore, profileSummary } from './data.mjs?v=images-21';
 import { initializeNavigation } from './navigation.mjs?v=redo-17';
 
 // Development slots, not approved character emotions. Only use licensed assets.
