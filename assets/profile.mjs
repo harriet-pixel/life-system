@@ -84,7 +84,10 @@ function renderHistory(state = dataStore.get()) {
   $('#history-previous').disabled = historyPage <= 1;
   $('#history-next').disabled = historyPage >= pageCount;
   $('#history-list').start=(historyPage-1)*HISTORY_PAGE_SIZE+1;
-  $('#history-list').replaceChildren(...[...state.history].reverse().slice((historyPage-1)*HISTORY_PAGE_SIZE,historyPage*HISTORY_PAGE_SIZE).map(record => {
+  $('#history-list').replaceChildren(...[...state.history].reverse().slice((historyPage-1)*HISTORY_PAGE_SIZE,historyPage*HISTORY_PAGE_SIZE).map(record => historyRow(record,state)));
+  syncDesktopPanels(state);
+}
+function historyRow(record,state) {
     const li = element('li', ''); const time = element('time', new Intl.DateTimeFormat('zh-TW',{dateStyle:'short',timeStyle:'medium'}).format(new Date(record.time))); time.dateTime = record.time;
     li.append(time, element('p', `${record.label}${record.fields.length ? `（${record.fields.map(key=>fields[key] ?? key).join('、')}）` : ''}`));
     const deltas = Object.entries(record.delta).filter(([key,value])=>key !== 'abilities' && value).map(([key,value])=>`${({experience:'Exp',level:'Lv',currency:'$'})[key]} ${value>0?'+':''}${value}`);
@@ -92,8 +95,38 @@ function renderHistory(state = dataStore.get()) {
     li.append(element('p', deltas.join(' ｜ ') || '數值無變動'));
     li.append(element('p', record.undone ? `已撤銷 · ${new Date(record.undoneAt).toLocaleString('zh-TW')}` : '尚未撤銷'));
     return li;
-  }));
 }
+
+const desktopPanels = matchMedia('(min-width:1024px)');
+function syncDesktopPanels(state = dataStore.get()) {
+  const content=$('.profile-content'), tabs=content.querySelector('.activity-tabs');
+  if (!desktopPanels.matches) { content.style.removeProperty('--profile-panel-height'); return; }
+  const tabHeight=tabs.getBoundingClientRect().height;
+  $('.profile-dashboard').style.setProperty('--profile-tabs-height',`${tabHeight}px`);
+  // Measure every retained page without showing it or changing the selected tab.
+  const probe=element('div','');probe.className='history-measure';probe.inert=true;probe.setAttribute('aria-hidden','true');probe.style.width=`${content.getBoundingClientRect().width}px`;
+  probe.append(element('p','保留最近 50 筆操作紀錄'));probe.firstChild.className='small-note';
+  const list=element('ol','');list.className='history-list';probe.append(list);
+  const footer=$('#history-pagination').cloneNode(true);footer.removeAttribute('hidden');footer.removeAttribute('id');footer.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));footer.querySelectorAll('[aria-live]').forEach(el=>el.removeAttribute('aria-live'));const selectStyle=getComputedStyle($('#history-jump'));const probeSelect=footer.querySelector('select');for(const property of ['font','min-width','min-height','padding','border'])probeSelect.style.setProperty(property,selectStyle.getPropertyValue(property));probe.append(footer);content.append(probe);
+  const blanks=Array.from({length:HISTORY_PAGE_SIZE},()=>{
+    const li=element('li','');li.append(element('time','\u00a0'),...Array.from({length:3},()=>element('p','\u00a0')));return li;
+  });
+  list.replaceChildren(...blanks);let maximum=probe.getBoundingClientRect().height;
+  const records=[...state.history].reverse();
+  for(let start=0;start<records.length;start+=HISTORY_PAGE_SIZE){
+    list.start=start+1;list.replaceChildren(...records.slice(start,start+HISTORY_PAGE_SIZE).map(record=>historyRow(record,state)));
+    maximum=Math.max(maximum,probe.getBoundingClientRect().height);
+  }
+  probe.remove();content.style.setProperty('--profile-panel-height',`${Math.ceil(maximum)}px`);
+}
+let observedPanelWidth=-1,observedTabHeight=-1;
+const panelObserver=new ResizeObserver(()=>{
+  const width=$('.profile-content').getBoundingClientRect().width,height=$('.profile-content > .activity-tabs').getBoundingClientRect().height;
+  if(width!==observedPanelWidth || height!==observedTabHeight){observedPanelWidth=width;observedTabHeight=height;syncDesktopPanels();}
+});
+panelObserver.observe($('.profile-content'));panelObserver.observe($('.profile-content > .activity-tabs'));
+desktopPanels.addEventListener('change',()=>syncDesktopPanels());
+document.fonts.ready.then(()=>syncDesktopPanels());
 const dialog = $('#profile-dialog'), form = $('#profile-form');
 const personalKeys = ['name', 'age', 'gender', 'bio', 'boundaries'];
 const numericFields = [{ id:'currency', name:'貨幣量' }, { id:'level', name:'等級' }];
@@ -206,7 +239,8 @@ $('#history-jump').addEventListener('change',event=>{historyPage=Number(event.ta
 $('#history-previous').addEventListener('click',()=>{historyPage--;renderHistory();});
 $('#history-next').addEventListener('click',()=>{historyPage++;renderHistory();});
 const tabs = [$('#abilities-tab'),$('#history-tab')];
-function select(index) { tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;document.getElementById(tab.getAttribute('aria-controls')).hidden=i!==index;}); }
+function select(index) { tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;const panel=document.getElementById(tab.getAttribute('aria-controls'));panel.hidden=i!==index;panel.inert=i!==index;panel.setAttribute('aria-hidden',String(i!==index));}); }
 tabs.forEach((tab,i)=>{tab.addEventListener('click',()=>select(i));tab.addEventListener('keydown',e=>{const map={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(e.key in map){e.preventDefault();select(map[e.key]);tabs[map[e.key]].focus();}});});
 initializeNavigation({undoManager});
 dataStore.subscribe(render);
+select(0);

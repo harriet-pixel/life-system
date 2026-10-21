@@ -9,25 +9,24 @@
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
     <link rel="stylesheet" href="assets/styles.css?v=profile-5">
-    <link rel="stylesheet" href="assets/profile.css?v=profile-6">
-    <script type="module" src="assets/profile.mjs?v=profile-6"></script>
+    <link rel="stylesheet" href="assets/profile.css?v=profile-7">
+    <script type="module" src="assets/profile.mjs?v=profile-7"></script>
   </head>
   <body class="profile-page"><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" tabindex="-1">
         <div class="desktop-navigation" aria-label="電腦版導覽工具列">
           <nav id="desktop-links" class="navigation-options" aria-label="主要導覽"></nav>
           <button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button>
         </div>
-<span id="current-page-name" class="current-page-name desktop-page-name"></span>
 <div class="dashboard profile-dashboard">
 <section class="avatar-section" aria-label="使用者頭像"><div class="user-avatar-frame"><svg id="avatar-placeholder" viewBox="0 0 160 200" role="img" aria-label="預設頭像"><circle cx="80" cy="65" r="28"/><path d="M25 170c0-65 110-65 110 0"/></svg><img id="user-avatar" alt="使用者頭像" hidden></div></section>
-<section class="personal-heading"><h1 id="profile-name">尚未設定稱呼</h1><span id="profile-age"></span><button id="edit-profile" class="toolbar-button" type="button" aria-label="編輯個人資料"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 4 5 5-11 11H4v-5ZM13 6l5 5"/></svg></button></section>
+<section class="personal-heading"><div class="profile-identity"><h1 id="profile-name">尚未設定稱呼</h1><span id="current-page-name" class="current-page-name desktop-page-name"></span></div><span id="profile-age"></span><button id="edit-profile" class="toolbar-button" type="button" aria-label="編輯個人資料"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 4 5 5-11 11H4v-5ZM13 6l5 5"/></svg></button></section>
 <div class="profile-portrait-column"><div class="profile-summary" id="profile-stats" role="group" aria-label="累積經驗、等級與貨幣"></div>
 <section class="photo-section" aria-label="使用者照片">
 <div class="photo-frame"><svg id="default-avatar" viewBox="0 0 160 200" role="img" aria-label="預設頭像"><circle cx="80" cy="65" r="28"/><path d="M25 170c0-65 110-65 110 0"/></svg><img id="user-photo" alt="使用者照片" hidden></div>
 </section></div>
 <div class="profile-content"><div class="activity-tabs" role="tablist" aria-label="我的資料內容"><button id="abilities-tab" role="tab" aria-controls="abilities-panel" aria-selected="true"><span>能力值</span><span class="tab-english" lang="en">Attributes</span></button><button id="history-tab" role="tab" aria-controls="history-panel" aria-selected="false" tabindex="-1"><span>歷史紀錄</span><span class="tab-english" lang="en">History</span></button></div>
 <section id="abilities-panel" role="tabpanel" aria-labelledby="abilities-tab" tabindex="0"><p id="abilities-missing" class="small-note">尚未定義五項能力，待確認名稱、順序與資料來源。</p><div class="ability-charts" hidden><div><p class="small-note">長條表示各能力占總能力值的比例</p><div id="ability-bars"></div></div><div id="ability-radar"></div></div></section>
-<section id="history-panel" role="tabpanel" aria-labelledby="history-tab" tabindex="0" hidden><p id="history-empty" class="small-note">尚無操作紀錄。</p><p class="small-note">保留最近 50 筆操作紀錄</p><ol id="history-list"></ol><nav id="history-pagination" class="history-pagination" aria-label="歷史紀錄分頁" hidden><button id="history-previous" type="button">上一頁</button><label class="history-jump" for="history-jump">跳至第 <select id="history-jump" aria-label="跳至歷史紀錄頁面"></select> 頁</label><span id="history-page" aria-live="polite"></span><button id="history-next" type="button">下一頁</button></nav></section>
+<section id="history-panel" role="tabpanel" aria-labelledby="history-tab" tabindex="0" hidden><p id="history-empty" class="small-note">尚無操作紀錄。</p><p class="small-note">保留最近 50 筆操作紀錄</p><ol id="history-list" class="history-list"></ol><nav id="history-pagination" class="history-pagination" aria-label="歷史紀錄分頁" hidden><button id="history-previous" type="button">上一頁</button><label class="history-jump" for="history-jump">跳至第 <select id="history-jump" aria-label="跳至歷史紀錄頁面"></select> 頁</label><span id="history-page" aria-live="polite"></span><button id="history-next" type="button">下一頁</button></nav></section>
 <p id="operation-status" class="small-note" role="status" hidden></p></div>
 </div></main></div>    <div class="mobile-navigation" hidden><nav id="mobile-links" class="navigation-options" aria-label="主要導覽"></nav><div class="mobile-undo"><button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button></div></div>
 <dialog id="profile-dialog" aria-labelledby="edit-title"><form id="profile-form" novalidate>

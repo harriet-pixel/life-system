@@ -13,9 +13,9 @@
 .ability-fill { height: 100%; background: var(--color-primary); }
 #ability-radar svg { width: 100%; height: auto; color: var(--color-primary); }
 #ability-radar text { fill: currentColor; font: 12px var(--font-body); }
-#history-list { padding-left: 1.5em; margin: 0; }
-#history-list li { padding-block: 12px; border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
-#history-list time { display: block; color: var(--color-muted); font-size: .75rem; }
+.history-list { padding-left: 1.5em; margin: 0; }
+.history-list li { padding-block: 12px; border-bottom: 1px solid var(--color-border); overflow-wrap: anywhere; }
+.history-list time { display: block; color: var(--color-muted); font-size: .75rem; }
 dialog { width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 24px; border: 1px solid var(--color-primary); color: var(--color-text); background: white; overflow: auto; }
 dialog::backdrop { background: #0005; }
 #profile-form { display: grid; gap: 16px; }
@@ -101,3 +101,19 @@ textarea { resize: vertical; }
   .profile-portrait-column { display: flex; flex-direction: column; gap: 24px; grid-column: 1; grid-row: 2; align-self: start; }
   .profile-page .profile-content { grid-column: 2; grid-row: 2; }
 }
+
+.profile-identity { min-width: 0; }
+@media (max-width:1023px) { .profile-identity { grid-column: 2; } }
+@media (min-width:1024px) {
+  .profile-identity { display: flex; align-items: baseline; gap: 16px; min-width: 0; flex-wrap: wrap; }
+  .profile-page #profile-name { flex: 0 1 auto; }
+  .profile-page #current-page-name { flex: 0 1 auto; }
+  .profile-portrait-column { gap: 0; }
+  .profile-page #profile-stats { min-height: var(--profile-tabs-height, 80px); }
+  .profile-content { position: relative; display: grid; grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(var(--profile-panel-height, 700px),auto) auto; align-content: start; align-items: start; }
+  .profile-content > .activity-tabs { grid-column: 1; grid-row: 1; }
+  #abilities-panel, #history-panel { grid-column: 1; grid-row: 2; }
+  .profile-content > [role="tabpanel"][hidden] { display: block !important; visibility: hidden; pointer-events: none; }
+  .profile-content > #operation-status { grid-column: 1; grid-row: 3; }
+}
+.history-measure { position: absolute; top: 0; left: 0; box-sizing: border-box; padding-inline: 1em; visibility: hidden; pointer-events: none; }
