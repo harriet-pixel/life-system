@@ -113,8 +113,8 @@ export async function generateMockReply({ actions }, { signal }) {
   const hasTask = actions.some((action) => action.type === 'task.completed');
   return {
     dialogue: actions.length > 1
-      ? `已收到 ${actions.length} 項示意完成操作。這是合併事件後的模擬回應，尚未使用角色或好感度資料。`
-      : `已收到「${actions[0].label}」的示意完成事件。這是模擬回應，尚未使用角色或好感度資料。`,
+      ? `已收到 ${actions.length} 項示意完成操作。`
+      : `已完成「${actions[0].label}」。`,
     emotion: hasTask ? 'pleased' : 'calm',
   };
 }
