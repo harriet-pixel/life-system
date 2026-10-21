@@ -20,6 +20,15 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    await page.evaluate(() => document.fonts.ready);
    await page.waitForFunction(() => document.querySelector('#companion-status').textContent.includes('尚未產生'));
    assert.equal(await page.locator('button:disabled').count(), 1);
+   assert.ok(await page.locator('h1,h2,p,span,button,label').evaluateAll(es => {
+    const family=getComputedStyle(document.querySelector('h1')).fontFamily;
+    return es.every(e => getComputedStyle(e).fontFamily === family);
+   }));
+   for (const section of ['.tasks', '.habits']) {
+    assert.equal(await page.locator(section+' .section-heading > div').isVisible(), !mobile && true);
+   }
+   assert.equal(await page.locator('#main').evaluate(e => getComputedStyle(e).rowGap), '24px');
+
    assert.equal(await page.locator('.section-description').count(), 0);
    for (const section of ['.tasks', '.habits']) {
     assert.equal(await page.locator(section+' .section-heading > div > :first-child').evaluate(e => e.tagName), 'H2');
@@ -139,7 +148,7 @@ if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
    assert.equal(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
    assert.equal(await page.locator('[data-task]').first().evaluate(e => getComputedStyle(e).transitionDuration), '0s');
    assert.equal(await page.locator('#companion-dialogue').evaluate(e => getComputedStyle(e).animationName), 'none');
-   assert.ok(await page.locator('label:visible').evaluateAll((els) => els.every((e) => { const r=e.getBoundingClientRect(); return r.width >= 44 && r.height >= 44; })));
+   assert.ok(await page.locator('label:visible').evaluateAll((els) => els.every((e) => { const r=e.getBoundingClientRect(); return r.width >= 44 && r.height >= 44 && r.height < 88; })));
    if (mobile) {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.waitForFunction(() => [...document.querySelectorAll('.home-grid > section')].every(e => !e.hidden));
