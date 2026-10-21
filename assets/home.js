@@ -97,29 +97,19 @@ const activityPanels = tabButtons.map((button) => document.getElementById(button
 const desktopLayout = window.matchMedia('(min-width: 1024px)');
 let selectedPanel = 0;
 function syncActivityTabs() {
-  const mobile = !desktopLayout.matches;
-  document.querySelector('#main').dataset.activityTabs = String(mobile);
-  activityTabs.hidden = !mobile;
-  if (mobile) activityTabs.setAttribute('role', 'tablist');
-  else activityTabs.removeAttribute('role');
+  document.querySelector('#main').dataset.activityTabs = 'true';
+  activityTabs.hidden = false;
+  activityTabs.setAttribute('role', 'tablist');
+  placeholder.firstElementChild.textContent = desktopLayout.matches ? '立繪佔位' : '頭像佔位';
   tabButtons.forEach((button, index) => {
     const panel = activityPanels[index];
-    panel.hidden = mobile && index !== selectedPanel;
-    if (mobile) {
-      button.setAttribute('role', 'tab');
-      button.setAttribute('aria-controls', panel.id);
-      button.setAttribute('aria-selected', String(index === selectedPanel));
-      button.tabIndex = index === selectedPanel ? 0 : -1;
-      panel.setAttribute('role', 'tabpanel');
-      panel.setAttribute('aria-labelledby', button.id);
-    } else {
-      button.removeAttribute('role');
-      button.removeAttribute('aria-controls');
-      button.removeAttribute('aria-selected');
-      button.removeAttribute('tabindex');
-      panel.removeAttribute('role');
-      panel.setAttribute('aria-labelledby', index === 0 ? 'tasks-title' : 'habits-title');
-    }
+    panel.hidden = index !== selectedPanel;
+    button.setAttribute('role', 'tab');
+    button.setAttribute('aria-controls', panel.id);
+    button.setAttribute('aria-selected', String(index === selectedPanel));
+    button.tabIndex = index === selectedPanel ? 0 : -1;
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', button.id);
   });
 }
 function selectActivity(index) {
@@ -129,7 +119,6 @@ function selectActivity(index) {
 tabButtons.forEach((button, index) => {
   button.addEventListener('click', () => selectActivity(index));
   button.addEventListener('keydown', (event) => {
-    if (desktopLayout.matches) return;
     const targets = { ArrowRight: (index + 1) % 2, ArrowLeft: (index + 1) % 2, Home: 0, End: 1 };
     if (!(event.key in targets)) return;
     event.preventDefault();
@@ -137,12 +126,5 @@ tabButtons.forEach((button, index) => {
     tabButtons[selectedPanel].focus();
   });
 });
-desktopLayout.addEventListener('change', () => {
-  const focusedPanel = activityPanels.findIndex((panel) => panel.contains(document.activeElement));
-  if (!desktopLayout.matches && focusedPanel >= 0) selectedPanel = focusedPanel;
-  const tabHadFocus = activityTabs.contains(document.activeElement);
-  syncActivityTabs();
-  // A focused tab disappears on desktop; keep focus on its corresponding input.
-  if (desktopLayout.matches && tabHadFocus) activityPanels[selectedPanel].querySelector('input').focus();
-});
+desktopLayout.addEventListener('change', syncActivityTabs);
 syncActivityTabs();

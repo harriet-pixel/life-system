@@ -81,8 +81,7 @@ input[type="checkbox"]:checked::after { content: ""; width: 9px; height: 5px; bo
 .habit-state { font-size: var(--text-small); color: var(--color-muted); }
 .habit-row:has(input:checked) .habit-state { color: var(--color-primary); }
 .habit-note { margin-top: var(--space-3); }
-.companion { padding: 0 var(--space-4); background: var(--color-background); border: 0; border-top: 1px solid var(--color-border); }
-.intro + .companion { margin-top: 0; padding-top: 24px; }
+.companion { padding: var(--space-5) var(--space-4) 0; background: var(--color-background); border: 0; border-top: 1px solid var(--color-border); }
 .companion-banner { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--space-3); align-items: center; }
 .companion-portrait { width: 100%; aspect-ratio: 1; border: 1px solid var(--color-border); background: var(--color-tint); color: var(--color-primary); overflow: hidden; }
 .companion-portrait img { width: 100%; height: 100%; object-fit: contain; }
@@ -108,7 +107,7 @@ input[type="checkbox"] { transition: background-color 180ms ease, border-color 1
 @media (min-width: 375px) { .page-shell { padding-inline: var(--space-5); } }
 @media (min-width: 640px) {
   .page-shell { padding-inline: var(--space-6); }
-  .companion { padding: 0 var(--space-5); }
+  .companion { padding: var(--space-5) var(--space-5) 0; }
   .companion-banner { grid-template-columns: 104px minmax(0, 1fr); gap: var(--space-5); }
   #portrait-placeholder { min-height: 104px; font-size: var(--text-small); }
   .dialogue-bubble { padding: var(--space-3) var(--space-5); }
@@ -125,14 +124,13 @@ input[type="checkbox"] { transition: background-color 180ms ease, border-color 1
 @media (min-width: 1024px) {
   .page-shell { padding-inline: var(--space-8); }
   .intro { padding-block: var(--space-2) 0; }
-  .home-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; column-gap: var(--space-8); row-gap: var(--space-5); padding-top: 0; }
+  .home-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
 
 .activity-tabs { display: flex; gap: var(--space-4); border-bottom: 1px solid var(--color-border); }
 .activity-tabs button { flex: 1; min-width: 0; min-height: 44px; padding: var(--space-2); border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: var(--color-muted); background: #fff; cursor: pointer; overflow-wrap: anywhere; }
 .activity-tabs button[aria-selected="true"] { color: var(--color-primary); border-bottom-color: var(--color-primary); }
-@media (min-width: 1024px) { .activity-tabs { display: none; } }
 
 .activity-tabs button { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 1.375rem; font-weight: 400; letter-spacing: .08em; }
 
@@ -142,3 +140,17 @@ input[type="checkbox"] { transition: background-color 180ms ease, border-color 1
   .date-block, .date-block time { flex-direction: row; align-items: baseline; }
 }
 @media (min-width: 1024px) { .intro .date-block { order: 1; } }
+
+.dashboard, .daily-panel { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+.activity-region { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+#main[data-activity-tabs="true"] .section-kicker { margin-top: 0; }
+@media (min-width: 1024px) {
+  .dashboard { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.3fr); gap: var(--space-6); align-items: start; border-top: 1px solid var(--color-border); padding-top: var(--space-5); }
+  .dashboard .companion { padding: 0; border: 0; min-width: 0; }
+  .companion-banner { display: block; position: relative; }
+  .companion-portrait { aspect-ratio: 3 / 4; min-height: 520px; display: grid; }
+  #portrait-placeholder { height: 100%; min-height: 100%; }
+  .companion .dialogue-column { position: absolute; z-index: 1; left: var(--space-4); right: var(--space-4); bottom: var(--space-5); }
+  .companion .dialogue-bubble { padding: var(--space-4); }
+  .companion .dialogue-bubble::before { top: -5px; left: 24px; transform: rotate(135deg); }
+}
