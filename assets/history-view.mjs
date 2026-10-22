@@ -29,20 +29,12 @@ function renderHistory(state = dataStore.get()) {
   $('#history-jump').replaceChildren(...Array.from({length:pageCount},(_,i)=>{const option=element('option',String(i+1));option.value=String(i+1);return option;}));
   $('#history-jump').value=String(historyPage);
   $('#history-previous').disabled = historyPage <= 1;
-  $('#history-input').value=String(historyPage);
-  $('#history-input').setAttribute('aria-label',`跳至頁碼，1 至 ${pageCount || 1}`);
-  $('#history-input').removeAttribute('aria-invalid');$('#history-page-error').hidden=true;
+  $('#history-page-error').hidden=true;
   $('#history-next').disabled = historyPage >= pageCount;
   $('#history-list').start=(historyPage-1)*HISTORY_PAGE_SIZE+1;
   $('#history-list').replaceChildren(...[...state.history].reverse().slice((historyPage-1)*HISTORY_PAGE_SIZE,historyPage*HISTORY_PAGE_SIZE).map(record => historyRow(record,state)));
   afterRender(state);
 }
-function jumpToHistoryPage(){
-  const text=$('#history-input').value.trim(),total=Math.ceil(dataStore.get().history.length/HISTORY_PAGE_SIZE);
-  try{historyPage=validateHistoryPage(text,total);renderHistory();}catch(error){$('#history-page-error').textContent=error.message;$('#history-page-error').hidden=false;$('#history-input').setAttribute('aria-invalid','true');}
-}
-$('#history-go').addEventListener('click',jumpToHistoryPage);
-$('#history-input').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();jumpToHistoryPage();}});
 $('#history-jump').addEventListener('change',event=>{try{historyPage=validateHistoryPage(event.target.value,Math.ceil(dataStore.get().history.length/HISTORY_PAGE_SIZE));renderHistory();}catch(error){$('#history-page-error').textContent=error.message;$('#history-page-error').hidden=false;}});
 $('#history-previous').addEventListener('click',()=>{historyPage--;renderHistory();});
 $('#history-next').addEventListener('click',()=>{historyPage++;renderHistory();});
@@ -50,17 +42,10 @@ $('#history-next').addEventListener('click',()=>{historyPage++;renderHistory();}
 const desktopPanels=matchMedia('(min-width:1024px)');
 function positionHistory(){
   const pagination = $('#history-pagination'), list = $('#history-list'), retention = $('#history-retention-note');
-  const previous=$('#history-previous'), next=$('#history-next'), page=$('#history-page');
-  $('#history-page-error').hidden=true;$('#history-input').removeAttribute('aria-invalid');$('#history-input').value=String(historyPage);
-  previous.setAttribute('aria-label','上一頁'); next.setAttribute('aria-label','下一頁');
   if (desktopPanels.matches) {
     list.before(retention); list.after(pagination);
-    $('.history-page-controls').append(page); $('.history-step-controls').append(next);
-    pagination.prepend(previous); previous.textContent='上一頁'; next.textContent='下一頁';
   } else {
     list.before(pagination); list.after(retention);
-    pagination.append(previous,page,next,$('#history-direct-jump'),$('#history-page-error'));
-    previous.textContent='◀\uFE0E'; next.textContent='▶\uFE0E';
   }
 }
 positionHistory();desktopPanels.addEventListener('change',positionHistory);
