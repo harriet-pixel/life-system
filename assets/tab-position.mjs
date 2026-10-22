@@ -6,8 +6,17 @@ export function createMobileTabPositioner(tablist, beforeMeasure = () => {}) {
   region.classList.add('mobile-tab-scroll-region');
   let pendingFrame = 0;
   return function positionAfterClick(event) {
-    if (!event.isTrusted || !mobile.matches || document.querySelector('dialog[open]')) return;
+    if (!event.isTrusted || document.querySelector('dialog[open]')) return;
     cancelAnimationFrame(pendingFrame);
+    // Reveal only inside the horizontal tab scroller; never scroll its ancestors.
+    const selectedTab = tablist.querySelector('[aria-selected="true"]');
+    if (selectedTab && tablist.scrollWidth > tablist.clientWidth) {
+      const tabs = tablist.getBoundingClientRect(), tab = selectedTab.getBoundingClientRect();
+      const delta = tab.left < tabs.left ? tab.left - tabs.left : tab.right > tabs.right ? tab.right - tabs.right : 0;
+      if (delta) tablist.scrollTo({left: tablist.scrollLeft + delta, behavior: 'instant'});
+    }
+    // Arrow/Home/End changes keep focus visible without vertically repositioning.
+    if (event.type !== 'click' || !mobile.matches) return;
     pendingFrame = requestAnimationFrame(() => {
       pendingFrame = 0;
       if (!mobile.matches || document.querySelector('dialog[open]')) return;
