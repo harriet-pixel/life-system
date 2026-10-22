@@ -4,8 +4,8 @@ const $=selector=>document.querySelector(selector);
 export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   let session=0,jobs=0,opened=false,base,photo,avatar,portraits=[],currentId=null,manualAvatar=false,newPhoto=false,slotTarget=null;
   let editingPhoto=false,editingAvatar=false,collectionMode=false,pendingCollection=null,collectionSlot=null,photoWorkingBase=null,avatarWorkingBase=null;
-  let photoVersion=0,uploadVersion=0,avatarVersion=0,timer,scheduled=false,photoError='',avatarError='';
-  const updateBusy=()=>{const busy=jobs>0||scheduled;onBusy(busy);$('#image-status').hidden=!busy;$('#image-status').textContent=busy?'圖片處理中，請稍候。':'';$('#crop-from-photo').disabled=!photo?.result||busy;$('#add-favorite').disabled=!photo?.result||editingPhoto||busy;};
+  let photoVersion=0,uploadVersion=0,avatarVersion=0,photoError='',avatarError='';
+  const updateBusy=()=>{const busy=jobs>0;onBusy(busy);$('#image-status').hidden=!busy;$('#image-status').textContent=busy?'圖片處理中，請稍候。':'';$('#crop-from-photo').disabled=!photo?.result||busy;$('#add-favorite').disabled=!photo?.result||editingPhoto||busy;};
   async function job(work){const token=session;jobs++;updateBusy();try{return await work(token);}finally{if(token===session){jobs--;updateBusy();}}}
   const active=token=>opened&&token===session;
   const fail=(field,error,index=field==='avatar'?1:0)=>{if(!opened)return;if(field==='avatar')avatarError=error.message;else if(field==='photo')photoError=error.message;onError(field,error.message,index);};
@@ -18,7 +18,7 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   $('#cancel-portrait-crop').addEventListener('click',()=>{job(async token=>{if(photo){const image=await decodeImage(await imageURL(photo.source));if(!active(token))return;portraitEditor.setImage(image,{crop:photo.crop});}setEditing('photo',false);}).catch(error=>fail('photo',error));});
   $('#cancel-avatar-crop').addEventListener('click',()=>{job(async token=>{if(avatar){const image=await decodeImage(await imageURL(avatar.source));if(!active(token))return;avatarEditor.setImage(image,{crop:avatar.crop});}setEditing('avatar',false);}).catch(error=>fail('avatar',error));});
   $('#confirm-portrait-crop').addEventListener('click',async()=>{if(!photo)return;const token=session;photoError='';$('#photo-error').textContent='';photo.changed=true;photo.dirty=true;photoVersion++;try{await flushPhoto();if(active(token))setEditing('photo',false);}catch(error){if(active(token))fail('photo',error);}});
-  $('#confirm-avatar-crop').addEventListener('click',async()=>{if(!avatar)return;const token=session;avatarError='';$('#avatar-error').textContent='';try{await job(async token=>{const model=avatar,result=await avatarEditor.export();if(!active(token)||avatar!==model)return;Object.assign(avatar,{result,crop:avatarEditor.crop,changed:true,dirty:false});manualAvatar=true;avatarVersion++;setEditing('avatar',false);});}catch(error){if(active(token))fail('avatar',error);}});
+  $('#confirm-avatar-crop').addEventListener('click',async()=>{if(!avatar)return;const token=session;avatarError='';$('#avatar-error').textContent='';try{await job(async token=>{const model=avatar,result=await avatarEditor.export();if(!active(token)||avatar!==model)return;Object.assign(avatar,{result,crop:avatarEditor.crop,changed:true});manualAvatar=true;avatarVersion++;setEditing('avatar',false);});}catch(error){if(active(token))fail('avatar',error);}});
   $('#cancel-collection').addEventListener('click',()=>{pendingCollection=null;collectionEditor.clear();$('#collection-editor').hidden=true;});
   $('#confirm-collection').addEventListener('click',async()=>{if(!pendingCollection)return;const token=session,model=pendingCollection;try{await job(async token=>{const result=await collectionEditor.export();if(!active(token)||pendingCollection!==model)return;const {imageFingerprint}=await import('./image-store.mjs');const fingerprint=await imageFingerprint(result);if(!active(token))return;const existingFingerprints=await Promise.all(portraits.filter(p=>p.id!==model.target).map(p=>imageFingerprint(p.image)));if(!active(token))return;if(existingFingerprints.includes(fingerprint))throw new Error('這張圖片已在最愛中。');if(!portraits.some(item=>item.id===model.target)&&portraits.length>=6)throw new Error('最多保存 6 個立繪，請先刪除或更換。');const slots=librarySlots(),existing=slots.findIndex(item=>item?.id===model.target),available=Number.isInteger(model.slot)&&!slots[model.slot]?model.slot:slots.indexOf(null);const item={id:model.target??crypto.randomUUID(),slot:existing>=0?existing:available,source:model.source,image:result,crop:collectionEditor.crop},index=portraits.findIndex(p=>p.id===item.id);if(index<0)portraits.push(item);else portraits[index]=item;pendingCollection=null;$('#portraits-error').textContent='';$('#collection-editor').hidden=true;collectionEditor.clear();updateLibrary();$('#portrait-library').children[item.slot]?.querySelector('button').focus();});}catch(error){if(active(token))fail('portraits',error,2);}});
   async function paintImage(target,reference){
@@ -54,20 +54,19 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   function renderDraft(){
     $('#draft-photo-empty').hidden=Boolean(photo?.result);$('#portrait-editor').hidden=!photo?.result||!editingPhoto;$('#start-portrait-crop').hidden=false;$('#start-portrait-crop').disabled=!photo?.result||editingPhoto;
     $('#choose-photo').textContent='更換';
-    $('#add-favorite').disabled=!photo?.result||editingPhoto||jobs>0||scheduled;
+    $('#add-favorite').disabled=!photo?.result||editingPhoto||jobs>0;
     $('#favorite-help').textContent=editingPhoto?'請先確認或取消立繪裁切，再添加到最愛。':!photo?.result?'請先選擇立繪，再添加到最愛。':'';
     $('#draft-avatar-empty').hidden=Boolean(avatar?.result)||avatarEditor.ready;$('#avatar-crop').hidden=!avatarEditor.ready||!editingAvatar;$('#start-avatar-crop').disabled=!avatarEditor.ready||editingAvatar;
     paintImage($('#draft-photo'),photo?.result).catch(error=>fail('photo',error));paintImage($('#draft-avatar'),avatar?.result).catch(error=>fail('avatar',error));
-    $('#crop-from-photo').disabled=!photo?.result||jobs>0||scheduled;
+    $('#crop-from-photo').disabled=!photo?.result||jobs>0;
     $('#crop-source-help').textContent=photo?.result?'使用本次設定的立繪裁切結果。':'尚無可用立繪，請先上傳立繪。';updateLibrary();
   }
-  async function setAvatar(source,{crop,automatic=false,top=false,result=null}={}){
+  async function setAvatar(source,{automatic=false,top=false}={}){
     const token=session,version=avatarVersion;const image=await decodeImage(await imageURL(source));
     if(!active(token)||version!==avatarVersion||(automatic&&manualAvatar))return;
-    avatarEditor.setImage(image,{crop,top});const output=result??await avatarEditor.export();if(!active(token)||version!==avatarVersion||(automatic&&manualAvatar))return;avatar={source,result:output,crop:avatarEditor.crop,changed:true,dirty:false};editingAvatar=false;renderDraft();
+    avatarEditor.setImage(image,{top});const output=await avatarEditor.export();if(!active(token)||version!==avatarVersion||(automatic&&manualAvatar))return;avatar={source,result:output,crop:avatarEditor.crop,changed:true};editingAvatar=false;renderDraft();
   }
   async function flushPhoto(){
-    clearTimeout(timer);scheduled=false;
     if(!photo?.dirty){updateBusy();return;}
     const model=photo,version=photoVersion;
     return job(async token=>{
@@ -98,7 +97,7 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
       $('#photo-input').value='';$('#photo-error').textContent='';renderDraft();onSelect(0);
     });}catch(error){if(version===uploadVersion)fail(asCollection?'portraits':'photo',error,asCollection?2:0);}
   }
-  $('#add-favorite').addEventListener('click',()=>{if(!photo?.result||editingPhoto||jobs||scheduled)return;job(async token=>{
+  $('#add-favorite').addEventListener('click',()=>{if(!photo?.result||editingPhoto||jobs)return;job(async token=>{
     const {imageFingerprint}=await import('./image-store.mjs');const fingerprint=await imageFingerprint(photo.result);
     const fingerprints=await Promise.all(portraits.map(p=>imageFingerprint(p.image)));
     if(!active(token))return;
@@ -136,9 +135,9 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   });
   return{
     async open(state){
-      session++;opened=true;editingPhoto=false;editingAvatar=false;pendingCollection=null;collectionMode=false;$('#collection-editor').hidden=true;collectionEditor.clear();slotTarget=null;jobs=0;scheduled=false;clearTimeout(timer);base=structuredClone(state);portraits=structuredClone(state.portraits??[]);currentId=state.currentPortraitId??null;manualAvatar=false;newPhoto=false;photoError='';avatarError='';photoVersion++;uploadVersion++;avatarVersion++;portraitEditor.clear();avatarEditor.clear();
+      session++;opened=true;editingPhoto=false;editingAvatar=false;pendingCollection=null;collectionMode=false;$('#collection-editor').hidden=true;collectionEditor.clear();slotTarget=null;jobs=0;base=structuredClone(state);portraits=structuredClone(state.portraits??[]);currentId=state.currentPortraitId??null;manualAvatar=false;newPhoto=false;photoError='';avatarError='';photoVersion++;uploadVersion++;avatarVersion++;portraitEditor.clear();avatarEditor.clear();
       photo=state.photo?{source:state.photoEdit?.source??state.photo,result:state.photo,crop:state.photoEdit?.crop??null,changed:false,dirty:false}:null;
-      avatar=state.avatar?{source:state.avatarEdit?.source??state.avatar,result:state.avatar,crop:state.avatarEdit?.crop??null,changed:false,dirty:false}:null;
+      avatar=state.avatar?{source:state.avatarEdit?.source??state.avatar,result:state.avatar,crop:state.avatarEdit?.crop??null,changed:false}:null;
       $('#photo-input').value='';$('#avatar-input').value='';renderDraft();
       const opening=session,openingPhoto=photo,openingAvatar=avatar;
       try{await job(async token=>{
@@ -147,8 +146,7 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
         if(active(token))renderDraft();
       });}catch(error){if(active(opening))fail(error.field??'photo',error);}
     },
-    close(){if(actionDialog.open)actionDialog.close();actionId=null;actionTrigger=null;opened=false;session++;jobs=0;scheduled=false;clearTimeout(timer);photoVersion++;uploadVersion++;avatarVersion++;portraitEditor.clear();avatarEditor.clear();photo=null;avatar=null;portraits=[];onBusy(false);},
-    get busy(){return jobs>0||scheduled;},
+    close(){if(actionDialog.open)actionDialog.close();actionId=null;actionTrigger=null;opened=false;session++;jobs=0;photoVersion++;uploadVersion++;avatarVersion++;portraitEditor.clear();avatarEditor.clear();photo=null;avatar=null;portraits=[];onBusy(false);},
     get hasChanges(){
       if(!opened)return false;
       if(pendingCollection||$('#photo-input').files.length||$('#avatar-input').files.length)return true;
@@ -164,8 +162,7 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
       if(photoError)throw Object.assign(new Error(photoError),{field:'photo'});
       if(avatarError)throw Object.assign(new Error(avatarError),{field:'avatar'});
       try{await flushPhoto();}catch(error){throw Object.assign(error,{field:'photo'});}if(!active(collectionSession))throw new Error('設定已取消。');
-      return job(async token=>{
-        if(avatar?.dirty){const model=avatar;let result;try{result=await avatarEditor.export();}catch(error){throw Object.assign(error,{field:'avatar'});}if(!active(token)||avatar!==model)throw new Error('設定已取消。');avatar.result=result;avatar.crop=avatarEditor.crop;avatar.dirty=false;}
+      return job(async()=>{
         return{photo:photo?.result??null,avatar:avatar?.result??null,photoEdit:photo?.changed?{source:photo.source,crop:photo.crop}:base.photoEdit??null,avatarEdit:avatar?.changed?{source:avatar.source,crop:avatar.crop}:base.avatarEdit??null,portraits:structuredClone(portraits),currentPortraitId:currentId};
       });
     },

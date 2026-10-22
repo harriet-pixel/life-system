@@ -37,16 +37,12 @@ export async function readImageFile(file, options = {}) {
     const url=await encodeCanvas(canvas,{maxEdge,limit});return{url,image:await decodeImage(url)};
   }finally{URL.revokeObjectURL(objectURL);}
 }
-export function cropRectangle(width,height,zoom,x,y) {
-  const side=Math.min(width,height)/Math.max(1,zoom);
-  return{left:(width-side)/2*(1+Math.max(-1,Math.min(1,x))),top:(height-side)/2*(1+Math.max(-1,Math.min(1,y))),side};
-}
 export function constrainCrop(rect,width,height,square=false) {
   let w=Math.max(1,Math.min(width,rect.width)),h=Math.max(1,Math.min(height,rect.height));
   if(square)w=h=Math.min(w,h);
   return{left:Math.max(0,Math.min(width-w,rect.left)),top:Math.max(0,Math.min(height-h,rect.top)),width:w,height:h};
 }
-export function createImageCropper({canvas,preview,zoomInput,widthInput,heightInput,square=false,aspectRatio=null,onChange=()=>{}}) {
+export function createImageCropper({canvas,zoomInput,square=false,aspectRatio=null,onChange=()=>{}}) {
   let image=null,rect=null,drag=null,lastZoom=1;
   function geometry(){const scale=Math.min(canvas.width/image.naturalWidth,canvas.height/image.naturalHeight);return{scale,x:(canvas.width-image.naturalWidth*scale)/2,y:(canvas.height-image.naturalHeight*scale)/2};}
   function output(maxEdge=square?512:1600){
@@ -54,7 +50,7 @@ export function createImageCropper({canvas,preview,zoomInput,widthInput,heightIn
   }
   function paint(){
     const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(!image){if(preview)preview.getContext('2d').clearRect(0,0,preview.width,preview.height);return;}
+    if(!image)return;
     if(square||aspectRatio)ctx.drawImage(image,rect.left,rect.top,rect.width,rect.height,0,0,canvas.width,canvas.height);
     else{
       const g=geometry();ctx.drawImage(image,g.x,g.y,image.naturalWidth*g.scale,image.naturalHeight*g.scale);
@@ -63,13 +59,9 @@ export function createImageCropper({canvas,preview,zoomInput,widthInput,heightIn
       ctx.strokeStyle='#104a7a';ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);ctx.fillStyle='white';
       for(const [cx,cy]of[[x,y],[x+w,y],[x,y+h],[x+w,y+h]]){ctx.fillRect(cx-5,cy-5,10,10);ctx.strokeRect(cx-5,cy-5,10,10);}
     }
-    if(preview){const out=output(240);preview.width=out.width;preview.height=out.height;preview.getContext('2d').drawImage(out,0,0);}
-    if(widthInput)widthInput.value=String(rect.width/image.naturalWidth*100);
-    if(heightInput)heightInput.value=String(rect.height/image.naturalHeight*100);
   }
   function change(next){if(!image)return;rect=constrainCrop(next,image.naturalWidth,image.naturalHeight,square);paint();onChange({...rect});}
   zoomInput.addEventListener('input',()=>{if(!image)return;let zoom;try{zoom=validateZoom(zoomInput.value,Number(zoomInput.max));zoomInput.setCustomValidity('');}catch(error){zoomInput.setCustomValidity(error.message);zoomInput.reportValidity();return;}const factor=lastZoom/zoom;lastZoom=zoom;const width=rect.width*factor,height=rect.height*factor;change({left:rect.left+(rect.width-width)/2,top:rect.top+(rect.height-height)/2,width,height});});
-  for(const [input,dimension,natural]of[[widthInput,'width','naturalWidth'],[heightInput,'height','naturalHeight']])input?.addEventListener('input',()=>{if(image){zoomInput.value='1';lastZoom=1;change({...rect,[dimension]:image[natural]*Number(input.value)/100});}});
   canvas.addEventListener('pointerdown',event=>{
     if(!image||event.button>0)return;canvas.setPointerCapture(event.pointerId);const bounds=canvas.getBoundingClientRect();const x=(event.clientX-bounds.left)*canvas.width/bounds.width,y=(event.clientY-bounds.top)*canvas.height/bounds.height;
     let corner=null;
@@ -95,7 +87,7 @@ export function createImageCropper({canvas,preview,zoomInput,widthInput,heightIn
       lastZoom=(square?side:aspectRatio?Math.min(w,h*aspectRatio):rect.width)/rect.width;
       zoomInput.max=String(Math.max(4,lastZoom));zoomInput.value=String(lastZoom);paint();
     },
-    clear(){image=null;rect=null;drag=null;paint();},get crop(){return rect?{...rect}:null;},get ready(){return Boolean(image);},output,
+    clear(){image=null;rect=null;drag=null;paint();},get crop(){return rect?{...rect}:null;},get ready(){return Boolean(image);},
     async export(){return encodeCanvas(output(),{limit:square?AVATAR_LIMIT:IMAGE_LIMIT,maxEdge:square?512:1600});},
   };
 }

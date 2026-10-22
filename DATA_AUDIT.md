@@ -1,6 +1,6 @@
 # 舊資料與冗餘盤點
 
-本次以最新 main `5231d46` 為基礎作程式靜態檢查與隔離測試資料驗證；未讀取、檢查或宣稱整理過使用者裝置的實際儲存。只修正還原操作列、字數提醒及使用者設定底部排列，不執行額外資料清理或數值重設。
+本次以 main `73a6602` 為整理前基準，作程式靜態檢查與隔離測試資料驗證；未讀取或整理使用者裝置的實際儲存。不改資料格式、遷移、備份與復原規則，不執行資料清理或數值重設。
 
 ## 遷移與實際寫回
 
@@ -20,18 +20,35 @@
 - `storeImage`新資產有24小時protectedUntil暫存保護，保護結束不會自動刪除。失敗還原可能留下已暫存但未引用Blob，仍需使用者主動確認清理。無引用且無暫存保護才列為未使用；確認刪除前再次計算引用並持鎖執行IndexedDB交易。
 - Object URL在縮圖清單切換／重載／pagehide及實際刪圖時釋放；共用URL快取在pagehide釋放。釋放URL不刪Blob。
 
-## 保留與後續建議（本次不清理）
+## 本輪整理結果
 
-| 分類 | 檔案／項目 | 判斷與後續影響 |
+| 類別 | 檔案與處理 | 安全界線 |
 | --- | --- | --- |
-| 有相容用途 | data.mjs、recovery.mjs、backup.mjs的舊欄位／舊history／dataVersion 2處理 | 仍供舊瀏覽器資料或備份使用，不能僅因新介面不用就刪除。 |
-| 有實際用途 | profile-images.mjs的photoWorkingBase／avatarWorkingBase | 判斷未保存裁切草稿；不是多餘的圖片快照。 |
-| 有實際用途 | history-view.mjs、history DOM及分頁CSS | 仍供設定頁使用，不能因我的資料移除歷史而一起刪除。 |
-| 確認目前無呼叫用途 | appearance.css的.history-record-setting規則；profile.css的.favorite-add-row | 對應DOM已移除，僅樣式殘留。可另案刪除，無持久資料影響。 |
-| 確認目前無設定來源 | profile.css多段--profile-tabs-height fallback、重複portrait-library／dialog／summary規則 | 舊頁籤尺寸計算程式已移除；部分舊規則被後段覆寫。需先逐尺寸比較cascade再合併，不可整段盲刪。 |
-| 確認排程未啟用 | profile-images.mjs的timer、scheduled | 未見timer賦值或scheduled=true；清除與busy分支仍有引用。後續可一併精簡，須回歸取消／裁切／圖片處理狀態。 |
-| 通用但目前未使用的參數 | avatar-crop.mjs的widthInput／heightInput | 現有createImageCropper呼叫均未提供，HTML亦無對應百分比欄。屬通用選用介面，移除前需確認未來是否保留，不能當成仍有水平／垂直滑桿。 |
-| 文件衝突 | README.md「響應式導覽與單步Undo」、DEPLOYMENT.md早期無建置及單頁發布敘述 | 已被後段新規範及現行AGENTS/design取代，仍可能誤導；建議另案整份整併，不執行舊流程。 |
-| 歷史說明 | SETTINGS.md較早日期段落與驗證筆數 | 部分是過去交付紀錄；現行政策須讀最新固定復原章節，舊筆數不能充作本次結果。 |
+| 無 DOM 樣式 | appearance.css 的 history-record-setting；profile.css 的 favorite-add-row、舊裁切預覽／操作列等 | 全站及測試無對應 DOM，已刪除。 |
+| 重複樣式 | profile.css 最愛清單、對話框、圖片按鈕、數據列及基本資料版面 | 依 cascade 合併；保留斷點高度、手機字級與桌面一句話樣式。 |
+| 無設定來源 | --profile-tabs-height 的舊 min-height fallback | 最終原本已被 min-height:0 覆寫，已移除。 |
+| 未啟用程式 | profile-images.mjs 的 timer、scheduled、永不成立的 avatar.dirty 分支及未使用介面 | 保留實際圖片工作狀態、非同步任務與 Object URL 釋放。 |
+| 無呼叫介面 | avatar-crop.mjs 的 widthInput／heightInput、preview、cropRectangle 與公開 output | 全站及測試無呼叫；保留內部輸出與現行拖曳、縮放、鍵盤及裁切流程。 |
+| 文件 | README、DEPLOYMENT、SETTINGS、NAVIGATION_UNDO | 改為現行流程；歷史交付紀錄另見 docs/DELIVERY_HISTORY.md，不混作本次結果。 |
 
-本次僅移動同一個unlock-restore按鈕、集中還原階段狀態，移除其原位置與舊的分散hidden/disabled賦值；字數提示取消局部字級／顏色覆寫以沿用共用small-note。沒有發現仍註冊至已移除歷史頁籤、預設外觀按鈕或安全備份按鈕的現行事件處理。AGENTS.md、design.md對應章節已同步更新；其他清理留待後續決定。
+## 仍須保留
+
+- data.mjs、recovery.mjs、backup.mjs 的舊欄位、舊 history、舊數值版本及 dataVersion 2 相容路徑：仍可能接收舊瀏覽器資料與備份，不能刪除。
+- photoWorkingBase／avatarWorkingBase、裁切草稿與處理中任務：仍供取消、未儲存判斷及圖片保護使用。
+- history-view.mjs、歷史 DOM 與分頁 CSS：仍供設定頁使用。
+- 共用鎖、交易、圖片引用與暫存保護、原子還原，以及 24 小時／7 天／全站15次規則均未修改。
+- 部分重複選擇器是有意的媒體查詢覆寫；個人資料 flex 區仍保留不參與排版的 grid-template computed 值，避免無必要差異。未作全站抽象化或大規模重寫。
+
+## 可重現的整理前後驗證
+
+`tests/cleanup-equivalence.cjs` 固定時間、圖片、資料、900px視窗高度、四種字型及深藍／淺色主題。寬度375、450、451、1024、1280px，各比對首頁、個人資料及設定頁共14種狀態：合計560個狀態、70張截圖。可用下列方式重新建立基準（需 Playwright、Chromium；像素差異診斷使用 Pillow）：
+
+```sh
+mkdir -p work/cleanup-before
+git archive 73a6602 index.html profile.html settings.html assets | tar -x -C work/cleanup-before
+# 在專案根目錄另啟動 python3 -m http.server 3013 --bind 127.0.0.1
+BASE_URL=http://127.0.0.1:3013/work/cleanup-before/ node tests/cleanup-equivalence.cjs before
+BASE_URL=http://127.0.0.1:3013/ node tests/cleanup-equivalence.cjs after
+```
+
+本輪560個狀態的可見 DOM、幾何及 computed style 比對通過。截圖只有樣式／幾何完全相同時，容許最多20個像素、每色頻最多2階的抗鋸齒差異；不是忽略版面變化。本次 lint、build 與40項單元測試通過；10個既有瀏覽器腳本亦通過（圖片、裁切、最愛、保存／取消、重新開始、Undo／Redo、兩種還原、外觀、跨分頁、清理及模擬Google失敗）；歷史測試筆數不作本次結果。公開網站與Pages結果於發布後另行確認。

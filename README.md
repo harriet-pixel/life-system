@@ -1,62 +1,49 @@
-# Life System
+# Life system
 
-首頁第一版視覺提案。使用原生 HTML、CSS 與 JavaScript，無套件依賴或建置步驟，後續頁面可共用 `assets/styles.css` 的設計 token。
+原生 HTML、CSS 與 JavaScript ES modules 的本機生活系統，沿用既有 GitHub Pages 網站，沒有框架或網站執行套件依賴。使用 npm 腳本檢查及打包靜態成果。
 
-## 本機啟動
+## 現有頁面
 
-在專案根目錄執行：
+- [首頁](https://harriet-pixel.github.io/life-system/)：固定示意日期、夥伴本機模擬對話、共用數值列與示意待辦／打卡頁籤。勾選本機保存；正式任務、習慣及AI服務尚未接入。
+- [我的資料](https://harriet-pixel.github.io/life-system/profile.html)：基本資料、能力雷達圖、立繪／頭像裁切、手動最愛及獨立數值重新開始。
+- [設定](https://harriet-pixel.github.io/life-system/settings.html)：手動圖片清理、行動紀錄、備份還原及外觀預覽／保存。
 
-```sh
-python3 -m http.server 3000 --bind 0.0.0.0
-```
+三頁使用同一份localStorage文件與IndexedDB圖片，保存後同來源分頁同步。Undo／Redo為24小時／7天、最多最近15次；長期行動紀錄不受復原上限裁切。不自動上傳、同步或刪圖。Google OAuth目前未設定，本機功能不受影響。
 
-開啟本機的 3000 埠，結束時按 Ctrl+C。也可使用其他靜態檔案伺服器。
+手機與桌面共用資料及DOM，1024px切換主要版面與導覽；兩種版面均使用待辦／打卡頁籤。主題色及四種字型由共用外觀服務套用，非系統字型自託管並保留授權。
 
-## 範圍
-
-- 歡迎文字與完整日期 → 夥伴橫幅（左頭像、右對話）→ Lv等級／$ 貨幣角色橫列 → 待辦 → 習慣。
-- 1024px 以上：歡迎文字在左、日期在右，待辦與習慣並排，移除資料卡側欄。
-- 所有內容明確標示為示意資料；日期為固定示意日期。
-- 勾選為瀏覽器記憶體內的示意互動，不儲存資料，重新整理重設。
-- 移除編輯資料與聊天室入口；新增待辦仍使用原生停用按鈕。貨幣與等級沒有資料源，數值顯示「—」。角色橫列為深藍底白字、水平及垂直置中的「Lv等級 ｜ $ 貨幣」格式，無 icon，保留完整無障礙名稱；夥伴區為白底且無底部裝飾條。
-- 無其他頁面、登入、資料庫、聊天服務、等級、經驗值或獎勵系統。
-- 無外部圖片或第三方字型服務；Noto Serif TC 開源字型隨本站靜態檔提供，商業字體不載入。
-
-開始介面工作前閱讀 `AGENTS.md` 與 `design.md`。
-
-## 夥伴開發介面與測試
-
-`assets/companion.mjs` 提供事件合併、過期結果防護、逾時與備援；目前不連線 AI。介面、待串接項目及部署限制見 `COMPANION.md`。
+## 本機與建置
 
 ```sh
-node --test tests/companion.test.mjs
-node --check assets/home.js
+npm run lint
+npm test
+npm run build
+python3 -m http.server 3000 --bind 127.0.0.1 --directory work/build
 ```
 
-瀏覽器驗證腳本 `tests/home.cjs` 使用既有 Playwright 與 Chromium（可由 `PLAYWRIGHT_MODULE`、`CHROMIUM_PATH` 指定），不作為網站執行依賴。先啟動靜態伺服器，再執行：
+開啟 http://127.0.0.1:3000/ 。網站執行不需Node或後端；建置輸出含三頁與完整assets，不含測試、協作文件或環境憑證。發布流程見 [DEPLOYMENT.md](DEPLOYMENT.md)。
+
+## 驗證
+
+`npm run lint` 檢查原生JavaScript語法、HTML重複ID與入口資產，並非ESLint。`npm test` 執行單元測試；需要展開逐項結果時使用 `node --test --test-isolation=none tests/*.test.mjs`。
+
+瀏覽器腳本使用Playwright及Chromium作開發工具，須在環境提供可解析的playwright模組及瀏覽器，不是網站執行依賴。啟動上述伺服器後，例如：
 
 ```sh
-BASE_URL=http://127.0.0.1:3000 node tests/home.cjs
+BASE_URL=http://127.0.0.1:3000/ node tests/home.cjs
+BASE_URL=http://127.0.0.1:3000/ node tests/profile-images.cjs
+BASE_URL=http://127.0.0.1:3000/ npm run test:browser
+BASE_URL=http://127.0.0.1:3000/ node tests/recovery-ui.cjs
+BASE_URL=http://127.0.0.1:3000/ node tests/restore-actions.cjs
 ```
 
-- 首頁文案以「慢慢成長，慢慢變好」為中文主標題，下方為「A little space for everyday life」；移除原說明文字，保留原日期來源。夥伴上方僅一條對齊主內容的細線，頭像與泡泡左右排列且垂直置中，底部無裝飾。角色橫列下方與待辦／習慣之間不加橫線，不保留額外區塊間上下留白；頁尾及其專用留白已移除。
+其他回歸腳本位於tests，涵蓋導覽、數據列、復原期限、圖片引用、外觀及mock Google。Google mock不代表真實授權測試，窄／短viewport不等於實體手機鍵盤驗證。每次交付回報當次結果，不沿用歷史筆數。
 
-- 最新文字排版：全站文字共用無單位行高 1.7，保留各級字型大小。待辦與彈性習慣皆為中文 h2 在上、英文副標在下，移除「不必一次做好所有事，先完成眼前這一件。」及「依照今天的狀態，做一點喜歡的小事。」兩句說明。
+## 文件
 
-- 最新確認間距取代先前的零間距設定：主要區塊之間上下間距為 4px（歡迎、夥伴、角色橫列、示意提示、待辦／習慣），手機待辦與習慣間距亦為 4px；中文區塊標題與英文副標間距由 4px 減半為 2px。其餘內距、文字行高與功能不變。
-
-- 最新調整：待辦與習慣英文副標到清單頂部細線為 4px；夥伴上方分隔線到內容內距增為 24px，歡迎區到分隔線仍為 16px。小於 1024px 時待辦／彈性打卡共用頁籤區域，預設待辦，可用點擊、左右鍵及 Home／End 切換，切換不觸發生成、不重設勾選。1024px 起恢復兩欄同時顯示；縮放跨斷點保留狀態。未執行 JavaScript 時兩區仍完整顯示。
-
-- 最新需求覆蓋先前間距／字體規則：主要區塊上下間距統一 24px，移除歡迎區的額外 margin；夥伴分隔線下內距仍為 24px。待辦與習慣每列最小高度 48px、上下內距各 8px，長文字自然增高。手機頁籤使用原區塊標題的 22px 中文與 14px 英文副標樣式，內容中重複的標題／副標隱藏，計數與打卡提示保留；電腦仍顯示兩欄原標題。全站文字（含英數、按鈕）統一使用首頁「慢慢成長」原有的明體字型鏈，字型固定載入方式依下列最新規則。
-
-- 最新行動版調整：頁籤只顯示中文，英文副標回到下方所選面板的清單細線上方，中文標題仍不重複顯示。小於 1024px 時完整日期在歡迎主標上方，電腦保留文字左、日期右，日期值與邏輯不變。全站改為自託管 Noto Serif TC Variable 5.3.1（Fontsource，SIL OFL 1.1），不再只依賴系統備援；字型來源、已驗證的封裝完整性及授權存於 assets/fonts/noto-serif-tc/。正常載入後跨裝置使用同一字型，光柵化仍可能略有差異。
-
-- 最新雙版本配置：手機配置維持原順序，頁籤到英文副標的額外間距縮為 4px，英文副標到清單細線亦為 4px。1024px 以上自夥伴起分兩欄：左側直立長方形立繪槽，對話泡泡疊於其內下方；右側角色藍色橫列、示意提示及待辦／彈性打卡頁籤，由上而下排列。兩種尺寸共用同一組 DOM、勾選狀態與情緒／對話配對，切換頁籤或尺寸不觸發生成、不重設資料。未有素材時仍使用立繪／頭像佔位，不宣稱已有角色立繪。
-
-## 響應式導覽與單步 Undo
-
-實作方式、可用／未開放頁面、記憶體資料來源與後續持久化限制，見 `NAVIGATION_UNDO.md`。測試：`node --test tests/undo.test.mjs tests/companion.test.mjs`，另執行 `tests/navigation.cjs` 驗證導覽與 Undo UI。
-
-## 設定頁
-
-新增 `settings.html`，共用儲存空間管理、歷史與 Undo／Redo、手動本機／Google Drive 加密備份還原，以及主題／字型設定。三頁共用資料、設定、圖片與跨分頁鎖；沒有另建網站或自動同步／上傳／清理。實作與 Google Console 手動設定見 [SETTINGS.md](SETTINGS.md)。目前驗證使用 `npm run lint`、`npm run build`、`npm test`；瀏覽器驗證用 `npm run test:browser`、`node tests/home.cjs`、`node tests/navigation.cjs`、`node tests/home-summary.cjs`、`node tests/google-drive.cjs`。後者的 Google 測試為 mock，真實 OAuth 需設定後實測。
+- [AGENTS.md](AGENTS.md)：協作範圍、共用系統與發布規範。
+- [design.md](design.md)：目前三頁的視覺、響應式及操作規則。
+- [SETTINGS.md](SETTINGS.md)：資料、復原、圖片、備份、字型與Google設定。
+- [DATA_AUDIT.md](DATA_AUDIT.md)：相容邏輯及程式整理盤點。
+- [COMPANION.md](COMPANION.md)：夥伴事件契約與未接入的正式服務。
+- [docs/DELIVERY_HISTORY.md](docs/DELIVERY_HISTORY.md)：歷史交付紀錄，不能當作現行規格或本次測試結果。
