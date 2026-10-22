@@ -1,4 +1,5 @@
-import { createMobileTabPositioner } from './tab-position.mjs?v=tab-center-35';
+import { createMobileTabPositioner } from './tab-position.mjs?v=activity-height-39';
+import { createActivityHeightSync } from './activity-height.mjs?v=activity-height-39';
 import { undoManager } from './undo.mjs?v=exp-zero-37';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
 import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=exp-zero-37';
@@ -120,8 +121,10 @@ dataStore.subscribe(() => {
 // and never emits a successful-action event or triggers companion generation.
 const activityTabs = document.querySelector('.activity-tabs');
 const tabButtons = [...activityTabs.querySelectorAll('button')];
-const positionActivityTabs = createMobileTabPositioner(activityTabs);
 const activityPanels = tabButtons.map((button) => document.getElementById(button.dataset.panel));
+const updateActivityHeight = createActivityHeightSync(document.querySelector('.home-grid'), activityPanels);
+const positionActivityTabs = createMobileTabPositioner(activityTabs, updateActivityHeight);
+dataStore.subscribe(updateActivityHeight);
 const desktopLayout = window.matchMedia('(min-width: 1024px)');
 let selectedPanel = 0;
 function syncActivityTabs() {
@@ -139,6 +142,7 @@ function syncActivityTabs() {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', button.id);
   });
+  updateActivityHeight();
 }
 function selectActivity(index) {
   selectedPanel = index;

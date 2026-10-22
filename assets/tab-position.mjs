@@ -1,5 +1,5 @@
 // Content tabs only. Call the returned handler after the tab selection changes.
-export function createMobileTabPositioner(tablist) {
+export function createMobileTabPositioner(tablist, beforeMeasure = () => {}) {
   // Positioning threshold only; page and navigation layout breakpoints stay unchanged.
   const mobile = matchMedia('(max-width: 450px)');
   const region = tablist.parentElement;
@@ -11,6 +11,7 @@ export function createMobileTabPositioner(tablist) {
     pendingFrame = requestAnimationFrame(() => {
       pendingFrame = 0;
       if (!mobile.matches || document.querySelector('dialog[open]')) return;
+      beforeMeasure();
       let headerBottom = 0;
       document.querySelectorAll('header, [role="banner"], [data-tab-scroll-header]').forEach(header => {
         const position = getComputedStyle(header).position;
