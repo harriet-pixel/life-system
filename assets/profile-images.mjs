@@ -3,7 +3,7 @@ import {imageURL} from './image-store.mjs?v=images-21';
 const $=selector=>document.querySelector(selector);
 export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   let session=0,jobs=0,opened=false,base,photo,avatar,portraits=[],currentId=null,manualAvatar=false,newPhoto=false,slotTarget=null;
-  let editingPhoto=false,editingAvatar=false,collectionMode=false,pendingCollection=null,collectionSlot=null;
+  let editingPhoto=false,editingAvatar=false,collectionMode=false,pendingCollection=null,collectionSlot=null,photoWorkingBase=null,avatarWorkingBase=null;
   let photoVersion=0,uploadVersion=0,avatarVersion=0,timer,scheduled=false,photoError='',avatarError='';
   const updateBusy=()=>{const busy=jobs>0||scheduled;onBusy(busy);$('#image-status').hidden=!busy;$('#image-status').textContent=busy?'圖片處理中，請稍候。':'';$('#crop-from-photo').disabled=!photo?.result||busy;};
   async function job(work){const token=session;jobs++;updateBusy();try{return await work(token);}finally{if(token===session){jobs--;updateBusy();}}}
@@ -12,7 +12,7 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   const portraitEditor=createImageCropper({canvas:$('#portrait-canvas'),zoomInput:$('#portrait-zoom'),aspectRatio:3/4});
   const avatarEditor=createImageCropper({canvas:$('#crop-canvas'),zoomInput:$('#crop-zoom'),square:true,onChange:()=>{if(opened&&editingAvatar){manualAvatar=true;avatarVersion++;}}});
   const collectionEditor=createImageCropper({canvas:$('#collection-canvas'),zoomInput:$('#collection-zoom'),aspectRatio:3/4});
-  function setEditing(kind,value){if(kind==='photo')editingPhoto=value;else editingAvatar=value;renderDraft();}
+  function setEditing(kind,value){if(kind==='photo'){if(value&&!editingPhoto)photoWorkingBase=portraitEditor.crop;editingPhoto=value;}else{if(value&&!editingAvatar)avatarWorkingBase=avatarEditor.crop;editingAvatar=value;}renderDraft();}
   $('#start-portrait-crop').addEventListener('click',()=>setEditing('photo',true));
   $('#start-avatar-crop').addEventListener('click',()=>setEditing('avatar',true));
   $('#cancel-portrait-crop').addEventListener('click',()=>{job(async token=>{if(photo){const image=await decodeImage(await imageURL(photo.source));if(!active(token))return;portraitEditor.setImage(image,{crop:photo.crop});}setEditing('photo',false);}).catch(error=>fail('photo',error));});
@@ -137,6 +137,16 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
     },
     close(){if(actionDialog.open)actionDialog.close();actionId=null;actionTrigger=null;opened=false;session++;jobs=0;scheduled=false;clearTimeout(timer);photoVersion++;uploadVersion++;avatarVersion++;portraitEditor.clear();avatarEditor.clear();photo=null;avatar=null;portraits=[];onBusy(false);},
     get busy(){return jobs>0||scheduled;},
+    get hasChanges(){
+      if(!opened)return false;
+      if(pendingCollection||$('#photo-input').files.length||$('#avatar-input').files.length)return true;
+      const different=(a,b)=>JSON.stringify(a??null)!==JSON.stringify(b??null);
+      if(editingPhoto&&different(portraitEditor.crop,photoWorkingBase))return true;
+      if(editingAvatar&&different(avatarEditor.crop,avatarWorkingBase))return true;
+      return different(photo?.result,base.photo)||different(avatar?.result,base.avatar)||different(portraits,base.portraits??[])||different(currentId,base.currentPortraitId)
+        ||(photo?.changed&&different({source:photo.source,crop:photo.crop},base.photoEdit))
+        ||(avatar?.changed&&different({source:avatar.source,crop:avatar.crop},base.avatarEdit));
+    },
     async collect(){
       const collectionSession=session;
       if(photoError)throw Object.assign(new Error(photoError),{field:'photo'});

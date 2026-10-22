@@ -1,5 +1,5 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { createProfileImages } from './profile-images.mjs?v=favorites-24';
+import { createProfileImages } from './profile-images.mjs?v=backdrop-26';
 import { imageURL, prepareImageReferences } from './image-store.mjs?v=images-21';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=redo-17';
 import { undoManager } from './undo.mjs?v=favorites-24';
@@ -206,7 +206,42 @@ imageTabs.forEach((tab,index)=>{
   tab.addEventListener('click',()=>selectImage(index));
   tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+imageTabs.length-1)%imageTabs.length,ArrowRight:(index+1)%imageTabs.length,Home:0,End:imageTabs.length-1}[event.key];if(next===undefined)return;event.preventDefault();selectImage(next);imageTabs[next].focus();});
 });
-let baseState,saving=false,saveVersion=0,imageBusy=false;
+let baseState,saving=false,saveVersion=0,imageBusy=false,initialFields={};
+const unsavedDialog=$('#unsaved-settings-dialog');
+let backdropPointer=null,settingsFocus=null,restoreSettingsFocus=true;
+function hasUnsavedChanges(){return Object.entries(initialFields).some(([key,value])=>form.elements[key].value!==value)||imageDraft.hasChanges;}
+function syncSaveButtons(){$('#save-settings').disabled=saving||imageBusy;$('#save-unsaved-settings').disabled=saving||imageBusy;}
+function requestBackdropClose(focus){
+  if(!dialog.open||saving||unsavedDialog.open)return;
+  if(!hasUnsavedChanges()){dialog.close();return;}
+  settingsFocus=focus?.isConnected?focus:$('#settings-tabs button[aria-selected="true"]');
+  restoreSettingsFocus=true;syncSaveButtons();unsavedDialog.showModal();
+}
+function outsideSettings(event){const r=dialog.getBoundingClientRect();return event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom;}
+dialog.addEventListener('pointerdown',event=>{
+  backdropPointer=event.isPrimary&&event.button===0&&event.target===dialog&&outsideSettings(event)?{id:event.pointerId,x:event.clientX,y:event.clientY,focus:dialog.contains(document.activeElement)&&document.activeElement!==dialog?document.activeElement:null}:null;
+});
+dialog.addEventListener('pointerup',event=>{
+  const down=backdropPointer;backdropPointer=null;
+  if(down&&down.id===event.pointerId&&event.target===dialog&&outsideSettings(event)&&Math.hypot(event.clientX-down.x,event.clientY-down.y)<=8)requestBackdropClose(down.focus);
+});
+dialog.addEventListener('pointercancel',()=>backdropPointer=null);
+unsavedDialog.addEventListener('keydown',event=>{
+  if(event.key!=='Tab')return;
+  const buttons=[...unsavedDialog.querySelectorAll('button:not(:disabled)')],first=buttons[0],last=buttons.at(-1);
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+});
+function restoreFocusToSettings(){
+  if(!restoreSettingsFocus||!dialog.open||unsavedDialog.open)return;
+  const target=settingsFocus?.isConnected&&settingsFocus.getClientRects().length&&!settingsFocus.disabled?settingsFocus:$('#settings-tabs button[aria-selected="true"]');
+  target.focus({preventScroll:true});
+}
+function cancelUnsavedPrompt(){unsavedDialog.close();restoreFocusToSettings();}
+unsavedDialog.addEventListener('close',restoreFocusToSettings);
+unsavedDialog.addEventListener('cancel',event=>{event.preventDefault();cancelUnsavedPrompt();});
+$('#cancel-unsaved-settings').addEventListener('click',cancelUnsavedPrompt);
+$('#save-unsaved-settings').addEventListener('click',()=>{if(saving||imageBusy)return;restoreSettingsFocus=false;unsavedDialog.close();form.requestSubmit($('#save-settings'));});
 function clearErrors() {
   form.querySelectorAll('.field-error').forEach(el=>el.textContent='');
   form.querySelectorAll('[aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
@@ -218,16 +253,17 @@ function fieldError(key,message,index) {
   $('#form-error').textContent=message;const input=key==='photo'?$('#choose-photo'):key==='avatar'?$('#choose-avatar'):key==='portraits'?$('#portrait-library'):form.elements[key];
   document.getElementById(`${key}-error`).textContent=message;input.setAttribute('aria-invalid','true');input.focus();
 }
-const imageDraft=createProfileImages({onError:(key,message)=>fieldError(key,message,1),onSelect:selectImage,onBusy:busy=>{imageBusy=busy;$('#save-settings').disabled=saving||busy;}});
-function lockSave(value){saving=value;$('#save-settings').disabled=value||imageBusy;$('.settings-scroll').inert=value;$('#settings-tabs').inert=value;}
+const imageDraft=createProfileImages({onError:(key,message)=>fieldError(key,message,1),onSelect:selectImage,onBusy:busy=>{imageBusy=busy;syncSaveButtons();}});
+function lockSave(value){saving=value;syncSaveButtons();$('.settings-scroll').inert=value;$('#settings-tabs').inert=value;}
 $('#edit-profile').addEventListener('click',()=>{
   baseState=dataStore.get();saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
   personalKeys.forEach(key=>form.elements[key].value=baseState.profile[key]);
   numericFields.forEach(({id})=>form.elements[id].value=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value);
-  clearErrors();selectSetting(0);selectImage(0);dialog.showModal();imageDraft.open(baseState);
+  initialFields=Object.fromEntries([...personalKeys,...numericFields.map(field=>field.id)].map(key=>[key,form.elements[key].value]));
+  backdropPointer=null;clearErrors();selectSetting(0);selectImage(0);dialog.showModal();imageDraft.open(baseState);
 });
 $('#cancel-profile').addEventListener('click',()=>dialog.close());
-dialog.addEventListener('close',()=>{saveVersion++;imageDraft.close();lockSave(false);$('#edit-profile').focus();});
+dialog.addEventListener('close',()=>{backdropPointer=null;if(unsavedDialog.open){restoreSettingsFocus=false;unsavedDialog.close();}saveVersion++;imageDraft.close();lockSave(false);$('#edit-profile').focus();});
 form.addEventListener('submit',async event=>{
   event.preventDefault();if(saving)return;clearErrors();
   let profile,stats;
