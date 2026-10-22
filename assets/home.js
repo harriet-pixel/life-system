@@ -110,7 +110,8 @@ dataStore.subscribe(() => {
   renderActivities();
   const stats = dataStore.get().stats;
   const summary = document.querySelector('#home-stats');
-  summary.textContent = profileSummary(stats);
+  const [experience, level, currency] = profileSummary(stats).split(' ｜ ');
+  summary.textContent = `${level} ｜ ${experience}｜ ${currency}`;
   summary.setAttribute('aria-label', `累積總經驗值：${visibleExperience(stats.experience)}，等級：${stats.level}，貨幣：${stats.currency}`);
   summary.title = summary.getAttribute('aria-label');
 });

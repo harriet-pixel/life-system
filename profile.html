@@ -9,7 +9,7 @@
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
     <link rel="stylesheet" href="assets/styles.css?v=tab-center-35">
-    <link rel="stylesheet" href="assets/profile.css?v=settings-width-33">
+    <link rel="stylesheet" href="assets/profile.css?v=image-actions-36">
     <script type="module" src="assets/profile.mjs?v=tab-center-35"></script>
   </head>
   <body class="profile-page"><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" tabindex="-1">
@@ -54,21 +54,21 @@
 </div>
 <section id="portrait-settings" role="tabpanel" aria-labelledby="portrait-settings-tab" tabindex="0">
 <div class="draft-image-preview"><img id="draft-photo" alt="使用者立繪草稿預覽" hidden><span id="draft-photo-empty">尚未上傳立繪</span></div>
-<button id="choose-photo" type="button" aria-describedby="photo-error">選擇／更換立繪</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-error" hidden>
+<div class="image-action-row"><button id="choose-photo" type="button" aria-describedby="photo-error">選擇立繪</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-error" hidden>
+<button id="start-portrait-crop" type="button" hidden>裁切</button></div>
 <p id="photo-error" class="field-error"></p>
-<button id="start-portrait-crop" type="button" hidden>裁切</button>
 <div id="portrait-editor" hidden>
 <canvas id="portrait-canvas" width="300" height="400" tabindex="0" aria-label="立繪裁切區，可拖曳圖片或用方向鍵移動"></canvas>
 <div class="crop-controls"><label>縮放<input id="portrait-zoom" type="range" min="1" max="4" step="0.01" value="1"></label></div>
-<button id="confirm-portrait-crop" type="button">確認裁切</button><button id="cancel-portrait-crop" type="button">取消裁切</button></div>
+<div class="image-action-row"><button id="confirm-portrait-crop" type="button">確認裁切</button><button id="cancel-portrait-crop" type="button">取消裁切</button></div></div>
 </section><section id="avatar-settings" role="tabpanel" aria-labelledby="avatar-settings-tab" tabindex="0" hidden>
 <div class="draft-avatar-frame"><img id="draft-avatar" alt="使用者頭像草稿預覽" hidden><span id="draft-avatar-empty">尚未設定頭像</span></div>
-<button id="choose-avatar" type="button" aria-describedby="avatar-error">選擇／更換頭像圖片</button><input id="avatar-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="avatar-error" hidden>
+<button id="choose-avatar" type="button" aria-describedby="avatar-error">選擇立繪</button><input id="avatar-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="avatar-error" hidden>
 <div class="avatar-image-actions"><button id="start-avatar-crop" type="button" disabled>裁切</button><button id="crop-from-photo" type="button" aria-describedby="crop-source-help">使用立繪</button></div><p id="crop-source-help" class="sr-only"></p>
 <section id="avatar-crop" aria-label="正方形頭像裁切" hidden>
 <canvas id="crop-canvas" width="320" height="320" tabindex="0" aria-label="頭像裁切區，可拖曳圖片或用方向鍵移動"></canvas>
 <div class="crop-controls"><label>縮放<input id="crop-zoom" type="range" min="1" max="4" step="0.01" value="1"></label></div>
-<button id="confirm-avatar-crop" type="button">確認裁切</button><button id="cancel-avatar-crop" type="button">取消裁切</button>
+<div class="image-action-row"><button id="confirm-avatar-crop" type="button">確認裁切</button><button id="cancel-avatar-crop" type="button">取消裁切</button></div>
 </section><p id="avatar-error" class="field-error" role="alert"></p></section>
 <section id="library-settings" role="tabpanel" aria-labelledby="library-settings-tab" tabindex="0" hidden>
 <ul id="portrait-library" aria-label="我的最愛，共六個位置" tabindex="-1"></ul>

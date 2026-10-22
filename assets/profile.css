@@ -281,3 +281,7 @@ textarea { resize: vertical; }
 #profile-dialog { width: min(462px,calc(100% - 32px)); }
 .image-tabs { grid-template-columns: repeat(3,minmax(0,1fr)); }
 #photo-settings .image-tabs button { min-width: 0; padding-inline: 4px; }
+
+/* Keep paired image actions aligned without changing crop or draft behavior. */
+.image-action-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.image-action-row > button { min-width: 0; }
