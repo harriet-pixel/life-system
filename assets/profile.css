@@ -245,3 +245,10 @@ textarea { resize: vertical; }
 @media (max-width:1023px) {
   .profile-page .personal-heading { margin-bottom: -21px; }
 }
+
+@media (max-width:1023px) {
+  .profile-page .avatar-section { padding-top: 1.7em; }
+  .profile-page #profile-name { line-height: 1.25; }
+  .profile-page .personal-heading:has(#profile-age:empty) #edit-profile { grid-row: 1; }
+  .profile-page #profile-stats { padding-block: 0; }
+}
