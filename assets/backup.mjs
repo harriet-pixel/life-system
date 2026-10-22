@@ -109,7 +109,7 @@ export async function readBackup(file,password='') {
     check(envelope.algorithm==='AES-256-GCM'&&envelope.kdf==='PBKDF2-SHA256'&&envelope.iterations===600000,'不支援的加密格式。');
     const salt=unb64(envelope.salt,16),iv=unb64(envelope.iv,12);check(salt.length===16&&iv.length===12);
     const cipher=unb64(envelope.ciphertext);let plain;
-    try{const key=await passwordKey(password,salt,'decrypt');plain=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:encoder.encode(FORMAT+VERSION)},key,cipher);}catch{throw new Error('密碼錯誤，或備份檔案已損毀。');}
+    try{const key=await passwordKey(password,salt,'decrypt');plain=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:encoder.encode(FORMAT+VERSION)},key,cipher);}catch{throw new Error('密碼錯誤，或備份檔案已損毀');}
     try{payload=JSON.parse(decoder.decode(plain));}catch{throw new Error('解密後的備份內容不是有效 JSON。');}
   }else{
     check(envelope.encrypted===false&&envelope.payload);check(await hash(encoder.encode(JSON.stringify(envelope.payload)))===envelope.sha256,'備份完整性驗證失敗。');payload=envelope.payload;

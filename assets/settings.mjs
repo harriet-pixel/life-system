@@ -16,9 +16,9 @@ const time=value=>value&&Number.isFinite(Date.parse(value))?new Date(value).toLo
 let busy=false;
 async function run(work){
   if(busy)return;const priorError=document.querySelector('dialog[open] [data-dialog-error]');if(priorError)priorError.textContent='';busy=true;document.body.setAttribute('aria-busy','true');
-  const buttons=[...document.querySelectorAll('button,input,select')].map(e=>[e,e.disabled]);buttons.forEach(([e])=>e.disabled=true);
+  const buttons=[...document.querySelectorAll('button,input,select')].map(e=>[e,e.disabled]);buttons.forEach(([e])=>e.disabled=true);syncRestoreControls();
   try{return await work();}catch(error){const message=error.message||'操作失敗；原資料未清除。';notice(message);const target=document.querySelector('dialog[open] [data-dialog-error]');if(target)target.textContent=message;}
-  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo]'))e.disabled=disabled;});syncSelection();syncDrive();$('#confirm-restore').disabled=!prepared;$('#confirm-restore').hidden=!prepared;$('#restore-warning').hidden=!prepared;dataStore.notify();}
+  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo],#restore-confirm button,#restore-password'))e.disabled=disabled;});syncSelection();syncDrive();syncRestoreControls();if($('#restore-confirm').open)(prepared?$('#confirm-restore'):restoreEncrypted?$('#restore-password'):$('#cancel-restore')).focus({preventScroll:true});dataStore.notify();}
 }
 initializeNavigation({undoManager:{...persistentUndo,getState:()=>({...persistentUndo.getState(),busy:busy||persistentUndo.getState().busy})}});
 const history=createHistoryView({store:dataStore});
@@ -119,29 +119,39 @@ async function downloadCurrent(){
   finally{$('#backup-password').value='';}
 }
 $('#download-backup').addEventListener('click',()=>run(downloadCurrent));
-let prepared=null,restoreRevision=null,restoreFile=null,restoreGeneration=0;
-function clearRestore(){restoreGeneration++;prepared=null;restoreRevision=null;restoreFile=null;$('#restore-password').value='';$('#confirm-restore').disabled=true;$('#confirm-restore').hidden=true;$('#restore-warning').hidden=true;$('#restore-summary').textContent='';}
+let prepared=null,restoreRevision=null,restoreFile=null,restoreGeneration=0,restoreEncrypted=false;
+function syncRestoreControls(){
+  const open=$('#restore-confirm').open,ready=open&&Boolean(prepared),unlock=open&&restoreEncrypted&&!ready;
+  $('#restore-unlock').hidden=!unlock;
+  $('#unlock-restore').hidden=!unlock;$('#unlock-restore').disabled=busy||!unlock;
+  $('#confirm-restore').hidden=!ready;$('#confirm-restore').disabled=busy||!ready;
+  $('#restore-password').disabled=busy||!unlock;$('#cancel-restore').disabled=busy;
+  $('#restore-warning').hidden=!ready;
+}
+function clearRestore(){restoreGeneration++;prepared=null;restoreRevision=null;restoreFile=null;restoreEncrypted=false;$('#restore-password').value='';$('#restore-summary').textContent='';syncRestoreControls();}
 async function validateRestore(){
-  const generation=restoreGeneration,file=restoreFile;prepared=null;$('#confirm-restore').disabled=true;
+  if(!$('#restore-confirm').open||!restoreFile||prepared)return;
+  const generation=restoreGeneration,file=restoreFile;prepared=null;syncRestoreControls();
   try{
     const result=await readBackup(file,validateRestorePassword($('#restore-password').value));
     if(generation!==restoreGeneration||!$('#restore-confirm').open)return;
-    prepared=result;restoreRevision=dataStore.get().revision;$('#restore-password').value='';$('#restore-unlock').hidden=true;
+    prepared=result;restoreRevision=dataStore.get().revision;$('#restore-password').value='';
     const p=result.payload;$('#restore-summary').textContent=`備份時間：${time(p.createdAt)}；資料 ${p.dataCount} 筆，圖片 ${p.imageCount} 張；格式 v${p.formatVersion}、資料 v${p.dataVersion}。`;
-  }finally{$('#restore-password').value='';}
+  }catch(error){if(generation===restoreGeneration)throw error;}
+  finally{if(generation===restoreGeneration){$('#restore-password').value='';syncRestoreControls();}}
 }
 async function previewRestore(file){
-  const outer=await inspectBackupFile(file);clearRestore();restoreFile=file;
-  $('#restore-confirm [data-dialog-error]').textContent='';$('#restore-unlock').hidden=!outer.encrypted;$('#restore-confirm').showModal();
+  clearRestore();const generation=restoreGeneration;const outer=await inspectBackupFile(file);if(generation!==restoreGeneration)return;restoreFile=file;restoreEncrypted=outer.encrypted;
+  $('#restore-confirm [data-dialog-error]').textContent='';$('#restore-confirm').showModal();syncRestoreControls();
   if(outer.encrypted){$('#restore-summary').textContent='請輸入此備份的還原密碼。';$('#restore-password').focus();}
   else await validateRestore();
 }
-$('#restore-file').addEventListener('change',()=>{clearRestore();const file=$('#restore-file').files[0];if(file)run(async()=>{await inspectBackupFile(file);notice('已辨識備份外層格式；點擊「驗證與還原」繼續。');});});
+$('#restore-file').addEventListener('change',()=>{if($('#restore-confirm').open)$('#restore-confirm').close();clearRestore();const file=$('#restore-file').files[0];if(file)run(async()=>{await inspectBackupFile(file);notice('已辨識備份外層格式；點擊「驗證與還原」繼續。');});});
 $('#read-backup').addEventListener('click',()=>run(async()=>{const file=$('#restore-file').files[0];if(!file)throw new Error('請先選取本機備份檔。');await previewRestore(file);}));
 $('#unlock-restore').addEventListener('click',()=>run(validateRestore));
 $('#restore-password').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();run(validateRestore);}});
 $('#cancel-restore').addEventListener('click',()=>$('#restore-confirm').close());
-$('#restore-confirm').addEventListener('close',clearRestore);
+$('#restore-confirm').addEventListener('close',()=>{if(!$('#restore-confirm').open)clearRestore();});
 $('#confirm-restore').addEventListener('click',()=>run(async()=>{
   if(!prepared)throw new Error('請先解密並完成備份驗證。');
   await restoreBackup(dataStore,prepared,restoreRevision);$('#restore-confirm').close();$('#restore-file').value='';cancelAppearance();
