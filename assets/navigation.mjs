@@ -79,7 +79,8 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   desktopLinks.hidden = false;
   currentPage.hidden = false;
   const refreshControls = () => {
-    const {available,redoAvailable,busy} = undoManager.getState();
+    const {available,redoAvailable,busy,recoveryNotice} = undoManager.getState();
+    if(recoveryNotice&&feedback.hidden){feedback.hidden=false;feedback.textContent=recoveryNotice;}
     for (const [buttons,enabled,action] of [[undoButtons,available,'撤銷'],[redoButtons,redoAvailable,'恢復']]) {
       buttons.forEach(button => {
         button.disabled = !enabled || pending || busy;

@@ -24,9 +24,9 @@ test('appearance, profile, image IDs and history settings participate in the sam
  store.transact({type:'appearance.update',target:'settings',label:'外觀',changes:{settings:{...before,appearance:{color:'#ffffff',font:'rounded'}}}});
  await store.undo();assert.deepEqual(store.get().settings,before);await store.redo();assert.equal(store.get().settings.appearance.font,'rounded');
  store.transact({type:'history.settings',target:'settings',label:'歷史',changes:{settings:{...store.get().settings,history:{recordAll:false}}}});
- const count=store.get().history.length;activity(store,true);assert.equal(store.get().history.length,count);
+ const count=store.get().history.length;activity(store,true);assert.equal(store.get().history.length,count+1);
 });
-test('journal retains the latest 50 actual changes',()=>{const store=createDataStore(memory());for(let i=0;i<60;i++)activity(store,Boolean(i%2));assert.equal(store.get().history.length,50);});
+test('journal retains 15 recoveries while preserving all action metadata',()=>{const store=createDataStore(memory());for(let i=0;i<60;i++)activity(store,Boolean(i%2));assert.equal(store.get().history.length,60);assert.equal(store.get().undoHistory.length,15);});
 test('current route supports GitHub Pages subpaths',()=>{
  assert.equal(isCurrentRoute('https://a.test/life-system/','https://a.test/life-system/index.html?v=1#main'),true);
  assert.equal(isCurrentRoute('https://a.test/life-system/settings.html','https://a.test/other/'),false);

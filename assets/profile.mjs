@@ -133,14 +133,12 @@ imageTabs.forEach((tab,index)=>{
 });
 let releaseDraft,openingProfile=false;
 bindProfileValidation(form,()=>baseState?.profile);
-let baseState,saving=false,saveVersion=0,imageBusy=false,initialFields={},resettingStats=false;
+let baseState,saving=false,saveVersion=0,imageBusy=false,initialFields={};
 const unsavedDialog=$('#unsaved-settings-dialog');
 let backdropPointer=null,settingsFocus=null,restoreSettingsFocus=true;
 function hasUnsavedChanges(){
   if(Object.entries(initialFields).some(([key,value])=>form.elements[key].value!==value)||imageDraft.hasChanges)return true;
-  if(!resettingStats)return false;
-  try{return JSON.stringify(baseState.stats)!==JSON.stringify(validateManualStats(Object.fromEntries(new FormData(form)),createInitialStats()));}
-  catch{return true;}
+  return false;
 }
 function syncSaveButtons(){$('#save-settings').disabled=saving||imageBusy;$('#save-unsaved-settings').disabled=saving||imageBusy;}
 function requestBackdropClose(focus){
@@ -190,25 +188,43 @@ function lockSave(value){saving=value;syncSaveButtons();$('.settings-scroll').in
 $('#edit-profile').addEventListener('click',async()=>{
   if(openingProfile||dialog.open)return;openingProfile=true;
   try {releaseDraft=await holdDraft();} catch(error){notice(error.message);return;} finally{openingProfile=false;}
-  baseState=dataStore.get();resettingStats=false;$('#values-reset-status').textContent='';saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
-  personalKeys.forEach(key=>form.elements[key].value=baseState.profile[key]);
+  baseState=dataStore.get();$('#values-reset-status').textContent='';saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
+  personalKeys.forEach(key=>{form.elements[key].value=baseState.profile[key];form.elements[key].dispatchEvent(new Event('profile-populate'));});
   syncGenderChoices();
   numericFields.forEach(({id})=>form.elements[id].value=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value);
   initialFields=Object.fromEntries([...personalKeys,...numericFields.map(field=>field.id)].map(key=>[key,form.elements[key].value]));
   backdropPointer=null;clearErrors();selectSetting(0);selectImage(0);dialog.showModal();imageDraft.open(baseState);
 });
+const restartDialog=$('#restart-confirm');let restarting=false;
 $('#restart-values').addEventListener('click',()=>{
-  resettingStats=true;const stats=createInitialStats();
-  numericFields.forEach(({id})=>form.elements[id].value=id in stats?stats[id]:stats.abilities.find(a=>a.id===id).value);
-  clearErrors();$('#values-reset-status').textContent='數值已回復初始草稿，按「儲存」後套用。';
+ if(saving||imageBusy||restarting)return;
+ const dirty=numericFields.some(({id})=>form.elements[id].value!==initialFields[id]);
+ $('#restart-draft-warning').textContent=dirty?'尚未保存的數值草稿將被初始值取代；基本資料與圖片草稿保留。':'確認後立即保存，不需再按使用者設定的儲存；之後取消設定也不會撤銷。';
+ $('#restart-error').textContent='';restartDialog.showModal();
+});
+$('#cancel-restart').addEventListener('click',()=>restartDialog.close());
+restartDialog.addEventListener('cancel',event=>{if(restarting)event.preventDefault();});
+restartDialog.addEventListener('close',()=>{if(dialog.open)$('#restart-values').focus();});
+$('#confirm-restart').addEventListener('click',async()=>{
+ if(restarting)return;restarting=true;$('#confirm-restart').disabled=true;$('#cancel-restart').disabled=true;lockSave(true);
+ try{
+  // A draft shared lock does not conflict with the write lock. No maintenance
+  // lock is acquired, and the existing personal/image draft stays protected.
+  if(dataStore.get().revision!==baseState.revision)throw new Error('資料已在其他頁面更新；草稿保留，請取消後重新開啟設定。');
+  const stats=createInitialStats();await dataStore.transact({type:'stats.restart',label:'已重新開始數值',target:'user',fields:['restart'],changes:{stats}});
+  baseState={...baseState,stats:dataStore.get().stats,revision:dataStore.get().revision};
+  numericFields.forEach(({id})=>{const value=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value;form.elements[id].value=String(value);initialFields[id]=String(value);});
+  clearErrors();$('#values-reset-status').textContent='數值已立即重設並保存；如需撤銷，請使用 Undo。';restartDialog.close();
+ }catch(error){$('#restart-error').textContent=error.message;}
+ finally{restarting=false;$('#confirm-restart').disabled=false;$('#cancel-restart').disabled=false;lockSave(false);}
 });
 $('#cancel-profile').addEventListener('click',()=>dialog.close());
-dialog.addEventListener('close',()=>{releaseDraft?.();releaseDraft=null;backdropPointer=null;if(unsavedDialog.open){restoreSettingsFocus=false;unsavedDialog.close();}saveVersion++;imageDraft.close();lockSave(false);$('#edit-profile').focus();});
+dialog.addEventListener('close',()=>{releaseDraft?.();releaseDraft=null;backdropPointer=null;if(unsavedDialog.open){restoreSettingsFocus=false;unsavedDialog.close();}if(restartDialog.open)restartDialog.close();saveVersion++;imageDraft.close();lockSave(false);$('#edit-profile').focus();});
 form.addEventListener('submit',async event=>{
   event.preventDefault();if(saving)return;clearErrors();
   let profile,stats;
   try{profile=validateProfile(Object.fromEntries(new FormData(form)),baseState.profile);}catch(error){fieldError(error.field??'age',error.message,0);return;}
-  try{stats=validateManualStats(Object.fromEntries(new FormData(form)),resettingStats?createInitialStats():baseState.stats);}catch(error){fieldError(error.field,error.message,2);return;}
+  try{stats=validateManualStats(Object.fromEntries(new FormData(form)),baseState.stats);}catch(error){fieldError(error.field,error.message,2);return;}
   if(imageBusy){$('#form-error').textContent='圖片處理中，請稍候再儲存。';return;}
   const version=++saveVersion;lockSave(true);
   try{
@@ -219,7 +235,6 @@ form.addEventListener('submit',async event=>{
     const changed=personalKeys.filter(key=>profile[key]!==baseState.profile[key]);
     for(const{id}of numericFields){const before=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value;const after=id in stats?stats[id]:stats.abilities.find(a=>a.id===id).value;if(before!==after)changed.push(id);}
     for(const[key,value]of Object.entries(storedImages))if(JSON.stringify(value)!==JSON.stringify(baseState[key]??null))changed.push(key);
-    if(resettingStats&&JSON.stringify(stats)!==JSON.stringify(baseState.stats))changed.push('restart');
     const saved=await dataStore.transact({type:'settings.update',label:'已更新使用者設定',target:'user',fields:changed,changes:{profile,stats,...storedImages}});
     dialog.close();notice(saved?'使用者設定已儲存。':'沒有變更需要儲存。');
   }catch(error){if(dialog.open&&version===saveVersion){lockSave(false);if(error.field)fieldError(error.field,error.message,1);else $('#form-error').textContent=error.message;}}

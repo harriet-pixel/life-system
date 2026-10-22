@@ -64,3 +64,6 @@ input[type=checkbox],input[type=radio] { accent-color:var(--color-primary); }
 .settings-page dialog input {width:100%;min-width:0;}
 .settings-page dialog .paired-actions {position:sticky;bottom:0;background:var(--color-background);padding-block:8px;}
 .sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
+#restore-unlock label {display:flex;flex-wrap:nowrap;gap:8px;}
+#restore-unlock label > input {flex:1 1 0;width:0;min-width:0;}
+#restore-unlock {min-width:0;}

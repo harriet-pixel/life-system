@@ -8,10 +8,10 @@
     <title>我的資料 · Life System</title>
     <link rel="icon" href="data:,">
     <script src="assets/appearance-core.js" data-appearance-core></script>
-    <link rel="stylesheet" href="assets/styles.css?v=refine-20261022">
-    <link rel="stylesheet" href="assets/profile.css?v=refine-20261022">
-    <script type="module" src="assets/profile.mjs?v=refine-20261022"></script>
-  <link rel="stylesheet" href="assets/appearance.css?v=refine-20261022">
+    <link rel="stylesheet" href="assets/styles.css?v=recovery-20261023">
+    <link rel="stylesheet" href="assets/profile.css?v=recovery-20261023">
+    <script type="module" src="assets/profile.mjs?v=recovery-20261023"></script>
+  <link rel="stylesheet" href="assets/appearance.css?v=recovery-20261023">
   </head>
   <body class="profile-page"><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" tabindex="-1">
         <div class="desktop-navigation" aria-label="電腦版導覽工具列">
@@ -21,11 +21,12 @@
 <div class="dashboard profile-dashboard">
 <section class="avatar-section" aria-label="使用者頭像"><div class="user-avatar-frame"><svg id="avatar-placeholder" viewBox="0 0 160 200" role="img" aria-label="預設頭像"><circle cx="80" cy="65" r="28"/><path d="M25 170c0-65 110-65 110 0"/></svg><img id="user-avatar" alt="使用者頭像" hidden></div></section>
 <section class="personal-heading"><div class="profile-identity"><h1 id="profile-name">尚未設定稱呼</h1><span id="current-page-name" class="current-page-name desktop-page-name"></span></div><button id="edit-profile" class="toolbar-button" type="button" aria-label="編輯個人資料"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 4 5 5-11 11H4v-5ZM13 6l5 5"/></svg></button></section>
-<div class="profile-portrait-column"><div class="profile-summary-area"><div class="profile-summary" id="profile-stats" role="group" aria-label="累積經驗、等級與貨幣"></div><p id="profile-motto" hidden></p></div>
+<div class="profile-summary-area"><div class="profile-summary" id="profile-stats" role="group" aria-label="累積經驗、等級與貨幣"></div><p id="profile-motto" hidden></p></div>
+<div class="profile-portrait-column">
 <section class="photo-section" aria-label="使用者照片">
 <div class="photo-frame"><svg id="default-avatar" viewBox="0 0 160 200" role="img" aria-label="預設頭像"><circle cx="80" cy="65" r="28"/><path d="M25 170c0-65 110-65 110 0"/></svg><img id="user-photo" alt="使用者照片" hidden></div>
 </section></div>
-<div class="profile-content"><section id="abilities-panel" aria-labelledby="abilities-title"><h2 id="abilities-title">能力值</h2><p id="abilities-missing" class="small-note" hidden></p><div class="ability-charts"><div id="ability-radar"></div></div></section>
+<div class="profile-content"><section id="abilities-panel" aria-labelledby="abilities-title"><h2 id="abilities-title" class="sr-only">能力雷達圖</h2><p id="abilities-missing" class="small-note" hidden></p><div class="ability-charts"><div id="ability-radar"></div></div></section>
 <p id="operation-status" class="small-note" role="status" hidden></p></div>
 </div></main></div>    <div class="mobile-navigation" hidden><nav id="mobile-links" class="navigation-options" aria-label="主要導覽"></nav><div class="mobile-undo"><button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button></div></div>
 <dialog id="profile-dialog" aria-labelledby="edit-title"><form id="profile-form" novalidate>
@@ -42,8 +43,8 @@
 </section>
 <section id="values-settings" role="tabpanel" aria-labelledby="values-settings-tab" tabindex="0" hidden>
 
-<div id="manual-fields"></div>
-<details id="ability-edit-details"><summary>修改能力值</summary><p class="small-note">能力增加或減少多少，經驗值就增減多少，畫面經驗值最低為 0、等級最低為 1；不改動其他能力或貨幣。</p><div id="manual-abilities"></div></details><button id="restart-values" type="button" aria-describedby="restart-values-help">重新開始</button><p id="restart-values-help" class="small-note">將等級、經驗值、貨幣與能力回復初始值，按「儲存」後套用。</p><p id="values-reset-status" class="small-note" role="status"></p>
+<button id="restart-values" type="button" aria-haspopup="dialog">重新開始</button><div id="manual-fields"></div>
+<details id="ability-edit-details"><summary>修改能力值</summary><p class="small-note">能力增加或減少多少，經驗值就增減多少，畫面經驗值最低為 0、等級最低為 1；不改動其他能力或貨幣。</p><div id="manual-abilities"></div></details><p id="values-reset-status" class="small-note" role="status"></p>
 </section>
 <section id="photo-settings" role="tabpanel" aria-labelledby="photo-settings-tab" tabindex="0" hidden>
 <div id="image-tabs" class="image-tabs" role="tablist" aria-label="圖片設定">
@@ -53,9 +54,9 @@
 </div>
 <section id="portrait-settings" role="tabpanel" aria-labelledby="portrait-settings-tab" tabindex="0">
 <div class="draft-image-preview"><img id="draft-photo" alt="使用者立繪草稿預覽" hidden><span id="draft-photo-empty">尚未上傳立繪</span></div>
-<div class="image-action-row"><button id="choose-photo" type="button" aria-describedby="photo-error">選擇立繪</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-error" hidden>
-<button id="start-portrait-crop" type="button" hidden>裁切</button></div>
-<div class="favorite-add-row"><button id="add-favorite" type="button" disabled aria-describedby="favorite-help">添加到最愛</button></div><p id="favorite-help" class="small-note" role="status"></p>
+<div class="image-action-row"><button id="choose-photo" type="button" aria-label="選擇或更換立繪" aria-describedby="photo-error">更換</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-error" hidden>
+<button id="start-portrait-crop" type="button">裁切</button><button id="add-favorite" type="button" disabled aria-describedby="favorite-help">添加最愛</button></div>
+<p id="favorite-help" class="small-note" role="status"></p>
 <p id="photo-error" class="field-error"></p>
 <div id="portrait-editor" hidden>
 <canvas id="portrait-canvas" width="300" height="400" tabindex="0" aria-label="立繪裁切區，可拖曳圖片或用方向鍵移動"></canvas>
@@ -76,4 +77,4 @@
 </section></section>
 </div><div class="settings-footer"><p id="image-status" class="small-note" role="status" aria-live="polite"></p><p id="form-error" role="alert"></p><div class="form-actions"><button id="save-settings" type="submit">儲存</button><button id="cancel-profile" type="button">取消</button></div>
 </div></form></dialog>
-<dialog id="portrait-actions-dialog" aria-labelledby="portrait-actions-title"><h2 id="portrait-actions-title" class="sr-only">立繪操作</h2><div class="portrait-dialog-actions"><button type="button" data-action="select">選用</button><button type="button" data-action="replace">更換</button><button type="button" data-action="delete">刪除</button></div><button id="close-portrait-actions" type="button" aria-label="關閉立繪操作"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m8 8 8 8M16 8l-8 8"/></svg></button></dialog><dialog id="unsaved-settings-dialog" aria-labelledby="unsaved-settings-title"><p id="unsaved-settings-title">有尚未儲存的變更，是否儲存？</p><div class="form-actions"><button id="save-unsaved-settings" type="button">儲存</button><button id="cancel-unsaved-settings" type="button">取消</button></div></dialog></body></html>
+<dialog id="portrait-actions-dialog" aria-labelledby="portrait-actions-title"><h2 id="portrait-actions-title" class="sr-only">立繪操作</h2><div class="portrait-dialog-actions"><button type="button" data-action="select">選用</button><button type="button" data-action="replace">更換</button><button type="button" data-action="delete">刪除</button></div><button id="close-portrait-actions" type="button" aria-label="關閉立繪操作"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="m8 8 8 8M16 8l-8 8"/></svg></button></dialog><dialog id="unsaved-settings-dialog" aria-labelledby="unsaved-settings-title"><p id="unsaved-settings-title">有尚未儲存的變更，是否儲存？</p><div class="form-actions"><button id="save-unsaved-settings" type="button">儲存</button><button id="cancel-unsaved-settings" type="button">取消</button></div></dialog><dialog id="restart-confirm" aria-labelledby="restart-title"><h2 id="restart-title">重新開始數值？</h2><p>將等級重設為 1、畫面經驗與貨幣重設為 0，五項能力重設為 0；基本資料、圖片、最愛、行動紀錄與其他設定保留。</p><p id="restart-draft-warning"></p><p id="restart-error" class="field-error" role="alert"></p><div class="form-actions paired-actions"><button id="cancel-restart" type="button">取消</button><button id="confirm-restart" type="button">確認重新開始</button></div></dialog></body></html>

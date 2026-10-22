@@ -1,3 +1,4 @@
+import {maintainRecovery} from './recovery.mjs';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs';
 import {maintenance} from './coordination.mjs';
 const providers=new Map();
@@ -12,10 +13,11 @@ export function collectReferences(value,refs=new Set()) {
   else if(value&&typeof value==='object') Object.values(value).forEach(v=>collectReferences(v,refs));
   return refs;
 }
-export function documentImageReferences(state) {
+export function documentImageReferences(state,{legacy=false,raw=false}={}) {
+  if(!legacy&&!raw)state=maintainRecovery(state).document;
   const refs=new Set(),imageFields=['photo','avatar','photoEdit','avatarEdit','portraits'];
-  const nonImageFields=['revision','statsRulesVersion','profile','activities','stats','history','settings','currentPortraitId'];
-  const roots=[state,...(state.history??[]).flatMap(record=>[record.before,record.after])];
+  const nonImageFields=['revision','statsRulesVersion','profile','activities','stats','history','undoHistory','historyVersion','settings','currentPortraitId'];
+  const roots=[state,...(legacy?state.history:state.undoHistory??[]).flatMap(record=>[record.before,record.after])];
   for(const root of roots){
     if(!root||typeof root!=='object')throw new Error('圖片快照尚未完整載入。');
     for(const field of imageFields)collectReferences(root[field],refs);
@@ -37,10 +39,10 @@ export async function inspectImages(state) {
   const unused=assets.filter(a=>!refs.has(a.id)&&!(a.protectedUntil>Date.now()));
   return {refs,assets,unused,transientSources};
 }
-export function auditImages(store) {return maintenance(()=>{store.refresh();return inspectImages(store.get());});}
+export function auditImages(store) {return maintenance(()=>{store.refresh();store.maintain();return inspectImages(store.get());});}
 export function deleteUnusedImages(store,selected) {
   return maintenance(async()=>{
-    store.refresh();const {unused}=await inspectImages(store.get());
+    store.refresh();store.maintain();const {unused}=await inspectImages(store.get());
     const selectedIDs=new Set(selected),safe=unused.filter(a=>selectedIDs.has(a.id));
     // The write lock is held from fresh reference discovery through IDB commit.
     const db=await openDatabase();

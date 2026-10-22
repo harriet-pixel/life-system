@@ -1,3 +1,4 @@
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs';
 import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs';
 import {ABILITIES} from './abilities.mjs';
 import {maintenance} from './coordination.mjs';
@@ -15,7 +16,8 @@ function unb64(text,max=MAX_FILE_BYTES) {
 }
 function check(condition,message='備份結構驗證失敗。'){if(!condition)throw new Error(message);}
 const topKeys=['revision','statsRulesVersion','profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','stats','history','settings'];
-const editKeys=topKeys.filter(k=>!['revision','history','statsRulesVersion'].includes(k));
+const legacyKeys=[...topKeys];topKeys.push('historyVersion','undoHistory');
+const editKeys=legacyKeys.filter(k=>!['revision','history','statsRulesVersion'].includes(k));
 function safeObject(value,depth=0) {
   check(depth<40,'備份結構過深。');
   if(value&&typeof value==='object')for(const [key,child] of Object.entries(value)){
@@ -23,10 +25,10 @@ function safeObject(value,depth=0) {
   }
 }
 function validCrop(crop){return crop&&typeof crop==='object'&&['left','top','width','height'].every(k=>typeof crop[k]==='number'&&Number.isFinite(crop[k]))&&crop.left>=0&&crop.top>=0&&crop.width>0&&crop.height>0;}
-function validateFields(value,full=false) {
+function validateFields(value,full=false,legacy=false) {
   check(value&&typeof value==='object'&&!Array.isArray(value));
-  check(Object.keys(value).every(k=>(full?topKeys:editKeys).includes(k)),'備份含未知資料欄位，請使用相符版本。');
-  if(full){check(topKeys.every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
+  check(Object.keys(value).every(k=>(full?(legacy?legacyKeys:topKeys):editKeys).includes(k)),'備份含未知資料欄位，請使用相符版本。');
+  if(full){check((legacy?legacyKeys:topKeys).every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
   if(Object.hasOwn(value,'profile')){validateProfileFields(value.profile,undefined,{reading:true});check(value.profile&&['name','age','gender','bio','boundaries','motto'].every(k=>typeof value.profile[k]==='string'));check(value.profile.age===''||(/^\d+$/.test(value.profile.age)&&Number.isSafeInteger(Number(value.profile.age))));}
   if(Object.hasOwn(value,'stats')){
     const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5);
@@ -38,21 +40,30 @@ function validateFields(value,full=false) {
   for(const key of ['photo','avatar'])if(Object.hasOwn(value,key))check(value[key]===null||isImageReference(value[key]));
   for(const key of ['photoEdit','avatarEdit'])if(Object.hasOwn(value,key))check(value[key]===null||(value[key]&&typeof value[key]==='object'&&(value[key].source===undefined||value[key].source===null||isImageReference(value[key].source))&&validCrop(value[key].crop)));
   if(Object.hasOwn(value,'currentPortraitId'))check(value.currentPortraitId===null||typeof value.currentPortraitId==='string');
-  if(Object.hasOwn(value,'settings'))check(JSON.stringify(normalizeSettings(value.settings))===JSON.stringify(value.settings),'備份設定格式不正確。');
+  if(Object.hasOwn(value,'settings')){const normalized=normalizeSettings(value.settings);check(JSON.stringify(normalized.appearance)===JSON.stringify(value.settings.appearance),'備份設定格式不正確。');if(!legacy)check(!Object.hasOwn(value.settings,'history'),'備份含舊版歷史設定。');}
 }
-export function validateDocument(doc) {
-  safeObject(doc);validateFields(doc,true);
-  check(Number.isSafeInteger(doc.revision)&&doc.revision>=0&&Array.isArray(doc.history)&&doc.history.length<=50);
-  check(new Set(doc.history.map(r=>r.id)).size===doc.history.length);
-  for(const r of doc.history){
-    check(typeof r.id==='string'&&Number.isFinite(Date.parse(r.time))&&['type','label','target'].every(k=>typeof r[k]==='string')&&Array.isArray(r.fields)&&r.fields.every(k=>typeof k==='string')&&typeof r.undone==='boolean');
-    check(r.delta&&Array.isArray(r.delta.abilities)&&r.delta.abilities.every(a=>typeof a.id==='string'&&Number.isFinite(a.value)));
-    for(const k of ['experience','currency','level'])check(Number.isFinite(r.delta[k]));
-    if(r.undone)check(Number.isFinite(Date.parse(r.undoneAt)));
-    if(r.redoable)check(r.undone&&Number.isSafeInteger(r.undoOrder)&&r.undoOrder<=doc.revision);
-    validateFields(r.before);validateFields(r.after);check(Object.keys(r.before).length>0&&JSON.stringify(Object.keys(r.before).sort())===JSON.stringify(Object.keys(r.after).sort()));
-  }
-  return doc;
+function validateRecord(r,doc,{snapshot=false,legacy=false}={}){
+ check(typeof r.id==='string'&&typeof r.time==='string'&&(!snapshot||legacy||Number.isFinite(Date.parse(r.time)))&&['type','label','target'].every(k=>typeof r[k]==='string')&&Array.isArray(r.fields)&&r.fields.every(k=>typeof k==='string')&&typeof r.undone==='boolean');
+ check(r.delta&&Array.isArray(r.delta.abilities)&&r.delta.abilities.every(a=>typeof a.id==='string'&&Number.isFinite(a.value)));
+ for(const k of ['experience','currency','level'])check(Number.isFinite(r.delta[k]));
+ if(r.undone)check(Number.isFinite(Date.parse(r.undoneAt)));
+ if(snapshot){
+  if(r.redoable)check(r.undone&&Number.isSafeInteger(r.undoOrder)&&r.undoOrder<=doc.revision);
+  validateFields(r.before,false,legacy);validateFields(r.after,false,legacy);check(Object.keys(r.before).length>0&&JSON.stringify(Object.keys(r.before).sort())===JSON.stringify(Object.keys(r.after).sort()));
+ }else check(Object.keys(r).every(k=>['id','time','type','label','target','fields','delta','undone','undoneAt'].includes(k)),'行動紀錄不可包含個人資料或圖片快照。');
+}
+export function validateDocument(doc,{legacy=false}={}){
+ safeObject(doc);validateFields(doc,true,legacy);
+ check(Number.isSafeInteger(doc.revision)&&doc.revision>=0&&Array.isArray(doc.history));
+ check(new Set(doc.history.map(r=>r.id)).size===doc.history.length);
+ if(legacy){check(doc.history.length<=50);doc.history.forEach(r=>validateRecord(r,doc,{snapshot:true,legacy:true}));}
+ else{
+  check(doc.historyVersion===1&&Array.isArray(doc.undoHistory)&&doc.undoHistory.length<=RECOVERY_LIMIT);
+  doc.history.forEach(r=>validateRecord(r,doc));
+  check(new Set(doc.undoHistory.map(r=>r.id)).size===doc.undoHistory.length);
+  for(const r of doc.undoHistory){validateRecord(r,doc,{snapshot:true});const meta=doc.history.find(m=>m.id===r.id);check(meta&&JSON.stringify(actionMetadata(r))===JSON.stringify(meta),'復原紀錄與行動紀錄不一致。');}
+ }
+ return doc;
 }
 export const dataCount=doc=>3+doc.portraits.length+Object.keys(doc.activities).length+doc.history.length;
 async function passwordKey(password,salt,usage) {
@@ -71,12 +82,12 @@ export async function encodeBackup(payload,password='') {
 export async function withBackup(store,password,consume) {
   validateNewPassword(password);
   return maintenance(async()=>{
-    store.refresh();const document=validateDocument(store.get()),{assets,refs,transientSources}=await inspectImages(document);
+    store.refresh();store.maintain();const document=validateDocument(store.get());check(encoder.encode(JSON.stringify(document)).length<=10*1024*1024,'資料文件超過 10 MiB 備份上限；目前資料與行動紀錄均保留。');const {assets,refs,transientSources}=await inspectImages(document);
     check(!transientSources.length,'請先儲存或取消以下圖片操作再備份：'+transientSources.join('、'));
     check(refs.size<=MAX_IMAGES);let size=0;
     const images=[];
     for(const asset of assets.filter(a=>refs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
-    const payload={formatVersion:VERSION,dataVersion:2,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
+    const payload={formatVersion:VERSION,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
     return consume(await encodeBackup(payload,password),payload);
   });
 }
@@ -97,14 +108,16 @@ export async function readBackup(file,password='') {
   if(envelope.encrypted===true){
     check(envelope.algorithm==='AES-256-GCM'&&envelope.kdf==='PBKDF2-SHA256'&&envelope.iterations===600000,'不支援的加密格式。');
     const salt=unb64(envelope.salt,16),iv=unb64(envelope.iv,12);check(salt.length===16&&iv.length===12);
-    try{const key=await passwordKey(password,salt,'decrypt');const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:encoder.encode(FORMAT+VERSION)},key,unb64(envelope.ciphertext));payload=JSON.parse(decoder.decode(plain));}catch{throw new Error('密碼錯誤或備份已損毀，原資料未更動。');}
+    const cipher=unb64(envelope.ciphertext);let plain;
+    try{const key=await passwordKey(password,salt,'decrypt');plain=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:encoder.encode(FORMAT+VERSION)},key,cipher);}catch{throw new Error('密碼錯誤，或備份檔案已損毀。');}
+    try{payload=JSON.parse(decoder.decode(plain));}catch{throw new Error('解密後的備份內容不是有效 JSON。');}
   }else{
     check(envelope.encrypted===false&&envelope.payload);check(await hash(encoder.encode(JSON.stringify(envelope.payload)))===envelope.sha256,'備份完整性驗證失敗。');payload=envelope.payload;
   }
-  check(payload.formatVersion===VERSION&&payload.dataVersion===2,'不支援的資料版本；此版本使用 Lv1／經驗值基準 100 的數值規則，原資料未更動。');
+  check(payload.formatVersion===VERSION&&[2,3].includes(payload.dataVersion),'不支援的資料版本；此版本使用 Lv1／經驗值基準 100 的數值規則，原資料未更動。');
   check(Number.isFinite(Date.parse(payload.createdAt))&&Array.isArray(payload.images)&&payload.images.length<=MAX_IMAGES);
   check(encoder.encode(JSON.stringify(payload.document)).length<=10*1024*1024,'資料文件超過 10 MiB。');
-  validateDocument(payload.document);
+  validateDocument(payload.document,{legacy:payload.dataVersion===2});
   check(payload.dataCount===dataCount(payload.document)&&payload.imageCount===payload.images.length);
   const ids=new Set(),assets=[];let total=0;
   for(const item of payload.images){
@@ -119,8 +132,14 @@ export async function readBackup(file,password='') {
     const blob=new Blob([bytes],{type:item.mime});if(globalThis.createImageBitmap){let image;try{image=await createImageBitmap(blob);}catch{throw new Error('圖片內容無法解碼，原資料未更動。');}finally{image?.close();}}
     assets.push({id:item.id,blob,name:item.name,createdAt:item.createdAt,protectedUntil:0});
   }
-  const refs=documentImageReferences(payload.document);check([...refs].every(id=>ids.has(id)),'備份缺少必要圖片。');check(ids.size===refs.size,'備份含不在範圍內的圖片。');
-  return {payload,assets};
+  const refs=documentImageReferences(payload.document,{legacy:payload.dataVersion===2,raw:true});check([...refs].every(id=>ids.has(id)),'備份缺少必要圖片。');check(ids.size===refs.size,'備份含不在範圍內的圖片。');
+  // Verify the original inventory before discarding expired legacy snapshots.
+  // Never renew timestamps. Import only images still required at restore time.
+  const document=maintainRecovery(payload.document).document;document.settings=normalizeSettings(document.settings);
+  for(const r of document.undoHistory)for(const snapshot of [r.before,r.after])if(snapshot.settings)snapshot.settings=normalizeSettings(snapshot.settings);
+  const normalized=maintainRecovery(document).document;validateDocument(normalized);
+  const liveRefs=documentImageReferences(normalized);
+  return {payload:{...payload,dataVersion:3,document:normalized,dataCount:dataCount(normalized)},assets:assets.filter(a=>liveRefs.has(a.id))};
 }
 export async function restoreBackup(store,prepared,expectedRevision) {
   return maintenance(async()=>{
@@ -131,7 +150,7 @@ export async function restoreBackup(store,prepared,expectedRevision) {
     const existing=await listImageAssets();
     for(const asset of prepared.assets){const prior=existing.find(a=>a.id===asset.id);if(prior&&(!(prior.blob instanceof Blob)||'asset:'+await hash(await prior.blob.arrayBuffer())!==asset.id))throw new Error('本機同 ID 圖片的完整性異常，已停止還原並保留原資料。');}
     await stageImageAssets(prepared.assets);
-    store.replace(prepared.payload.document);
+    store.replace(maintainRecovery(prepared.payload.document).document);
   });
 }
 export function backupFilename(){return 'Life system '+new Date().toISOString().replace(/[:.]/g,'-')+'.life-backup.json';}

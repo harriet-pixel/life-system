@@ -22,14 +22,12 @@ try{
  await page.locator('.mobile-navigation [data-undo]').click();await home.waitForFunction(()=>document.documentElement.dataset.font==='serif');
  await page.locator('.mobile-navigation [data-redo]').click();await home.waitForFunction(()=>document.documentElement.dataset.font==='rounded');
  console.log('PASS appearance: preview/save/reload/cross-page/cross-tab/Undo/Redo');
- // The same checkbox on profile/settings affects activity journaling on home.
- await page.locator('#history-tab').click();await page.locator('#history-record-all').uncheck();
- await page.locator('#history-tab').click();await page.waitForFunction(()=>!document.querySelector('#history-record-all').checked);
+ // Recovery is fixed by the system; no history recording toggle remains.
+ await page.locator('#history-tab').click();assert.equal(await page.locator('#history-record-all').count(),0);
  const count=await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length);
  await home.locator('[data-task]').first().check();await home.waitForTimeout(200);
- assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length),count);
- await page.locator('#history-record-all').check();await page.waitForFunction(()=>document.querySelector('#history-record-all').checked);
- console.log('PASS shared history controls and homepage data changes');
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length),count+1);
+ console.log('PASS fixed journaling and homepage data changes');
  // Build real, content-addressed image fixtures, including history-only and redo references.
  const fixture=await page.evaluate(async()=>{
   const {dataStore:s}=await import('./assets/data.mjs'),images=await import('./assets/image-store.mjs');
@@ -56,8 +54,8 @@ try{
  await page.locator('#refresh-storage').click();await page.waitForFunction(()=>document.querySelector('#storage-state').textContent.includes('我的資料'));
  await page.locator('#backup-tab').click();await page.locator('#download-backup').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('使用者設定'));
  await profile.close();
- await page.locator('#storage-tab').click();await page.waitForFunction(()=>document.querySelectorAll('.asset-row').length===1);
- await page.locator('#select-all-assets').click();await page.locator('#delete-assets').click();await page.locator('#confirm-delete').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('已永久刪除 1'));
+ await page.locator('#storage-tab').click();await page.waitForFunction(()=>document.querySelectorAll('.asset-row').length===2);
+ await page.locator('.asset-row input').evaluateAll((nodes,id)=>nodes.find(n=>n.value===id).click(),fixture.ids[6]);await page.locator('#delete-assets').click();await page.locator('#confirm-delete').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('已永久刪除 1'));
  const state=await page.evaluate(async()=>{const {dataStore:s}=await import('./assets/data.mjs');const {listImageAssets}=await import('./assets/image-store.mjs');return {doc:s.get(),ids:(await listImageAssets()).map(a=>a.id)};});
  assert.ok(!state.ids.includes(fixture.ids[6]));for(const i of [0,1,2,3,4,5,7])assert.ok(state.ids.includes(fixture.ids[i]));
  // Unknown reference source must fail closed.
@@ -71,7 +69,7 @@ try{
   await backup.restoreBackup(s,prepared,s.get().revision);const after=s.get();
   return {before,after,imageCount:prepared.payload.imageCount,text};
  });
- const {revision:a,...before}=roundtrip.before,{revision:b,...after}=roundtrip.after;assert.deepEqual(after,before);assert.ok(roundtrip.imageCount>=6);
+ const {revision:a,...before}=roundtrip.before,{revision:b,...after}=roundtrip.after;assert.deepEqual(after,before);assert.ok(roundtrip.imageCount>=5);
  // Invalid backups do not modify storage; inject a publication failure after staging.
  const protections=await page.evaluate(async text=>{
   const b=await import('./assets/backup.mjs'),{dataStore:s,STORAGE_KEY}=await import('./assets/data.mjs');const original=localStorage.getItem(STORAGE_KEY);const out=[];

@@ -52,8 +52,8 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   actionDialog.addEventListener('close',()=>{if(actionTrigger?.isConnected&&$('#profile-dialog').open)actionTrigger.focus({preventScroll:true});actionTrigger=null;});
   $('#close-portrait-actions').addEventListener('click',()=>actionDialog.close());
   function renderDraft(){
-    $('#draft-photo-empty').hidden=Boolean(photo?.result);$('#portrait-editor').hidden=!photo?.result||!editingPhoto;$('#start-portrait-crop').hidden=editingPhoto;$('#start-portrait-crop').disabled=!photo?.result;
-    $('#choose-photo').textContent=photo?.result?'更換立繪':'選擇立繪';
+    $('#draft-photo-empty').hidden=Boolean(photo?.result);$('#portrait-editor').hidden=!photo?.result||!editingPhoto;$('#start-portrait-crop').hidden=false;$('#start-portrait-crop').disabled=!photo?.result||editingPhoto;
+    $('#choose-photo').textContent='更換';
     $('#add-favorite').disabled=!photo?.result||editingPhoto||jobs>0||scheduled;
     $('#favorite-help').textContent=editingPhoto?'請先確認或取消立繪裁切，再添加到最愛。':!photo?.result?'請先選擇立繪，再添加到最愛。':'';
     $('#draft-avatar-empty').hidden=Boolean(avatar?.result)||avatarEditor.ready;$('#avatar-crop').hidden=!avatarEditor.ready||!editingAvatar;$('#start-avatar-crop').disabled=!avatarEditor.ready||editingAvatar;

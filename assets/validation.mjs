@@ -26,10 +26,10 @@ export function validateHistoryPage(value,total){const n=integerValue(value,'his
 export function bindProfileValidation(form,getPrevious){
  for(const [key,max] of Object.entries(TEXT_LIMITS)){
   const input=form.elements[key];input.removeAttribute('maxlength');
-  const hint=document.createElement('span');hint.className='small-note';hint.id=key+'-limit';hint.textContent=`最多 ${max.toLocaleString('zh-TW')} 字`;
-  const error=document.createElement('span');error.className='field-error';error.id=key+'-error';error.setAttribute('aria-live','polite');input.after(hint,error);input.setAttribute('aria-describedby',[input.getAttribute('aria-describedby'),hint.id,error.id].filter(Boolean).join(' '));
-  const check=()=>{const over=input.value!==getPrevious()?.[key]&&textLength(input.value)>max;error.textContent=over?`${FIELD_NAMES[key]}最多 ${max} 字，請調整後再儲存。`:'';if(over)input.setAttribute('aria-invalid','true');else input.removeAttribute('aria-invalid');};
-  input.addEventListener('input',event=>{if(!event.isComposing)check();});input.addEventListener('compositionend',check);
+  const hint=document.createElement('span');hint.className='small-note';hint.id=key+'-limit';hint.textContent=` （${textLength(input.value)}／${max}）`;const caption=document.createElement('span');caption.className='field-caption';const label=input.closest('label');const name=label.firstChild;if(name?.nodeType===3)caption.append(name);caption.append(hint);input.before(caption);
+  const error=document.createElement('span');error.className='field-error';error.id=key+'-error';error.setAttribute('aria-live','polite');input.after(error);input.setAttribute('aria-describedby',[input.getAttribute('aria-describedby'),hint.id,error.id].filter(Boolean).join(' '));
+  const check=()=>{hint.textContent=` （${textLength(input.value)}／${max}）`;const over=input.value!==getPrevious()?.[key]&&textLength(input.value)>max;error.textContent=over?`${FIELD_NAMES[key]}最多 ${max} 字，請調整後再儲存。`:'';if(over)input.setAttribute('aria-invalid','true');else input.removeAttribute('aria-invalid');};
+  input.addEventListener('input',event=>{if(!event.isComposing)check();});input.addEventListener('compositionend',check);input.addEventListener('profile-populate',check);
  }
 }
 

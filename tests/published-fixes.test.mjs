@@ -12,6 +12,6 @@ test('current published progress and journal are not reset; legacy upgrade retai
  const storage=memory(),s=createDataStore(storage);s.transact({type:'test',label:'姓名',target:'user',changes:{profile:{...s.get().profile,name:'保留文字'}}});
  const raw=storage.getItem(STORAGE_KEY);migrateStatsRules(storage);assert.equal(storage.getItem(STORAGE_KEY),raw);
  const legacy=JSON.parse(raw);delete legacy.statsRulesVersion;legacy.stats.experience=999;legacy.stats.level=9;storage.setItem(STORAGE_KEY,JSON.stringify(legacy));migrateStatsRules(storage);
- const migrated=JSON.parse(storage.getItem(STORAGE_KEY));assert.equal(migrated.profile.name,'保留文字');assert.deepEqual(migrated.settings,legacy.settings);assert.deepEqual(migrated.portraits,legacy.portraits);assert.equal(migrated.statsRulesVersion,2);assert.equal(migrated.stats.level,1);assert.equal(migrated.history.length,0);
+ const migrated=JSON.parse(storage.getItem(STORAGE_KEY));assert.equal(migrated.profile.name,'保留文字');assert.deepEqual(migrated.settings,legacy.settings);assert.deepEqual(migrated.portraits,legacy.portraits);assert.equal(migrated.statsRulesVersion,2);assert.equal(migrated.stats.level,1);assert.equal(migrated.history.length,legacy.history.length);
  const once=storage.getItem(STORAGE_KEY);migrateStatsRules(storage);assert.equal(storage.getItem(STORAGE_KEY),once);
 });

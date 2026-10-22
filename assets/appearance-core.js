@@ -1,14 +1,13 @@
 (function(){
 const DEFAULT_APPEARANCE = Object.freeze({color:'#104a7a',font:'serif'});
-const DEFAULT_SETTINGS = Object.freeze({appearance:DEFAULT_APPEARANCE,history:{recordAll:true}});
+const DEFAULT_SETTINGS = Object.freeze({appearance:DEFAULT_APPEARANCE,});
 const FONT_NAMES = Object.freeze({device:'裝置預設字體',serif:'明體',sans:'黑體',rounded:'圓體'});
 const validHex=value=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value);
 function normalizeSettings(value={}) {
   const appearance={...DEFAULT_APPEARANCE,...value.appearance};
   if(!validHex(appearance.color)||!Object.hasOwn(FONT_NAMES,appearance.font)) throw new Error('外觀設定格式不正確。');
-  const recordAll=value.history?.recordAll??true;
-  if(typeof recordAll!=='boolean') throw new Error('歷史設定格式不正確。');
-  return {appearance:{color:appearance.color.toLowerCase(),font:appearance.font},history:{recordAll}};
+  const {history,...other}=value;
+  return {...other,appearance:{color:appearance.color.toLowerCase(),font:appearance.font}};
 }
 function luminance(hex) {
   const values=hex.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);
