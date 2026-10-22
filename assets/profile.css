@@ -217,3 +217,18 @@ textarea { resize: vertical; }
 #image-status[hidden] { display: block !important; visibility: hidden; }
 
 #image-status { block-size: 3.4em; overflow: auto; }
+
+.image-tab-mobile { display: none; }
+@media (max-width:1023px) {
+  .image-tab-desktop { display: none; }
+  .image-tab-mobile { display: inline; }
+  .image-tabs { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  #photo-settings .image-tabs button { min-width: 0; padding-inline: 4px; }
+}
+@media (min-width:1024px) {
+  #portrait-library { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+#portrait-actions-dialog { position: relative; width: fit-content; max-width: calc(100% - 32px); padding: 44px 16px 16px; }
+.portrait-dialog-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 0; }
+#portrait-actions-dialog #close-portrait-actions { position: absolute; top: 0; right: 0; width: 44px; height: 44px; padding: 10px; border: 0; border-radius: 50%; background: transparent; }
+#close-portrait-actions svg { display: block; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.5; }

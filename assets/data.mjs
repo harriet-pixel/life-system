@@ -71,7 +71,7 @@ export function createDataStore(storage) {
           value = validateStats(rawValue, state.stats);
         }
         if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'stats'].includes(key)) throw new Error('不支援的資料類型');
-        if (key === 'portraits' && (!Array.isArray(value) || value.length>5 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 5 個立繪，請先刪除或更換既有項目。');
+        if (key === 'portraits' && (!Array.isArray(value) || value.length>6 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 6 個立繪，請先刪除或更換既有項目。');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
       }

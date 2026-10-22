@@ -1,9 +1,9 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { createProfileImages } from './profile-images.mjs?v=slots-23';
+import { createProfileImages } from './profile-images.mjs?v=favorites-24';
 import { imageURL, prepareImageReferences } from './image-store.mjs?v=images-21';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=redo-17';
-import { undoManager } from './undo.mjs?v=images-21';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=images-21';
+import { undoManager } from './undo.mjs?v=favorites-24';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs?v=favorites-24';
 import { initializeNavigation } from './navigation.mjs?v=redo-17';
 const $ = selector => document.querySelector(selector);
 const fields = { name: '稱呼', age: '年紀', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', portraits:'立繪收藏', photoEdit:'立繪裁切', avatarEdit:'頭像裁切', currentPortraitId:'選用立繪', level: '等級', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
