@@ -1,6 +1,7 @@
 // Content tabs only. Call the returned handler after the tab selection changes.
 export function createMobileTabPositioner(tablist) {
-  const mobile = matchMedia('(max-width: 1023px)');
+  // Positioning threshold only; page and navigation layout breakpoints stay unchanged.
+  const mobile = matchMedia('(max-width: 450px)');
   const region = tablist.parentElement;
   region.classList.add('mobile-tab-scroll-region');
   let pendingFrame = 0;

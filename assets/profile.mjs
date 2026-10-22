@@ -1,4 +1,4 @@
-import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
+import { createMobileTabPositioner } from './tab-position.mjs?v=tab-limit-34';
 import { createProfileImages } from './profile-images.mjs?v=backdrop-26';
 import { imageURL, prepareImageReferences } from './image-store.mjs?v=images-21';
 import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=exp-base-31';

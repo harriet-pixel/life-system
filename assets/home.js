@@ -1,4 +1,4 @@
-import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
+import { createMobileTabPositioner } from './tab-position.mjs?v=tab-limit-34';
 import { undoManager } from './undo.mjs?v=exp-base-31';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
 import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=exp-base-31';
