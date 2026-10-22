@@ -3,7 +3,7 @@ export const IMAGE_DATABASE = 'life-system.images.v1';
 const PREFIX = 'asset:';
 const urls = new Map();
 let database;
-function openDatabase() {
+export function openDatabase() {
   if (!database) database = new Promise((resolve,reject)=>{
     let request;try{request=indexedDB.open(IMAGE_DATABASE,1);}catch{reject(new Error('無法開啟圖片儲存空間；原資料已保留，請確認瀏覽器權限後重新整理。'));return;}
     request.onupgradeneeded=()=>request.result.createObjectStore('images',{keyPath:'id'});
@@ -28,7 +28,8 @@ export async function storeImage(dataURL) {
   const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(value=>value.toString(16).padStart(2,'0')).join('');
   const id=PREFIX+hash,db=await openDatabase();
   await new Promise((resolve,reject)=>{
-    const tx=db.transaction('images','readwrite');tx.objectStore('images').put({id,blob,protectedUntil:Date.now()+86400000});
+    const tx=db.transaction('images','readwrite');const store=tx.objectStore('images'),request=store.get(id);
+    request.onsuccess=()=>{if(!request.result)store.put({id,blob,createdAt:new Date().toISOString(),protectedUntil:Date.now()+86400000});};
     tx.oncomplete=resolve;tx.onerror=tx.onabort=()=>reject(new Error('圖片儲存失敗，可能是空間不足；尚未套用本次設定。'));
   }).catch(()=>{throw new Error('圖片儲存失敗，可能是空間不足；尚未套用本次設定。');});
   if (!urls.has(id)) urls.set(id,URL.createObjectURL(blob));return id;
@@ -59,20 +60,18 @@ export async function migrateImages(storage,key) {
     try{storage.setItem(key,next);}catch{throw new Error('圖片升級尚未完成，原本的圖片與資料已保留。請確認瀏覽器儲存權限。');}
   }
 }
-export async function collectUnusedImages(storage,key) {
-  const raw=storage.getItem(key);if(!raw)return;
-  const refs=new Set();
-  const visit=value=>{if(isImageReference(value))refs.add(value);else if(Array.isArray(value))value.forEach(visit);else if(value&&typeof value==='object')Object.values(value).forEach(visit);};
-  visit(JSON.parse(raw));
+// No automatic garbage collection. Permanent deletion is settings-only.
+export async function listImageAssets() {
   const db=await openDatabase();
-  await new Promise((resolve,reject)=>{
-    const tx=db.transaction('images','readwrite'),store=tx.objectStore('images'),request=store.openCursor();
-    request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;
-      // New/staged assets have a lease, protecting a concurrent tab's pending Save.
-      // Re-check revision/document before deletion; a newer commit retries later.
-      if(storage.getItem(key)===raw && !refs.has(cursor.key) && cursor.value.protectedUntil<Date.now()){
-        cursor.delete();if(urls.has(cursor.key)){URL.revokeObjectURL(urls.get(cursor.key));urls.delete(cursor.key);}
-      }cursor.continue();};
-    tx.oncomplete=resolve;tx.onerror=tx.onabort=reject;
-  });
+  return new Promise((resolve,reject)=>{const tx=db.transaction('images');const r=tx.objectStore('images').getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(new Error('無法讀取圖片資產，已停止清理。'));});
 }
+export function revokeImageURL(id) { if(urls.has(id)){URL.revokeObjectURL(urls.get(id));urls.delete(id);} }
+export async function stageImageAssets(entries) {
+ const db=await openDatabase();
+ return new Promise((resolve,reject)=>{const tx=db.transaction('images','readwrite'),store=tx.objectStore('images');
+  for(const entry of entries) {const r=store.get(entry.id);r.onsuccess=()=>{if(!r.result)store.put(entry);};}
+  tx.oncomplete=resolve;tx.onerror=tx.onabort=()=>reject(new Error('圖片寫入失敗；目前資料仍保留。'));
+ });
+}
+
+if(typeof window!=='undefined')window.addEventListener('pagehide',()=>{for(const id of [...urls.keys()])revokeImageURL(id);});

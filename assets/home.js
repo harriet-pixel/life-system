@@ -1,9 +1,9 @@
-import { createMobileTabPositioner } from './tab-position.mjs?v=activity-height-39';
-import { createActivityHeightSync } from './activity-height.mjs?v=activity-height-39';
-import { undoManager } from './undo.mjs?v=exp-zero-37';
-import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=exp-zero-37';
-import { initializeNavigation } from './navigation.mjs?v=redo-17';
+import { createMobileTabPositioner } from './tab-position.mjs';
+import { createActivityHeightSync } from './activity-height.mjs';
+import { undoManager } from './undo.mjs';
+import { createCompanionController, generateMockReply } from './companion.mjs';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs';
+import { initializeNavigation } from './navigation.mjs';
 
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {
@@ -81,6 +81,7 @@ const defaults = Object.fromEntries(entries.map(({ input, id }) => [id, input.de
 const activityStore = { get: id => ({ checked: dataStore.get().activities[id] ?? defaults[id] }) };
 const taskCount = document.querySelector('#task-count');
 function renderActivities() {
+  if(undoManager.getState().busy)return;
   entries.forEach(({ input, id, type }) => {
     input.checked = activityStore.get(id).checked;
     if (type === 'habit') input.nextElementSibling.textContent = input.checked ? '已打卡' : '未打卡';
@@ -88,10 +89,10 @@ function renderActivities() {
   const completed = entries.filter(({ id, type }) => type === 'task' && activityStore.get(id).checked).length;
   taskCount.textContent = `${completed} / ${taskInputs.length} 完成`;
 }
-entries.forEach((entry) => entry.input.addEventListener('change', () => {
+entries.forEach((entry) => entry.input.addEventListener('change', async () => {
   if (undoManager.getState().busy) { renderActivities(); return; }
   try {
-    dataStore.transact({ type: `${entry.type}.set-completed`, target: entry.id,
+    await dataStore.transact({ type: `${entry.type}.set-completed`, target: entry.id,
       label: `${entry.type === 'task' ? (entry.input.checked ? '完成待辦' : '取消完成待辦') : (entry.input.checked ? '習慣打卡' : '取消習慣打卡')}：${entry.label}`,
       changes: { activities: { ...defaults, ...dataStore.get().activities, [entry.id]: entry.input.checked } } });
   } catch (error) {

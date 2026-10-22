@@ -1,5 +1,7 @@
-import { migrateImages, collectUnusedImages } from './image-store.mjs?v=images-21';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=exp-base-31';
+import { coordinatedWrite } from './coordination.mjs';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs';
+import { migrateImages } from './image-store.mjs';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs';
 // A single atomic localStorage document owns data and its reversible journal.
 export const HISTORY_LIMIT = 50;
 export const STATS_RULES_VERSION = 2;
@@ -9,28 +11,36 @@ export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
 const undoRecord = history => [...history].reverse().find(record => !record.undone);
 const redoRecord = history => history.filter(record => record.undone && record.redoable === true && Number.isSafeInteger(record.undoOrder)).sort((a,b) => b.undoOrder-a.undoOrder)[0];
-const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: createInitialStats(), history: [] });
+const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), history: [] });
+// Preserve the published one-time legacy restart, but perform the write only
+// under the shared write lock; existing v2 progress and settings are untouched.
+export function migrateStatsRules(storage) {
+  const raw=storage.getItem(STORAGE_KEY);if(!raw)return;
+  const value=JSON.parse(raw);
+  if(!value?.profile||!value.stats||!Array.isArray(value.history)||!Number.isSafeInteger(value.revision))throw new Error('既有資料無法安全讀取，已停止數值升級。');
+  if(value.statsRulesVersion===STATS_RULES_VERSION)return;
+  if(value.statsRulesVersion!==undefined&&value.statsRulesVersion!==1)throw new Error('不支援的數值規則版本，原資料已保留。');
+  const next={...value,stats:createInitialStats(),history:[],statsRulesVersion:STATS_RULES_VERSION,revision:value.revision+1};
+  if(storage.getItem(STORAGE_KEY)!==raw)throw new Error('其他分頁已更新資料，請重新整理後重試。');
+  storage.setItem(STORAGE_KEY,JSON.stringify(next));
+}
 export function createDataStore(storage) {
-  let state;
+  let state, busy=false;
   const listeners = new Set();
   const load = () => {
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return initial();
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
-    // User explicitly chose to restart old progress rather than convert it.
-    // Clear the old journal together with stats so Undo cannot revive old rules.
-    if(value.statsRulesVersion !== STATS_RULES_VERSION){
-      value.stats=createInitialStats();value.history=[];value.statsRulesVersion=STATS_RULES_VERSION;value.revision++;
-      try{storage.setItem(STORAGE_KEY,JSON.stringify(value));}
-      catch{throw new Error('無法保存新版數值初始設定；原資料未變更，請確認儲存空間與權限。');}
-    }
+    value.settings = normalizeSettings(value.settings);
+    value.statsRulesVersion ??= STATS_RULES_VERSION;
     value.profile.motto ??= '';
     value.avatar ??= null;
     value.portraits ??= [];value.photoEdit ??= null;value.avatarEdit ??= null;value.currentPortraitId ??= null;
     value.stats = normalizeStats(value.stats);
     // Normalize historical snapshots too so pre-upgrade Undo remains consistent.
     for (const record of value.history) for (const snapshot of [record.before, record.after]) {
+      if (snapshot.settings) snapshot.settings=normalizeSettings(snapshot.settings);
       if (snapshot.profile) snapshot.profile.motto ??= '';
       if (snapshot.stats) snapshot.stats = normalizeStats(snapshot.stats);
     }
@@ -49,12 +59,9 @@ export function createDataStore(storage) {
         Object.assign(replayState,copy(record.after));
       }
     }
-    if (value.history.length > HISTORY_LIMIT) {
-      value.history = retainedHistory(value.history);
-      value.revision++;
-      try { storage.setItem(STORAGE_KEY, JSON.stringify(value)); }
-      catch { throw new Error('無法保存歷史紀錄保留上限；原資料未清除，請確認儲存空間與權限。'); }
-    }
+    // Loading never writes: normalization is published only by a locked edit.
+    if (value.history.length > HISTORY_LIMIT) value.history=retainedHistory(value.history);
+
     return value;
   };
   state = load();
@@ -63,23 +70,26 @@ export function createDataStore(storage) {
     const current = load();
     if (current.revision !== state.revision) { state = current; notify(); throw new Error('資料已在其他頁面更新，請重試。'); }
     next.history = retainedHistory(next.history);
-    next.revision = state.revision + 1;
+    next.revision = Math.max(state.revision + 1,next.revision ?? 0);
     try { storage.setItem(STORAGE_KEY, JSON.stringify(next)); }
     catch { throw new Error('無法儲存，可能是瀏覽器儲存空間不足或儲存權限受限。資料尚未變更。'); }
     state = next; notify();
   };
   const api = {
     get: () => copy(state),
+    notify,
+    setBusy(value) {busy=value;notify();},
+    replace(value) { const next=copy(value);next.revision=Math.max(value.revision,state.revision+1);persist(next); },
     subscribe(fn) { listeners.add(fn); fn(copy(state)); return () => listeners.delete(fn); },
     refresh() { state = load(); notify(); },
     transact({ type, label, target, changes, fields = [] }) {
       const next = copy(state), before = {}, after = {};
       for (const [key, rawValue] of Object.entries(changes)) {
-        let value = rawValue;
+        let value = key==='settings'?normalizeSettings(rawValue):rawValue;
         if (key === 'stats') {
           value = validateStats(rawValue, state.stats);
         }
-        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'stats'].includes(key)) throw new Error('不支援的資料類型');
+        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'stats', 'settings'].includes(key)) throw new Error('不支援的資料類型');
         if (key === 'portraits' && (!Array.isArray(value) || value.length>6 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 6 個立繪，請先刪除或更換既有項目。');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
@@ -90,12 +100,12 @@ export function createDataStore(storage) {
       const delta = {};
       for (const key of ['experience', 'level', 'currency']) delta[key] = typeof next.stats[key] === 'number' && typeof state.stats[key] === 'number' ? next.stats[key] - state.stats[key] : 0;
       delta.abilities = next.stats.abilities.map(a => ({ id: a.id, value: a.value - (state.stats.abilities.find(x => x.id === a.id)?.value ?? 0) }));
-      next.history.push({ id: crypto.randomUUID(), time: new Date().toISOString(), type, label, target, fields, before, after, delta, undone: false, undoneAt: null });
+      if(state.settings.history.recordAll || Object.hasOwn(after,'settings')) next.history.push({ id: crypto.randomUUID(), time: new Date().toISOString(), type, label, target, fields, before, after, delta, undone: false, undoneAt: null });
       persist(next); return true;
     },
     getState() {
       const undo = undoRecord(state.history), redo = redoRecord(state.history);
-      return { available: Boolean(undo), redoAvailable: Boolean(redo), busy: false, label: undo?.label ?? null, redoLabel: redo?.label ?? null };
+      return { available: Boolean(undo), redoAvailable: Boolean(redo), busy, label: undo?.label ?? null, redoLabel: redo?.label ?? null };
     },
     async undo() { return replay(false); },
     async redo() { return replay(true); },
@@ -156,7 +166,7 @@ if (typeof window !== 'undefined') {
     const migrationNeeded=window.localStorage.getItem(STORAGE_KEY)?.includes('data:image/');
     const controls=migrationNeeded?[...document.querySelectorAll('input,button')].map(control=>[control,control.disabled]):[];
     if(migrationNeeded){controls.forEach(([control])=>control.disabled=true);if(status){status.hidden=false;status.textContent='正在升級本機圖片儲存，請稍候。';}}
-    await migrateImages(window.localStorage,STORAGE_KEY);
+    await coordinatedWrite(async()=>{await migrateImages(window.localStorage,STORAGE_KEY);migrateStatsRules(window.localStorage);});
     controls.forEach(([control,disabled])=>control.disabled=disabled);
     if(migrationNeeded&&status){status.hidden=true;status.textContent='';}
   } catch(error) {
@@ -165,7 +175,21 @@ if (typeof window !== 'undefined') {
   }
 }
 export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : null;
-if (dataStore) dataStore.subscribe(()=>{collectUnusedImages(window.localStorage,STORAGE_KEY).catch(()=>{});});
+if (dataStore) {
+  dataStore.subscribe(state=>applyAppearance(state.settings.appearance));
+  for(const method of ['transact','undo','redo']) {
+    const original=dataStore[method];
+    dataStore[method]=async(...args)=>{
+      if(dataStore.getState().busy)throw new Error('資料操作進行中，請稍候再試。');
+      const expectedRevision=dataStore.get().revision;
+      dataStore.setBusy(true);
+      try{return await coordinatedWrite(()=>{
+        if(dataStore.get().revision!==expectedRevision)throw new Error('等待期間資料已更新，請重試操作。');
+        return original(...args);
+      });}finally{dataStore.setBusy(false);}
+    };
+  }
+}
 export const persistentUndo = dataStore && { getState: () => dataStore.getState(), undo: () => dataStore.undo(), redo: () => dataStore.redo(), subscribe: fn => dataStore.subscribe(() => fn(dataStore.getState())) };
 if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === STORAGE_KEY || e.key === null) dataStore.refresh(); });
 
@@ -177,3 +201,5 @@ export function abilityShares(abilities) {
   const total = abilities.reduce((sum,a) => sum + a.value, 0);
   return abilities.map(a => total > 0 ? a.value / total : 0);
 }
+
+if(typeof window!=='undefined')window.addEventListener('pageshow',event=>{if(event.persisted)dataStore.refresh();});

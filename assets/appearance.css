@@ -1,0 +1,56 @@
+/* Selected colour is used as a surface; readable derived colour is used for text. */
+.profile-summary, #photo-settings .image-tabs button, .form-actions button[type=submit], #save-unsaved-settings, .primary-button {
+  background:var(--color-accent); color:var(--color-on-accent);
+}
+.profile-summary { border-color:var(--color-primary); }
+#photo-settings .image-tabs button { border-color:var(--color-primary); }
+#photo-settings .image-tabs button[aria-selected=true] { border-color:var(--color-on-accent); }
+.profile-page #profile-stats { background:var(--color-background);color:var(--color-text); }
+button,input,textarea,select,dialog { font-family:var(--font-body); }
+input[type=checkbox],input[type=radio] { accent-color:var(--color-primary); }
+.navigation-item[aria-current=page] {color:var(--color-primary);}
+.settings-page {min-width:0;}
+.settings-page h1 {font-size:1.5rem;}
+.settings-content {width:100%;min-width:0;display:grid;gap:24px;padding-bottom:24px;}
+.settings-content .activity-tabs {display:flex;overflow-x:auto;gap:16px;}
+.settings-content .activity-tabs button {white-space:nowrap;flex-shrink:0;font-size:1.125rem;min-height:44px;}
+.settings-content [role=tabpanel] {min-width:0;padding-inline:1em;}
+.settings-section {display:grid;gap:16px;min-width:0;}
+.settings-section h2 {font-size:1.25rem;}
+.settings-section h3 {font-size:1.125rem;}
+.settings-section button,.settings-section select,.settings-section input:not([type=checkbox]) {min-height:44px;max-width:100%;font:inherit;padding:8px 12px;}
+.settings-section button {background:white;color:var(--color-primary);border:1px solid var(--color-primary);cursor:pointer;}
+.settings-section button.primary-button {background:var(--color-accent);color:var(--color-on-accent);}
+.settings-section button:hover:not(:disabled) {outline:1px solid var(--color-primary);outline-offset:2px;}
+.settings-section button:disabled {opacity:.5;cursor:not-allowed;}
+.settings-section label {display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:44px;}
+.settings-section input[type=checkbox] {width:20px;height:20px;}
+.settings-actions {display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.storage-stats {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0;}
+.storage-stats div {border-bottom:1px solid var(--color-border);padding-block:12px;}
+.storage-stats dd {margin:0;color:var(--color-primary);font-size:1.25rem;}
+.asset-list {display:grid;gap:12px;}
+.asset-row {display:grid;grid-template-columns:44px 64px minmax(0,1fr);gap:12px;align-items:center;border-bottom:1px solid var(--color-border);padding-block:12px;}
+.asset-row label {display:grid;place-items:center;min-height:64px;}
+.asset-row img {width:64px;height:64px;object-fit:contain;}
+.asset-row p,.settings-section p,.settings-section code {overflow-wrap:anywhere;}
+.swatches button {width:44px;height:44px;background:var(--swatch);border:2px solid var(--color-control-border);}
+.appearance-preview {border:1px solid var(--color-control-border);padding:20px;display:grid;gap:12px;}
+.appearance-preview .preview-tab {color:var(--color-primary);border-bottom:2px solid var(--color-primary);padding:8px;}
+.settings-page dialog {width:min(560px,calc(100% - 32px));}
+.settings-page .history-pagination {margin-block:16px;}
+.settings-page #history-panel {padding-inline:1em;}
+.settings-page .history-page-controls,.settings-page .history-step-controls {display:contents;}
+@media(min-width:1024px){.settings-content{max-width:960px;margin-inline:auto;}.storage-stats{grid-template-columns:repeat(4,minmax(0,1fr));}}
+.history-record-setting {display:flex;align-items:center;gap:8px;min-height:44px;}
+.history-record-setting input {min-width:20px;}
+.settings-content,.settings-section {grid-template-columns:minmax(0,1fr);}
+.settings-section input,.settings-section select,.settings-section label {min-width:0;}
+.settings-section input[type=file] {width:100%;}
+.settings-section button {overflow-wrap:anywhere;white-space:normal;}
+
+.settings-content .activity-tabs button {flex:0 0 auto;}
+@media(min-width:1024px){.settings-content .activity-tabs button {flex:1 1 0;}}
+.primary-button:hover:not(:disabled),.form-actions button[type=submit]:hover:not(:disabled),#photo-settings .image-tabs button:hover {background:var(--color-primary-hover);color:var(--color-on-primary);}
+.primary-button:active:not(:disabled),.form-actions button[type=submit]:active:not(:disabled),#photo-settings .image-tabs button:active {background:var(--color-primary-active);color:var(--color-on-primary);}
+:focus-visible {outline-color:var(--color-focus,var(--color-primary));}
