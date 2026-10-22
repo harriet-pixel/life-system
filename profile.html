@@ -54,10 +54,10 @@
 </div>
 <section id="portrait-settings" role="tabpanel" aria-labelledby="portrait-settings-tab" tabindex="0">
 <div class="draft-image-preview"><img id="draft-photo" alt="使用者立繪草稿預覽" hidden><span id="draft-photo-empty">尚未上傳立繪</span></div>
-<button id="choose-photo" type="button" aria-describedby="photo-help photo-error">選擇／更換立繪</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-error" hidden>
-<p id="photo-help" class="small-note">JPEG、PNG、WebP 原始檔最大 20 MB、4,000 萬像素；自動縮至最長邊 1600px、1 MB 內，保留透明背景。僅保存在此瀏覽器。</p><p id="photo-error" class="field-error"></p>
+<button id="choose-photo" type="button" aria-describedby="photo-error">選擇／更換立繪</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-error" hidden>
+<p id="photo-error" class="field-error"></p>
 <button id="start-portrait-crop" type="button" hidden>裁切</button>
-<div id="portrait-editor" hidden><p class="small-note">固定為主頁立繪框的 3:4 比例。拖曳圖片或使用方向鍵移動，並調整縮放；確認裁切後才更新草稿。</p>
+<div id="portrait-editor" hidden>
 <canvas id="portrait-canvas" width="300" height="400" tabindex="0" aria-label="立繪裁切區，可拖曳圖片或用方向鍵移動"></canvas>
 <div class="crop-controls"><label>縮放<input id="portrait-zoom" type="range" min="1" max="4" step="0.01" value="1"></label></div>
 <button id="confirm-portrait-crop" type="button">確認裁切</button><button id="cancel-portrait-crop" type="button">取消裁切</button></div>
