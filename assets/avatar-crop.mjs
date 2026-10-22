@@ -1,3 +1,4 @@
+import {validateZoom} from './validation.mjs';
 export const RAW_IMAGE_LIMIT = 20 * 1024 * 1024;
 export const IMAGE_LIMIT = 1024 * 1024;
 export const AVATAR_LIMIT = 200 * 1024;
@@ -67,7 +68,7 @@ export function createImageCropper({canvas,preview,zoomInput,widthInput,heightIn
     if(heightInput)heightInput.value=String(rect.height/image.naturalHeight*100);
   }
   function change(next){if(!image)return;rect=constrainCrop(next,image.naturalWidth,image.naturalHeight,square);paint();onChange({...rect});}
-  zoomInput.addEventListener('input',()=>{if(!image)return;const zoom=Number(zoomInput.value),factor=lastZoom/zoom;lastZoom=zoom;const width=rect.width*factor,height=rect.height*factor;change({left:rect.left+(rect.width-width)/2,top:rect.top+(rect.height-height)/2,width,height});});
+  zoomInput.addEventListener('input',()=>{if(!image)return;let zoom;try{zoom=validateZoom(zoomInput.value,Number(zoomInput.max));zoomInput.setCustomValidity('');}catch(error){zoomInput.setCustomValidity(error.message);zoomInput.reportValidity();return;}const factor=lastZoom/zoom;lastZoom=zoom;const width=rect.width*factor,height=rect.height*factor;change({left:rect.left+(rect.width-width)/2,top:rect.top+(rect.height-height)/2,width,height});});
   for(const [input,dimension,natural]of[[widthInput,'width','naturalWidth'],[heightInput,'height','naturalHeight']])input?.addEventListener('input',()=>{if(image){zoomInput.value='1';lastZoom=1;change({...rect,[dimension]:image[natural]*Number(input.value)/100});}});
   canvas.addEventListener('pointerdown',event=>{
     if(!image||event.button>0)return;canvas.setPointerCapture(event.pointerId);const bounds=canvas.getBoundingClientRect();const x=(event.clientX-bounds.left)*canvas.width/bounds.width,y=(event.clientY-bounds.top)*canvas.height/bounds.height;

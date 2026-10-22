@@ -1,3 +1,4 @@
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs';
 import {ABILITIES} from './abilities.mjs';
 import {maintenance} from './coordination.mjs';
 import {inspectImages,documentImageReferences} from './image-references.mjs';
@@ -26,7 +27,7 @@ function validateFields(value,full=false) {
   check(value&&typeof value==='object'&&!Array.isArray(value));
   check(Object.keys(value).every(k=>(full?topKeys:editKeys).includes(k)),'備份含未知資料欄位，請使用相符版本。');
   if(full){check(topKeys.every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
-  if(Object.hasOwn(value,'profile')){check(value.profile&&['name','age','gender','bio','boundaries','motto'].every(k=>typeof value.profile[k]==='string'));check(value.profile.age===''||(/^\d+$/.test(value.profile.age)&&Number.isSafeInteger(Number(value.profile.age))));}
+  if(Object.hasOwn(value,'profile')){validateProfileFields(value.profile,undefined,{reading:true});check(value.profile&&['name','age','gender','bio','boundaries','motto'].every(k=>typeof value.profile[k]==='string'));check(value.profile.age===''||(/^\d+$/.test(value.profile.age)&&Number.isSafeInteger(Number(value.profile.age))));}
   if(Object.hasOwn(value,'stats')){
     const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5);
     check(s.abilities.every((a,i)=>a.id===ABILITIES[i].id&&a.name===ABILITIES[i].name&&Number.isSafeInteger(a.value)&&a.value>=0));
@@ -68,6 +69,7 @@ export async function encodeBackup(payload,password='') {
   const blob=new Blob([JSON.stringify(envelope)],{type:'application/json'});check(blob.size<=MAX_FILE_BYTES,'備份超過 150 MiB 檔案上限。');return blob;
 }
 export async function withBackup(store,password,consume) {
+  validateNewPassword(password);
   return maintenance(async()=>{
     store.refresh();const document=validateDocument(store.get()),{assets,refs,transientSources}=await inspectImages(document);
     check(!transientSources.length,'請先儲存或取消以下圖片操作再備份：'+transientSources.join('、'));
@@ -78,10 +80,19 @@ export async function withBackup(store,password,consume) {
     return consume(await encodeBackup(payload,password),payload);
   });
 }
-export async function readBackup(file,password='') {
-  check(file.size<=MAX_FILE_BYTES&&file.size>0,'檔案上限為 150 MiB。');
+export async function inspectBackupFile(file){
+  check(file&&file.size<=MAX_FILE_BYTES&&file.size>0,'檔案上限為 150 MiB。');
   let envelope;try{envelope=JSON.parse(await file.text());}catch{throw new Error('無法讀取備份 JSON。');}
-  check(envelope.format===FORMAT&&envelope.version===VERSION,'不支援的備份格式或版本。');
+  check(envelope&&envelope.format===FORMAT&&envelope.version===VERSION&&typeof envelope.encrypted==='boolean','不支援的備份格式或版本。');
+  // Bound the outer structure before opening password UI; no payload is trusted.
+  safeObject(envelope);
+  if(envelope.encrypted){check(envelope.algorithm==='AES-256-GCM'&&envelope.kdf==='PBKDF2-SHA256'&&envelope.iterations===600000,'不支援的加密格式。');check(typeof envelope.ciphertext==='string'&&envelope.ciphertext.length<=MAX_FILE_BYTES*4/3);check(unb64(envelope.salt,16).length===16&&unb64(envelope.iv,12).length===12);}
+  else check(envelope.payload&&typeof envelope.sha256==='string');
+  return {encrypted:envelope.encrypted};
+}
+export async function readBackup(file,password='') {
+  validateRestorePassword(password);await inspectBackupFile(file);
+  const envelope=JSON.parse(await file.text());
   let payload;
   if(envelope.encrypted===true){
     check(envelope.algorithm==='AES-256-GCM'&&envelope.kdf==='PBKDF2-SHA256'&&envelope.iterations===600000,'不支援的加密格式。');
