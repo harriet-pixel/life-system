@@ -18,7 +18,7 @@
 | --- | --- |
 | `index.html`、`assets/home.js` | 首頁、示意待辦與打卡、夥伴模擬 |
 | `profile.html`、`assets/profile.mjs` | 我的資料、使用者設定與雷達圖 |
-| `settings.html`、`assets/settings.mjs` | 儲存空間、歷史、備份、外觀 |
+| `settings.html`、`assets/settings.mjs` | 儲存空間、歷史、備份、外觀、AI 連線 |
 | `assets/data.mjs` | 唯一共用持久資料來源及資料交易 |
 | `assets/recovery.mjs` | 集中式復原期限、筆數、相依鏈與遷移 |
 | `assets/abilities.mjs` | 五項能力、初始值與數值規則 |
@@ -89,12 +89,21 @@
 - Google Drive 僅使用者手動觸發、最小 drive.appdata 權限、上傳前加密；token 僅記憶體。OAuth 未設定仍可使用本機功能，不假裝雲端成功。
 - 不提交 secret、服務帳戶金鑰、密碼或個資，不新增自動上傳／清理。
 
+## AI 連線
+
+- 本次明確允許準備必要 AI 後端；沿用設定分類，不另建網站。未指定平台／登入，不自動建立資源或公開未驗證代理。
+- `assets/ai-service.mjs`／`ai-settings.mjs` 為頁內 BYOK 共用服務；`backend/` 為獨立最小 Node 服務，永不複製到 work/build。正式 endpoint 與登入尚未設定，介面如實停用。
+- 一次一組 provider/key/model，key 僅本頁記憶體；換商、離頁、重載及 disconnect 清除，取消舊結果；不寫任何儲存、備份、歷史、日誌或跨頁廣播。只保存 settings.ai 的 provider/model 白名單，不影響一般 Undo／Redo 分支。
+- 後端需 HTTPS、驗簽 JWT 與 scope 授權、固定官方目的地、限流／併發／大小／token／逾時限制。CORS 不是身分驗證。無部署前不啟用，不重用 Drive token；不要求使用者把金鑰放聊天或 Git。
+- 官方動態模型清單與精確能力對應交集，未知用途不開放；失敗不以固定／過期清單代替，列舉不保證生成權限。測試只用最小固定文字，提示可能付費，不含個人資料、不改數值。夥伴／能力分類等產品功能仍未接入。
+- 完整官方資料可讀性限制、金鑰資料流、部署與 mock／真實驗證界線見 AI_CONNECTION.md；不把單一 process 限流宣稱為分散式部署保護。
+
 ## 夥伴事件契約
 
 - 只有成功完成待辦／打卡才發出有意義事件；初始化、取消勾選、切頁、捲動、聚焦不生成對話。
 - 同則回應 dialogue／emotion 成對驗證，連續事件合併，新事件使舊請求失效；舊結果與錯誤不可覆蓋新回應。
 - 等待時保留對話，生成失敗不回滾行動；目前使用中性開發備援，不能宣稱符合未設定角色。
-- 不自訂好感度；正式 AI 金鑰僅存後端，GitHub Pages 不執行 AI 後端。
+- 不自訂好感度。BYOK 金鑰僅本頁記憶體及當次後端轉送使用，不持久保存；GitHub Pages 不執行 AI 後端，夥伴仍未接入真實生成。
 - neutral／pleased／calm 是開發槽，非正式角色規格。
 
 ## 分支與發布

@@ -4,7 +4,7 @@ const base=(process.env.BASE_URL||'http://127.0.0.1:3013/').replace(/\/?$/,'/');
 for(const width of [320,375,390,450,451,1024,1280])for(const font of ['device','serif','sans','rounded']){
  const c=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'}),p=await c.newPage();
  await p.addInitScript(()=>{window.tabScrollCalls=[];const original=window.scrollTo;window.scrollTo=function(...args){tabScrollCalls.push(args);return original.apply(this,args);};});
- await p.goto(base+'settings.html');await p.waitForSelector('body[data-navigation=ready]');await p.waitForSelector('#asset-total:text("0")');await p.evaluate(async font=>{const {dataStore:s}=await import('./assets/data.mjs');await s.transact({type:'appearance',label:'test font',changes:{settings:{...s.get().settings,appearance:{...s.get().settings.appearance,font}}}});await document.fonts.ready;},font);
+ await p.goto(base+'settings.html');await p.waitForSelector('body[data-navigation=ready]');await p.waitForSelector('#asset-total:text("0")');await p.evaluate(async font=>{const {dataStore:s}=await import('./assets/data.mjs?v=ai-connection-1');await s.transact({type:'appearance',label:'test font',changes:{settings:{...s.get().settings,appearance:{...s.get().settings.appearance,font}}}});await document.fonts.ready;},font);
  const snapshot=()=>p.evaluate(()=>{const t=document.querySelector('.activity-tabs'),r=t.getBoundingClientRect(),b=t.querySelector('[aria-selected=true]'),br=b.getBoundingClientRect();return {height:r.height,top:r.top,y:scrollY,x:scrollX,doc:document.documentElement.scrollWidth,viewport:innerWidth,calls:tabScrollCalls.length,visible:br.left>=r.left-1&&br.right<=r.right+1,buttonHeight:br.height,border:getComputedStyle(b).borderBottomWidth};});
  let height;
  for(const id of ['history','backup','appearance','storage','history']){
@@ -14,7 +14,7 @@ for(const width of [320,375,390,450,451,1024,1280])for(const font of ['device','
   await p.locator('#'+id+'-tab').click();await p.waitForTimeout(100);const b=await snapshot();assert.equal(b.calls,a.calls,'repeat click must not request another scroll');assert.ok(Math.abs(b.y-a.y)<=1);
  }
  // Focus movement reveals the tab locally, without vertical ancestor scrolling.
- const y=(await snapshot()).y;await p.locator('#history-tab').focus({preventScroll:true});await p.keyboard.press('End');await p.waitForTimeout(70);assert.equal(await p.locator('#appearance-tab').getAttribute('aria-selected'),'true');assert.ok((await snapshot()).visible);assert.ok(Math.abs((await snapshot()).y-y)<=1);
+ const y=(await snapshot()).y;await p.locator('#history-tab').focus({preventScroll:true});await p.keyboard.press('End');await p.waitForTimeout(70);assert.equal(await p.locator('#ai-tab').getAttribute('aria-selected'),'true');assert.ok((await snapshot()).visible);assert.ok(Math.abs((await snapshot()).y-y)<=1);
  // A long panel is top aligned; later data expansion never calls the positioner.
  await p.evaluate(()=>{const extra=document.createElement('div');extra.id='test-long-list';extra.style.height='1800px';document.querySelector('#storage-panel').append(extra);tabScrollCalls=[];});
  await p.locator('#storage-tab').click();await p.waitForTimeout(100);const long=await snapshot();if(width<=450)assert.ok(Math.abs(long.top-12)<=1);assert.ok(long.height<80);

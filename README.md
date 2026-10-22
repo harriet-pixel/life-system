@@ -47,3 +47,7 @@ BASE_URL=http://127.0.0.1:3000/ node tests/restore-actions.cjs
 - [DATA_AUDIT.md](DATA_AUDIT.md)：相容邏輯及程式整理盤點。
 - [COMPANION.md](COMPANION.md)：夥伴事件契約與未接入的正式服務。
 - [docs/DELIVERY_HISTORY.md](docs/DELIVERY_HISTORY.md)：歷史交付紀錄，不能當作現行規格或本次測試結果。
+
+## AI 連線（BYOK）
+
+設定頁新增 AI 連線與四家 provider 的共用介面；正式 HTTPS 後端及本站登入尚未設定，不會呼叫真實 AI 或改動夥伴 mock。`backend/` 為需獨立部署的受驗證 Node 原始碼，不進靜態建置；不在前端或後端設定檔放服務商金鑰。資料流、官方文件存取限制、部署待確認及 mock 測試見 [AI_CONNECTION.md](AI_CONNECTION.md)。

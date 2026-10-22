@@ -30,7 +30,7 @@ try{
  console.log('PASS fixed journaling and homepage data changes');
  // Build real, content-addressed image fixtures, including history-only and redo references.
  const fixture=await page.evaluate(async()=>{
-  const {dataStore:s}=await import('./assets/data.mjs'),images=await import('./assets/image-store.mjs');
+  const {dataStore:s}=await import('./assets/data.mjs?v=ai-connection-1'),images=await import('./assets/image-store.mjs');
   const ids=[];
   for(let i=0;i<8;i++){const c=document.createElement('canvas');c.width=c.height=4;const x=c.getContext('2d');x.fillStyle=`rgb(${i*30},30,90)`;x.fillRect(0,0,4,4);ids.push(await images.storeImage(c.toDataURL()));}
   const change=photo=>s.transact({type:'image.test',label:'圖片',target:'user',fields:[],changes:{photo}});
@@ -47,7 +47,7 @@ try{
  // Candidate becomes referenced between listing and final confirmation: skip it.
  await page.locator('.asset-row input').evaluateAll((nodes,id)=>nodes.find(n=>n.value===id).click(),fixture.ids[5]);
  await page.locator('#delete-assets').click();
- await page.evaluate(async id=>{const {dataStore:s}=await import('./assets/data.mjs');await s.transact({type:'image.test',target:'user',label:'新引用',fields:[],changes:{photo:id}});},fixture.ids[5]);
+ await page.evaluate(async id=>{const {dataStore:s}=await import('./assets/data.mjs?v=ai-connection-1');await s.transact({type:'image.test',target:'user',label:'新引用',fields:[],changes:{photo:id}});},fixture.ids[5]);
  await page.locator('#confirm-delete').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('跳過 1'));
  // A draft in another tab blocks cleanup/backup; closing the tab releases it.
  await profile.locator('#edit-profile').click();await profile.waitForSelector('#profile-dialog[open]');
@@ -56,14 +56,14 @@ try{
  await profile.close();
  await page.locator('#storage-tab').click();await page.waitForFunction(()=>document.querySelectorAll('.asset-row').length===2);
  await page.locator('.asset-row input').evaluateAll((nodes,id)=>nodes.find(n=>n.value===id).click(),fixture.ids[6]);await page.locator('#delete-assets').click();await page.locator('#confirm-delete').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('已永久刪除 1'));
- const state=await page.evaluate(async()=>{const {dataStore:s}=await import('./assets/data.mjs');const {listImageAssets}=await import('./assets/image-store.mjs');return {doc:s.get(),ids:(await listImageAssets()).map(a=>a.id)};});
+ const state=await page.evaluate(async()=>{const {dataStore:s}=await import('./assets/data.mjs?v=ai-connection-1');const {listImageAssets}=await import('./assets/image-store.mjs');return {doc:s.get(),ids:(await listImageAssets()).map(a=>a.id)};});
  assert.ok(!state.ids.includes(fixture.ids[6]));for(const i of [0,1,2,3,4,5,7])assert.ok(state.ids.includes(fixture.ids[i]));
  // Unknown reference source must fail closed.
- const closed=await page.evaluate(async()=>{const refs=await import('./assets/image-references.mjs'),{dataStore:s}=await import('./assets/data.mjs');const off=refs.registerImageReferenceSource('failing',()=>{throw new Error('引用來源失敗');});try{await refs.deleteUnusedImages(s,[]);return false;}catch{return true;}finally{off();}});assert.equal(closed,true);
+ const closed=await page.evaluate(async()=>{const refs=await import('./assets/image-references.mjs'),{dataStore:s}=await import('./assets/data.mjs?v=ai-connection-1');const off=refs.registerImageReferenceSource('failing',()=>{throw new Error('引用來源失敗');});try{await refs.deleteUnusedImages(s,[]);return false;}catch{return true;}finally{off();}});assert.equal(closed,true);
  console.log('PASS storage: current/history/Undo/Redo/lease protection, stale selection, draft tab close, failed provider, only unused deletion');
  // Encrypted round trip preserves IDs, history branch metadata, settings and image bytes.
  const roundtrip=await page.evaluate(async()=>{
-  const backup=await import('./assets/backup.mjs'),{dataStore:s}=await import('./assets/data.mjs');
+  const backup=await import('./assets/backup.mjs?v=ai-connection-1'),{dataStore:s}=await import('./assets/data.mjs?v=ai-connection-1');
   const text=await backup.withBackup(s,'test password',blob=>blob.text());const before=s.get();const prepared=await backup.readBackup(new Blob([text]),'test password');
   await s.transact({type:'profile.test',label:'暫時名稱',target:'user',fields:[],changes:{profile:{...s.get().profile,name:'changed'}}});
   await backup.restoreBackup(s,prepared,s.get().revision);const after=s.get();
@@ -72,7 +72,7 @@ try{
  const {revision:a,...before}=roundtrip.before,{revision:b,...after}=roundtrip.after;assert.deepEqual(after,before);assert.ok(roundtrip.imageCount>=5);
  // Invalid backups do not modify storage; inject a publication failure after staging.
  const protections=await page.evaluate(async text=>{
-  const b=await import('./assets/backup.mjs'),{dataStore:s,STORAGE_KEY}=await import('./assets/data.mjs');const original=localStorage.getItem(STORAGE_KEY);const out=[];
+  const b=await import('./assets/backup.mjs?v=ai-connection-1'),{dataStore:s,STORAGE_KEY}=await import('./assets/data.mjs?v=ai-connection-1');const original=localStorage.getItem(STORAGE_KEY);const out=[];
   for(const [file,password] of [[new Blob([text]),'wrong'],[new Blob(['broken']),'']]){try{await b.readBackup(file,password);out.push(false);}catch{out.push(localStorage.getItem(STORAGE_KEY)===original);}}
   const prepared=await b.readBackup(new Blob([text]),'test password');
   const native=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===STORAGE_KEY)throw new DOMException('quota','QuotaExceededError');return native.call(this,k,v);};
@@ -105,7 +105,7 @@ try{
    await p.evaluate(()=>document.documentElement.style.removeProperty('font-size'));if(width===375||width===1280)await p.screenshot({path:'work/screenshots/'+name+'-'+width+'.png',fullPage:true});await p.close();
   }
  }
- const failed=await browser.newContext({viewport:{width:375,height:900},reducedMotion:'reduce'});await failed.route('**/*.woff2',route=>route.abort());const p=await failed.newPage();await p.goto(base+'settings.html');await p.waitForSelector('body[data-navigation=ready]');await p.locator('#appearance-tab').click();await p.locator('#theme-font').selectOption('sans');await p.locator('#save-appearance').click();await p.waitForFunction(()=>!document.querySelector('#save-appearance').disabled);await p.locator('#history-tab').focus();await p.keyboard.press('End');assert.equal(await p.locator('#appearance-tab').getAttribute('aria-selected'),'true');assert.ok(await p.locator('#save-appearance').isEnabled());await failed.close();
+ const failed=await browser.newContext({viewport:{width:375,height:900},reducedMotion:'reduce'});await failed.route('**/*.woff2',route=>route.abort());const p=await failed.newPage();await p.goto(base+'settings.html');await p.waitForSelector('body[data-navigation=ready]');await p.locator('#appearance-tab').click();await p.locator('#theme-font').selectOption('sans');await p.locator('#save-appearance').click();await p.waitForFunction(()=>!document.querySelector('#save-appearance').disabled);await p.locator('#history-tab').focus();await p.keyboard.press('End');assert.equal(await p.locator('#ai-tab').getAttribute('aria-selected'),'true');await p.locator('#appearance-tab').click();assert.ok(await p.locator('#save-appearance').isEnabled());await failed.close();
  assert.deepEqual(errors,[]);console.log('PASS 320/375/390/768/1280 all pages, 200% text, 4 font choices, keyboard, reduced motion and font failure');
 }finally{await context.close();await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

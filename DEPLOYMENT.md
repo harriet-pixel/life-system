@@ -29,6 +29,10 @@ GitHub儲存庫Settings → Pages → Build and deployment，使用 **Deploy fro
 
 OAuth未設定時維持空的公開client ID；若管理者完成Console設定，建置可提供公開 `GOOGLE_OAUTH_CLIENT_ID`。不把secret、token或私鑰放入前端；細節見 [SETTINGS.md](SETTINGS.md)。
 
+## AI 後端與靜態成果隔離
+
+設定頁 AI 連線預設未設定。`backend/`、env 與後端認證設定不得進 work/build／gh-pages；建置只接受公開 AI_BACKEND_URL，並驗證完整 HTTPS `/v1/ai`。未完成實際後端與登入驗收時保持空值。平台、JWT／scope、proxy 日誌政策與單 process 限制見 [AI_CONNECTION.md](AI_CONNECTION.md)。不把 Pages 發布成功當成後端已可用。
+
 ## 驗證及阻礙回報
 
 本機驗證三頁布局、保存／重開、跨分頁、Undo／Redo、圖片與備份，涵蓋375px、450／451px、1024px及桌面等相關邊界。公開網站須另外確認實際部署內容與資源可讀。

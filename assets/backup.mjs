@@ -1,10 +1,10 @@
 import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs';
-import {ABILITIES} from './abilities.mjs';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=ai-connection-1';
+import {ABILITIES} from './abilities.mjs?v=ai-connection-1';
 import {maintenance} from './coordination.mjs';
 import {inspectImages,documentImageReferences} from './image-references.mjs';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs';
+import {normalizeSettings} from './settings-model.mjs?v=ai-connection-1';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -21,7 +21,7 @@ const editKeys=legacyKeys.filter(k=>!['revision','history','statsRulesVersion'].
 function safeObject(value,depth=0) {
   check(depth<40,'備份結構過深。');
   if(value&&typeof value==='object')for(const [key,child] of Object.entries(value)){
-    check(!['__proto__','constructor','prototype'].includes(key)&&!/(?:access.?token|refresh.?token|client.?secret|password)/i.test(key),'備份含不支援或認證欄位。');safeObject(child,depth+1);
+    check(!['__proto__','constructor','prototype'].includes(key)&&!/(?:access.?token|refresh.?token|client.?secret|password|api.?key|authorization|credential|connection.?state|^(?:token|secret|connected|connection|key)$)/i.test(key),'備份含不支援或認證欄位。');safeObject(child,depth+1);
   }
 }
 function validCrop(crop){return crop&&typeof crop==='object'&&['left','top','width','height'].every(k=>typeof crop[k]==='number'&&Number.isFinite(crop[k]))&&crop.left>=0&&crop.top>=0&&crop.width>0&&crop.height>0;}
@@ -40,7 +40,7 @@ function validateFields(value,full=false,legacy=false) {
   for(const key of ['photo','avatar'])if(Object.hasOwn(value,key))check(value[key]===null||isImageReference(value[key]));
   for(const key of ['photoEdit','avatarEdit'])if(Object.hasOwn(value,key))check(value[key]===null||(value[key]&&typeof value[key]==='object'&&(value[key].source===undefined||value[key].source===null||isImageReference(value[key].source))&&validCrop(value[key].crop)));
   if(Object.hasOwn(value,'currentPortraitId'))check(value.currentPortraitId===null||typeof value.currentPortraitId==='string');
-  if(Object.hasOwn(value,'settings')){const normalized=normalizeSettings(value.settings);check(JSON.stringify(normalized.appearance)===JSON.stringify(value.settings.appearance),'備份設定格式不正確。');if(!legacy)check(!Object.hasOwn(value.settings,'history'),'備份含舊版歷史設定。');}
+  if(Object.hasOwn(value,'settings')){const normalized=normalizeSettings(value.settings);check(JSON.stringify(normalized.appearance)===JSON.stringify(value.settings.appearance),'備份設定格式不正確。');if(Object.hasOwn(value.settings,'ai'))check(JSON.stringify(normalized.ai)===JSON.stringify(value.settings.ai),'AI 備份僅可含服務商與模型偏好。');if(!legacy)check(!Object.hasOwn(value.settings,'history'),'備份含舊版歷史設定。');}
 }
 function validateRecord(r,doc,{snapshot=false,legacy=false}={}){
  check(typeof r.id==='string'&&typeof r.time==='string'&&(!snapshot||legacy||Number.isFinite(Date.parse(r.time)))&&['type','label','target'].every(k=>typeof r[k]==='string')&&Array.isArray(r.fields)&&r.fields.every(k=>typeof k==='string')&&typeof r.undone==='boolean');

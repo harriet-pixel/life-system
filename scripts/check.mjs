@@ -8,4 +8,5 @@ for(const name of ['index.html','profile.html','settings.html']){
  if(new Set(ids).size!==ids.length)throw new Error(name+': duplicate IDs');
  for(const match of html.matchAll(/(?:src|href)="(assets\/[^"?]+)(?:\?[^" ]*)?"/g))await readFile(match[1]);
 }
+for(const file of (await readdir('backend')).filter(p=>p.endsWith('.mjs')))execFileSync(process.execPath,['--check','backend/'+file],{stdio:'inherit'});
 console.log('PASS: JavaScript syntax, HTML IDs and local entry assets');

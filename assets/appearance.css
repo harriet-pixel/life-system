@@ -66,3 +66,9 @@ input[type=checkbox],input[type=radio] { accent-color:var(--color-primary); }
 
 /* Reserved history scroll space must not stretch the tab row or its underline. */
 @media(max-width:1023px){.settings-content {align-content:start;}}
+
+/* AI connection uses the existing theme and font; only the credential row is new. */
+.ai-key-row {display:flex;gap:8px;align-items:center;min-width:0;flex-wrap:wrap;}
+.ai-key-row input {flex:1 1 140px;width:0;min-width:0;}
+.ai-key-row button {flex:0 0 auto;}
+#ai-model {width:100%;min-width:0;}
