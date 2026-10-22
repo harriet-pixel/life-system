@@ -181,6 +181,9 @@ desktopPanels.addEventListener('change',()=>syncDesktopPanels());
 document.fonts.ready.then(()=>syncDesktopPanels());
 const dialog = $('#profile-dialog'), form = $('#profile-form');
 const personalKeys = ['name', 'age', 'gender', 'bio', 'boundaries', 'motto'];
+const genderChoices=[...form.querySelectorAll('[name="gender-choice"]')];
+function syncGenderChoices(){genderChoices.forEach(input=>input.checked=input.value===form.elements.gender.value);}
+genderChoices.forEach(input=>input.addEventListener('change',()=>{form.elements.gender.value=input.checked?input.value:'';syncGenderChoices();}));
 const numericFields = [{ id:'currency', name:'貨幣量' }, { id:'level', name:'等級' }, ...ABILITIES];
 for (const field of numericFields) {
   const label = element('label', field.name);
@@ -260,6 +263,7 @@ function lockSave(value){saving=value;syncSaveButtons();$('.settings-scroll').in
 $('#edit-profile').addEventListener('click',()=>{
   baseState=dataStore.get();saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
   personalKeys.forEach(key=>form.elements[key].value=baseState.profile[key]);
+  syncGenderChoices();
   numericFields.forEach(({id})=>form.elements[id].value=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value);
   initialFields=Object.fromEntries([...personalKeys,...numericFields.map(field=>field.id)].map(key=>[key,form.elements[key].value]));
   backdropPointer=null;clearErrors();selectSetting(0);selectImage(0);dialog.showModal();imageDraft.open(baseState);

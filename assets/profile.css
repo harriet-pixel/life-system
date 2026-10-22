@@ -252,3 +252,9 @@ textarea { resize: vertical; }
   .profile-page .personal-heading:has(#profile-age:empty) #edit-profile { grid-row: 1; }
   .profile-page #profile-stats { padding-block: 0; }
 }
+
+#gender-options { border: 0; padding: 0; margin: 0; min-width: 0; }
+#gender-options legend { padding: 0; margin-bottom: 4px; font: inherit; }
+.gender-choices { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+#profile-form .gender-choice { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
+#profile-form .gender-choice input { width: 18px; min-width: 18px; height: 18px; padding: 0; margin: 0; accent-color: var(--color-primary); }
