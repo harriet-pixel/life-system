@@ -23,14 +23,15 @@ async function run(work){
 initializeNavigation({undoManager:{...persistentUndo,getState:()=>({...persistentUndo.getState(),busy:busy||persistentUndo.getState().busy})}});
 const history=createHistoryView({store:dataStore});
 const tabs=[...$('.settings-content > .activity-tabs').children],positionTabs=createMobileTabPositioner(tabs[0].parentElement);
-let selectedTab=0;
+let selectedTab=-1;
 function selectTab(index,event){
+  if(index===selectedTab)return;
   selectedTab=index;
   tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;const panel=document.getElementById(tab.getAttribute('aria-controls'));panel.hidden=i!==index;panel.inert=i!==index;});
   if(index===0)refreshStorage();else{storageVersion++;releaseThumbnails();$('#asset-list').replaceChildren();}
   if(event)positionTabs(event);
 }
-tabs.forEach((tab,index)=>{tab.addEventListener('click',event=>selectTab(index,event));tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+3)%4,ArrowRight:(index+1)%4,Home:0,End:3}[event.key];if(next===undefined)return;event.preventDefault();selectTab(next);tabs[next].focus();});});
+tabs.forEach((tab,index)=>{tab.addEventListener('click',event=>selectTab(index,event));tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+3)%4,ArrowRight:(index+1)%4,Home:0,End:3}[event.key];if(next===undefined)return;event.preventDefault();selectTab(next,event);tabs[next].focus({preventScroll:true});});});
 
 let unused=[],selected=new Set(),thumbnailURLs=[],storageVersion=0;
 function releaseThumbnails(){thumbnailURLs.forEach(url=>URL.revokeObjectURL(url));thumbnailURLs=[];}

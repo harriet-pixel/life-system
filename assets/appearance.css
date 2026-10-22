@@ -64,3 +64,6 @@ input[type=checkbox],input[type=radio] { accent-color:var(--color-primary); }
 #restore-unlock label {display:flex;flex-wrap:nowrap;gap:8px;}
 #restore-unlock label > input {flex:1 1 0;width:0;min-width:0;}
 #restore-unlock {min-width:0;}
+
+/* Reserved history scroll space must not stretch the tab row or its underline. */
+@media(max-width:1023px){.settings-content {align-content:start;}}
