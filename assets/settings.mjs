@@ -1,13 +1,14 @@
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs';
-import {dataStore,persistentUndo} from './data.mjs';
+import {initializeAISettings} from './ai-settings.mjs?v=ai-connection-1';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=ai-connection-1';
+import {dataStore,persistentUndo} from './data.mjs?v=ai-connection-1';
 import {initializeNavigation} from './navigation.mjs';
 import {createMobileTabPositioner} from './tab-position.mjs';
-import {createHistoryView} from './history-view.mjs?v=settings-history-cache-20261023';
+import {createHistoryView} from './history-view.mjs?v=ai-connection-1';
 import {auditImages,deleteUnusedImages} from './image-references.mjs';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=ai-connection-1';
 import {holdDraft} from './coordination.mjs';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs';
-import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=ai-connection-1';
+import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=ai-connection-1';
 const $=selector=>document.querySelector(selector);
 const element=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
 const notice=message=>{$('#operation-status').hidden=false;$('#operation-status').textContent=message;};
@@ -31,7 +32,7 @@ function selectTab(index,event){
   if(index===0)refreshStorage();else{storageVersion++;releaseThumbnails();$('#asset-list').replaceChildren();}
   if(event)positionTabs(event);
 }
-tabs.forEach((tab,index)=>{tab.addEventListener('click',event=>selectTab(index,event));tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+3)%4,ArrowRight:(index+1)%4,Home:0,End:3}[event.key];if(next===undefined)return;event.preventDefault();selectTab(next,event);tabs[next].focus({preventScroll:true});});});
+tabs.forEach((tab,index)=>{tab.addEventListener('click',event=>selectTab(index,event));tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+tabs.length-1)%tabs.length,ArrowRight:(index+1)%tabs.length,Home:0,End:tabs.length-1}[event.key];if(next===undefined)return;event.preventDefault();selectTab(next,event);tabs[next].focus({preventScroll:true});});});
 
 let unused=[],selected=new Set(),thumbnailURLs=[],storageVersion=0;
 function releaseThumbnails(){thumbnailURLs.forEach(url=>URL.revokeObjectURL(url));thumbnailURLs=[];}
@@ -181,4 +182,5 @@ $('#revoke-drive').addEventListener('click',()=>run(async()=>{await revokeDrive(
 dataStore.subscribe(state=>{history.render(state);if(!appearanceDirty){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}});
 window.addEventListener('pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();clearRestore();for(const id of ['backup-password','cloud-password'])$('#'+id).value='';});
 window.addEventListener('pageshow',event=>{if(event.persisted){cancelAppearance();if(selectedTab===0)refreshStorage();}});
+initializeAISettings(dataStore);
 renderAppearanceControls();syncDrive();selectTab(0);

@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs';
+import {bindProfileValidation} from './validation.mjs?v=ai-connection-1';
 import { holdDraft } from './coordination.mjs';
-import { createProfileImages } from './profile-images.mjs';
+import { createProfileImages } from './profile-images.mjs?v=ai-connection-1';
 import { imageURL, prepareImageReferences } from './image-store.mjs';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs';
-import { undoManager } from './undo.mjs';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=ai-connection-1';
+import { undoManager } from './undo.mjs?v=ai-connection-1';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=ai-connection-1';
 import { initializeNavigation } from './navigation.mjs';
 const $ = selector => document.querySelector(selector);
 const notice = message => { $('#operation-status').hidden = false; $('#operation-status').textContent = message; };

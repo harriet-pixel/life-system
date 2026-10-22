@@ -1,4 +1,4 @@
-import {createImageCropper,readImageFile,decodeImage} from './avatar-crop.mjs';
+import {createImageCropper,readImageFile,decodeImage} from './avatar-crop.mjs?v=ai-connection-1';
 import {imageURL} from './image-store.mjs';
 const $=selector=>document.querySelector(selector);
 export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {

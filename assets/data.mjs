@@ -1,9 +1,9 @@
 import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs';
-import {validateProfileFields,validateActivities} from './validation.mjs';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=ai-connection-1';
 import { coordinatedWrite } from './coordination.mjs';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=ai-connection-1';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=ai-connection-1';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -93,6 +93,13 @@ export function createDataStore(storage,{now=Date.now}={}) {
       }
       persist(next); return true;
     },
+    setAIPreferences(value) {
+      const ai=normalizeSettings({ai:value}).ai;
+      const next=effective().document;
+      if(JSON.stringify(next.settings.ai)===JSON.stringify(ai))return false;
+      next.settings={...next.settings,ai};
+      persist(next);return true; // Preference only: no history, reward or Redo branch change.
+    },
     getState() {
       const {document:current}=effective();
       const undo = undoRecord(current.undoHistory), redo = redoRecord(current.undoHistory);
@@ -164,7 +171,7 @@ if (dataStore) {
   try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;e.textContent='復原資料整理失敗，原資料已保留。'+error.message;}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
   let expiryTimer;
   dataStore.subscribe(state=>{applyAppearance(state.settings.appearance);clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;e.textContent=error.message;}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));});
-  for(const method of ['transact','undo','redo']) {
+  for(const method of ['transact','undo','redo','setAIPreferences']) {
     const original=dataStore[method];
     dataStore[method]=async(...args)=>{
       if(dataStore.getState().busy)throw new Error('資料操作進行中，請稍候再試。');

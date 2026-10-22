@@ -1,8 +1,8 @@
 import { createMobileTabPositioner } from './tab-position.mjs';
 import { createActivityHeightSync } from './activity-height.mjs';
-import { undoManager } from './undo.mjs';
+import { undoManager } from './undo.mjs?v=ai-connection-1';
 import { createCompanionController, generateMockReply } from './companion.mjs';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=ai-connection-1';
 import { initializeNavigation } from './navigation.mjs';
 
 // Development slots, not approved character emotions. Only use licensed assets.

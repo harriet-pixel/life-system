@@ -1,13 +1,15 @@
 (function(){
 const DEFAULT_APPEARANCE = Object.freeze({color:'#104a7a',font:'serif'});
-const DEFAULT_SETTINGS = Object.freeze({appearance:DEFAULT_APPEARANCE,});
+const DEFAULT_SETTINGS = Object.freeze({appearance:DEFAULT_APPEARANCE,ai:Object.freeze({provider:'gemini',model:''}),});
 const FONT_NAMES = Object.freeze({device:'裝置預設字體',serif:'明體',sans:'黑體',rounded:'圓體'});
 const validHex=value=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value);
 function normalizeSettings(value={}) {
   const appearance={...DEFAULT_APPEARANCE,...value.appearance};
   if(!validHex(appearance.color)||!Object.hasOwn(FONT_NAMES,appearance.font)) throw new Error('外觀設定格式不正確。');
-  const {history,...other}=value;
-  return {...other,appearance:{color:appearance.color.toLowerCase(),font:appearance.font}};
+  const {history,ai,...other}=value;
+  const preference=ai??DEFAULT_SETTINGS.ai;
+  if(!preference||typeof preference!=='object'||Array.isArray(preference)||Object.keys(preference).some(key=>!['provider','model'].includes(key))||!['gemini','deepseek','openai','claude'].includes(preference.provider)||typeof preference.model!=='string'||preference.model.length>207)throw new Error('AI 偏好格式不正確；不接受金鑰或連線狀態。');
+  return {...other,ai:{provider:preference.provider,model:preference.model},appearance:{color:appearance.color.toLowerCase(),font:appearance.font}};
 }
 function luminance(hex) {
   const values=hex.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);
