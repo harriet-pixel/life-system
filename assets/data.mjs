@@ -171,7 +171,7 @@ if (typeof window !== 'undefined') window.addEventListener('storage', e => { if 
 
 export function profileSummary(stats) {
   const shown = value => value > 0 ? String(value) : '—';
-  return `Exp ${formatSI(visibleExperience(stats.experience))} ｜ Lv ${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
+  return `Exp ${visibleExperience(stats.experience) > 0 ? formatSI(visibleExperience(stats.experience)) : '—'} ｜ Lv ${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
 }
 export function abilityShares(abilities) {
   const total = abilities.reduce((sum,a) => sum + a.value, 0);
