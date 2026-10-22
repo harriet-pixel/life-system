@@ -85,9 +85,11 @@ function render() {
   $('#profile-motto').textContent=motto;$('#profile-motto').hidden=!motto;
   renderPhoto();
   const { experience, level, currency, abilities } = state.stats;
-  $('#profile-stats').textContent = profileSummary(state.stats);
-  $('#profile-stats').setAttribute('aria-label', `累積總經驗值：${experience}，等級：${level}，貨幣：${currency}`);
-  $('#profile-stats').title = `累積總經驗值：${experience}，等級：${level}，貨幣：${currency}`;
+  const [experienceText,levelText,currencyText]=profileSummary(state.stats).split(' ｜ ');
+  const levelLabel=element('span',levelText);levelLabel.id='profile-level';
+  $('#profile-stats').replaceChildren(levelLabel,element('span',` ｜ ${experienceText}｜ ${currencyText}`));
+  $('#profile-stats').setAttribute('aria-label', `等級：${level}，累積總經驗值：${experience}，貨幣：${currency}`);
+  $('#profile-stats').title = `等級：${level}，累積總經驗值：${experience}，貨幣：${currency}`;
   const valid = abilities.length === 5;
   $('#abilities-missing').hidden = valid; $('.ability-charts').hidden = !valid;
   if (valid) renderRadar();
