@@ -14,7 +14,7 @@ export function collectReferences(value,refs=new Set()) {
 }
 export function documentImageReferences(state) {
   const refs=new Set(),imageFields=['photo','avatar','photoEdit','avatarEdit','portraits'];
-  const nonImageFields=['revision','profile','activities','stats','history','settings','currentPortraitId'];
+  const nonImageFields=['revision','statsRulesVersion','profile','activities','stats','history','settings','currentPortraitId'];
   const roots=[state,...(state.history??[]).flatMap(record=>[record.before,record.after])];
   for(const root of roots){
     if(!root||typeof root!=='object')throw new Error('圖片快照尚未完整載入。');

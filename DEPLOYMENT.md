@@ -30,3 +30,11 @@
 現在使用 `npm run build` 將三頁（`index.html`、`profile.html`、`settings.html`）及整個 `assets/` 輸出至 `work/build/`。這是可選的靜態檔案打包／公開 OAuth client ID 注入步驟，網站執行仍不需要 Node 或後端。完整資產（含三種字型及 LICENSE）不可再沿用前述舊版單頁資產白名單。`work/build/` 不包含 Git、測試、開發文件或環境憑證。
 
 `main` 與 `gh-pages` 是不同分支；推送 `main` 不表示 GitHub Pages 已更新。發布至既有 gh-pages 必須另檢查其最新版本及部署設定，不應以 main 推送成功宣稱網站已上線。設定格式、字型、Google Console 與驗證細節見 `SETTINGS.md`。
+
+## 固定發布流程與本次差異保留
+
+`main` 為唯一完整來源；完成並發布包含 source 更新與 Pages 部署。發布前比較最新 main、gh-pages 的檔案，而非只比較 commit 先後。本次由 `ca681aa` 回收發布分支尚未回到 main 的數值規則 v2（Lv1、內部經驗基準100、經驗0顯示破折號、可撤銷的重新開始）、表單／圖片操作排列、手機圓形頭像、450px 內容定位與行動面板等高修正，同時保留設定頁及其安全服務。
+
+數值規則 v2 已發布的資料保留，不重設；原發布版本的舊規則一次性重新開始流程保留，但改在全站寫入鎖中執行。備份資料版本升為2，包含 statsRulesVersion；數值規則不相符的舊備份在寫入前拒絕，不靜默改寫或清除目前資料。
+
+以乾淨的 work/build 產出三頁及所有 assets，OAuth client ID 本次留空。發布 commit 以最新 gh-pages 為 parent，tree 僅含產物及必要發布設定；不發布協作文件、測試、環境資料或中繼檔。推送前再次確認遠端無競態變更。

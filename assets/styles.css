@@ -197,10 +197,19 @@ body[data-navigation="ready"] .page-shell { padding-bottom: calc(var(--bottom-na
   .desktop-page-name { display: block; }
 }
 
-/* Let mobile content tabs reach the top even with a short or empty panel. */
+/* Preserve history’s existing top positioning; centered panels need no artificial space. */
 @media (max-width:1023px) {
   .mobile-tab-scroll-region { min-height: calc(var(--tab-scroll-viewport-height, 100svh) - var(--tab-scroll-top-offset, 12px) - var(--bottom-nav-height, 64px)); }
 }
 
+@media (max-width:450px) {
+  .mobile-tab-scroll-region:not(:has([data-tab-scroll-align="start"][aria-selected="true"])) { min-height: 0; }
+}
+
 #home-stats { white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (min-width:1024px) { .welcome-copy > .desktop-page-name { margin-bottom: 8px; } }
+
+@media (max-width:1023px) {
+  .companion-portrait { border-radius: 50%; }
+  .companion-portrait img { object-fit: cover; }
+}

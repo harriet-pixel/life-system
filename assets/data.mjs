@@ -1,15 +1,29 @@
 import { coordinatedWrite } from './coordination.mjs';
 import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats } from './abilities.mjs';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs';
 // A single atomic localStorage document owns data and its reversible journal.
 export const HISTORY_LIMIT = 50;
+export const STATS_RULES_VERSION = 2;
+export { visibleExperience };
 const retainedHistory = history => [...history].sort((a,b) => Date.parse(a.time) - Date.parse(b.time)).slice(-HISTORY_LIMIT);
 export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
 const undoRecord = history => [...history].reverse().find(record => !record.undone);
 const redoRecord = history => history.filter(record => record.undone && record.redoable === true && Number.isSafeInteger(record.undoOrder)).sort((a,b) => b.undoOrder-a.undoOrder)[0];
-const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: normalizeStats(), settings: structuredClone(DEFAULT_SETTINGS), history: [] });
+const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), history: [] });
+// Preserve the published one-time legacy restart, but perform the write only
+// under the shared write lock; existing v2 progress and settings are untouched.
+export function migrateStatsRules(storage) {
+  const raw=storage.getItem(STORAGE_KEY);if(!raw)return;
+  const value=JSON.parse(raw);
+  if(!value?.profile||!value.stats||!Array.isArray(value.history)||!Number.isSafeInteger(value.revision))throw new Error('既有資料無法安全讀取，已停止數值升級。');
+  if(value.statsRulesVersion===STATS_RULES_VERSION)return;
+  if(value.statsRulesVersion!==undefined&&value.statsRulesVersion!==1)throw new Error('不支援的數值規則版本，原資料已保留。');
+  const next={...value,stats:createInitialStats(),history:[],statsRulesVersion:STATS_RULES_VERSION,revision:value.revision+1};
+  if(storage.getItem(STORAGE_KEY)!==raw)throw new Error('其他分頁已更新資料，請重新整理後重試。');
+  storage.setItem(STORAGE_KEY,JSON.stringify(next));
+}
 export function createDataStore(storage) {
   let state, busy=false;
   const listeners = new Set();
@@ -19,6 +33,7 @@ export function createDataStore(storage) {
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
     value.settings = normalizeSettings(value.settings);
+    value.statsRulesVersion ??= STATS_RULES_VERSION;
     value.profile.motto ??= '';
     value.avatar ??= null;
     value.portraits ??= [];value.photoEdit ??= null;value.avatarEdit ??= null;value.currentPortraitId ??= null;
@@ -128,7 +143,7 @@ export function formatSI(value) {
 }
 export function validateProfile(value) {
   const result = Object.fromEntries(['name', 'age', 'gender', 'bio', 'boundaries', 'motto'].map(key => [key, String(value[key] ?? '').trim()]));
-  if (result.age && (!/^\d+$/.test(result.age) || !Number.isSafeInteger(Number(result.age)))) throw new Error('年紀請填寫有效的非負整數，或留白。');
+  if (result.age && (!/^\d+$/.test(result.age) || !Number.isSafeInteger(Number(result.age)))) throw new Error('年齡請填寫有效的非負整數，或留白。');
   if (result.age) result.age = String(Number(result.age));
   return result;
 }
@@ -151,7 +166,7 @@ if (typeof window !== 'undefined') {
     const migrationNeeded=window.localStorage.getItem(STORAGE_KEY)?.includes('data:image/');
     const controls=migrationNeeded?[...document.querySelectorAll('input,button')].map(control=>[control,control.disabled]):[];
     if(migrationNeeded){controls.forEach(([control])=>control.disabled=true);if(status){status.hidden=false;status.textContent='正在升級本機圖片儲存，請稍候。';}}
-    await coordinatedWrite(()=>migrateImages(window.localStorage,STORAGE_KEY));
+    await coordinatedWrite(async()=>{await migrateImages(window.localStorage,STORAGE_KEY);migrateStatsRules(window.localStorage);});
     controls.forEach(([control,disabled])=>control.disabled=disabled);
     if(migrationNeeded&&status){status.hidden=true;status.textContent='';}
   } catch(error) {
@@ -180,7 +195,7 @@ if (typeof window !== 'undefined') window.addEventListener('storage', e => { if 
 
 export function profileSummary(stats) {
   const shown = value => value > 0 ? String(value) : '—';
-  return `Exp ${stats.experience > 0 ? formatSI(stats.experience) : '—'} ｜ Lv ${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
+  return `Exp ${visibleExperience(stats.experience) > 0 ? formatSI(visibleExperience(stats.experience)) : '—'} ｜ Lv ${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
 }
 export function abilityShares(abilities) {
   const total = abilities.reduce((sum,a) => sum + a.value, 0);

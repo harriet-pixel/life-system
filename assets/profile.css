@@ -218,10 +218,7 @@ textarea { resize: vertical; }
 
 #image-status { block-size: 3.4em; overflow: auto; }
 
-.image-tab-mobile { display: none; }
 @media (max-width:1023px) {
-  .image-tab-desktop { display: none; }
-  .image-tab-mobile { display: inline; }
   .image-tabs { grid-template-columns: repeat(3,minmax(0,1fr)); }
   #photo-settings .image-tabs button { min-width: 0; padding-inline: 4px; }
 }
@@ -258,3 +255,33 @@ textarea { resize: vertical; }
 .gender-choices { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 #profile-form .gender-choice { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
 #profile-form .gender-choice input { width: 18px; min-width: 18px; height: 18px; padding: 0; margin: 0; accent-color: var(--color-primary); }
+
+.personal-details-row { grid-template-columns: repeat(auto-fit,minmax(min(100%,8em),1fr)); }
+#gender-options { display: flex; align-items: center; align-self: center; gap: 8px; }
+#gender-label { white-space: nowrap; }
+.gender-choices { flex-wrap: nowrap; gap: 8px; }
+#profile-form .gender-choice { gap: 4px; }
+#profile-form .gender-choice input:checked { background: var(--color-primary); border-color: var(--color-primary); }
+
+#restart-values { justify-self: start; min-height: 44px; padding: 8px 16px; font: inherit; border: 1px solid var(--color-primary); color: var(--color-primary); background: white; }
+#values-reset-status:empty { display: none; }
+
+.personal-details-row { display: flex; align-items: center; flex-wrap: wrap; column-gap: clamp(0px,calc(100vw - 342px),3em); row-gap: 8px; }
+#profile-form .age-inline { display: flex; align-items: center; gap: 0; flex: 1 1 0; min-width: 5em; }
+.age-inline > span { white-space: nowrap; }
+#profile-form .age-inline input { width: 0; min-width: 0; flex: 1 1 0; padding-inline: 4px; }
+#gender-options { gap: 0; flex: 0 1 auto; max-width: 100%; flex-wrap: wrap; }
+.gender-choices { column-gap: 1em; }
+#profile-form .gender-choice { gap: 0; }
+.personal-details-row + #age-error:empty { display: none; }
+
+#gender-options { padding-inline-end: 1em; }
+#profile-form .age-inline { min-width: 4em; }
+
+#profile-dialog { width: min(462px,calc(100% - 32px)); }
+.image-tabs { grid-template-columns: repeat(3,minmax(0,1fr)); }
+#photo-settings .image-tabs button { min-width: 0; padding-inline: 4px; }
+
+/* Keep paired image actions aligned without changing crop or draft behavior. */
+.image-action-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.image-action-row > button { min-width: 0; }

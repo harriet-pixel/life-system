@@ -13,8 +13,8 @@ function unb64(text,max=MAX_FILE_BYTES) {
   const bytes=Uint8Array.from(atob(text),c=>c.charCodeAt(0));if(bytes.length>max)throw new Error('備份超過大小限制。');return bytes;
 }
 function check(condition,message='備份結構驗證失敗。'){if(!condition)throw new Error(message);}
-const topKeys=['revision','profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','stats','history','settings'];
-const editKeys=topKeys.filter(k=>!['revision','history'].includes(k));
+const topKeys=['revision','statsRulesVersion','profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','stats','history','settings'];
+const editKeys=topKeys.filter(k=>!['revision','history','statsRulesVersion'].includes(k));
 function safeObject(value,depth=0) {
   check(depth<40,'備份結構過深。');
   if(value&&typeof value==='object')for(const [key,child] of Object.entries(value)){
@@ -25,10 +25,10 @@ function validCrop(crop){return crop&&typeof crop==='object'&&['left','top','wid
 function validateFields(value,full=false) {
   check(value&&typeof value==='object'&&!Array.isArray(value));
   check(Object.keys(value).every(k=>(full?topKeys:editKeys).includes(k)),'備份含未知資料欄位，請使用相符版本。');
-  if(full)check(topKeys.every(k=>Object.hasOwn(value,k)));
+  if(full){check(topKeys.every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
   if(Object.hasOwn(value,'profile')){check(value.profile&&['name','age','gender','bio','boundaries','motto'].every(k=>typeof value.profile[k]==='string'));check(value.profile.age===''||(/^\d+$/.test(value.profile.age)&&Number.isSafeInteger(Number(value.profile.age))));}
   if(Object.hasOwn(value,'stats')){
-    const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=0)&&Array.isArray(s.abilities)&&s.abilities.length===5);
+    const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5);
     check(s.abilities.every((a,i)=>a.id===ABILITIES[i].id&&a.name===ABILITIES[i].name&&Number.isSafeInteger(a.value)&&a.value>=0));
     check(new Set(s.abilities.map(a=>a.id)).size===5);
   }
@@ -74,7 +74,7 @@ export async function withBackup(store,password,consume) {
     check(refs.size<=MAX_IMAGES);let size=0;
     const images=[];
     for(const asset of assets.filter(a=>refs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
-    const payload={formatVersion:VERSION,dataVersion:1,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
+    const payload={formatVersion:VERSION,dataVersion:2,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
     return consume(await encodeBackup(payload,password),payload);
   });
 }
@@ -90,7 +90,7 @@ export async function readBackup(file,password='') {
   }else{
     check(envelope.encrypted===false&&envelope.payload);check(await hash(encoder.encode(JSON.stringify(envelope.payload)))===envelope.sha256,'備份完整性驗證失敗。');payload=envelope.payload;
   }
-  check(payload.formatVersion===VERSION&&payload.dataVersion===1,'不支援的資料版本。');
+  check(payload.formatVersion===VERSION&&payload.dataVersion===2,'不支援的資料版本；此版本使用 Lv1／經驗值基準 100 的數值規則，原資料未更動。');
   check(Number.isFinite(Date.parse(payload.createdAt))&&Array.isArray(payload.images)&&payload.images.length<=MAX_IMAGES);
   check(encoder.encode(JSON.stringify(payload.document)).length<=10*1024*1024,'資料文件超過 10 MiB。');
   validateDocument(payload.document);

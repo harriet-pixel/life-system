@@ -8,10 +8,10 @@
     <title>我的資料 · Life System</title>
     <link rel="icon" href="data:,">
     <script src="assets/appearance-core.js" data-appearance-core></script>
-    <link rel="stylesheet" href="assets/styles.css?v=settings-1">
-    <link rel="stylesheet" href="assets/profile.css?v=settings-1">
-    <script type="module" src="assets/profile.mjs?v=settings-1"></script>
-  <link rel="stylesheet" href="assets/appearance.css?v=settings-1">
+    <link rel="stylesheet" href="assets/styles.css?v=publish-20261022">
+    <link rel="stylesheet" href="assets/profile.css?v=publish-20261022">
+    <script type="module" src="assets/profile.mjs?v=publish-20261022"></script>
+  <link rel="stylesheet" href="assets/appearance.css?v=publish-20261022">
   </head>
   <body class="profile-page"><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" tabindex="-1">
         <div class="desktop-navigation" aria-label="電腦版導覽工具列">
@@ -25,7 +25,7 @@
 <section class="photo-section" aria-label="使用者照片">
 <div class="photo-frame"><svg id="default-avatar" viewBox="0 0 160 200" role="img" aria-label="預設頭像"><circle cx="80" cy="65" r="28"/><path d="M25 170c0-65 110-65 110 0"/></svg><img id="user-photo" alt="使用者照片" hidden></div>
 </section></div>
-<div class="profile-content"><div class="activity-tabs" role="tablist" aria-label="我的資料內容"><button id="abilities-tab" role="tab" aria-controls="abilities-panel" aria-selected="true"><span>能力值</span><span class="tab-english" lang="en">Attributes</span></button><button id="history-tab" role="tab" aria-controls="history-panel" aria-selected="false" tabindex="-1"><span>歷史紀錄</span><span class="tab-english" lang="en">History</span></button></div>
+<div class="profile-content"><div class="activity-tabs" role="tablist" aria-label="我的資料內容"><button id="abilities-tab" role="tab" aria-controls="abilities-panel" aria-selected="true"><span>能力值</span><span class="tab-english" lang="en">Attributes</span></button><button id="history-tab" data-tab-scroll-align="start" role="tab" aria-controls="history-panel" aria-selected="false" tabindex="-1"><span>歷史紀錄</span><span class="tab-english" lang="en">History</span></button></div>
 <section id="abilities-panel" role="tabpanel" aria-labelledby="abilities-tab" tabindex="0"><p id="abilities-missing" class="small-note">尚未定義五項能力，待確認名稱、順序與資料來源。</p><div class="ability-charts" hidden><div id="ability-radar"></div></div></section>
 <section id="history-panel" role="tabpanel" aria-labelledby="history-tab" tabindex="0" hidden><p id="history-empty" class="small-note">尚無操作紀錄。</p><p id="history-retention-note" class="small-note">保留最近 50 筆操作紀錄</p><ol id="history-list" class="history-list"></ol><nav id="history-pagination" class="history-pagination" aria-label="歷史紀錄分頁" hidden><div class="history-page-controls"><label class="history-jump" for="history-jump">跳至第 <select id="history-jump" aria-label="跳至歷史紀錄頁面"></select> 頁</label><span id="history-page" aria-live="polite"></span></div><div class="history-step-controls"><button id="history-previous" type="button">上一頁</button><button id="history-next" type="button">下一頁</button></div><div id="history-direct-jump" class="history-direct-jump"><label for="history-input">跳至第 <input id="history-input" inputmode="numeric" type="text" aria-describedby="history-page-error"> 頁</label><button id="history-go" type="button">前往</button></div><p id="history-page-error" class="field-error" role="alert" hidden></p></nav></section>
 <p id="operation-status" class="small-note" role="status" hidden></p></div>
@@ -40,36 +40,36 @@
 <div class="settings-scroll">
 <section id="personal-settings" role="tabpanel" aria-labelledby="personal-settings-tab" tabindex="0">
 <p id="profile-help" class="small-note">可自由留白，填寫內容將作為未來 AI 夥伴生成與互動的參考。</p>
-<label>稱呼<input name="name" autocomplete="nickname"></label><div class="personal-details-row"><label>年紀<input name="age" inputmode="numeric" aria-describedby="age-error"><span id="age-error" class="field-error"></span></label><fieldset id="gender-options"><legend>性別</legend><input type="hidden" name="gender"><div class="gender-choices"><label class="gender-choice"><input type="checkbox" name="gender-choice" value="男">男</label><label class="gender-choice"><input type="checkbox" name="gender-choice" value="女">女</label></div></fieldset></div><label>一句話<input name="motto" aria-describedby="motto-help"><span id="motto-help" class="small-note">寫下一句想對自己說的話。</span></label><label>個人簡介<textarea name="bio" rows="1"></textarea></label><label>禁忌<textarea name="boundaries" rows="1"></textarea></label>
+<label>稱呼<input name="name" autocomplete="nickname"></label><div class="personal-details-row"><label class="age-inline"><span>年齡：</span><input name="age" inputmode="numeric" aria-describedby="age-error"></label><div id="gender-options" role="group" aria-labelledby="gender-label"><span id="gender-label">性別：</span><input type="hidden" name="gender"><div class="gender-choices"><label class="gender-choice"><input type="checkbox" name="gender-choice" value="男">男</label><label class="gender-choice"><input type="checkbox" name="gender-choice" value="女">女</label></div></div></div><span id="age-error" class="field-error"></span><label>一句話<input name="motto" aria-describedby="motto-help"><span id="motto-help" class="small-note">寫下一句想對自己說的話。</span></label><label>個人簡介<textarea name="bio" rows="1"></textarea></label><label>禁忌<textarea name="boundaries" rows="1"></textarea></label>
 </section>
 <section id="values-settings" role="tabpanel" aria-labelledby="values-settings-tab" tabindex="0" hidden>
-<p class="small-note">修改等級會將總經驗值設為新等級 × 100，不影響能力值或貨幣。貨幣量可獨立修改。同次修改等級與能力時，先設定等級對應的經驗值，再加減能力差額。</p>
+
 <div id="manual-fields"></div>
-<details id="ability-edit-details"><summary>修改能力值</summary><p class="small-note">能力增加或減少多少，總經驗值就增減多少，等級依總經驗值 ÷ 100 無條件捨去計算；不改動其他能力或貨幣。總經驗值不得低於 0。</p><div id="manual-abilities"></div></details>
+<details id="ability-edit-details"><summary>修改能力值</summary><p class="small-note">能力增加或減少多少，經驗值就增減多少，畫面經驗值最低為 0、等級最低為 1；不改動其他能力或貨幣。</p><div id="manual-abilities"></div></details><button id="restart-values" type="button" aria-describedby="restart-values-help">重新開始</button><p id="restart-values-help" class="small-note">將等級、經驗值、貨幣與能力回復初始值，按「儲存」後套用。</p><p id="values-reset-status" class="small-note" role="status"></p>
 </section>
 <section id="photo-settings" role="tabpanel" aria-labelledby="photo-settings-tab" tabindex="0" hidden>
 <div id="image-tabs" class="image-tabs" role="tablist" aria-label="圖片設定">
-<button id="portrait-settings-tab" type="button" role="tab" aria-controls="portrait-settings" aria-selected="true"><span class="image-tab-desktop">使用者立繪</span><span class="image-tab-mobile">立繪</span></button>
-<button id="avatar-settings-tab" type="button" role="tab" aria-controls="avatar-settings" aria-selected="false" tabindex="-1"><span class="image-tab-desktop">使用者頭像</span><span class="image-tab-mobile">頭像</span></button>
-<button id="library-settings-tab" type="button" role="tab" aria-controls="library-settings" aria-selected="false" tabindex="-1"><span class="image-tab-desktop">我的最愛</span><span class="image-tab-mobile">最愛</span></button>
+<button id="portrait-settings-tab" type="button" role="tab" aria-controls="portrait-settings" aria-selected="true">立繪</button>
+<button id="avatar-settings-tab" type="button" role="tab" aria-controls="avatar-settings" aria-selected="false" tabindex="-1">頭像</button>
+<button id="library-settings-tab" type="button" role="tab" aria-controls="library-settings" aria-selected="false" tabindex="-1">最愛</button>
 </div>
 <section id="portrait-settings" role="tabpanel" aria-labelledby="portrait-settings-tab" tabindex="0">
 <div class="draft-image-preview"><img id="draft-photo" alt="使用者立繪草稿預覽" hidden><span id="draft-photo-empty">尚未上傳立繪</span></div>
-<button id="choose-photo" type="button" aria-describedby="photo-error">選擇／更換立繪</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-error" hidden>
+<div class="image-action-row"><button id="choose-photo" type="button" aria-describedby="photo-error">選擇立繪</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-error" hidden>
+<button id="start-portrait-crop" type="button" hidden>裁切</button></div>
 <p id="photo-error" class="field-error"></p>
-<button id="start-portrait-crop" type="button" hidden>裁切</button>
 <div id="portrait-editor" hidden>
 <canvas id="portrait-canvas" width="300" height="400" tabindex="0" aria-label="立繪裁切區，可拖曳圖片或用方向鍵移動"></canvas>
 <div class="crop-controls"><label>縮放<input id="portrait-zoom" type="range" min="1" max="4" step="0.01" value="1"></label></div>
-<button id="confirm-portrait-crop" type="button">確認裁切</button><button id="cancel-portrait-crop" type="button">取消裁切</button></div>
+<div class="image-action-row"><button id="confirm-portrait-crop" type="button">確認裁切</button><button id="cancel-portrait-crop" type="button">取消裁切</button></div></div>
 </section><section id="avatar-settings" role="tabpanel" aria-labelledby="avatar-settings-tab" tabindex="0" hidden>
 <div class="draft-avatar-frame"><img id="draft-avatar" alt="使用者頭像草稿預覽" hidden><span id="draft-avatar-empty">尚未設定頭像</span></div>
-<button id="choose-avatar" type="button" aria-describedby="avatar-error">選擇／更換頭像圖片</button><input id="avatar-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="avatar-error" hidden>
+<button id="choose-avatar" type="button" aria-describedby="avatar-error">選擇立繪</button><input id="avatar-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="avatar-error" hidden>
 <div class="avatar-image-actions"><button id="start-avatar-crop" type="button" disabled>裁切</button><button id="crop-from-photo" type="button" aria-describedby="crop-source-help">使用立繪</button></div><p id="crop-source-help" class="sr-only"></p>
 <section id="avatar-crop" aria-label="正方形頭像裁切" hidden>
 <canvas id="crop-canvas" width="320" height="320" tabindex="0" aria-label="頭像裁切區，可拖曳圖片或用方向鍵移動"></canvas>
 <div class="crop-controls"><label>縮放<input id="crop-zoom" type="range" min="1" max="4" step="0.01" value="1"></label></div>
-<button id="confirm-avatar-crop" type="button">確認裁切</button><button id="cancel-avatar-crop" type="button">取消裁切</button>
+<div class="image-action-row"><button id="confirm-avatar-crop" type="button">確認裁切</button><button id="cancel-avatar-crop" type="button">取消裁切</button></div>
 </section><p id="avatar-error" class="field-error" role="alert"></p></section>
 <section id="library-settings" role="tabpanel" aria-labelledby="library-settings-tab" tabindex="0" hidden>
 <ul id="portrait-library" aria-label="我的最愛，共六個位置" tabindex="-1"></ul>

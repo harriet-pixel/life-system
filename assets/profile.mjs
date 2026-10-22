@@ -3,9 +3,9 @@ import { holdDraft } from './coordination.mjs';
 import { createMobileTabPositioner } from './tab-position.mjs';
 import { createProfileImages } from './profile-images.mjs';
 import { imageURL, prepareImageReferences } from './image-store.mjs';
-import { ABILITIES, validateManualStats } from './abilities.mjs';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs';
 import { undoManager } from './undo.mjs';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary } from './data.mjs';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs';
 import { initializeNavigation } from './navigation.mjs';
 const $ = selector => document.querySelector(selector);
 const notice = message => { $('#operation-status').hidden = false; $('#operation-status').textContent = message; };
@@ -89,8 +89,8 @@ function render() {
   const [experienceText,levelText,currencyText]=profileSummary(state.stats).split(' ｜ ');
   const levelLabel=element('span',levelText);levelLabel.id='profile-level';
   $('#profile-stats').replaceChildren(levelLabel,element('span',` ｜ ${experienceText}｜ ${currencyText}`));
-  $('#profile-stats').setAttribute('aria-label', `等級：${level}，累積總經驗值：${experience}，貨幣：${currency}`);
-  $('#profile-stats').title = `等級：${level}，累積總經驗值：${experience}，貨幣：${currency}`;
+  $('#profile-stats').setAttribute('aria-label', `等級：${level}，累積總經驗值：${visibleExperience(experience)}，貨幣：${currency}`);
+  $('#profile-stats').title = `等級：${level}，累積總經驗值：${visibleExperience(experience)}，貨幣：${currency}`;
   const valid = abilities.length === 5;
   $('#abilities-missing').hidden = valid; $('.ability-charts').hidden = !valid;
   if (valid) renderRadar();
@@ -170,10 +170,15 @@ imageTabs.forEach((tab,index)=>{
   tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+imageTabs.length-1)%imageTabs.length,ArrowRight:(index+1)%imageTabs.length,Home:0,End:imageTabs.length-1}[event.key];if(next===undefined)return;event.preventDefault();selectImage(next);imageTabs[next].focus();});
 });
 let releaseDraft,openingProfile=false;
-let baseState,saving=false,saveVersion=0,imageBusy=false,initialFields={};
+let baseState,saving=false,saveVersion=0,imageBusy=false,initialFields={},resettingStats=false;
 const unsavedDialog=$('#unsaved-settings-dialog');
 let backdropPointer=null,settingsFocus=null,restoreSettingsFocus=true;
-function hasUnsavedChanges(){return Object.entries(initialFields).some(([key,value])=>form.elements[key].value!==value)||imageDraft.hasChanges;}
+function hasUnsavedChanges(){
+  if(Object.entries(initialFields).some(([key,value])=>form.elements[key].value!==value)||imageDraft.hasChanges)return true;
+  if(!resettingStats)return false;
+  try{return JSON.stringify(baseState.stats)!==JSON.stringify(validateManualStats(Object.fromEntries(new FormData(form)),createInitialStats()));}
+  catch{return true;}
+}
 function syncSaveButtons(){$('#save-settings').disabled=saving||imageBusy;$('#save-unsaved-settings').disabled=saving||imageBusy;}
 function requestBackdropClose(focus){
   if(!dialog.open||saving||unsavedDialog.open)return;
@@ -222,12 +227,17 @@ function lockSave(value){saving=value;syncSaveButtons();$('.settings-scroll').in
 $('#edit-profile').addEventListener('click',async()=>{
   if(openingProfile||dialog.open)return;openingProfile=true;
   try {releaseDraft=await holdDraft();} catch(error){notice(error.message);return;} finally{openingProfile=false;}
-  baseState=dataStore.get();saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
+  baseState=dataStore.get();resettingStats=false;$('#values-reset-status').textContent='';saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
   personalKeys.forEach(key=>form.elements[key].value=baseState.profile[key]);
   syncGenderChoices();
   numericFields.forEach(({id})=>form.elements[id].value=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value);
   initialFields=Object.fromEntries([...personalKeys,...numericFields.map(field=>field.id)].map(key=>[key,form.elements[key].value]));
   backdropPointer=null;clearErrors();selectSetting(0);selectImage(0);dialog.showModal();imageDraft.open(baseState);
+});
+$('#restart-values').addEventListener('click',()=>{
+  resettingStats=true;const stats=createInitialStats();
+  numericFields.forEach(({id})=>form.elements[id].value=id in stats?stats[id]:stats.abilities.find(a=>a.id===id).value);
+  clearErrors();$('#values-reset-status').textContent='數值已回復初始草稿，按「儲存」後套用。';
 });
 $('#cancel-profile').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('close',()=>{releaseDraft?.();releaseDraft=null;backdropPointer=null;if(unsavedDialog.open){restoreSettingsFocus=false;unsavedDialog.close();}saveVersion++;imageDraft.close();lockSave(false);$('#edit-profile').focus();});
@@ -235,7 +245,7 @@ form.addEventListener('submit',async event=>{
   event.preventDefault();if(saving)return;clearErrors();
   let profile,stats;
   try{profile=validateProfile(Object.fromEntries(new FormData(form)));}catch(error){fieldError('age',error.message,0);return;}
-  try{stats=validateManualStats(Object.fromEntries(new FormData(form)),baseState.stats);}catch(error){fieldError(error.field,error.message,2);return;}
+  try{stats=validateManualStats(Object.fromEntries(new FormData(form)),resettingStats?createInitialStats():baseState.stats);}catch(error){fieldError(error.field,error.message,2);return;}
   if(imageBusy){$('#form-error').textContent='圖片處理中，請稍候再儲存。';return;}
   const version=++saveVersion;lockSave(true);
   try{
@@ -246,6 +256,7 @@ form.addEventListener('submit',async event=>{
     const changed=personalKeys.filter(key=>profile[key]!==baseState.profile[key]);
     for(const{id}of numericFields){const before=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value;const after=id in stats?stats[id]:stats.abilities.find(a=>a.id===id).value;if(before!==after)changed.push(id);}
     for(const[key,value]of Object.entries(storedImages))if(JSON.stringify(value)!==JSON.stringify(baseState[key]??null))changed.push(key);
+    if(resettingStats&&JSON.stringify(stats)!==JSON.stringify(baseState.stats))changed.push('restart');
     const saved=await dataStore.transact({type:'settings.update',label:'已更新使用者設定',target:'user',fields:changed,changes:{profile,stats,...storedImages}});
     dialog.close();notice(saved?'使用者設定已儲存。':'沒有變更需要儲存。');
   }catch(error){if(dialog.open&&version===saveVersion){lockSave(false);if(error.field)fieldError(error.field,error.message,1);else $('#form-error').textContent=error.message;}}

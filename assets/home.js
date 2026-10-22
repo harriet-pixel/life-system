@@ -1,7 +1,8 @@
 import { createMobileTabPositioner } from './tab-position.mjs';
+import { createActivityHeightSync } from './activity-height.mjs';
 import { undoManager } from './undo.mjs';
 import { createCompanionController, generateMockReply } from './companion.mjs';
-import { dataStore, profileSummary } from './data.mjs';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs';
 import { initializeNavigation } from './navigation.mjs';
 
 // Development slots, not approved character emotions. Only use licensed assets.
@@ -112,8 +113,8 @@ dataStore.subscribe(() => {
   const stats = dataStore.get().stats;
   const summary = document.querySelector('#home-stats');
   const [experience, level, currency] = profileSummary(stats).split(' ｜ ');
-  summary.textContent = `${level} ｜ ${experience} ｜ ${currency}`;
-  summary.setAttribute('aria-label', `累積總經驗值：${stats.experience}，等級：${stats.level}，貨幣：${stats.currency}`);
+  summary.textContent = `${level} ｜ ${experience}｜ ${currency}`;
+  summary.setAttribute('aria-label', `累積總經驗值：${visibleExperience(stats.experience)}，等級：${stats.level}，貨幣：${stats.currency}`);
   summary.title = summary.getAttribute('aria-label');
 });
 
@@ -121,8 +122,10 @@ dataStore.subscribe(() => {
 // and never emits a successful-action event or triggers companion generation.
 const activityTabs = document.querySelector('.activity-tabs');
 const tabButtons = [...activityTabs.querySelectorAll('button')];
-const positionActivityTabs = createMobileTabPositioner(activityTabs);
 const activityPanels = tabButtons.map((button) => document.getElementById(button.dataset.panel));
+const updateActivityHeight = createActivityHeightSync(document.querySelector('.home-grid'), activityPanels);
+const positionActivityTabs = createMobileTabPositioner(activityTabs, updateActivityHeight);
+dataStore.subscribe(updateActivityHeight);
 const desktopLayout = window.matchMedia('(min-width: 1024px)');
 let selectedPanel = 0;
 function syncActivityTabs() {
@@ -140,6 +143,7 @@ function syncActivityTabs() {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', button.id);
   });
+  updateActivityHeight();
 }
 function selectActivity(index) {
   selectedPanel = index;

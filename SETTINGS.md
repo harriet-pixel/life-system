@@ -73,3 +73,7 @@
 - `tests/profile-images.cjs` 額外驗證真實上傳、立繪裁切、自動頭像、收藏刪除／Undo、重開圖片，以及 data URL 遷移與 Object URL 釋放；圖片 Blob 保留。
 - 以 FontTools 解析實際 WOFF2 的 family 與 cmap（不是只看副檔名）：明體 family 為 Noto Serif TC ExtraLight（variable 基礎名稱）、黑體為 Noto Sans TC Thin（variable 基礎名稱）、圓體為 Huninn。三者均涵蓋「繁體中文臺灣設定歷史紀錄儲存空間備份還原頭像立繪收藏」測試字串。
 - Git 連線原因及修復方式見 `NETWORK_DIAGNOSIS.md`。
+
+### 與既有發布版的數值規則整合
+
+為保留 gh-pages 已發布的 Lv1／經驗值修正，現在備份 `dataVersion=2`、文件包含 `statsRulesVersion=2`。使用現行規則的資料、設定與歷史保持不變。資料版本不相符的舊備份在驗證階段拒絕；不在還原時重新計算數值或清除歷史。舊數值規則的一次性重新開始是原已發布行為，僅在明確舊規則資料升級時執行，並保留使用者文字、圖片、收藏、活動與外觀設定；現行v2不重複執行。
