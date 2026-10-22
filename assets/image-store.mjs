@@ -51,7 +51,7 @@ export async function migrateImages(storage,key) {
   const value=JSON.parse(raw);
   // Only image-bearing data is migrated. Private text is never inspected as an image.
   let changed=false;
-  const roots=[value,...(value.history??[]).flatMap(record=>[record.before,record.after])];
+  const roots=[value,...[...(value.history??[]),...(value.undoHistory??[])].flatMap(record=>[record.before,record.after])];
   for(const root of roots)for(const field of ['photo','avatar','photoEdit','avatarEdit','portraits'])if(root && Object.hasOwn(root,field)){const original=JSON.stringify(root[field]);root[field]=await prepareImageReferences(root[field]);if(JSON.stringify(root[field])!==original)changed=true;}
   if(changed){
     value.revision=(value.revision??0)+1;

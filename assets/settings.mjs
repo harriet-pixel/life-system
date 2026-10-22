@@ -18,7 +18,7 @@ async function run(work){
   if(busy)return;const priorError=document.querySelector('dialog[open] [data-dialog-error]');if(priorError)priorError.textContent='';busy=true;document.body.setAttribute('aria-busy','true');
   const buttons=[...document.querySelectorAll('button,input,select')].map(e=>[e,e.disabled]);buttons.forEach(([e])=>e.disabled=true);
   try{return await work();}catch(error){const message=error.message||'操作失敗；原資料未清除。';notice(message);const target=document.querySelector('dialog[open] [data-dialog-error]');if(target)target.textContent=message;}
-  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo]'))e.disabled=disabled;});syncSelection();syncDrive();$('#confirm-restore').disabled=!prepared;dataStore.notify();}
+  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo]'))e.disabled=disabled;});syncSelection();syncDrive();$('#confirm-restore').disabled=!prepared;$('#confirm-restore').hidden=!prepared;$('#restore-warning').hidden=!prepared;dataStore.notify();}
 }
 initializeNavigation({undoManager:{...persistentUndo,getState:()=>({...persistentUndo.getState(),busy:busy||persistentUndo.getState().busy})}});
 const history=createHistoryView({store:dataStore});
@@ -120,7 +120,7 @@ async function downloadCurrent(){
 }
 $('#download-backup').addEventListener('click',()=>run(downloadCurrent));
 let prepared=null,restoreRevision=null,restoreFile=null,restoreGeneration=0;
-function clearRestore(){restoreGeneration++;prepared=null;restoreRevision=null;restoreFile=null;$('#restore-password').value='';$('#confirm-restore').disabled=true;$('#restore-summary').textContent='';}
+function clearRestore(){restoreGeneration++;prepared=null;restoreRevision=null;restoreFile=null;$('#restore-password').value='';$('#confirm-restore').disabled=true;$('#confirm-restore').hidden=true;$('#restore-warning').hidden=true;$('#restore-summary').textContent='';}
 async function validateRestore(){
   const generation=restoreGeneration,file=restoreFile;prepared=null;$('#confirm-restore').disabled=true;
   try{

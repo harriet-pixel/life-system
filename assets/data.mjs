@@ -1,18 +1,18 @@
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs';
 import {validateProfileFields,validateActivities} from './validation.mjs';
 import { coordinatedWrite } from './coordination.mjs';
 import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs';
 import { migrateImages } from './image-store.mjs';
 import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs';
 // A single atomic localStorage document owns data and its reversible journal.
-export const HISTORY_LIMIT = 50;
+export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
 export { visibleExperience };
-const retainedHistory = history => [...history].sort((a,b) => Date.parse(a.time) - Date.parse(b.time)).slice(-HISTORY_LIMIT);
 export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
-const undoRecord = history => [...history].reverse().find(record => !record.undone);
-const redoRecord = history => history.filter(record => record.undone && record.redoable === true && Number.isSafeInteger(record.undoOrder)).sort((a,b) => b.undoOrder-a.undoOrder)[0];
-const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), history: [] });
+const undoRecord = undoCandidate;
+const redoRecord = redoCandidate;
+const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
 // Preserve the published one-time legacy restart, but perform the write only
 // under the shared write lock; existing v2 progress and settings are untouched.
 export function migrateStatsRules(storage) {
@@ -21,12 +21,12 @@ export function migrateStatsRules(storage) {
   if(!value?.profile||!value.stats||!Array.isArray(value.history)||!Number.isSafeInteger(value.revision))throw new Error('既有資料無法安全讀取，已停止數值升級。');
   if(value.statsRulesVersion===STATS_RULES_VERSION)return;
   if(value.statsRulesVersion!==undefined&&value.statsRulesVersion!==1)throw new Error('不支援的數值規則版本，原資料已保留。');
-  const next={...value,stats:createInitialStats(),history:[],statsRulesVersion:STATS_RULES_VERSION,revision:value.revision+1};
+  const next={...value,stats:createInitialStats(),history:value.history,statsRulesVersion:STATS_RULES_VERSION,revision:value.revision+1};
   if(storage.getItem(STORAGE_KEY)!==raw)throw new Error('其他分頁已更新資料，請重新整理後重試。');
   storage.setItem(STORAGE_KEY,JSON.stringify(next));
 }
-export function createDataStore(storage) {
-  let state, busy=false;
+export function createDataStore(storage,{now=Date.now}={}) {
+  let state, busy=false,recoveryNotice=null;
   const listeners = new Set();
   const load = () => {
     const raw = storage.getItem(STORAGE_KEY);
@@ -40,51 +40,36 @@ export function createDataStore(storage) {
     value.portraits ??= [];value.photoEdit ??= null;value.avatarEdit ??= null;value.currentPortraitId ??= null;
     value.stats = normalizeStats(value.stats);
     // Normalize historical snapshots too so pre-upgrade Undo remains consistent.
-    for (const record of value.history) for (const snapshot of [record.before, record.after]) {
-      if (snapshot.settings) snapshot.settings=normalizeSettings(snapshot.settings);
-      if (snapshot.profile) snapshot.profile.motto ??= '';
-      if (snapshot.stats) snapshot.stats = normalizeStats(snapshot.stats);
+    for (const record of (value.undoHistory??value.history)) for (const snapshot of [record.before, record.after]) {
+      if (snapshot?.settings) snapshot.settings=normalizeSettings(snapshot?.settings);
+      if (snapshot?.profile) snapshot.profile.motto ??= '';
+      if (snapshot?.stats) snapshot.stats = normalizeStats(snapshot.stats);
     }
-    // Pre-Redo journals have no branch metadata. Recover only a provable chain:
-    // each Undo must be newer than every saved transaction, and each before
-    // snapshot must match the state reached by replaying the previous candidate.
-    if (value.history.every(record => !Object.hasOwn(record,'redoable'))) {
-      const latestTransaction = Math.max(0,...value.history.map(record => Date.parse(record.time)));
-      const candidates = value.history.map((record,index)=>({record,index}))
-        .filter(({record})=>record.undone && Date.parse(record.undoneAt)>latestTransaction)
-        .sort((a,b)=>Date.parse(b.record.undoneAt)-Date.parse(a.record.undoneAt) || a.index-b.index);
-      const replayState = copy(value);
-      for (const [index,{record}] of candidates.entries()) {
-        if (!Object.keys(record.before).every(key=>JSON.stringify(replayState[key])===JSON.stringify(record.before[key]))) break;
-        record.redoable=true;record.undoOrder=-index;
-        Object.assign(replayState,copy(record.after));
-      }
-    }
-    // Loading never writes: normalization is published only by a locked edit.
-    if (value.history.length > HISTORY_LIMIT) value.history=retainedHistory(value.history);
-
-    return value;
+    const result=maintainRecovery(value,now());if(result.blocked)recoveryNotice='部分復原鏈與目前資料不一致，已停止提供相關復原；目前資料與行動紀錄保留。';return result.document;
   };
   state = load();
-  const notify = () => listeners.forEach(fn => fn(copy(state)));
+  const effective=()=>{const result=maintainRecovery(state,now());if(result.blocked)recoveryNotice='復原鏈已無法安全延續，相關復原已停止；目前資料與行動紀錄保留。';return result;};
+  const notify = () => listeners.forEach(fn => fn(copy(effective().document)));
   const persist = next => {
     const current = load();
     if (current.revision !== state.revision) { state = current; notify(); throw new Error('資料已在其他頁面更新，請重試。'); }
-    next.history = retainedHistory(next.history);
+    next=maintainRecovery(next,now()).document;
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
     try { storage.setItem(STORAGE_KEY, JSON.stringify(next)); }
     catch { throw new Error('無法儲存，可能是瀏覽器儲存空間不足或儲存權限受限。資料尚未變更。'); }
     state = next; notify();
   };
   const api = {
-    get: () => copy(state),
+    get: () => copy(effective().document),
+    maintain() {const result=effective();const raw=storage.getItem(STORAGE_KEY);if(raw&&JSON.stringify(result.document)!==raw)persist(result.document);return result;},
     notify,
     setBusy(value) {busy=value;notify();},
     replace(value) { const next=copy(value);next.revision=Math.max(value.revision,state.revision+1);persist(next); },
-    subscribe(fn) { listeners.add(fn); fn(copy(state)); return () => listeners.delete(fn); },
+    subscribe(fn) { listeners.add(fn); fn(copy(effective().document)); return () => listeners.delete(fn); },
     refresh() { state = load(); notify(); },
     transact({ type, label, target, changes, fields = [] }) {
-      const next = copy(state), before = {}, after = {};
+      api.maintain();
+      const next = effective().document, before = {}, after = {};
       for (const [key, rawValue] of Object.entries(changes)) {
         let value = key==='settings'?normalizeSettings(rawValue):rawValue;
         if(key==='profile')value=validateProfileFields(rawValue,state.profile);
@@ -98,42 +83,39 @@ export function createDataStore(storage) {
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
       }
       if (!Object.keys(after).length) return false;
-      const historyOnly=Object.keys(after).length===1&&after.settings&&JSON.stringify(after.settings.appearance)===JSON.stringify(state.settings.appearance);
-      // History preferences are independent of the editable data journal.
-      if(!historyOnly)next.history.forEach(record => { if (record.undone && record.redoable) record.redoable = false; });
+      next.undoHistory=next.undoHistory.filter(record=>!record.undone);
       const delta = {};
       for (const key of ['experience', 'level', 'currency']) delta[key] = typeof next.stats[key] === 'number' && typeof state.stats[key] === 'number' ? next.stats[key] - state.stats[key] : 0;
       delta.abilities = next.stats.abilities.map(a => ({ id: a.id, value: a.value - (state.stats.abilities.find(x => x.id === a.id)?.value ?? 0) }));
-      if(!historyOnly&&(state.settings.history.recordAll||type==='appearance.update')) next.history.push({ id: crypto.randomUUID(), time: new Date().toISOString(), type, label, target, fields, before, after, delta, undone: false, undoneAt: null });
+      {
+        const record={id:crypto.randomUUID(),time:new Date(now()).toISOString(),type:type??'data.update',label:label??'已更新資料',target:target??'user',fields,before,after,delta,undone:false,undoneAt:null};
+        next.history.push(actionMetadata(record));next.undoHistory.push(record);
+      }
       persist(next); return true;
     },
     getState() {
-      const undo = undoRecord(state.history), redo = redoRecord(state.history);
-      return { available: Boolean(undo), redoAvailable: Boolean(redo), busy, label: undo?.label ?? null, redoLabel: redo?.label ?? null };
+      const {document:current}=effective();
+      const undo = undoRecord(current.undoHistory), redo = redoRecord(current.undoHistory);
+      return { recoveryNotice, nextExpiry:Math.min(Infinity,...current.undoHistory.map(expiresAt)), available: Boolean(undo), redoAvailable: Boolean(redo), busy, label: undo?.label ?? null, redoLabel: redo?.label ?? null };
     },
     async undo() { return replay(false); },
     async redo() { return replay(true); },
   };
   function replay(redo) {
-    const next = copy(state), record = redo ? redoRecord(next.history) : undoRecord(next.history);
+    try{api.maintain();}catch(error){return {ok:false,reason:'failed',error};}
+    const next = effective().document, record = redo ? redoRecord(next.undoHistory) : undoRecord(next.undoHistory);
     if (!record) return { ok: false, reason: 'unavailable' };
     try {
-      const expected = redo ? record.before : record.after, restored = redo ? record.after : record.before;
-      for (const key of Object.keys(expected)) {
-        if(key==='settings'&&record.type==='appearance.update'){
-          if(JSON.stringify(state.settings.appearance)!==JSON.stringify(expected.settings.appearance))throw new Error('外觀資料已改變，無法安全復原。');
-          next.settings={...state.settings,appearance:copy(restored.settings.appearance)};continue;
-        }
-        if (JSON.stringify(state[key]) !== JSON.stringify(expected[key])) throw new Error(`資料已改變，無法安全${redo ? '恢復' : '撤銷'}。`);
-        next[key] = copy(restored[key]);
-      }
+      if(!expectedMatches(state,record,redo))throw new Error('資料已改變，無法安全延續復原鏈。');
+      applySnapshot(next,record,redo);
       // Replay snapshots directly; never validate as a new edit or award rewards.
       next.stats = normalizeStats(next.stats);
       record.undone = !redo;
-      record.undoneAt = redo ? null : new Date().toISOString();
+      record.undoneAt = redo ? null : new Date(now()).toISOString();
       record.redoable = !redo;
       if (redo) delete record.undoOrder;
       else record.undoOrder = state.revision + 1;
+      const metadata=next.history.find(r=>r.id===record.id);if(metadata){metadata.undone=record.undone;metadata.undoneAt=record.undoneAt;}
       persist(next); return { ok: true, label: record.label };
     } catch (error) { return { ok: false, reason: 'failed', error }; }
   }
@@ -179,7 +161,9 @@ if (typeof window !== 'undefined') {
 }
 export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : null;
 if (dataStore) {
-  dataStore.subscribe(state=>applyAppearance(state.settings.appearance));
+  try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;e.textContent='復原資料整理失敗，原資料已保留。'+error.message;}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
+  let expiryTimer;
+  dataStore.subscribe(state=>{applyAppearance(state.settings.appearance);clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;e.textContent=error.message;}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));});
   for(const method of ['transact','undo','redo']) {
     const original=dataStore[method];
     dataStore[method]=async(...args)=>{

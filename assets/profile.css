@@ -285,3 +285,15 @@ textarea { resize: vertical; }
 .favorite-add-row {display:flex;justify-content:center;margin-top:12px;}
 #add-favorite {min-height:44px;max-width:100%;}
 #favorite-help {overflow-wrap:anywhere;}
+/* Shared summary spans the portrait and radar; an empty motto has no row. */
+.profile-dashboard > .profile-summary-area {display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;min-height:0;grid-column:1 / -1;}
+.profile-summary-area #profile-stats {width:100%;min-height:0;text-align:center;overflow-wrap:anywhere;}
+.profile-summary-area #profile-motto {display:block;padding:0;text-align:center;max-width:100%;overflow-wrap:anywhere;}
+@media(min-width:1024px){.profile-dashboard > .profile-summary-area {grid-row:2;}.profile-dashboard > .profile-portrait-column,.profile-dashboard > .profile-content {grid-row:3;}}
+#abilities-title.sr-only {padding:0;}
+#profile-form .small-note[id$="-limit"] {display:inline;font-size:.875rem;color:var(--color-muted);}
+#portrait-settings > .image-action-row {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}
+#portrait-settings > .image-action-row > button {width:100%;min-width:0;padding-inline:4px;}
+#restart-confirm {width:min(600px,calc(100% - 32px));overflow-wrap:anywhere;}
+#restart-confirm .paired-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+#restart-confirm button {min-width:0;min-height:44px;white-space:normal;}
