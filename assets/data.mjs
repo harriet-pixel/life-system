@@ -160,9 +160,11 @@ if (dataStore) dataStore.subscribe(()=>{collectUnusedImages(window.localStorage,
 export const persistentUndo = dataStore && { getState: () => dataStore.getState(), undo: () => dataStore.undo(), redo: () => dataStore.redo(), subscribe: fn => dataStore.subscribe(() => fn(dataStore.getState())) };
 if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === STORAGE_KEY || e.key === null) dataStore.refresh(); });
 
-export function profileSummary(stats) {
+export function profileSummary(stats, order = 'experience-first') {
   const shown = value => value > 0 ? String(value) : '—';
-  return `Exp ${stats.experience > 0 ? formatSI(stats.experience) : '—'} ｜ Lv ${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
+  const experience = `Exp ${stats.experience > 0 ? formatSI(stats.experience) : '—'}`;
+  const level = `Lv ${shown(stats.level)}`;
+  return `${order === 'level-first' ? `${level} ｜ ${experience}` : `${experience} ｜ ${level}`} ｜ $ ${shown(stats.currency)}`;
 }
 export function abilityShares(abilities) {
   const total = abilities.reduce((sum,a) => sum + a.value, 0);

@@ -8,25 +8,25 @@
     <title>今日生活 · Life System</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
-    <link rel="stylesheet" href="assets/styles.css?v=current-page-navigation-4">
-    <script type="module" src="assets/home.js?v=bilingual-page-6"></script>
+    <link rel="stylesheet" href="assets/styles.css?v=redo-17">
+    <script type="module" src="assets/home.js?v=summary-order-25"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
     <div class="page-shell">
       <main id="main" tabindex="-1">
+        <div class="desktop-navigation" aria-label="電腦版導覽工具列">
+          <nav id="desktop-links" class="navigation-options" aria-label="主要導覽"></nav>
+          <button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button>
+        </div>
+
         <div class="intro">
           <div class="date-block"><span class="date-caption">示意日期</span><time datetime="2026-10-21"><span class="date-numbers">10<span class="date-divider">/</span>21</span><span class="date-detail">2026 年・星期三</span></time></div>
-          <div class="welcome-copy"><h1>慢慢成長，慢慢變好</h1><p class="eyebrow" lang="en">A little space for everyday life</p></div>
+          <div class="welcome-copy"><span id="current-page-name" class="current-page-name desktop-page-name"></span><h1>慢慢成長，慢慢變好</h1><p class="eyebrow" lang="en">A little space for everyday life</p></div>
         </div>
 
         <div class="dashboard">
-        <div class="desktop-navigation" aria-label="電腦版導覽工具列">
-          <span id="current-page-name" class="current-page-name"></span>
-          <nav id="desktop-links" class="navigation-options" aria-label="主要導覽" hidden></nav>
-          <button id="navigation-toggle" class="toolbar-button" type="button" aria-controls="desktop-links" aria-expanded="false" aria-label="展開導覽選項"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-          <button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button>
-        </div>
+
         <section class="companion" aria-label="夥伴對話" data-mode="mock">
           <div class="companion-banner">
             <div class="companion-portrait" data-emotion="neutral" role="img" aria-label="夥伴頭像佔位：平靜，尚未提供情緒立繪">
@@ -45,13 +45,9 @@
         <div class="daily-panel">
 
 
-        <div class="profile-summary" role="group" aria-label="個人資料摘要">
-          <span class="summary-stat" role="group" aria-label="人物等級：—"><span aria-hidden="true">Lv —</span></span>
-          <span class="summary-stat" role="group" aria-label="經驗值：—"><span class="summary-divider" aria-hidden="true">｜</span><span aria-hidden="true">Exp —</span></span>
-          <span class="summary-stat" role="group" aria-label="所持貨幣：—"><span class="summary-divider" aria-hidden="true">｜</span><span aria-hidden="true">$ —</span></span>
-        </div>
+        <div id="home-stats" class="profile-summary" role="group" aria-label="個人資料摘要">Lv — ｜ Exp — ｜ $ —</div>
 
-        <p class="demo-notice"><span class="demo-mark">示意資料</span><span>本頁為排版預覽；勾選僅供體驗，重新整理後會重設。</span></p>
+        <p class="demo-notice"><span class="demo-mark">示意資料</span><span>本頁為排版預覽；勾選僅供體驗，狀態與操作紀錄保存在此瀏覽器。</span></p>
 
         <div class="activity-region">
         <div class="activity-tabs" aria-label="今日行動切換" hidden>
