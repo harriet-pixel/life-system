@@ -37,13 +37,10 @@ input[type=checkbox],input[type=radio] { accent-color:var(--color-primary); }
 .swatches button {width:44px;height:44px;background:var(--swatch);border:2px solid var(--color-control-border);}
 .appearance-preview {border:1px solid var(--color-control-border);padding:20px;display:grid;gap:12px;}
 .appearance-preview .preview-tab {color:var(--color-primary);border-bottom:2px solid var(--color-primary);padding:8px;}
-.settings-page dialog {width:min(560px,calc(100% - 32px));}
 .settings-page .history-pagination {margin-block:16px;}
 .settings-page #history-panel {padding-inline:1em;}
 .settings-page .history-page-controls,.settings-page .history-step-controls {display:contents;}
 @media(min-width:1024px){.settings-content{max-width:960px;margin-inline:auto;}.storage-stats{grid-template-columns:repeat(4,minmax(0,1fr));}}
-.history-record-setting {display:flex;align-items:center;gap:8px;min-height:44px;}
-.history-record-setting input {min-width:20px;}
 .settings-content,.settings-section {grid-template-columns:minmax(0,1fr);}
 .settings-section input,.settings-section select,.settings-section label {min-width:0;}
 .settings-section input[type=file] {width:100%;}
