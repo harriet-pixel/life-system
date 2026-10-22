@@ -9,7 +9,7 @@
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
     <link rel="stylesheet" href="assets/styles.css?v=redo-17">
-    <link rel="stylesheet" href="assets/profile.css?v=gender-29">
+    <link rel="stylesheet" href="assets/profile.css?v=gender-fix-30">
     <script type="module" src="assets/profile.mjs?v=gender-29"></script>
   </head>
   <body class="profile-page"><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" tabindex="-1">
@@ -39,7 +39,7 @@
 <div class="settings-scroll">
 <section id="personal-settings" role="tabpanel" aria-labelledby="personal-settings-tab" tabindex="0">
 <p id="profile-help" class="small-note">可自由留白，填寫內容將作為未來 AI 夥伴生成與互動的參考。</p>
-<label>稱呼<input name="name" autocomplete="nickname"></label><div class="personal-details-row"><label>年紀<input name="age" inputmode="numeric" aria-describedby="age-error"><span id="age-error" class="field-error"></span></label><fieldset id="gender-options"><legend>性別</legend><input type="hidden" name="gender"><div class="gender-choices"><label class="gender-choice"><input type="checkbox" name="gender-choice" value="男">男</label><label class="gender-choice"><input type="checkbox" name="gender-choice" value="女">女</label></div></fieldset></div><label>一句話<input name="motto" aria-describedby="motto-help"><span id="motto-help" class="small-note">寫下一句想對自己說的話。</span></label><label>個人簡介<textarea name="bio" rows="1"></textarea></label><label>禁忌<textarea name="boundaries" rows="1"></textarea></label>
+<label>稱呼<input name="name" autocomplete="nickname"></label><div class="personal-details-row"><label>年紀<input name="age" inputmode="numeric" aria-describedby="age-error"><span id="age-error" class="field-error"></span></label><div id="gender-options" role="group" aria-labelledby="gender-label"><span id="gender-label">性別</span><input type="hidden" name="gender"><div class="gender-choices"><label class="gender-choice"><input type="checkbox" name="gender-choice" value="男">男</label><label class="gender-choice"><input type="checkbox" name="gender-choice" value="女">女</label></div></div></div><label>一句話<input name="motto" aria-describedby="motto-help"><span id="motto-help" class="small-note">寫下一句想對自己說的話。</span></label><label>個人簡介<textarea name="bio" rows="1"></textarea></label><label>禁忌<textarea name="boundaries" rows="1"></textarea></label>
 </section>
 <section id="values-settings" role="tabpanel" aria-labelledby="values-settings-tab" tabindex="0" hidden>
 <p class="small-note">修改等級會將總經驗值設為新等級 × 100，不影響能力值或貨幣。貨幣量可獨立修改。同次修改等級與能力時，先設定等級對應的經驗值，再加減能力差額。</p>
