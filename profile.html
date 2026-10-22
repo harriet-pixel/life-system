@@ -9,8 +9,8 @@
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/fonts/noto-serif-tc/font.css">
     <link rel="stylesheet" href="assets/styles.css?v=redo-17">
-    <link rel="stylesheet" href="assets/profile.css?v=crop-22">
-    <script type="module" src="assets/profile.mjs?v=crop-22"></script>
+    <link rel="stylesheet" href="assets/profile.css?v=slots-23">
+    <script type="module" src="assets/profile.mjs?v=slots-23"></script>
   </head>
   <body class="profile-page"><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" tabindex="-1">
         <div class="desktop-navigation" aria-label="電腦版導覽工具列">
@@ -51,7 +51,7 @@
 <button id="portrait-settings-tab" type="button" role="tab" aria-controls="portrait-settings" aria-selected="true">使用者立繪</button>
 <button id="avatar-settings-tab" type="button" role="tab" aria-controls="avatar-settings" aria-selected="false" tabindex="-1">使用者頭像</button>
 <button id="library-settings-tab" type="button" role="tab" aria-controls="library-settings" aria-selected="false" tabindex="-1">立繪選擇</button>
-</div><p id="image-status" class="small-note" role="status"></p>
+</div>
 <section id="portrait-settings" role="tabpanel" aria-labelledby="portrait-settings-tab" tabindex="0">
 <div class="draft-image-preview"><img id="draft-photo" alt="使用者立繪草稿預覽" hidden><span id="draft-photo-empty">尚未上傳立繪</span></div>
 <button id="choose-photo" type="button" aria-describedby="photo-help photo-error">選擇／更換立繪</button><input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-error" hidden>
@@ -63,19 +63,17 @@
 <button id="confirm-portrait-crop" type="button">確認裁切</button><button id="cancel-portrait-crop" type="button">取消裁切</button></div>
 </section><section id="avatar-settings" role="tabpanel" aria-labelledby="avatar-settings-tab" tabindex="0" hidden>
 <div class="draft-avatar-frame"><img id="draft-avatar" alt="使用者頭像草稿預覽" hidden><span id="draft-avatar-empty">尚未設定頭像</span></div>
-<button id="choose-avatar" type="button" aria-describedby="avatar-help avatar-error">選擇／更換頭像圖片</button><input id="avatar-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="avatar-help avatar-error" hidden>
-<p id="avatar-help" class="small-note">原始檔最大 20 MB；自動處理為最多 512 × 512px、200 KB 內的正方形頭像，可點選裁切調整，最後按共用儲存套用。</p>
-<button id="crop-from-photo" type="button" aria-describedby="crop-source-help">使用目前立繪裁切</button><p id="crop-source-help" class="small-note"></p><p id="avatar-error" class="field-error"></p>
-<button id="start-avatar-crop" type="button" hidden>裁切</button>
-<section id="avatar-crop" aria-label="正方形頭像裁切" hidden><p class="small-note">直接拖曳圖片並調整縮放，也可用方向鍵移動。切換頁籤保留草稿。</p>
+<button id="choose-avatar" type="button" aria-describedby="avatar-error">選擇／更換頭像圖片</button><input id="avatar-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="avatar-error" hidden>
+<div class="avatar-image-actions"><button id="start-avatar-crop" type="button" disabled>裁切</button><button id="crop-from-photo" type="button" aria-describedby="crop-source-help">使用目前立繪</button></div><p id="crop-source-help" class="sr-only"></p>
+<section id="avatar-crop" aria-label="正方形頭像裁切" hidden>
 <canvas id="crop-canvas" width="320" height="320" tabindex="0" aria-label="頭像裁切區，可拖曳圖片或用方向鍵移動"></canvas>
 <div class="crop-controls"><label>縮放<input id="crop-zoom" type="range" min="1" max="4" step="0.01" value="1"></label></div>
 <button id="confirm-avatar-crop" type="button">確認裁切</button><button id="cancel-avatar-crop" type="button">取消裁切</button>
-</section></section>
+</section><p id="avatar-error" class="field-error" role="alert"></p></section>
 <section id="library-settings" role="tabpanel" aria-labelledby="library-settings-tab" tabindex="0" hidden>
-<p id="portrait-count" class="small-note">已保存 0 / 5 個立繪</p><p id="portraits-empty" class="small-note">尚未保存立繪。</p><ul id="portrait-library" aria-label="已保存的立繪"></ul>
-<button id="collection-add" type="button" aria-describedby="portrait-limit-help portraits-error">新增立繪</button><p id="portrait-limit-help" class="small-note"></p><p id="portraits-error" class="field-error"></p>
-<section id="collection-editor" hidden aria-label="新增或更換收藏立繪"><p class="small-note">拖曳圖片並調整縮放，按新增或更換完成收藏草稿；最後仍須儲存設定。</p><canvas id="collection-canvas" width="300" height="400" tabindex="0" aria-label="收藏立繪裁切區，可拖曳或用方向鍵移動"></canvas><label>縮放<input id="collection-zoom" type="range" min="1" max="4" step="0.01" value="1"></label><button id="confirm-collection" type="button">新增</button><button id="cancel-collection" type="button">取消新增</button></section>
+<ul id="portrait-library" aria-label="立繪收藏，共五個位置" tabindex="-1"></ul>
+<section id="collection-editor" hidden aria-label="新增或更換收藏立繪"><canvas id="collection-canvas" width="300" height="400" tabindex="0" aria-label="收藏立繪裁切區，可拖曳或用方向鍵移動"></canvas><label>縮放<input id="collection-zoom" type="range" min="1" max="4" step="0.01" value="1"></label><button id="confirm-collection" type="button">新增</button><button id="cancel-collection" type="button">取消新增</button></section><p id="portraits-error" class="field-error" role="alert"></p>
 </section></section>
-</div><div class="settings-footer"><p id="form-error" role="alert"></p><div class="form-actions"><button id="save-settings" type="submit">儲存</button><button id="cancel-profile" type="button">取消</button></div>
-</div></form></dialog></body></html>
+</div><div class="settings-footer"><p id="image-status" class="small-note" role="status" aria-live="polite"></p><p id="form-error" role="alert"></p><div class="form-actions"><button id="save-settings" type="submit">儲存</button><button id="cancel-profile" type="button">取消</button></div>
+</div></form></dialog>
+<dialog id="portrait-actions-dialog" aria-labelledby="portrait-actions-title"><h2 id="portrait-actions-title" class="sr-only">立繪操作</h2><div class="portrait-dialog-actions"><button type="button" data-action="select">選用</button><button type="button" data-action="replace">更換</button><button type="button" data-action="delete">刪除</button></div><button id="close-portrait-actions" type="button" aria-label="關閉立繪操作">關閉</button></dialog></body></html>

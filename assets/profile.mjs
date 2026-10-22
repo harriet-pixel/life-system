@@ -1,5 +1,5 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { createProfileImages } from './profile-images.mjs?v=crop-22';
+import { createProfileImages } from './profile-images.mjs?v=slots-23';
 import { imageURL, prepareImageReferences } from './image-store.mjs?v=images-21';
 import { ABILITIES, validateManualStats } from './abilities.mjs?v=redo-17';
 import { undoManager } from './undo.mjs?v=images-21';
@@ -215,7 +215,7 @@ function clearErrors() {
 function fieldError(key,message,index) {
   selectSetting(index);if(ABILITIES.some(a=>a.id===key))$('#ability-edit-details').open=true;
   if(key==='photo')selectImage(0);if(key==='avatar')selectImage(1);if(key==='portraits')selectImage(2);
-  $('#form-error').textContent=message;const input=key==='photo'?$('#choose-photo'):key==='avatar'?$('#choose-avatar'):key==='portraits'?$('#collection-add'):form.elements[key];
+  $('#form-error').textContent=message;const input=key==='photo'?$('#choose-photo'):key==='avatar'?$('#choose-avatar'):key==='portraits'?$('#portrait-library'):form.elements[key];
   document.getElementById(`${key}-error`).textContent=message;input.setAttribute('aria-invalid','true');input.focus();
 }
 const imageDraft=createProfileImages({onError:(key,message)=>fieldError(key,message,1),onSelect:selectImage,onBusy:busy=>{imageBusy=busy;$('#save-settings').disabled=saving||busy;}});
