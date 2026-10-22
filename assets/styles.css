@@ -208,3 +208,8 @@ body[data-navigation="ready"] .page-shell { padding-bottom: calc(var(--bottom-na
 
 #home-stats { white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (min-width:1024px) { .welcome-copy > .desktop-page-name { margin-bottom: 8px; } }
+
+@media (max-width:1023px) {
+  .companion-portrait { border-radius: 50%; }
+  .companion-portrait img { object-fit: cover; }
+}
