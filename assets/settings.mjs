@@ -2,7 +2,7 @@ import {validateNewPassword,validateRestorePassword,validHex} from './validation
 import {dataStore,persistentUndo} from './data.mjs';
 import {initializeNavigation} from './navigation.mjs';
 import {createMobileTabPositioner} from './tab-position.mjs';
-import {createHistoryView} from './history-view.mjs';
+import {createHistoryView} from './history-view.mjs?v=settings-history-cache-20261023';
 import {auditImages,deleteUnusedImages} from './image-references.mjs';
 import {normalizeSettings,applyAppearance} from './settings-model.mjs';
 import {holdDraft} from './coordination.mjs';

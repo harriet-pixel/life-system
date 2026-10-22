@@ -21,10 +21,11 @@ GitHub儲存庫Settings → Pages → Build and deployment，使用 **Deploy fro
    ```
 
 2. 比較三頁與所有assets的實際內容；發布分支有獨有功能修正時先保留並安全整合回來源，不直接用較舊main覆蓋。
-3. 在最新來源執行lint、單元與變更相關瀏覽器測試。從乾淨的work/build執行 `npm run build`，避免殘留已移除資產；對建置後的子路徑再次驗證。
-4. 將來源更新提交並安全推送main。發布commit必須以最新gh-pages為parent，tree為work/build中的index.html、profile.html、settings.html與完整assets，另保留.nojekyll、CNAME及既有必要發布設定。三種自託管字型、LICENSE、SOURCE.md均包含，不沿用舊單頁白名單。不發布Git、測試、文件、截圖、中繼檔或環境憑證。
-5. 逐檔確認產物與發布tree一致，推送前核對遠端是否新增提交。使用非強制的fast-forward推送；需要同時更新兩分支時可用atomic push。不可直接將gh-pages指向原始碼commit，也不改寫歷史。
-6. 查明對應發布SHA的 **pages build and deployment** workflow成功；再檢查公開三頁、互相導覽、必要JS／CSS與字型資源。推送、部署與公開網站實測是三個不同結果。
+3. 若HTML結構與模組配套變更，必須同步更新HTML入口、相關樣式及變更子模組的URL版本；只更新入口不會使未版本化的import失效。以 tests/settings-cache.cjs 驗證暖快取升級，不要求使用者清除儲存。
+4. 在最新來源執行lint、單元與變更相關瀏覽器測試。從乾淨的work/build執行 `npm run build`，避免殘留已移除資產；對建置後的子路徑再次驗證。
+5. 將來源更新提交並安全推送main。發布commit必須以最新gh-pages為parent，tree為work/build中的index.html、profile.html、settings.html與完整assets，另保留.nojekyll、CNAME及既有必要發布設定。三種自託管字型、LICENSE、SOURCE.md均包含，不沿用舊單頁白名單。不發布Git、測試、文件、截圖、中繼檔或環境憑證。
+6. 逐檔確認產物與發布tree一致，推送前核對遠端是否新增提交。使用非強制的fast-forward推送；需要同時更新兩分支時可用atomic push。不可直接將gh-pages指向原始碼commit，也不改寫歷史。
+7. 查明對應發布SHA的 **pages build and deployment** workflow成功；再檢查公開三頁、互相導覽、必要JS／CSS與字型資源。推送、部署與公開網站實測是三個不同結果。
 
 OAuth未設定時維持空的公開client ID；若管理者完成Console設定，建置可提供公開 `GOOGLE_OAUTH_CLIENT_ID`。不把secret、token或私鑰放入前端；細節見 [SETTINGS.md](SETTINGS.md)。
 
