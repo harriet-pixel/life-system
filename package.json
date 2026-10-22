@@ -1,0 +1,10 @@
+{
+  "name": "life-system",
+  "private": true,
+  "scripts": {
+    "lint": "node scripts/check.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/settings.cjs"
+  }
+}

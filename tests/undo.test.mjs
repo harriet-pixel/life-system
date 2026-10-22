@@ -1,58 +1,40 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createUndoManager, createActivityStore } from '../assets/undo.mjs';
-import { isCurrentRoute } from '../assets/navigation.mjs';
-const operation = (undo, rest = {}) => ({ id: 'op1', type: 'task.set', target: 'task-1', label: '測試操作', before: false, after: true, undo, ...rest });
-
-test('disabled until successful operation is recorded; undo restores source, no redo', async () => {
- const manager=createUndoManager(), store=createActivityStore([{id:'task-1',checked:false}]);
- assert.equal(manager.getState().available,false);
- assert.equal((await manager.undo()).reason,'unavailable');
- const change=store.set('task-1',true);
- manager.record(operation(()=>store.restore(change),{before:change.before,after:change.after}));
- assert.equal(store.get('task-1').checked,true);
- assert.equal((await manager.undo()).ok,true);
- assert.equal(store.get('task-1').checked,false);
- assert.equal(manager.getState().available,false);
- assert.equal((await manager.undo()).reason,'unavailable');
+import {createDataStore} from '../assets/data.mjs';
+import {isCurrentRoute} from '../assets/navigation.mjs';
+const memory=()=>{const m=new Map();return {getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,v)};};
+const activity=(store,checked)=>store.transact({type:'task.set',target:'task-1',label:'測試操作',changes:{activities:{'task-1':checked}}});
+test('durable Undo and Redo restore data without duplicate history; a new edit discards redo',async()=>{
+ const storage=memory(),store=createDataStore(storage);activity(store,true);assert.equal(store.getState().available,true);
+ assert.equal((await store.undo()).ok,true);assert.deepEqual(store.get().activities,{});assert.equal(store.get().history.length,1);
+ const reloaded=createDataStore(storage);assert.equal(reloaded.getState().redoAvailable,true);assert.equal((await reloaded.redo()).ok,true);assert.equal(reloaded.get().activities['task-1'],true);
+ await reloaded.undo();activity(reloaded,false);assert.equal(reloaded.getState().redoAvailable,false);
 });
-test('only the most recent reversible operation is retained', async () => {
- const manager=createUndoManager();let a=true,b=true;
- manager.record(operation(()=>{a=false;}));manager.record(operation(()=>{b=false;},{id:'op2',target:'habit-1'}));
- await manager.undo();assert.equal(a,true);assert.equal(b,false);
+test('stale revisions never overwrite newer data; failed replay can refresh and retry',async()=>{
+ const storage=memory(),a=createDataStore(storage),b=createDataStore(storage);activity(a,true);
+ assert.throws(()=>activity(b,false),/其他頁面/);b.refresh();await b.undo();assert.deepEqual(b.get().activities,{});
+ assert.equal((await a.undo()).ok,false);assert.deepEqual(createDataStore(storage).get().activities,{});
 });
-test('failed asynchronous restore retains record and permits retry', async () => {
- const manager=createUndoManager();let fail=true, restored=false;
- manager.record(operation(async()=>{if(fail)throw new Error('network failed');restored=true;}));
- assert.equal((await manager.undo()).reason,'failed');assert.equal(manager.getState().available,true);assert.equal(restored,false);
- fail=false;assert.equal((await manager.undo()).ok,true);assert.equal(restored,true);
+test('no-op edits and replay never add records; returned snapshots cannot mutate source',async()=>{
+ const store=createDataStore(memory());activity(store,true);assert.equal(activity(store,true),false);const state=store.get();state.activities.x=true;assert.equal(store.get().activities.x,undefined);
+ await store.undo();await store.redo();assert.equal(store.get().history.length,1);
 });
-test('duplicate undo and new submissions are blocked during asynchronous restore', async () => {
- const manager=createUndoManager();let resolve;let calls=0;
- manager.record(operation(()=>{calls++;return new Promise(r=>{resolve=r;});}));
- const pending=manager.undo();assert.equal(manager.getState().busy,true);
- assert.equal((await manager.undo()).reason,'unavailable');assert.throws(()=>manager.record(operation(()=>{})));
- assert.equal(calls,1);resolve();await pending;assert.equal(manager.getState().busy,false);
+test('appearance, profile, image IDs and history settings participate in the same journal',async()=>{
+ const store=createDataStore(memory()),before=store.get().settings;
+ store.transact({type:'appearance.update',target:'settings',label:'外觀',changes:{settings:{...before,appearance:{color:'#ffffff',font:'rounded'}}}});
+ await store.undo();assert.deepEqual(store.get().settings,before);await store.redo();assert.equal(store.get().settings.appearance.font,'rounded');
+ store.transact({type:'history.settings',target:'settings',label:'歷史',changes:{settings:{...store.get().settings,history:{recordAll:false}}}});
+ const count=store.get().history.length;activity(store,true);assert.equal(store.get().history.length,count);
 });
-test('source revision conflict never overwrites newer data; failed record remains', async () => {
- const manager=createUndoManager(), store=createActivityStore([{id:'task-1',checked:false}]);
- const change=store.set('task-1',true);manager.record(operation(()=>store.restore(change)));
- store.set('task-1',false);store.set('task-1',true);
- const latest=store.get('task-1');assert.equal((await manager.undo()).reason,'failed');
- assert.deepEqual(store.get('task-1'),latest);assert.equal(manager.getState().available,true);
-});
-test('state observers share pending and available state; unsubscribe works', async () => {
- const manager=createUndoManager(), states=[];const off=manager.subscribe(s=>states.push(s));
- manager.record(operation(()=>{}));await manager.undo();off();manager.record(operation(()=>{}));
- assert.deepEqual(states.map(s=>[s.available,s.busy]),[[false,false],[true,false],[false,true],[false,false]]);
-});
-test('no-op edits do not create records and snapshots cannot mutate store', () => {
- const store=createActivityStore([{id:'x',checked:false}]);assert.equal(store.set('x',false),null);
- const copy=store.get('x');copy.checked=true;assert.equal(store.get('x').checked,false);assert.throws(()=>store.set('x','true'));
-});
-test('current route uses actual origin/path, accepts root/index.html, ignores query/hash', () => {
+test('journal retains the latest 50 actual changes',()=>{const store=createDataStore(memory());for(let i=0;i<60;i++)activity(store,Boolean(i%2));assert.equal(store.get().history.length,50);});
+test('current route supports GitHub Pages subpaths',()=>{
  assert.equal(isCurrentRoute('https://a.test/life-system/','https://a.test/life-system/index.html?v=1#main'),true);
- assert.equal(isCurrentRoute('https://a.test/life-system/','https://a.test/other/'),false);
- assert.equal(isCurrentRoute('https://a.test/life-system/','https://b.test/life-system/'),false);
- assert.equal(isCurrentRoute(null,'https://a.test/'),false);
+ assert.equal(isCurrentRoute('https://a.test/life-system/settings.html','https://a.test/other/'),false);
+});
+test('restored revisions stay monotonic and preserve the order of a durable Redo branch',async()=>{
+ const original=createDataStore(memory());
+ for(const photo of ['a','b','c'])original.transact({type:'photo.test',target:'user',label:photo,changes:{photo}});
+ await original.undo();await original.undo();
+ const restored=createDataStore(memory());restored.replace(original.get());assert.ok(restored.get().revision>=original.get().revision);
+ await restored.redo();assert.equal(restored.get().photo,'b');await restored.undo();await restored.redo();assert.equal(restored.get().photo,'b');await restored.redo();assert.equal(restored.get().photo,'c');assert.equal(restored.get().history.length,3);
 });

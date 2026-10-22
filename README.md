@@ -56,3 +56,7 @@ BASE_URL=http://127.0.0.1:3000 node tests/home.cjs
 ## 響應式導覽與單步 Undo
 
 實作方式、可用／未開放頁面、記憶體資料來源與後續持久化限制，見 `NAVIGATION_UNDO.md`。測試：`node --test tests/undo.test.mjs tests/companion.test.mjs`，另執行 `tests/navigation.cjs` 驗證導覽與 Undo UI。
+
+## 設定頁
+
+新增 `settings.html`，共用儲存空間管理、歷史與 Undo／Redo、手動本機／Google Drive 加密備份還原，以及主題／字型設定。三頁共用資料、設定、圖片與跨分頁鎖；沒有另建網站或自動同步／上傳／清理。實作與 Google Console 手動設定見 [SETTINGS.md](SETTINGS.md)。目前驗證使用 `npm run lint`、`npm run build`、`npm test`；瀏覽器驗證用 `npm run test:browser`、`node tests/home.cjs`、`node tests/navigation.cjs`、`node tests/home-summary.cjs`、`node tests/google-drive.cjs`。後者的 Google 測試為 mock，真實 OAuth 需設定後實測。

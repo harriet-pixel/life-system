@@ -24,3 +24,9 @@
 先前雲端網路代理曾拒絕 `api.github.com` 與 `harriet-pixel.github.io`。本輪開始時公開首頁已回傳 HTTP 200；後續仍須針對每次發布驗證，不能以 Git 推送成功取代部署確認。若再次受阻，在雲端環境網路設定允許這兩個網域後重試。GitHub 驗證使用平台既有認證，不要把 token 放進文件或對話。
 
 發布時一併保留 assets/fonts/noto-serif-tc/ 的 font.css、files/ WOFF2 字型檔與 LICENSE；SOURCE.md 記錄來源。字型由本站提供，不需訪客連線第三方字型服務。
+
+## 設定頁整合後的發布範圍
+
+現在使用 `npm run build` 將三頁（`index.html`、`profile.html`、`settings.html`）及整個 `assets/` 輸出至 `work/build/`。這是可選的靜態檔案打包／公開 OAuth client ID 注入步驟，網站執行仍不需要 Node 或後端。完整資產（含三種字型及 LICENSE）不可再沿用前述舊版單頁資產白名單。`work/build/` 不包含 Git、測試、開發文件或環境憑證。
+
+`main` 與 `gh-pages` 是不同分支；推送 `main` 不表示 GitHub Pages 已更新。發布至既有 gh-pages 必須另檢查其最新版本及部署設定，不應以 main 推送成功宣稱網站已上線。設定格式、字型、Google Console 與驗證細節見 `SETTINGS.md`。

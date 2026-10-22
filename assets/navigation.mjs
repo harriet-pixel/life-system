@@ -8,7 +8,7 @@ export const navigationItems = Object.freeze([
   { id: 'companion', label: '我的夥伴', href: null, available: false },
   { id: 'profile', label: '我的資料', englishLabel: 'My Profile', href: new URL('../profile.html', import.meta.url).href, available: true },
   { id: 'chat', label: '聊天室', href: null, available: false },
-  { id: 'settings', label: '設定', href: null, available: false },
+  { id: 'settings', label: '設定', englishLabel:'Settings', href: new URL('../settings.html', import.meta.url).href, available: true },
 ].map(Object.freeze));
 
 export function isCurrentRoute(href, locationURL) {

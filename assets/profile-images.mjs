@@ -1,5 +1,5 @@
-import {createImageCropper,readImageFile,decodeImage} from './avatar-crop.mjs?v=crop-22';
-import {imageURL} from './image-store.mjs?v=images-21';
+import {createImageCropper,readImageFile,decodeImage} from './avatar-crop.mjs';
+import {imageURL} from './image-store.mjs';
 const $=selector=>document.querySelector(selector);
 export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   let session=0,jobs=0,opened=false,base,photo,avatar,portraits=[],currentId=null,manualAvatar=false,newPhoto=false,slotTarget=null;
