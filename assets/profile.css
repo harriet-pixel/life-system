@@ -45,7 +45,6 @@ textarea { resize: vertical; }
 .profile-page #profile-stats > span { min-width: 0px; overflow-wrap: anywhere; }
 .tab-english { font-size: 0.875rem; letter-spacing: normal; }
 #ability-radar text { font-size: 1rem; }
-.history-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
 .history-pagination button, #photo-settings button { min-height: 44px; font: inherit; padding: 8px 12px; color: var(--color-primary); border: 1px solid var(--color-primary); background: white; }
 .history-pagination button:disabled, #photo-settings button:disabled { color: var(--color-muted); opacity: 0.6; }
 #profile-dialog { width: min(462px, 100% - 32px); height: calc(100dvh - 32px); max-height: 860px; padding: 20px; overflow: hidden; }
@@ -81,8 +80,6 @@ textarea { resize: vertical; }
 }
 #abilities-panel, #history-panel { padding-inline: 1em; min-width: 0px; }
 .history-pagination button { border: 0px; }
-.history-jump { display: inline-flex; align-items: center; gap: 0.5em; }
-#history-jump { min-height: 44px; min-width: 3.5em; font: inherit; color: var(--color-primary); background: white; border: 0px; padding: 8px; }
 @media (min-width: 1024px) {
   .profile-portrait-column { display: flex; flex-direction: column; gap: 24px; grid-area: 2 / 1; align-self: start; }
   .profile-page .profile-content { grid-area: 2 / 2; }
@@ -125,16 +122,10 @@ textarea { resize: vertical; }
 @media (min-width: 1024px) {
   .profile-portrait-column > #operation-status { padding-top: 12px; overflow-wrap: anywhere; }
 }
-.history-page-controls, .history-step-controls { display: contents; }
 @media (max-width: 1023px) {
   .profile-page .personal-heading { padding-bottom: 0px; margin-bottom: -18px; }
   .profile-page #profile-stats { font-size: 1.125rem; }
-  .history-pagination { flex-flow: row; gap: 4px; margin-bottom: 12px; }
-  .history-page-controls, .history-step-controls { display: contents; }
-  .history-jump { display: none; }
-  #history-page { white-space: nowrap; }
 }
-.history-direct-jump { display: none; }
 .image-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); }
 .draft-image-preview { display: grid; place-items: center; min-height: 80px; }
 .draft-image-preview img { max-width: 100%; max-height: 180px; object-fit: contain; }
@@ -142,13 +133,7 @@ textarea { resize: vertical; }
 #portrait-canvas { width: min(100%, 320px); height: auto; justify-self: center; touch-action: none; cursor: move; border: 1px solid var(--color-control-border); }
 #portrait-settings, #avatar-settings, #library-settings { align-content: start; }
 @media (max-width: 1023px) {
-  .history-pagination { display: grid; grid-template-columns: 44px auto 44px; gap: 6px; justify-content: center; }
   .history-pagination button, #history-page { font-size: 1rem; white-space: nowrap; }
-  .history-pagination #history-previous, .history-pagination #history-next { width: 44px; min-width: 44px; padding-inline: 0px; }
-  .history-direct-jump { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0px; }
-  .history-direct-jump label { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; min-width: 0px; }
-  #history-input { width: 3em; max-width: 100%; min-width: 44px; min-height: 44px; font: inherit; color: var(--color-primary); background: white; border: 1px solid var(--color-control-border); padding: 4px; text-align: center; }
-  #history-page-error { grid-column: 1 / -1; overflow-wrap: anywhere; }
   #history-retention-note { text-align: center; }
 }
 #photo-settings .image-tabs button:focus-visible { outline: 3px solid var(--color-text); outline-offset: 3px; }
@@ -241,3 +226,12 @@ textarea { resize: vertical; }
 #restart-confirm .paired-actions { display: grid; grid-template-columns: repeat(2, minmax(0px, 1fr)); }
 #restart-confirm button { min-width: 0px; min-height: 44px; white-space: normal; }
 #profile-dialog .settings-footer > .form-actions { justify-content: flex-end; }
+
+/* One shared pagination row at every viewport width. */
+.history-pagination {display:grid;grid-template-columns:44px auto minmax(0,auto) 44px;align-items:center;justify-content:center;gap:4px;}
+.history-jump {display:flex;align-items:center;gap:2px;white-space:nowrap;min-width:0;}
+#history-page {white-space:nowrap;}
+#history-jump {min-width:44px;min-height:44px;max-width:100%;font:inherit;color:var(--color-primary);background:white;border:1px solid var(--color-control-border);padding:4px;}
+.history-pagination #history-previous,.history-pagination #history-next {width:44px;min-width:44px;padding-inline:0;}
+#history-page-error {grid-column:1 / -1;overflow-wrap:anywhere;}
+@media(max-width:450px){.history-pagination,.history-pagination button,#history-page {font-size:.875rem;}}
