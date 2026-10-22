@@ -75,3 +75,10 @@ export async function stageImageAssets(entries) {
 }
 
 if(typeof window!=='undefined')window.addEventListener('pagehide',()=>{for(const id of [...urls.keys()])revokeImageURL(id);});
+// Compare bytes across saved asset IDs and unsaved data URLs without persisting.
+export async function imageFingerprint(reference){
+ if(isImageReference(reference))return reference;
+ if(typeof reference!=='string'||!/^data:image\/(png|jpeg|webp);base64,/.test(reference))throw new Error('無法確認圖片內容，未加入最愛。');
+ const bytes=await (await (await fetch(reference)).blob()).arrayBuffer();
+ return 'asset:'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
+}

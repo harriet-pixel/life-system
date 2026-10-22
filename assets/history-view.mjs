@@ -1,3 +1,4 @@
+import {validateHistoryPage} from './validation.mjs';
 import {ABILITIES} from './abilities.mjs';
 const fields = { name: '稱呼', age: '年齡', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', portraits:'立繪收藏', photoEdit:'立繪裁切', avatarEdit:'頭像裁切', currentPortraitId:'選用立繪', level: '等級', restart:'重新開始', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
 const element=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;return el;};
@@ -14,8 +15,8 @@ export function historyRow(record,state) {
 
 export function createHistoryView({store:dataStore,afterRender=()=>{},root=document}) {
 const $=selector=>root.querySelector(selector);
-const label=document.createElement('label'),checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.id='history-record-all';label.append(checkbox,document.createTextNode('記錄所有動作（只記錄資料變更）'));label.className='history-record-setting';
-const hint=document.createElement('p');hint.className='small-note';hint.textContent='預設開啟，保留最近 50 筆；關閉後只保留設定變更的新紀錄。既有紀錄仍保留，狀態衝突時無法撤銷。';
+const label=document.createElement('label'),checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.id='history-record-all';label.append(checkbox,document.createTextNode('記錄操作歷史'));label.className='history-record-setting';
+const hint=document.createElement('p');hint.className='small-note';hint.textContent='記錄待辦、打卡與資料修改，不記錄瀏覽或歷史紀錄本身的變動。';
 $('#history-retention-note').before(label,hint);
 checkbox.addEventListener('change',async()=>{const selected=checkbox.checked;checkbox.disabled=true;try{await dataStore.transact({type:'history.settings',label:'已更新歷史紀錄設定',target:'settings',fields:[],changes:{settings:{...dataStore.get().settings,history:{recordAll:selected}}}});}catch(error){const status=document.querySelector('#operation-status');status.hidden=false;status.textContent=error.message;}finally{checkbox.disabled=false;checkbox.checked=dataStore.get().settings.history.recordAll;}});
 const HISTORY_PAGE_SIZE = 5;
@@ -43,12 +44,11 @@ function renderHistory(state = dataStore.get()) {
 }
 function jumpToHistoryPage(){
   const text=$('#history-input').value.trim(),total=Math.ceil(dataStore.get().history.length/HISTORY_PAGE_SIZE);
-  if(!/^\d+$/.test(text)||!Number.isSafeInteger(Number(text))||Number(text)<1||Number(text)>total){$('#history-page-error').textContent=`請輸入 1 至 ${total} 的整數頁碼。`;$('#history-page-error').hidden=false;$('#history-input').setAttribute('aria-invalid','true');return;}
-  historyPage=Number(text);renderHistory();
+  try{historyPage=validateHistoryPage(text,total);renderHistory();}catch(error){$('#history-page-error').textContent=error.message;$('#history-page-error').hidden=false;$('#history-input').setAttribute('aria-invalid','true');}
 }
 $('#history-go').addEventListener('click',jumpToHistoryPage);
 $('#history-input').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();jumpToHistoryPage();}});
-$('#history-jump').addEventListener('change',event=>{historyPage=Number(event.target.value);renderHistory();});
+$('#history-jump').addEventListener('change',event=>{try{historyPage=validateHistoryPage(event.target.value,Math.ceil(dataStore.get().history.length/HISTORY_PAGE_SIZE));renderHistory();}catch(error){$('#history-page-error').textContent=error.message;$('#history-page-error').hidden=false;}});
 $('#history-previous').addEventListener('click',()=>{historyPage--;renderHistory();});
 $('#history-next').addEventListener('click',()=>{historyPage++;renderHistory();});
 

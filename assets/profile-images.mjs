@@ -5,7 +5,7 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   let session=0,jobs=0,opened=false,base,photo,avatar,portraits=[],currentId=null,manualAvatar=false,newPhoto=false,slotTarget=null;
   let editingPhoto=false,editingAvatar=false,collectionMode=false,pendingCollection=null,collectionSlot=null,photoWorkingBase=null,avatarWorkingBase=null;
   let photoVersion=0,uploadVersion=0,avatarVersion=0,timer,scheduled=false,photoError='',avatarError='';
-  const updateBusy=()=>{const busy=jobs>0||scheduled;onBusy(busy);$('#image-status').hidden=!busy;$('#image-status').textContent=busy?'圖片處理中，請稍候。':'';$('#crop-from-photo').disabled=!photo?.result||busy;};
+  const updateBusy=()=>{const busy=jobs>0||scheduled;onBusy(busy);$('#image-status').hidden=!busy;$('#image-status').textContent=busy?'圖片處理中，請稍候。':'';$('#crop-from-photo').disabled=!photo?.result||busy;$('#add-favorite').disabled=!photo?.result||editingPhoto||busy;};
   async function job(work){const token=session;jobs++;updateBusy();try{return await work(token);}finally{if(token===session){jobs--;updateBusy();}}}
   const active=token=>opened&&token===session;
   const fail=(field,error,index=field==='avatar'?1:0)=>{if(!opened)return;if(field==='avatar')avatarError=error.message;else if(field==='photo')photoError=error.message;onError(field,error.message,index);};
@@ -20,7 +20,7 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   $('#confirm-portrait-crop').addEventListener('click',async()=>{if(!photo)return;const token=session;photoError='';$('#photo-error').textContent='';photo.changed=true;photo.dirty=true;photoVersion++;try{await flushPhoto();if(active(token))setEditing('photo',false);}catch(error){if(active(token))fail('photo',error);}});
   $('#confirm-avatar-crop').addEventListener('click',async()=>{if(!avatar)return;const token=session;avatarError='';$('#avatar-error').textContent='';try{await job(async token=>{const model=avatar,result=await avatarEditor.export();if(!active(token)||avatar!==model)return;Object.assign(avatar,{result,crop:avatarEditor.crop,changed:true,dirty:false});manualAvatar=true;avatarVersion++;setEditing('avatar',false);});}catch(error){if(active(token))fail('avatar',error);}});
   $('#cancel-collection').addEventListener('click',()=>{pendingCollection=null;collectionEditor.clear();$('#collection-editor').hidden=true;});
-  $('#confirm-collection').addEventListener('click',async()=>{if(!pendingCollection)return;const token=session,model=pendingCollection;try{await job(async token=>{const result=await collectionEditor.export();if(!active(token)||pendingCollection!==model)return;if(!portraits.some(item=>item.id===model.target)&&portraits.length>=6)throw new Error('最多保存 6 個立繪，請先刪除或更換。');const slots=librarySlots(),existing=slots.findIndex(item=>item?.id===model.target),available=Number.isInteger(model.slot)&&!slots[model.slot]?model.slot:slots.indexOf(null);const item={id:model.target??crypto.randomUUID(),slot:existing>=0?existing:available,source:model.source,image:result,crop:collectionEditor.crop},index=portraits.findIndex(p=>p.id===item.id);if(index<0)portraits.push(item);else portraits[index]=item;pendingCollection=null;$('#portraits-error').textContent='';$('#collection-editor').hidden=true;collectionEditor.clear();updateLibrary();$('#portrait-library').children[item.slot]?.querySelector('button').focus();});}catch(error){if(active(token))fail('portraits',error,2);}});
+  $('#confirm-collection').addEventListener('click',async()=>{if(!pendingCollection)return;const token=session,model=pendingCollection;try{await job(async token=>{const result=await collectionEditor.export();if(!active(token)||pendingCollection!==model)return;const {imageFingerprint}=await import('./image-store.mjs');const fingerprint=await imageFingerprint(result);if(!active(token))return;const existingFingerprints=await Promise.all(portraits.filter(p=>p.id!==model.target).map(p=>imageFingerprint(p.image)));if(!active(token))return;if(existingFingerprints.includes(fingerprint))throw new Error('這張圖片已在最愛中。');if(!portraits.some(item=>item.id===model.target)&&portraits.length>=6)throw new Error('最多保存 6 個立繪，請先刪除或更換。');const slots=librarySlots(),existing=slots.findIndex(item=>item?.id===model.target),available=Number.isInteger(model.slot)&&!slots[model.slot]?model.slot:slots.indexOf(null);const item={id:model.target??crypto.randomUUID(),slot:existing>=0?existing:available,source:model.source,image:result,crop:collectionEditor.crop},index=portraits.findIndex(p=>p.id===item.id);if(index<0)portraits.push(item);else portraits[index]=item;pendingCollection=null;$('#portraits-error').textContent='';$('#collection-editor').hidden=true;collectionEditor.clear();updateLibrary();$('#portrait-library').children[item.slot]?.querySelector('button').focus();});}catch(error){if(active(token))fail('portraits',error,2);}});
   async function paintImage(target,reference){
     const token=session;target.dataset.reference=reference??'';
     if(!reference){target.hidden=true;target.removeAttribute('src');return;}
@@ -52,7 +52,10 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   actionDialog.addEventListener('close',()=>{if(actionTrigger?.isConnected&&$('#profile-dialog').open)actionTrigger.focus({preventScroll:true});actionTrigger=null;});
   $('#close-portrait-actions').addEventListener('click',()=>actionDialog.close());
   function renderDraft(){
-    $('#draft-photo-empty').hidden=Boolean(photo?.result);$('#portrait-editor').hidden=!photo?.result||!editingPhoto;$('#start-portrait-crop').hidden=!photo?.result||editingPhoto;
+    $('#draft-photo-empty').hidden=Boolean(photo?.result);$('#portrait-editor').hidden=!photo?.result||!editingPhoto;$('#start-portrait-crop').hidden=editingPhoto;$('#start-portrait-crop').disabled=!photo?.result;
+    $('#choose-photo').textContent=photo?.result?'更換立繪':'選擇立繪';
+    $('#add-favorite').disabled=!photo?.result||editingPhoto||jobs>0||scheduled;
+    $('#favorite-help').textContent=editingPhoto?'請先確認或取消立繪裁切，再添加到最愛。':!photo?.result?'請先選擇立繪，再添加到最愛。':'';
     $('#draft-avatar-empty').hidden=Boolean(avatar?.result)||avatarEditor.ready;$('#avatar-crop').hidden=!avatarEditor.ready||!editingAvatar;$('#start-avatar-crop').disabled=!avatarEditor.ready||editingAvatar;
     paintImage($('#draft-photo'),photo?.result).catch(error=>fail('photo',error));paintImage($('#draft-avatar'),avatar?.result).catch(error=>fail('avatar',error));
     $('#crop-from-photo').disabled=!photo?.result||jobs>0||scheduled;
@@ -70,7 +73,8 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
     return job(async token=>{
       const result=await portraitEditor.export();if(!active(token)||photo!==model||version!==photoVersion)return;
       photo.result=result;photo.crop=portraitEditor.crop;photo.dirty=false;
-      const item=portraits.find(item=>item.id===currentId);if(item)Object.assign(item,{source:photo.source,crop:photo.crop,image:result});
+      // Editing the active portrait never mutates a saved favourite.
+      currentId=null;
       if(newPhoto&&!manualAvatar)await setAvatar(result,{automatic:true,top:true});if(active(token))renderDraft();
     });
   }
@@ -82,18 +86,26 @@ export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
   async function uploadPhoto(file,target,asCollection=false,requestedSlot=null){
     const version=++uploadVersion;
     if(!opened)return;
-    if(!target&&portraits.length>=6){onError('photo','最多保存 6 個立繪，請先到「我的最愛」刪除或更換既有項目。',0);return;}
+    if(asCollection&&!target&&portraits.length>=6){onError('photo','最多保存 6 個立繪，請先到「我的最愛」刪除或更換既有項目。',0);return;}
     photoError='';
     try{await job(async token=>{
       const {url,image}=await readImageFile(file);if(!active(token)||version!==uploadVersion)return;
       if(asCollection){collectionEditor.setImage(image);pendingCollection={source:url,target,slot:requestedSlot};$('#collection-editor').hidden=false;$('#confirm-collection').textContent=target?'更換':'新增';$('#cancel-collection').textContent=target?'取消更換':'取消新增';$('#photo-input').value='';$('#collection-canvas').focus();return;}
       portraitEditor.setImage(image);const result=await portraitEditor.export();if(!active(token)||version!==uploadVersion)return;editingPhoto=false;photo={source:url,result,crop:portraitEditor.crop,changed:true,dirty:false};newPhoto=true;photoVersion++;
-      currentId=target??crypto.randomUUID();const item={id:currentId,source:url,image:result,crop:photo.crop};const index=portraits.findIndex(p=>p.id===currentId);if(index<0)portraits.push(item);else portraits[index]=item;
+      currentId=null;
       if(!manualAvatar)await setAvatar(result,{automatic:true,top:true});
       if(!active(token)||version!==uploadVersion)return;
       $('#photo-input').value='';$('#photo-error').textContent='';renderDraft();onSelect(0);
     });}catch(error){if(version===uploadVersion)fail(asCollection?'portraits':'photo',error,asCollection?2:0);}
   }
+  $('#add-favorite').addEventListener('click',()=>{if(!photo?.result||editingPhoto||jobs||scheduled)return;job(async token=>{
+    const {imageFingerprint}=await import('./image-store.mjs');const fingerprint=await imageFingerprint(photo.result);
+    const fingerprints=await Promise.all(portraits.map(p=>imageFingerprint(p.image)));
+    if(!active(token))return;
+    if(fingerprints.includes(fingerprint)){$('#favorite-help').textContent='這張圖片已在最愛中。';return;}
+    if(portraits.length>=6){$('#favorite-help').textContent='最愛已滿（6 張），請先手動刪除或更換。';return;}
+    const slot=librarySlots().indexOf(null);portraits.push({id:crypto.randomUUID(),slot,source:photo.source,image:photo.result,crop:structuredClone(photo.crop)});updateLibrary();$('#favorite-help').textContent='已添加到最愛草稿，按「儲存」後保存；取消會還原。';
+  }).catch(error=>fail('photo',error));});
   $('#choose-photo').addEventListener('click',()=>{slotTarget=null;collectionMode=false;$('#photo-input').click();});
 
   $('#photo-input').addEventListener('change',event=>{const file=event.target.files[0],target=slotTarget;slotTarget=null;if(file)uploadPhoto(file,target,collectionMode,collectionSlot);});

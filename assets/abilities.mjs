@@ -1,3 +1,5 @@
+import {integerValue} from './validation.mjs';
+export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([
   { id: 'physique', name: '體魄', definition: '身體健康、體力、協調與身體照護。', examples: ['運動', '伸展', '睡眠管理', '飲食照護'] },
@@ -16,13 +18,6 @@ export const ALLOCATION_PRINCIPLES = Object.freeze([
 export const VALUE_RULES = Object.freeze({ initialValue: 0, initialLevel: 1, minimumExperience: 100, experiencePerLevel: 100, growth: Object.freeze({ experienceMultiplier: 1, currencyMultiplier: 1, abilityAllocationMustEqualReward: true, description: '貨幣增加量 = 總經驗值增加量 = 五項能力增加量合計' }), manual: '能力差額增減內部總經驗，最低 100；畫面經驗為內部總經驗減 100；手動等級至少 1，先設等級 × 100 再套用能力差額；貨幣獨立修改', spending: '只扣貨幣且不得低於 0', activityRewards: null });
 export const levelFromExperience = experience => Math.max(VALUE_RULES.initialLevel, Math.floor(experience / VALUE_RULES.experiencePerLevel));
 export const visibleExperience = experience => Math.max(0, (experience ?? VALUE_RULES.minimumExperience) - VALUE_RULES.minimumExperience);
-export function integerValue(value, field) {
-  const text = String(value ?? '').trim();
-  if (!/^\d+$/.test(text) || !Number.isSafeInteger(Number(text))) {
-    const error = new Error('請填寫非負整數（可填 0），不可留白、填負數或小數。'); error.field = field; throw error;
-  }
-  return Number(text);
-}
 // Old rule versions are reset once by the store, not reinterpreted here.
 export function normalizeStats(stats = {}) {
   const experience = Math.max(VALUE_RULES.minimumExperience, stats.experience ?? VALUE_RULES.minimumExperience);
@@ -41,6 +36,7 @@ export const createInitialStats = () => normalizeStats();
 export function validateStats(value, current) {
   integerValue(value.experience ?? VALUE_RULES.minimumExperience, 'experience');
   integerValue(value.level ?? VALUE_RULES.initialLevel, 'level');
+  if(value.level<VALUE_RULES.initialLevel||value.experience<VALUE_RULES.minimumExperience)throw new Error('等級最低為 1，內部經驗最低為 100。');
   const stats = normalizeStats(value);
   integerValue(stats.experience, 'experience'); integerValue(stats.currency, 'currency'); integerValue(stats.level, 'level');
   if (current && stats.experience !== current.experience) {

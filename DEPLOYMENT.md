@@ -38,3 +38,9 @@
 數值規則 v2 已發布的資料保留，不重設；原發布版本的舊規則一次性重新開始流程保留，但改在全站寫入鎖中執行。備份資料版本升為2，包含 statsRulesVersion；數值規則不相符的舊備份在寫入前拒絕，不靜默改寫或清除目前資料。
 
 以乾淨的 work/build 產出三頁及所有 assets，OAuth client ID 本次留空。發布 commit 以最新 gh-pages 為 parent，tree 僅含產物及必要發布設定；不發布協作文件、測試、環境資料或中繼檔。推送前再次確認遠端無競態變更。
+
+### 抓取兩個分支
+
+此 checkout 的 remote.origin.fetch 曾只包含 main。發布前必須以 `git ls-remote origin refs/heads/main refs/heads/gh-pages` 核對，並明確 `git fetch origin refs/heads/gh-pages:refs/remotes/origin/gh-pages`；不能以只抓main後的舊origin/gh-pages作為發布parent。本次已取得a4cd634，確認其三頁及全部assets與來源fd787c4完全一致，保留其歷史及.nojekyll，無額外發布分支功能遺漏。
+
+本次驗證除原有settings、home、navigation、home-summary、profile-images及mock Google回歸外，新增input-rules單元測試及revisions瀏覽器測試，涵蓋手動最愛、年齡保留、字型預覽、密碼分流、輸入上限／組字／安全文字、錯誤密碼保留資料、完整還原及375px／桌面／200%文字與縮短視窗的對話框。真實行動裝置螢幕鍵盤及真實Google授權不以模擬測試替代。

@@ -1,10 +1,11 @@
 (function(){
 const DEFAULT_APPEARANCE = Object.freeze({color:'#104a7a',font:'serif'});
 const DEFAULT_SETTINGS = Object.freeze({appearance:DEFAULT_APPEARANCE,history:{recordAll:true}});
-const FONT_NAMES = Object.freeze({device:'裝置字體',serif:'明體',sans:'黑體',rounded:'圓體'});
+const FONT_NAMES = Object.freeze({device:'裝置預設字體',serif:'明體',sans:'黑體',rounded:'圓體'});
+const validHex=value=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value);
 function normalizeSettings(value={}) {
   const appearance={...DEFAULT_APPEARANCE,...value.appearance};
-  if(!/^#[0-9a-f]{6}$/i.test(appearance.color)||!Object.hasOwn(FONT_NAMES,appearance.font)) throw new Error('外觀設定格式不正確。');
+  if(!validHex(appearance.color)||!Object.hasOwn(FONT_NAMES,appearance.font)) throw new Error('外觀設定格式不正確。');
   const recordAll=value.history?.recordAll??true;
   if(typeof recordAll!=='boolean') throw new Error('歷史設定格式不正確。');
   return {appearance:{color:appearance.color.toLowerCase(),font:appearance.font},history:{recordAll}};
@@ -33,6 +34,6 @@ function applyAppearance(appearance,root=document.documentElement) {
   if(!document.querySelector('link[data-selected-font="'+appearance.font+'"]')){const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset.selectedFont=appearance.font;document.head.append(link);}
  }
 }
-globalThis.LifeAppearance={DEFAULT_APPEARANCE,DEFAULT_SETTINGS,FONT_NAMES,normalizeSettings,luminance,themeTokens,applyAppearance};
+globalThis.LifeAppearance={DEFAULT_APPEARANCE,DEFAULT_SETTINGS,FONT_NAMES,normalizeSettings,validHex,luminance,themeTokens,applyAppearance};
 if(typeof document!=='undefined')try{const saved=JSON.parse(localStorage.getItem('life-system.data.v1')||'{}');applyAppearance(normalizeSettings(saved.settings).appearance);}catch{applyAppearance(DEFAULT_APPEARANCE);}
 })();

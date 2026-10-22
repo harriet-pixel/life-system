@@ -1,6 +1,5 @@
-import { createHistoryView, historyRow } from './history-view.mjs';
+import {bindProfileValidation} from './validation.mjs';
 import { holdDraft } from './coordination.mjs';
-import { createMobileTabPositioner } from './tab-position.mjs';
 import { createProfileImages } from './profile-images.mjs';
 import { imageURL, prepareImageReferences } from './image-store.mjs';
 import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs';
@@ -52,7 +51,7 @@ function renderRadar() {
   labelWidth = Math.max(labelWidth, ...values.map(value => context.measureText(value).width));
   const availableRadius = Math.max(0, (width / 2 - labelWidth / 2 - 12) / Math.sin(2*Math.PI/5));
   const gap = Math.min(Math.max(36, fontSize * 2.5), availableRadius / 2);
-  const radius = Math.min(width * .26775, availableRadius - gap);
+  const radius = Math.max(0,Math.min(width * .34, availableRadius - gap));
   const labelRadius = radius + gap, verticalLabelRadius = Math.max(labelRadius, fontSize * 4);
   const cx = width / 2, cy = verticalLabelRadius + fontSize + 12;
   const height = cy + verticalLabelRadius + fontSize * 2.5 + 12;
@@ -81,7 +80,6 @@ document.fonts.ready.then(renderRadar);
 function render() {
   const state = dataStore.get();
   $('#profile-name').textContent = state.profile.name || '尚未設定稱呼';
-  $('#profile-age').textContent = state.profile.age === '' ? '' : `${state.profile.age} 歲`;
   const motto=(state.profile.motto ?? '').trim();
   $('#profile-motto').textContent=motto;$('#profile-motto').hidden=!motto;
   renderPhoto();
@@ -91,52 +89,16 @@ function render() {
   $('#profile-stats').replaceChildren(levelLabel,element('span',` ｜ ${experienceText}｜ ${currencyText}`));
   $('#profile-stats').setAttribute('aria-label', `等級：${level}，累積總經驗值：${visibleExperience(experience)}，貨幣：${currency}`);
   $('#profile-stats').title = `等級：${level}，累積總經驗值：${visibleExperience(experience)}，貨幣：${currency}`;
-  const valid = abilities.length === 5;
+  const missing=ABILITIES.filter(def=>!abilities.some(a=>a.id===def.id&&a.name===def.name&&Number.isSafeInteger(a.value)&&a.value>=0));
+  const valid = ABILITIES.length===5&&missing.length===0;
+  $('#abilities-missing').textContent=valid?'':`能力資料不完整：${missing.map(a=>a.name).join('、')||'能力定義'}，請檢查已保存資料。`;
   $('#abilities-missing').hidden = valid; $('.ability-charts').hidden = !valid;
   if (valid) renderRadar();
-  renderHistory(state);
-}
-const HISTORY_PAGE_SIZE=5;
-const {render:renderHistory}=createHistoryView({store:dataStore,afterRender:syncDesktopPanels});
 
+}
 const desktopPanels = matchMedia('(min-width:1024px)');
-function positionResponsiveContent() {
-  const status = $('#operation-status');
-  (desktopPanels.matches ? $('.profile-portrait-column') : $('.profile-content')).append(status);
-}
-positionResponsiveContent();
-desktopPanels.addEventListener('change', positionResponsiveContent);
-
-function syncDesktopPanels(state = dataStore.get()) {
-  const content=$('.profile-content'), tabs=content.querySelector('.activity-tabs');
-  if (!desktopPanels.matches) { content.style.removeProperty('--profile-panel-height'); return; }
-  const dashboard=$('.profile-dashboard');dashboard.style.removeProperty('--profile-tabs-height');
-  const tabHeight=Math.max(tabs.getBoundingClientRect().height,$('.profile-summary-area').getBoundingClientRect().height);
-  dashboard.style.setProperty('--profile-tabs-height',`${tabHeight}px`);
-  // Measure every retained page without showing it or changing the selected tab.
-  const probe=element('div','');probe.className='history-measure';probe.inert=true;probe.setAttribute('aria-hidden','true');probe.style.width=`${content.getBoundingClientRect().width}px`;
-  probe.append(element('p','保留最近 50 筆操作紀錄'));probe.firstChild.className='small-note';
-  const list=element('ol','');list.className='history-list';probe.append(list);
-  const footer=$('#history-pagination').cloneNode(true);footer.removeAttribute('hidden');footer.removeAttribute('id');footer.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));footer.querySelectorAll('[aria-live]').forEach(el=>el.removeAttribute('aria-live'));const selectStyle=getComputedStyle($('#history-jump'));const probeSelect=footer.querySelector('select');for(const property of ['font','min-width','min-height','padding','border'])probeSelect.style.setProperty(property,selectStyle.getPropertyValue(property));probe.append(footer);content.append(probe);
-  const blanks=Array.from({length:HISTORY_PAGE_SIZE},()=>{
-    const li=element('li',''),metadata=element('p','');metadata.className='history-metadata';metadata.append(element('span','\u00a0'),element('span','\u00a0'));li.append(element('time','\u00a0'),element('p','\u00a0'),metadata);return li;
-  });
-  list.replaceChildren(...blanks);let maximum=probe.getBoundingClientRect().height;
-  const records=[...state.history].reverse();
-  for(let start=0;start<records.length;start+=HISTORY_PAGE_SIZE){
-    list.start=start+1;list.replaceChildren(...records.slice(start,start+HISTORY_PAGE_SIZE).map(record=>historyRow(record,state)));
-    maximum=Math.max(maximum,probe.getBoundingClientRect().height);
-  }
-  probe.remove();content.style.setProperty('--profile-panel-height',`${Math.ceil(maximum)}px`);
-}
-let observedPanelWidth=-1,observedTabHeight=-1;
-const panelObserver=new ResizeObserver(()=>{
-  const width=$('.profile-content').getBoundingClientRect().width,height=$('.profile-content > .activity-tabs').getBoundingClientRect().height;
-  if(width!==observedPanelWidth || height!==observedTabHeight){observedPanelWidth=width;observedTabHeight=height;syncDesktopPanels();}
-});
-panelObserver.observe($('.profile-content'));panelObserver.observe($('.profile-content > .activity-tabs'));
-desktopPanels.addEventListener('change',()=>syncDesktopPanels());
-document.fonts.ready.then(()=>syncDesktopPanels());
+function positionResponsiveContent(){(desktopPanels.matches?$('.profile-portrait-column'):$('.profile-content')).append($('#operation-status'));}
+positionResponsiveContent();desktopPanels.addEventListener('change',positionResponsiveContent);
 const dialog = $('#profile-dialog'), form = $('#profile-form');
 const personalKeys = ['name', 'age', 'gender', 'bio', 'boundaries', 'motto'];
 const genderChoices=[...form.querySelectorAll('[name="gender-choice"]')];
@@ -170,6 +132,7 @@ imageTabs.forEach((tab,index)=>{
   tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+imageTabs.length-1)%imageTabs.length,ArrowRight:(index+1)%imageTabs.length,Home:0,End:imageTabs.length-1}[event.key];if(next===undefined)return;event.preventDefault();selectImage(next);imageTabs[next].focus();});
 });
 let releaseDraft,openingProfile=false;
+bindProfileValidation(form,()=>baseState?.profile);
 let baseState,saving=false,saveVersion=0,imageBusy=false,initialFields={},resettingStats=false;
 const unsavedDialog=$('#unsaved-settings-dialog');
 let backdropPointer=null,settingsFocus=null,restoreSettingsFocus=true;
@@ -244,7 +207,7 @@ dialog.addEventListener('close',()=>{releaseDraft?.();releaseDraft=null;backdrop
 form.addEventListener('submit',async event=>{
   event.preventDefault();if(saving)return;clearErrors();
   let profile,stats;
-  try{profile=validateProfile(Object.fromEntries(new FormData(form)));}catch(error){fieldError('age',error.message,0);return;}
+  try{profile=validateProfile(Object.fromEntries(new FormData(form)),baseState.profile);}catch(error){fieldError(error.field??'age',error.message,0);return;}
   try{stats=validateManualStats(Object.fromEntries(new FormData(form)),resettingStats?createInitialStats():baseState.stats);}catch(error){fieldError(error.field,error.message,2);return;}
   if(imageBusy){$('#form-error').textContent='圖片處理中，請稍候再儲存。';return;}
   const version=++saveVersion;lockSave(true);
@@ -262,10 +225,5 @@ form.addEventListener('submit',async event=>{
   }catch(error){if(dialog.open&&version===saveVersion){lockSave(false);if(error.field)fieldError(error.field,error.message,1);else $('#form-error').textContent=error.message;}}
   finally{if(version===saveVersion)lockSave(false);}
 });
-const tabs = [$('#abilities-tab'),$('#history-tab')];
-const positionProfileTabs = createMobileTabPositioner(tabs[0].parentElement);
-function select(index) { tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;const panel=document.getElementById(tab.getAttribute('aria-controls'));panel.hidden=i!==index;panel.inert=i!==index;panel.setAttribute('aria-hidden',String(i!==index));}); }
-tabs.forEach((tab,i)=>{tab.addEventListener('click',event=>{select(i);positionProfileTabs(event);});tab.addEventListener('keydown',e=>{const map={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(e.key in map){e.preventDefault();select(map[e.key]);tabs[map[e.key]].focus();}});});
 initializeNavigation({undoManager});
 dataStore.subscribe(render);
-select(0);

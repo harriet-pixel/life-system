@@ -1,3 +1,4 @@
+import {validateProfileFields,validateActivities} from './validation.mjs';
 import { coordinatedWrite } from './coordination.mjs';
 import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs';
 import { migrateImages } from './image-store.mjs';
@@ -86,6 +87,8 @@ export function createDataStore(storage) {
       const next = copy(state), before = {}, after = {};
       for (const [key, rawValue] of Object.entries(changes)) {
         let value = key==='settings'?normalizeSettings(rawValue):rawValue;
+        if(key==='profile')value=validateProfileFields(rawValue,state.profile);
+        if(key==='activities')value=validateActivities(rawValue);
         if (key === 'stats') {
           value = validateStats(rawValue, state.stats);
         }
@@ -95,12 +98,13 @@ export function createDataStore(storage) {
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
       }
       if (!Object.keys(after).length) return false;
-      // Only a successful, non-empty transaction discards the redo branch.
-      next.history.forEach(record => { if (record.undone && record.redoable) record.redoable = false; });
+      const historyOnly=Object.keys(after).length===1&&after.settings&&JSON.stringify(after.settings.appearance)===JSON.stringify(state.settings.appearance);
+      // History preferences are independent of the editable data journal.
+      if(!historyOnly)next.history.forEach(record => { if (record.undone && record.redoable) record.redoable = false; });
       const delta = {};
       for (const key of ['experience', 'level', 'currency']) delta[key] = typeof next.stats[key] === 'number' && typeof state.stats[key] === 'number' ? next.stats[key] - state.stats[key] : 0;
       delta.abilities = next.stats.abilities.map(a => ({ id: a.id, value: a.value - (state.stats.abilities.find(x => x.id === a.id)?.value ?? 0) }));
-      if(state.settings.history.recordAll || Object.hasOwn(after,'settings')) next.history.push({ id: crypto.randomUUID(), time: new Date().toISOString(), type, label, target, fields, before, after, delta, undone: false, undoneAt: null });
+      if(!historyOnly&&(state.settings.history.recordAll||type==='appearance.update')) next.history.push({ id: crypto.randomUUID(), time: new Date().toISOString(), type, label, target, fields, before, after, delta, undone: false, undoneAt: null });
       persist(next); return true;
     },
     getState() {
@@ -116,6 +120,10 @@ export function createDataStore(storage) {
     try {
       const expected = redo ? record.before : record.after, restored = redo ? record.after : record.before;
       for (const key of Object.keys(expected)) {
+        if(key==='settings'&&record.type==='appearance.update'){
+          if(JSON.stringify(state.settings.appearance)!==JSON.stringify(expected.settings.appearance))throw new Error('外觀資料已改變，無法安全復原。');
+          next.settings={...state.settings,appearance:copy(restored.settings.appearance)};continue;
+        }
         if (JSON.stringify(state[key]) !== JSON.stringify(expected[key])) throw new Error(`資料已改變，無法安全${redo ? '恢復' : '撤銷'}。`);
         next[key] = copy(restored[key]);
       }
@@ -141,12 +149,7 @@ export function formatSI(value) {
   if (n >= 1000 && i < units.length - 1) { n /= 1000; i++; }
   return `${value < 0 ? '-' : ''}${n}${units[i]}`;
 }
-export function validateProfile(value) {
-  const result = Object.fromEntries(['name', 'age', 'gender', 'bio', 'boundaries', 'motto'].map(key => [key, String(value[key] ?? '').trim()]));
-  if (result.age && (!/^\d+$/.test(result.age) || !Number.isSafeInteger(Number(result.age)))) throw new Error('年齡請填寫有效的非負整數，或留白。');
-  if (result.age) result.age = String(Number(result.age));
-  return result;
-}
+export const validateProfile=(value,previous)=>validateProfileFields(value,previous);
 export function abilityRatios(abilities) {
   const max = Math.max(0, ...abilities.map(a => a.value));
   return abilities.map(a => max > 0 ? a.value / max : 0);

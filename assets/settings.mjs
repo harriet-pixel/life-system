@@ -1,11 +1,12 @@
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs';
 import {dataStore,persistentUndo} from './data.mjs';
 import {initializeNavigation} from './navigation.mjs';
 import {createMobileTabPositioner} from './tab-position.mjs';
 import {createHistoryView} from './history-view.mjs';
 import {auditImages,deleteUnusedImages} from './image-references.mjs';
-import {DEFAULT_APPEARANCE,normalizeSettings,applyAppearance} from './settings-model.mjs';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs';
 import {holdDraft} from './coordination.mjs';
-import {withBackup,readBackup,restoreBackup,downloadBlob} from './backup.mjs';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs';
 import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs';
 const $=selector=>document.querySelector(selector);
 const element=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
@@ -17,7 +18,7 @@ async function run(work){
   if(busy)return;const priorError=document.querySelector('dialog[open] [data-dialog-error]');if(priorError)priorError.textContent='';busy=true;document.body.setAttribute('aria-busy','true');
   const buttons=[...document.querySelectorAll('button,input,select')].map(e=>[e,e.disabled]);buttons.forEach(([e])=>e.disabled=true);
   try{return await work();}catch(error){const message=error.message||'操作失敗；原資料未清除。';notice(message);const target=document.querySelector('dialog[open] [data-dialog-error]');if(target)target.textContent=message;}
-  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo]'))e.disabled=disabled;});syncSelection();syncDrive();dataStore.notify();}
+  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo]'))e.disabled=disabled;});syncSelection();syncDrive();$('#confirm-restore').disabled=!prepared;dataStore.notify();}
 }
 initializeNavigation({undoManager:{...persistentUndo,getState:()=>({...persistentUndo.getState(),busy:busy||persistentUndo.getState().busy})}});
 const history=createHistoryView({store:dataStore});
@@ -75,6 +76,11 @@ let appearanceDraft={...dataStore.get().settings.appearance},appearanceDirty=fal
 function renderAppearanceControls(){
   $('#theme-color').value=appearanceDraft.color;$('#theme-hex').value=appearanceDraft.color;$('#theme-font').value=appearanceDraft.font;
   applyAppearance(appearanceDraft,$('#appearance-preview'));
+  const selected=appearanceDraft.font;$('#font-load-state').textContent='字型載入中；可繼續操作。';
+  const family=getComputedStyle($('#appearance-preview')).fontFamily.split(',')[0];
+  const load=()=>document.fonts.load('16px '+family,'繁體中文 Life 123').then(fonts=>{if(appearanceDraft.font===selected)$('#font-load-state').textContent=selected==='device'?'使用裝置字型。':fonts.length?'預覽字型已載入。':'目前使用備援字型；可繼續操作。';}).catch(()=>{if(appearanceDraft.font===selected)$('#font-load-state').textContent='字型載入失敗，使用備援字型；可繼續操作。';});
+  const link=document.querySelector(`link[data-selected-font="${selected}"]`);
+  if(link&&!link.sheet){link.addEventListener('load',load,{once:true});link.addEventListener('error',()=>{if(appearanceDraft.font===selected)$('#font-load-state').textContent='字型載入失敗，使用備援字型；可繼續操作。';},{once:true});}else load();
 }
 async function previewAppearance(changes){
   const version=previewVersion;
@@ -91,15 +97,12 @@ async function previewAppearance(changes){
   }catch(error){$('#appearance-error').textContent=error.message;draftPromise=null;}
 }
 function cancelAppearance(){previewVersion++;releaseAppearance?.();releaseAppearance=null;draftPromise=null;appearanceDirty=false;appearanceDraft={...dataStore.get().settings.appearance};$('#appearance-error').textContent='';renderAppearanceControls();}
-for(const color of ['#104a7a','#315e46','#744251','#605079','#b58a36','#eddfbc']){
+for(const color of ['#104a7a','#315e46','#744251','#605079','#eddfbc']){
   const button=element('button');button.type='button';button.style.setProperty('--swatch',color);button.setAttribute('aria-label','預覽主題色 '+color);button.addEventListener('click',()=>previewAppearance({color}));$('#theme-swatches').append(button);
 }
 $('#theme-color').addEventListener('input',event=>previewAppearance({color:event.target.value}));
-$('#theme-hex').addEventListener('input',event=>{if(/^#[a-f0-9]{6}$/i.test(event.target.value))previewAppearance({color:event.target.value});else $('#appearance-error').textContent='請輸入完整 HEX 色碼，例如 #104A7A。';});
+$('#theme-hex').addEventListener('input',event=>{if(validHex(event.target.value))previewAppearance({color:event.target.value});else $('#appearance-error').textContent='請輸入完整 HEX 色碼，例如 #104A7A。';});
 $('#theme-font').addEventListener('change',event=>previewAppearance({font:event.target.value}));
-$('#reset-color').addEventListener('click',()=>previewAppearance({color:DEFAULT_APPEARANCE.color}));
-$('#reset-font').addEventListener('click',()=>previewAppearance({font:DEFAULT_APPEARANCE.font}));
-$('#reset-appearance').addEventListener('click',()=>previewAppearance({...DEFAULT_APPEARANCE}));
 $('#cancel-appearance').addEventListener('click',cancelAppearance);
 $('#save-appearance').addEventListener('click',()=>run(async()=>{
   if($('#appearance-error').textContent)throw new Error('請先修正外觀設定格式，或取消預覽。');
@@ -110,37 +113,54 @@ $('#save-appearance').addEventListener('click',()=>run(async()=>{
 }));
 window.addEventListener('beforeunload',event=>{if(appearanceDirty){event.preventDefault();event.returnValue='';}});
 
-function password(){const value=$('#backup-password').value;if(!value)throw new Error('請先輸入備份密碼。');return value;}
 async function downloadCurrent(){
-  const secret=$('#encrypt-backup').checked?password():'';
-  await withBackup(dataStore,secret,blob=>downloadBlob(blob));
-  $('#backup-password').value='';notice('已觸發備份下載；請確認瀏覽器是否已將檔案存入裝置。');
+  const secret=validateNewPassword($('#backup-password').value);
+  try{await withBackup(dataStore,secret,blob=>downloadBlob(blob));notice('已觸發備份下載；請確認瀏覽器是否已將檔案存入裝置。');}
+  finally{$('#backup-password').value='';}
 }
 $('#download-backup').addEventListener('click',()=>run(downloadCurrent));
-$('#download-before-restore').addEventListener('click',()=>run(async()=>{await withBackup(dataStore,$('#safety-backup-password').value,blob=>downloadBlob(blob));$('#safety-backup-password').value='';$('#safety-backup-status').textContent='已觸發目前資料備份下載，請確認裝置是否存檔。';}));
-let prepared=null,restoreRevision=null;
-async function previewRestore(file){
-  // No writes occur before complete validation and explicit confirmation.
-  prepared=await readBackup(file,$('#backup-password').value);$('#backup-password').value='';restoreRevision=dataStore.get().revision;
-  $('#restore-confirm [data-dialog-error]').textContent='';$('#safety-backup-status').textContent='';$('#safety-backup-password').value='';
-  const p=prepared.payload;$('#restore-summary').textContent=`備份時間：${time(p.createdAt)}；資料 ${p.dataCount} 筆，圖片 ${p.imageCount} 張；格式 v${p.formatVersion}、資料 v${p.dataVersion}。`;
-  $('#restore-confirm').showModal();
+let prepared=null,restoreRevision=null,restoreFile=null,restoreGeneration=0;
+function clearRestore(){restoreGeneration++;prepared=null;restoreRevision=null;restoreFile=null;$('#restore-password').value='';$('#confirm-restore').disabled=true;$('#restore-summary').textContent='';}
+async function validateRestore(){
+  const generation=restoreGeneration,file=restoreFile;prepared=null;$('#confirm-restore').disabled=true;
+  try{
+    const result=await readBackup(file,validateRestorePassword($('#restore-password').value));
+    if(generation!==restoreGeneration||!$('#restore-confirm').open)return;
+    prepared=result;restoreRevision=dataStore.get().revision;$('#restore-password').value='';$('#restore-unlock').hidden=true;
+    const p=result.payload;$('#restore-summary').textContent=`備份時間：${time(p.createdAt)}；資料 ${p.dataCount} 筆，圖片 ${p.imageCount} 張；格式 v${p.formatVersion}、資料 v${p.dataVersion}。`;
+  }finally{$('#restore-password').value='';}
 }
+async function previewRestore(file){
+  const outer=await inspectBackupFile(file);clearRestore();restoreFile=file;
+  $('#restore-confirm [data-dialog-error]').textContent='';$('#restore-unlock').hidden=!outer.encrypted;$('#restore-confirm').showModal();
+  if(outer.encrypted){$('#restore-summary').textContent='請輸入此備份的還原密碼。';$('#restore-password').focus();}
+  else await validateRestore();
+}
+$('#restore-file').addEventListener('change',()=>{clearRestore();const file=$('#restore-file').files[0];if(file)run(async()=>{await inspectBackupFile(file);notice('已辨識備份外層格式；點擊「驗證與還原」繼續。');});});
 $('#read-backup').addEventListener('click',()=>run(async()=>{const file=$('#restore-file').files[0];if(!file)throw new Error('請先選取本機備份檔。');await previewRestore(file);}));
+$('#unlock-restore').addEventListener('click',()=>run(validateRestore));
+$('#restore-password').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();run(validateRestore);}});
 $('#cancel-restore').addEventListener('click',()=>$('#restore-confirm').close());
-$('#restore-confirm').addEventListener('close',()=>{prepared=null;restoreRevision=null;$('#safety-backup-password').value='';});
+$('#restore-confirm').addEventListener('close',clearRestore);
 $('#confirm-restore').addEventListener('click',()=>run(async()=>{
-  if(!prepared)throw new Error('請重新選取並驗證備份。');
+  if(!prepared)throw new Error('請先解密並完成備份驗證。');
   await restoreBackup(dataStore,prepared,restoreRevision);$('#restore-confirm').close();$('#restore-file').value='';cancelAppearance();
   notice('完整還原已完成，資料、設定、圖片與歷史已重新載入；不包含還原前的歷史。');if(selectedTab===0)await refreshStorage();
 }));
 function syncDrive(){for(const id of ['connect-drive','upload-drive','list-drive','disconnect-drive','revoke-drive'])$('#'+id).disabled=!driveConfigured||busy;}
 $('#drive-state').textContent=driveConfigured?'已設定 Google OAuth；尚未連接。只在你主動操作時授權、上傳或讀取。':'Google 雲端備份尚未設定 OAuth client ID；本機備份與還原可正常使用。';
 $('#connect-drive').addEventListener('click',()=>run(async()=>{const result=await connectDrive();$('#drive-state').textContent=result.needsClick?'Google 授權程式已載入，請再次點擊「連接 Google Drive」以開啟授權視窗。':'Google Drive 已連接；短期授權僅存於本頁記憶體。';}));
-$('#upload-drive').addEventListener('click',()=>run(async()=>{const secret=password();await withBackup(dataStore,secret,(blob,payload)=>uploadDriveBackup(blob,payload));$('#backup-password').value='';notice('加密備份已上傳至 Google Drive 應用程式專用隱藏空間；本機資料與舊備份保留。');}));
+$('#upload-drive').addEventListener('click',()=>{$('#cloud-password').value='';$('#cloud-password-dialog [data-dialog-error]').textContent='';$('#cloud-password-dialog').showModal();});
+$('#cancel-cloud-password').addEventListener('click',()=>$('#cloud-password-dialog').close());
+$('#cloud-password-dialog').addEventListener('close',()=>{$('#cloud-password').value='';$('#upload-drive').focus();});
+$('#cloud-password-dialog').addEventListener('cancel',event=>{if(busy)event.preventDefault();});
+$('#cloud-password-form').addEventListener('submit',event=>{event.preventDefault();run(async()=>{
+ const secret=validateNewPassword($('#cloud-password').value,{required:true});
+ try{await withBackup(dataStore,secret,(blob,payload)=>uploadDriveBackup(blob,payload));$('#cloud-password-dialog').close();notice('加密備份已上傳；本機資料與舊備份保留。');}finally{$('#cloud-password').value='';}
+});});
 $('#list-drive').addEventListener('click',()=>run(async()=>{
   const files=await listDriveBackups();$('#drive-list').replaceChildren();if(!files.length)$('#drive-list').append(element('li','尚無此應用程式建立的雲端備份。'));
-  for(const file of files){const row=element('li'),button=element('button','驗證並預覽還原');button.type='button';
+  for(const file of files){const row=element('li'),button=element('button','驗證與還原');button.type='button';
     row.append(element('p',file.name),element('p',`${time(file.appProperties?.backupTime??file.createdTime)} · ${bytes(Number(file.size)||0)} · 格式 v${file.appProperties?.lifeSystemFormat??'未知'}`),button);
     button.addEventListener('click',()=>run(async()=>previewRestore(await downloadDriveBackup(file))));$('#drive-list').append(row);
   }
@@ -148,6 +168,6 @@ $('#list-drive').addEventListener('click',()=>run(async()=>{
 $('#disconnect-drive').addEventListener('click',()=>{disconnectDrive();$('#drive-list').replaceChildren();$('#drive-state').textContent='已中斷本頁連接；既有雲端備份沒有刪除。';});
 $('#revoke-drive').addEventListener('click',()=>run(async()=>{await revokeDrive();$('#drive-list').replaceChildren();$('#drive-state').textContent='已撤銷授權；既有雲端備份沒有刪除。';}));
 dataStore.subscribe(state=>{history.render(state);if(!appearanceDirty){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}});
-window.addEventListener('pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();});
+window.addEventListener('pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();clearRestore();for(const id of ['backup-password','cloud-password'])$('#'+id).value='';});
 window.addEventListener('pageshow',event=>{if(event.persisted){cancelAppearance();if(selectedTab===0)refreshStorage();}});
 renderAppearanceControls();syncDrive();selectTab(0);

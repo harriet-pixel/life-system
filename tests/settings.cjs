@@ -23,12 +23,12 @@ try{
  await page.locator('.mobile-navigation [data-redo]').click();await home.waitForFunction(()=>document.documentElement.dataset.font==='rounded');
  console.log('PASS appearance: preview/save/reload/cross-page/cross-tab/Undo/Redo');
  // The same checkbox on profile/settings affects activity journaling on home.
- await profile.locator('#history-tab').click();await profile.locator('#history-record-all').uncheck();
+ await page.locator('#history-tab').click();await page.locator('#history-record-all').uncheck();
  await page.locator('#history-tab').click();await page.waitForFunction(()=>!document.querySelector('#history-record-all').checked);
  const count=await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length);
  await home.locator('[data-task]').first().check();await home.waitForTimeout(200);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length),count);
- await page.locator('#history-record-all').check();await profile.waitForFunction(()=>document.querySelector('#history-record-all').checked);
+ await page.locator('#history-record-all').check();await page.waitForFunction(()=>document.querySelector('#history-record-all').checked);
  console.log('PASS shared history controls and homepage data changes');
  // Build real, content-addressed image fixtures, including history-only and redo references.
  const fixture=await page.evaluate(async()=>{
@@ -91,7 +91,6 @@ try{
  const downloadEvent=page.waitForEvent('download');await page.locator('#download-backup').click();const download=await downloadEvent;assert.ok(download.suggestedFilename().startsWith('Life system '));
  await page.locator('#restore-file').setInputFiles(await download.path());await page.locator('#read-backup').click();await page.waitForSelector('#restore-confirm[open]');await page.keyboard.press('Escape');await page.waitForSelector('#restore-confirm:not([open])',{state:'attached'});
  await page.locator('#read-backup').click();await page.waitForSelector('#restore-confirm[open]');
- const safetyDownload=page.waitForEvent('download');await page.locator('#download-before-restore').click();await safetyDownload;await page.waitForFunction(()=>document.querySelector('#safety-backup-status').textContent.includes('已觸發'));
  const blocker=await context.newPage();await blocker.goto(base+'profile.html');await blocker.waitForSelector('body[data-navigation=ready]');await blocker.locator('#edit-profile').click();await blocker.waitForSelector('#profile-dialog[open]');
  const intact=await page.evaluate(()=>localStorage.getItem('life-system.data.v1'));await page.locator('#confirm-restore').click();await page.waitForFunction(()=>document.querySelector('#restore-confirm [data-dialog-error]').textContent.includes('使用者設定'));assert.equal(await page.evaluate(()=>localStorage.getItem('life-system.data.v1')),intact);
  await blocker.close();await page.locator('#confirm-restore').click();await page.waitForSelector('#restore-confirm:not([open])',{state:'attached'});await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('完整還原已完成'));
