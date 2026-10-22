@@ -277,3 +277,6 @@ textarea { resize: vertical; }
 .gender-choices { column-gap: 1em; }
 #profile-form .gender-choice { gap: 0; }
 .personal-details-row + #age-error:empty { display: none; }
+
+#gender-options { padding-inline-end: 1em; }
+#profile-form .age-inline { min-width: 4em; }
