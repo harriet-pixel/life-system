@@ -16,7 +16,7 @@ const base = process.env.BASE_URL || 'http://127.0.0.1:3000/';
    assert.equal(await page.locator('.mobile-navigation').isVisible(),mobile);
    assert.equal(await undo.isDisabled(),true);
    assert.equal(await page.locator('.profile-display-name').count(),0);
-   assert.deepEqual(await page.locator('.summary-stat').allTextContents(),['Lv—','｜$ —']);
+   assert.deepEqual(await page.locator('.summary-stat').allTextContents(),['Lv —','｜Exp —','｜$ —']);
    if(!mobile) {
     const bar=await page.locator('.desktop-navigation').boundingBox();
     const dashboard=await page.locator('.dashboard').boundingBox();
