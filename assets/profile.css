@@ -218,10 +218,7 @@ textarea { resize: vertical; }
 
 #image-status { block-size: 3.4em; overflow: auto; }
 
-.image-tab-mobile { display: none; }
 @media (max-width:1023px) {
-  .image-tab-desktop { display: none; }
-  .image-tab-mobile { display: inline; }
   .image-tabs { grid-template-columns: repeat(3,minmax(0,1fr)); }
   #photo-settings .image-tabs button { min-width: 0; padding-inline: 4px; }
 }
@@ -280,3 +277,7 @@ textarea { resize: vertical; }
 
 #gender-options { padding-inline-end: 1em; }
 #profile-form .age-inline { min-width: 4em; }
+
+#profile-dialog { width: min(462px,calc(100% - 32px)); }
+.image-tabs { grid-template-columns: repeat(3,minmax(0,1fr)); }
+#photo-settings .image-tabs button { min-width: 0; padding-inline: 4px; }
