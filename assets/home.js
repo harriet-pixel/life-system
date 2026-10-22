@@ -1,7 +1,7 @@
 import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-tabs-8';
-import { undoManager } from './undo.mjs?v=favorites-24';
+import { undoManager } from './undo.mjs?v=exp-base-31';
 import { createCompanionController, generateMockReply } from './companion.mjs?v=undo-1';
-import { dataStore, profileSummary } from './data.mjs?v=favorites-24';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=exp-base-31';
 import { initializeNavigation } from './navigation.mjs?v=redo-17';
 
 // Development slots, not approved character emotions. Only use licensed assets.
@@ -110,9 +110,8 @@ dataStore.subscribe(() => {
   renderActivities();
   const stats = dataStore.get().stats;
   const summary = document.querySelector('#home-stats');
-  const [experience, level, currency] = profileSummary(stats).split(' ｜ ');
-  summary.textContent = `${level} ｜ ${experience} ｜ ${currency}`;
-  summary.setAttribute('aria-label', `累積總經驗值：${stats.experience}，等級：${stats.level}，貨幣：${stats.currency}`);
+  summary.textContent = profileSummary(stats);
+  summary.setAttribute('aria-label', `累積總經驗值：${visibleExperience(stats.experience)}，等級：${stats.level}，貨幣：${stats.currency}`);
   summary.title = summary.getAttribute('aria-label');
 });
 

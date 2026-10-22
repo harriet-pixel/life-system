@@ -265,3 +265,15 @@ textarea { resize: vertical; }
 .gender-choices { flex-wrap: nowrap; gap: 8px; }
 #profile-form .gender-choice { gap: 4px; }
 #profile-form .gender-choice input:checked { background: var(--color-primary); border-color: var(--color-primary); }
+
+#restart-values { justify-self: start; min-height: 44px; padding: 8px 16px; font: inherit; border: 1px solid var(--color-primary); color: var(--color-primary); background: white; }
+#values-reset-status:empty { display: none; }
+
+.personal-details-row { display: flex; align-items: center; flex-wrap: wrap; column-gap: clamp(0px,calc(100vw - 342px),3em); row-gap: 8px; }
+#profile-form .age-inline { display: flex; align-items: center; gap: 0; flex: 1 1 0; min-width: 5em; }
+.age-inline > span { white-space: nowrap; }
+#profile-form .age-inline input { width: 0; min-width: 0; flex: 1 1 0; padding-inline: 4px; }
+#gender-options { gap: 0; flex: 0 1 auto; max-width: 100%; flex-wrap: wrap; }
+.gender-choices { column-gap: 1em; }
+#profile-form .gender-choice { gap: 0; }
+.personal-details-row + #age-error:empty { display: none; }

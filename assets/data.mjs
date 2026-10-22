@@ -1,13 +1,15 @@
 import { migrateImages, collectUnusedImages } from './image-store.mjs?v=images-21';
-import { normalizeStats, validateStats } from './abilities.mjs?v=redo-17';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=exp-base-31';
 // A single atomic localStorage document owns data and its reversible journal.
 export const HISTORY_LIMIT = 50;
+export const STATS_RULES_VERSION = 2;
+export { visibleExperience };
 const retainedHistory = history => [...history].sort((a,b) => Date.parse(a.time) - Date.parse(b.time)).slice(-HISTORY_LIMIT);
 export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
 const undoRecord = history => [...history].reverse().find(record => !record.undone);
 const redoRecord = history => history.filter(record => record.undone && record.redoable === true && Number.isSafeInteger(record.undoOrder)).sort((a,b) => b.undoOrder-a.undoOrder)[0];
-const initial = () => ({ revision: 0, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: normalizeStats(), history: [] });
+const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: createInitialStats(), history: [] });
 export function createDataStore(storage) {
   let state;
   const listeners = new Set();
@@ -16,6 +18,13 @@ export function createDataStore(storage) {
     if (!raw) return initial();
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
+    // User explicitly chose to restart old progress rather than convert it.
+    // Clear the old journal together with stats so Undo cannot revive old rules.
+    if(value.statsRulesVersion !== STATS_RULES_VERSION){
+      value.stats=createInitialStats();value.history=[];value.statsRulesVersion=STATS_RULES_VERSION;value.revision++;
+      try{storage.setItem(STORAGE_KEY,JSON.stringify(value));}
+      catch{throw new Error('無法保存新版數值初始設定；原資料未變更，請確認儲存空間與權限。');}
+    }
     value.profile.motto ??= '';
     value.avatar ??= null;
     value.portraits ??= [];value.photoEdit ??= null;value.avatarEdit ??= null;value.currentPortraitId ??= null;
@@ -124,7 +133,7 @@ export function formatSI(value) {
 }
 export function validateProfile(value) {
   const result = Object.fromEntries(['name', 'age', 'gender', 'bio', 'boundaries', 'motto'].map(key => [key, String(value[key] ?? '').trim()]));
-  if (result.age && (!/^\d+$/.test(result.age) || !Number.isSafeInteger(Number(result.age)))) throw new Error('年紀請填寫有效的非負整數，或留白。');
+  if (result.age && (!/^\d+$/.test(result.age) || !Number.isSafeInteger(Number(result.age)))) throw new Error('年齡請填寫有效的非負整數，或留白。');
   if (result.age) result.age = String(Number(result.age));
   return result;
 }
@@ -162,7 +171,7 @@ if (typeof window !== 'undefined') window.addEventListener('storage', e => { if 
 
 export function profileSummary(stats) {
   const shown = value => value > 0 ? String(value) : '—';
-  return `Exp ${stats.experience > 0 ? formatSI(stats.experience) : '—'} ｜ Lv ${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
+  return `Exp ${formatSI(visibleExperience(stats.experience))} ｜ Lv ${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
 }
 export function abilityShares(abilities) {
   const total = abilities.reduce((sum,a) => sum + a.value, 0);

@@ -13,8 +13,9 @@ export const ALLOCATION_PRINCIPLES = Object.freeze([
   '能力值代表累積投入，不是對人格、健康或真實能力的診斷與評分。',
   '獎勵總點數由各功能的獎勵規則提供，AI 只分配至能力，各能力分配量加總必須等於該次獎勵總點數。',
 ]);
-export const VALUE_RULES = Object.freeze({ initialValue: 0, experiencePerLevel: 100, growth: Object.freeze({ experienceMultiplier: 1, currencyMultiplier: 1, abilityAllocationMustEqualReward: true, description: '貨幣增加量 = 總經驗值增加量 = 五項能力增加量合計' }), manual: '能力差額增減總經驗並重算等級；手動等級將經驗設為等級 × 100；同次先套用等級再套用能力差額；貨幣獨立修改', spending: '只扣貨幣且不得低於 0', activityRewards: null });
-export const levelFromExperience = experience => Math.floor(experience / VALUE_RULES.experiencePerLevel);
+export const VALUE_RULES = Object.freeze({ initialValue: 0, initialLevel: 1, minimumExperience: 100, experiencePerLevel: 100, growth: Object.freeze({ experienceMultiplier: 1, currencyMultiplier: 1, abilityAllocationMustEqualReward: true, description: '貨幣增加量 = 總經驗值增加量 = 五項能力增加量合計' }), manual: '能力差額增減內部總經驗，最低 100；畫面經驗為內部總經驗減 100；手動等級至少 1，先設等級 × 100 再套用能力差額；貨幣獨立修改', spending: '只扣貨幣且不得低於 0', activityRewards: null });
+export const levelFromExperience = experience => Math.max(VALUE_RULES.initialLevel, Math.floor(experience / VALUE_RULES.experiencePerLevel));
+export const visibleExperience = experience => Math.max(0, (experience ?? VALUE_RULES.minimumExperience) - VALUE_RULES.minimumExperience);
 export function integerValue(value, field) {
   const text = String(value ?? '').trim();
   if (!/^\d+$/.test(text) || !Number.isSafeInteger(Number(text))) {
@@ -22,21 +23,24 @@ export function integerValue(value, field) {
   }
   return Number(text);
 }
-// Only missing legacy values become zero; existing values and unknown data stay.
+// Old rule versions are reset once by the store, not reinterpreted here.
 export function normalizeStats(stats = {}) {
-  const experience = stats.experience ?? 0;
+  const experience = Math.max(VALUE_RULES.minimumExperience, stats.experience ?? VALUE_RULES.minimumExperience);
   const previous = stats.abilities ?? [];
   const abilities = ABILITIES.map(a => ({ id: a.id, name: a.name, value: previous.find(x => x.id === a.id || x.name === a.name)?.value ?? 0 }));
   const unknown = previous.filter(x => !ABILITIES.some(a => a.id === x.id || a.name === x.name));
-  // Loading preserves saved progress, including legacy levels that differ from EXP.
-  // A legacy levelOffset may remain as inert snapshot data; it is never applied.
-  const level = Number.isSafeInteger(stats.level) && stats.level >= 0 ? stats.level : levelFromExperience(experience);
+  // Current-version loads preserve snapshots; only actual edits recalculate levels.
+  // Extra offset data is inert and removed when experience or abilities change.
+  const level = Number.isSafeInteger(stats.level) && stats.level >= VALUE_RULES.initialLevel ? stats.level : levelFromExperience(experience);
   const result = { ...stats, experience, level, currency: stats.currency ?? 0, abilities };
   if (unknown.length) result.legacyAbilities = [...(stats.legacyAbilities ?? []), ...unknown];
   return result;
 }
+export const createInitialStats = () => normalizeStats();
 // Full transactions validate data without applying reward or spending rules.
 export function validateStats(value, current) {
+  integerValue(value.experience ?? VALUE_RULES.minimumExperience, 'experience');
+  integerValue(value.level ?? VALUE_RULES.initialLevel, 'level');
   const stats = normalizeStats(value);
   integerValue(stats.experience, 'experience'); integerValue(stats.currency, 'currency'); integerValue(stats.level, 'level');
   if (current && stats.experience !== current.experience) {
@@ -50,17 +54,14 @@ export function validateManualStats(values, current = {}) {
   const stats = normalizeStats(current);
   const currency = integerValue(values.currency, 'currency');
   const level = integerValue(values.level, 'level');
+  if(level < VALUE_RULES.initialLevel){const error=new Error('等級最低為 1。');error.field='level';throw error;}
   const abilities = stats.abilities.map(ability => ({ ...ability, value: Object.hasOwn(values, ability.id) ? integerValue(values[ability.id], ability.id) : ability.value }));
   const changed = abilities.filter((ability,i) => ability.value !== stats.abilities[i].value);
   // BigInt keeps signed sums exact even when several individually safe values change.
   const delta = abilities.reduce((sum,ability,i) => sum + BigInt(ability.value) - BigInt(stats.abilities[i].value), 0n);
   // Apply an edited level first, then the net ability delta from the same draft.
-  const experience = (level !== stats.level ? BigInt(level) * 100n : BigInt(stats.experience)) + delta;
-  if (experience < 0n) {
-    const error = new Error('能力減少後，總經驗值會低於 0；請調整能力值後再儲存。');
-    error.field = changed.find(ability => ability.value < stats.abilities.find(a=>a.id===ability.id).value)?.id ?? 'level';
-    throw error;
-  }
+  const signedExperience = (level !== stats.level ? BigInt(level) * 100n : BigInt(stats.experience)) + delta;
+  const experience = signedExperience < BigInt(VALUE_RULES.minimumExperience) ? BigInt(VALUE_RULES.minimumExperience) : signedExperience;
   if (experience > BigInt(Number.MAX_SAFE_INTEGER)) {
     const error = new Error('修改後的總經驗值超出可精確保存的範圍，請降低數值。');
     error.field = level !== stats.level ? 'level' : changed[0]?.id ?? 'level'; throw error;
