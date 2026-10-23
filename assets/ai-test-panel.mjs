@@ -7,7 +7,7 @@ export function mountAITestPanel(container,connection,{statusElement}={}){
  const status=statusElement??element('p');status.setAttribute('role','status');const output=element('pre');output.className='ai-test-output';output.setAttribute('aria-label','AI 測試回應');
  container.append(label,budgetLabel,note,actions);if(!statusElement)container.append(status);container.append(output);
  let sequence=0;
- connection.subscribe(state=>{send.disabled=state.busy||!(state.connected&&state.model||state.restorableModel);cancel.disabled=!state.busy;status.textContent=state.message;if(!state.hasKey){sequence++;output.textContent='';}if(state.status==='loading')output.textContent='';});
+ connection.subscribe(state=>{send.disabled=state.busy||Boolean(state.mode==='backend'&&state.personal?.configured&&!state.backendReady)||!(state.connected&&state.model||state.restorableModel||state.restorableBackendModel);cancel.disabled=!state.busy;status.textContent=state.message;if(!state.hasKey&&!state.backendReady){sequence++;output.textContent='';}if(state.status==='loading')output.textContent='';});
  send.addEventListener('click',async()=>{
   const text=input.value;if(!text.trim()||text.length>1000){status.textContent='請輸入 1–1,000 字元的測試文字。';return;}
   const version=++sequence;output.textContent='';const result=await connection.generate({text,maxOutputTokens:Number(budget.value)});

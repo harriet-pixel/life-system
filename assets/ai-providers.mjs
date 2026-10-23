@@ -1,3 +1,4 @@
+import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=personal-worker-5';
 import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=provider-audit-3';
 import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=provider-audit-3';
 export const PROVIDERS = Object.freeze({
@@ -55,23 +56,24 @@ export function createProviderAdapter(provider, apiKey, {fetcher=fetch, signal, 
       }
       fail('model_limit', 502); // Never return a silently truncated or stale list.
     },
-    async generate({model, text, maxOutputTokens=64, descriptor}={}) {
+    async generate({model, text, maxOutputTokens=64, descriptor, prompt:providedPrompt}={}) {
       if (typeof model !== 'string' || !MODEL_ID.test(model) || typeof text !== 'string' || !text.trim() || text.length > 4000 || !Number.isInteger(maxOutputTokens) || maxOutputTokens < 1 || maxOutputTokens > 256) fail('input');
+      const prompt=providedPrompt?.system===AI_LANGUAGE_RULE&&providedPrompt.user===text?providedPrompt:assembleAIPrompt(text);
       const protocol=descriptor?.protocol;
       if(descriptor?.outputLimit)maxOutputTokens=Math.min(maxOutputTokens,descriptor.outputLimit);
       let value, output;
       if (provider === 'gemini') {
-        value = await request(`/v1beta/${model}:generateContent`, null, {contents:[{role:'user',parts:[{text}]}], generationConfig:{maxOutputTokens}});
+        value = await request(`/v1beta/${model}:generateContent`, null, {systemInstruction:{parts:[{text:prompt.system}]},contents:[{role:'user',parts:[{text:prompt.user}]}], generationConfig:{maxOutputTokens}});
         output = value.candidates?.[0]?.content?.parts?.filter(p => typeof p.text === 'string' && !p.thought).map(p=>p.text).join('');
       } else if (provider === 'claude' || provider==='deepseek'&&protocol==='deepseek-messages') {
-        value = await request(provider==='deepseek'?'/anthropic/v1/messages':'/v1/messages', null, {model,max_tokens:maxOutputTokens,messages:[{role:'user',content:text}],...(provider==='deepseek'?{thinking:{type:'disabled'},stream:false}:{})});
+        value = await request(provider==='deepseek'?'/anthropic/v1/messages':'/v1/messages', null, {model,system:prompt.system,max_tokens:maxOutputTokens,messages:[{role:'user',content:prompt.user}],...(provider==='deepseek'?{thinking:{type:'disabled'},stream:false}:{})});
         output = value.content?.filter(p=>p.type === 'text').map(p=>p.text).join('');
       } else if (provider === 'openai') {
-        value = await request('/v1/responses', null, {model,input:text,max_output_tokens:maxOutputTokens,store:false});
+        value = await request('/v1/responses', null, {model,instructions:prompt.system,input:prompt.user,max_output_tokens:maxOutputTokens,store:false});
         if(value.status==='failed'||value.error)throw providerError(400,value,'generate');
         output = value.output?.filter(p=>p.type === 'message').flatMap(p=>p.content ?? []).filter(p=>p.type === 'output_text').map(p=>p.text).join('');
       } else {
-        value = await request('/chat/completions', null, {model,max_tokens:maxOutputTokens,messages:[{role:'user',content:text}],stream:false,...(['deepseek-flash','deepseek-v4-flash','deepseek-v4-pro'].includes(model)?{thinking:{type:'disabled'}}:{})});
+        value = await request('/chat/completions', null, {model,max_tokens:maxOutputTokens,messages:[{role:'system',content:prompt.system},{role:'user',content:prompt.user}],stream:false,...(['deepseek-flash','deepseek-v4-flash','deepseek-v4-pro'].includes(model)?{thinking:{type:'disabled'}}:{})});
         output = value.choices?.[0]?.message?.content;
       }
       if (typeof output !== 'string' || !output.trim()) throw new AIError('empty_response', 502);

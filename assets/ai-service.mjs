@@ -1,8 +1,10 @@
+import {assembleAIPrompt,AI_TEST_TEXT} from './ai-prompts.mjs?v=personal-worker-5';
 import {MODEL_ID,MODEL_REASONS} from './ai-capabilities.mjs?v=provider-audit-3';
 export const AI_PROVIDERS = Object.freeze(['gemini','deepseek','openai','claude']);
 export const AI_MESSAGES = Object.freeze({
+ backend_unconfigured:'個人後端尚未完成設定；可手動切換瀏覽器直連，沒有自動重送。', provider_unconfigured:'後端尚未設定此服務商的 Secret，請在 Cloudflare 設定。', backend_unavailable:'個人後端或網路暫時無法使用；可手動切換瀏覽器直連，沒有自動重送。', backend_rate_limit:'個人後端已達請求上限，請稍後重試或手動切換直連；未自動重送。', backend_busy:'個人後端已有兩筆請求處理中；請稍後手動重試。',
  unconfigured:'尚未設定：需要部署 HTTPS AI 後端及本站登入。', login_required:'請先完成本站登入；目前尚未設定登入整合。', auth_unavailable:'本站登入驗證服務暫時無法使用，請稍後重試。', unauthenticated:'本站登入已失效，請重新登入。', forbidden:'目前帳戶未獲本站 AI 使用授權。',
- provider_auth:'API 金鑰驗證失敗，請重新輸入。', permission:'服務商權限不足，請檢查帳戶權限。', model_unavailable:'模型不存在、已停用或明確無權使用；請重新選擇模型。',
+ provider_auth:'API 金鑰驗證失敗，請檢查目前模式的金鑰設定。', permission:'服務商權限不足，請檢查帳戶權限。', model_unavailable:'模型不存在、已停用或明確無權使用；請重新選擇模型。',
  rate_limit:'請求過於頻繁，請稍後手動重試。', quota:'服務商額度或餘額不足，請檢查自己的服務商帳戶。', network:'網路請求未完成，無法判定是否為連線、跨來源或服務問題；沒有自動重試。', timeout:'連線逾時，請稍後重試。', provider_service:'AI 服務暫時故障，請稍後重試。',
  empty_response:'服務已回應但沒有可用文字；可能達到測試輸出限制，請確認模型相容性。', key_format:'請輸入有效格式的 API 金鑰。', model_limit:'模型清單超過安全上限或分頁格式異常，未使用不完整清單。',
  response_size:'服務回應超過大小上限。', provider_response:'服務回應格式無法辨識。', provider_request:'服務商拒絕此請求，請確認帳戶與模型相容性。', input:'請確認服務商、金鑰及模型設定。', busy:'服務忙碌，請稍後手動重試。', internal:'連線失敗；未變更任何網站資料。', preference:'連線偏好未能儲存；金鑰不會因此保存。',
@@ -44,10 +46,10 @@ export function createAIConnection({endpoint='',getAccessToken=async()=>null,fet
  async function operate(operation,extra={}) {
   cancel();const version=generation;
   if(operation==='models')clearList();
-  state.busy=true;state.status='loading';state.message=operation==='models'?'正在連接並取得官方模型清單…':'正在測試連線…';controller=new AbortController();const active=controller;
+  state.busy=true;state.status='loading';state.message=operation==='models'?'正在取得官方模型清單…':operation==='test'?'正在執行文字生成測試…':'正在生成文字…';controller=new AbortController();const active=controller;
   const timer=setTimeout(()=>active.abort(),timeoutMs);emit();
   try {
-   const value=await request(operation,state.model,extra,{provider:state.provider,apiKey,signal:active.signal,descriptor:state.models.find(model=>model.id===state.model)});
+   const value=await request(operation,state.model,extra,{provider:state.provider,apiKey,signal:active.signal,descriptor:state.models.find(model=>model.id===state.model),...(operation!=='models'?{prompt:assembleAIPrompt(operation==='test'?AI_TEST_TEXT:extra.text)}:{})});
    if(version!==generation)return;
    if(operation==='models'){
     if(!Array.isArray(value.models)||value.models.length>2000||!value.models.every(m=>m&&typeof m.id==='string'&&m.id.length<=207&&typeof m.name==='string'&&m.name.length<=200)||!Number.isFinite(Date.parse(value.fetchedAt)))throw {code:'provider_response'};
