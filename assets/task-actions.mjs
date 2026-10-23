@@ -1,6 +1,6 @@
 import {dataStore} from './data.mjs?v=tasks-data-2';
-import {createTaskService} from './tasks-service.mjs?v=calendar-2';
-import {allocation,localDate} from './tasks-model.mjs?v=calendar-2';
+import {createTaskService} from './tasks-service.mjs?v=three-day-3';
+import {allocation,localDate} from './tasks-model.mjs?v=three-day-3';
 import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=tasks-data-2';
 import {getSharedAIConnection} from './ai-runtime.mjs?v=tasks-shell-8';
 export function taskActions(root,context){

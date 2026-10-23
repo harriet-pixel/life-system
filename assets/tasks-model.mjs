@@ -59,3 +59,6 @@ export function clearSchedule(data,task,from=null){
  if(o)putOccurrence(data,{...o,status:task.kind==='once'?'unarranged':'deleted'});
  if(task.kind==='once')task.date=null;
 }
+
+// Yesterday remains in the three-day list; only earlier pending dates enter the overdue pool.
+export const isOverdue=(entry,today=localDate())=>Boolean(entry&&entry.status==='pending'&&entry.date<addDays(today,-1));
