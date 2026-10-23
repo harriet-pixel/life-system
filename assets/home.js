@@ -1,10 +1,10 @@
-import {taskActions} from './task-actions.mjs?v=task-layout-6';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=task-pool-5';
-import { createMobileTabPositioner } from './tab-position.mjs?v=task-pool-5';
-import { createActivityHeightSync } from './activity-height.mjs?v=task-pool-5';
-import { undoManager } from './undo.mjs?v=task-pool-5';
-import { createCompanionController, generateMockReply } from './companion.mjs?v=task-pool-5';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=task-pool-5';
+import {taskActions} from './task-actions.mjs?v=task-context-7';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=task-context-7';
+import { createMobileTabPositioner } from './tab-position.mjs?v=task-context-7';
+import { createActivityHeightSync } from './activity-height.mjs?v=task-context-7';
+import { undoManager } from './undo.mjs?v=task-context-7';
+import {createSharedCompanionView} from './companion-events.mjs?v=task-context-7';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=task-context-7';
 
 
 export function mountHome(root,context){
@@ -25,8 +25,7 @@ function showPlaceholder(label) {
   placeholder.hidden = false;
   portrait.setAttribute('aria-label', `夥伴頭像佔位：${label}，尚未提供情緒立繪`);
 }
-const companion = createCompanionController({
-  generate: generateMockReply,
+const companion = createSharedCompanionView({
   getContext: () => ({ character: null, affinity: null }),
   render(reply) {
     const asset = emotionPortraits[reply.emotion];
@@ -59,13 +58,11 @@ const companion = createCompanionController({
     };
     status.textContent = messages[state];
   },
-});
+},context);
 
 // Future adapters emit this event only AFTER their data operation succeeds.
 // There are deliberately no pointer, scroll, focus, or menu listeners.
-context.listen(document,'life-system:action-succeeded', (event) => {
-  companion.recordSuccess(event.detail);
-});
+
 function emitDemoSuccess(type, input, index, label) {
   if (!input.checked) return;
   document.dispatchEvent(new CustomEvent('life-system:action-succeeded', {
@@ -79,7 +76,7 @@ const tasks=taskActions(root,context);
 const todayList=root.querySelector('.task-list');
 function renderToday(){
  const rows=rowsForDate(dataStore.get().tasks,localDate());
- todayList.replaceChildren(...rows.map(row=>{const li=document.createElement('li'),label=document.createElement('label');li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;label.className='task-row';const input=document.createElement('input');input.type='checkbox';input.dataset.task='';const pending=tasks.isPending(row.task.id,row.occurrence.date);input.checked=row.occurrence.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));li.classList.toggle('is-processing',pending);li.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${row.name}`:`${input.checked?'取消完成':'完成'} ${row.name}`);input.onchange=()=>{const done=row.occurrence.status==='done';if(tasks.isPending(row.task.id,row.occurrence.date))return;input.checked=true;if(done)tasks.cancel(row.task.id,row.occurrence.date).catch(()=>{});else tasks.complete(row.task.id,row.occurrence.date);};const name=document.createElement('span');name.className='task-content';name.textContent=row.name;const category=document.createElement('span');category.className='task-time';category.textContent=row.category+(row.occurrence.status==='done'?' · 已完成':'');label.append(input,name,category);li.append(label);return li;}));
+ todayList.replaceChildren(...rows.map(row=>{const li=document.createElement('li'),label=document.createElement('label');li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;label.className='task-row';const input=document.createElement('input');input.type='checkbox';input.dataset.task='';const pending=tasks.isPending(row.task.id,row.occurrence.date);input.checked=row.occurrence.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));li.classList.toggle('is-processing',pending);li.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${row.name}`:`${input.checked?'取消完成':'完成'} ${row.name}`);input.onchange=()=>{const done=row.occurrence.status==='done';if(tasks.isPending(row.task.id,row.occurrence.date))return;input.checked=true;if(done)tasks.cancel(row.task.id,row.occurrence.date).catch(()=>{});else tasks.complete(row.task.id,row.occurrence.date);};const name=document.createElement('span');name.className='task-content';name.textContent=row.name;if(row.brief){const brief=document.createElement('span');brief.className='task-occurrence-brief';brief.textContent=row.brief;name.append(brief);}const category=document.createElement('span');category.className='task-time';category.textContent=row.category+(row.occurrence.status==='done'?' · 已完成':'');label.append(input,name,category);li.append(label);return li;}));
  if(!rows.length){const li=document.createElement('li');li.className='small-note';li.textContent='今天尚無待辦，前往待辦事項安排生活。';todayList.append(li);}
  root.querySelector('#task-count').textContent=`${rows.filter(r=>r.occurrence.status==='done').length} / ${rows.length} 完成`;
 }
@@ -115,7 +112,7 @@ entries.forEach((entry) => entry.input.addEventListener('change', async () => {
   emitDemoSuccess(entry.type === 'task' ? 'task.completed' : 'habit.checked-in', entry.input, entry.index, entry.label);
 }));
 context.setHooks({onUndoSuccess:()=>companion.cancelPending(),onRedoSuccess:()=>companion.cancelPending(),onBusyChange:busy=>entries.forEach(({input})=>input.disabled=busy)});
-context.onSuspend(()=>{const previous=status.textContent;companion.cancelPending();status.textContent=previous;});
+
 context.subscribe(dataStore,() => {
   renderActivities();
   const stats = dataStore.get().stats;

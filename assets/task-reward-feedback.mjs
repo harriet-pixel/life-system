@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=task-pool-5';
+import {ABILITIES} from './abilities.mjs?v=task-context-7';
 // A single, non-persistent playback queue; route changes discard old visuals, never replay them.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,sequence=0,layoutCurrent;

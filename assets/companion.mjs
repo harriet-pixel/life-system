@@ -1,6 +1,6 @@
 /** Provider-independent coordinator; real AI must live behind a server endpoint. */
 export const EMOTIONS = Object.freeze(['neutral', 'pleased', 'calm']);
-const ACTION_TYPES = new Set(['task.completed', 'habit.checked-in', 'task.created', 'task.updated', 'task.scheduled', 'task.deleted', 'task.deleted-completed', 'task.batch', 'task.cancelled', 'task.category']);
+const ACTION_TYPES = new Set(['task.processing', 'task.completed', 'habit.checked-in', 'task.created', 'task.updated', 'task.scheduled', 'task.deleted', 'task.deleted-completed', 'task.batch', 'task.cancelled', 'task.category']);
 
 export function validateReply(reply) {
   if (!reply || typeof reply.dialogue !== 'string' || !reply.dialogue.trim()
@@ -38,6 +38,7 @@ export function createCompanionController({
   getContext = () => ({ character: null, affinity: null }),
   fallback = () => ({ dialogue: '回應暫時無法產生；原本的示意操作已完成。', emotion: 'neutral' }),
   onStateChange = () => {},
+  isActionValid = () => true,
   debounceMs = 450,
   timeoutMs = 8000,
 }) {
@@ -45,28 +46,29 @@ export function createCompanionController({
   let timer;
   let active;
   let disposed = false;
+  let activeActions=[];
   const pending = new Map();
 
   async function flush(expectedVersion) {
-    const actions = [...pending.values()];
+    const actions = [...pending.values()].filter(isActionValid);
     pending.clear();
     if (disposed || !actions.length || expectedVersion !== version) return;
     const abortController = new AbortController();
-    active = abortController;
+    active = abortController;activeActions=actions;
     const request = { requestId: expectedVersion, actions, context: null };
     onStateChange('generating');
     try {
       request.context = getContext();
       const reply = validateReply(await runWithDeadline(generate, request, abortController.signal, timeoutMs));
-      if (!disposed && expectedVersion === version) {
-        render(reply);
+      if (!disposed && expectedVersion === version && actions.every(isActionValid)) {
+        render(reply,actions);
         onStateChange('ready');
       }
     } catch {
-      if (!disposed && expectedVersion === version) {
+      if (!disposed && expectedVersion === version && actions.every(isActionValid)) {
         // Production must inject an approved character-specific fallback.
         // Until a character exists, use only a neutral development message.
-        render(validateReply(fallback(request.context)));
+        render(validateReply(fallback(request.context)),actions);
         onStateChange('fallback');
       }
     } finally {
@@ -84,13 +86,18 @@ export function createCompanionController({
       version += 1;
       active?.abort();
       pending.set(`${action.type}:${action.actionId}`, {
-        type: action.type, actionId: action.actionId, label: action.label.slice(0, 200),
+        type: action.type, actionId: action.actionId, label: action.label.slice(0, 200), ...(typeof action.brief==='string'?{brief:action.brief}:{}),
       });
       clearTimeout(timer);
       const expectedVersion = version;
       onStateChange('queued');
       timer = setTimeout(() => { void flush(expectedVersion); }, debounceMs);
       return true;
+    },
+    invalidateAction(id) {
+      for(const [key,action] of pending)if(action.actionId===id)pending.delete(key);
+      if(activeActions.some(action=>action.actionId===id)){version++;active?.abort();clearTimeout(timer);if(pending.size){const expected=version;timer=setTimeout(()=>{void flush(expected);},debounceMs);}}
+      if(!pending.size&&(!active||activeActions.some(action=>action.actionId===id)))onStateChange('cancelled');
     },
     cancelPending() {
       if (disposed) return;

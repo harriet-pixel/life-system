@@ -1,5 +1,5 @@
-import {dataStore} from './data.mjs?v=task-pool-5';
-import {holdDraft} from './coordination.mjs?v=task-pool-5';
+import {dataStore} from './data.mjs?v=task-context-7';
+import {holdDraft} from './coordination.mjs?v=task-context-7';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

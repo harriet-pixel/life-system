@@ -1,6 +1,6 @@
 # 待辦事項（日期清單、手機設定與共用分類）
 
-本次修改基準為遠端 main `f5d1684`，沿用乾淨的隔離 checkout，原 `work` 分支及其他工作保留。發布前比較過 gh-pages：四頁與 assets 和 main 一致，沒有待回收的發布獨有功能修正。未建置或部署 Cloudflare、OAuth、Secrets。
+本次修改基準為遠端 main `50e99fb`，沿用乾淨的隔離 checkout，原 `work` 分支及其他工作保留。發布前比較過 gh-pages：四頁與 assets 和 main 一致，沒有待回收的發布獨有功能修正。未建置或部署 Cloudflare、OAuth、Secrets。
 
 ## 共用入口與資料
 
@@ -13,17 +13,29 @@
 - `assets/task-actions.mjs`：首頁和待辦頁共用 AI／手動分配與取消完成；AI service 和共用語言提示不變。等待生成不持資料鎖，提交要求相同 revision、事項版本、點數及當地日期。任一變更即拒絕舊結果，需使用者重新操作。
 - `assets/task-completion.mjs`：同文件單例能力分配佇列，僅記憶體 pending map。點擊立即勾選／disabled該筆／aria-busy並重繪當前頁，其他事件可入列；首頁與待辦頁讀同一 map，正式完成仍只在 service 原子交易寫入。工作開始前重新 prepare 並核對點擊時事項版本、點數與當地日；每次只呼叫一次既有 AI。共用原生 radio 分配視窗在 body，跨 route 保留同一進度；若其他編輯窗開著，等待關閉，不搶 modal 焦點。取消或失敗 refresh 正式資料後清除暫時狀態，重載不恢復 pending。app-shell 只對此擁有中的 AI 保留請求，其他開發 AI 切頁取消規則不變。
 - `assets/task-reward-feedback.mjs`：只有發起完成流程收到已提交 completion 才顯示實際貨幣／經驗／正值能力；不訂閱資料或重播紀錄。各文字是 body 的獨立 fixed span，無共同外框／底色，不占清單高度、不攔點擊。以 visualViewport 中央及可見範圍配置錯落位置，取 active current-page-name computed font／行高／字距，resize／字型載入重新布局；錯開110ms、2.8秒上浮淡出，結束移除。群組依序播放，極短視窗分批容納以避免重疊。reduced-motion 用1.6秒靜態文字。切頁清除舊視覺與待播舊群組，進行中的完成工作不清除；其後真正成功是新回饋，不是跨頁重播。
-- `assets/task-companion.mjs` 與既有 `companion.mjs`：成功的新增、編輯、分類、安排、刪除、批次、完成及取消完成才發事件，450ms 合併、舊回應失效、對話／情緒一起更新。日期瀏覽和自動逾期整理不生成對話。
+- `assets/task-companion.mjs`、`companion-events.mjs` 與既有 `companion.mjs`：同文件共享協調器，新增、編輯、分類、安排、刪除、批次及取消完成成功時發事件；完成則在點擊時發 task.processing，與能力分配並行，450ms 合併、提交後不重複生成。只傳名稱／簡述情境，不依賴獎勵數字或提前宣稱入帳；對話／情緒一起更新，不等待動畫。取消／失敗／Undo／Redo 使未顯示結果失效，跨頁不取消生成；返回頁面也重新驗證快取回應，不回放已失效結果。夥伴失敗不影響交易。日期瀏覽和自動逾期整理不生成對話。
 
 唯一文件仍是 `life-system.data.v1`。新增 `tasks`，內含 `definitions`、`categories`、`occurrences`、`completions`。未指派分類以 null 保存，畫面顯示「未定義」。未新增第二份 localStorage 數值或待辦來源。
 
 事項 ID 在建立時固定；一次性執行 ID 為事項 ID，重複執行為 `事項ID@YYYY-MM-DD`。同日完成、例外與手動／自動安排共用此身份，目標已存在（包含略過／移動例外）時明確拒絕，不能靜默合併。一次性／重複性在建立後固定；需要不同類型時新增另一事項，避免變動身份與獎勵意義。
 
+## 單次簡述、分配重用與多選安排
+
+每日名稱選單的編輯提供單行簡述，保存於 `occurrences.brief`，不改共用定義；移動跟隨安排，新安排空白。完成時快照至 `completions.brief`，歷史依當時內容呈現；首頁今日清單也安全顯示同筆簡述，待辦池仍僅名稱。舊欄位缺省為空，不改資料版本或清空舊紀錄；驗證拒絕非文字與換行，備份／還原及 Undo 快照共用同一驗證。
+
+只有成功交易才保存 `completion.allocation={basis,source}`；basis 是實際能力提示輸入的規則版本、名稱、分類 ID／名稱、點數、單次簡述之固定順序 JSON，來源 ai 或 manual。後續同一常駐任務完全匹配才重用已驗證實際能力；無效、取消或已撤回紀錄不重用。每次仍重新驗證最新資料並提交獨立獎勵，Redo 使用原快照。規則或能力判斷提示改變時須更新 ALLOCATION_RULE_VERSION。
+
+`task-diagnostics.mjs` 的 `taskTimings()` 可由開發工具 import 查閱 allocation／companion／commit 的 durationMs、status、time（最多120筆，文件記憶體）。allocation 包含人工等待；重用標示 reused。沒有金鑰、提示內容、使用者輸入或回應原文，不寫入備份、不堆入產品介面。
+
+逾期批次視窗的全選只作用於全部合格、目前列出的穩定執行 ID，部分選取顯示 indeterminate，提交仍重驗資格。常駐任務的安排入口改用 `task-multi-schedule.mjs` 跨月多選月曆；既有安排及終止例外禁選，起訖限制不自動延長。跨月保留選取，可清除、取消，確認透過 `arrangeMany` 先檢查整批，再以一次交易保存；任一衝突完整拒絕，Undo／Redo 一次處理。其他既有單次改期不變。
+
+頁籤加入上下置中的 Tasks／Task Pool；工具預設收合，固定兩列（名稱／分類、排序／批次），欄位標籤與控制水平置中；工具下無分隔線，池三區內容 padding-inline:1em，不內縮工具與頁籤。共用導覽僅在溢出時攔截垂直滾輪（含邊界），不攔截水平觸控板及縮放；跨頁不重綁。
+
 ## 量測與布局
 
 變更前450px／明體／16px下，日期格實測54×45.1875px、gap4px、七欄402px。桌面固定此基準（文字放大時高度可擴展避免裁字），手機保留等分欄規則。日清單用餘寬，工作區不足706px上下排；長名可換行，不讓整頁溢出。資料頁 .photo-frame 實測約445.953×594.594且宣告3/4，img使用cover；待辦原為240×520（min-height520使宣告比例失效），改為390×520，保留既有高度及資料頁本身。
 
-原頁在1600px下工具收合高度約927.84px、展開約1036.22px，確會跨越垂直捲動門檻；本機覆蓋式捲軸未直接重現橫移，傳統捲軸可改變置中空間。僅 tasks route 的 html 使用 scrollbar-gutter:stable（不支援時用正常常駐垂直捲軸），不鎖捲動、不作水平補償；驗證無／有垂直捲動、工具及頁籤切換的頁面／導覽／立繪／工作區水平座標一致。日期清單整體底線與日期間線同樣1px #dadddc，同日事件無線，最後空日期仍有底線，首頁不改。
+原頁在1600px下工具收合高度約927.84px、展開約1036.22px，確會跨越垂直捲動門檻；本機覆蓋式捲軸未直接重現橫移，傳統捲軸可改變置中空間。僅 tasks route 的 html 使用 scrollbar-gutter:stable（不支援時用正常常駐垂直捲軸），不鎖捲動、不作水平補償；驗證無／有垂直捲動、工具及頁籤切換的頁面／導覽／立繪／工作區水平座標一致。第一日期沒有上框線；日期清單整體底線與日期間線同樣1px #dadddc，同日事件無線，最後空日期仍有底線，首頁不改。
 
 ## 週期與歷史
 
@@ -53,9 +65,9 @@ tasks 已納入共用驗證、七天復原政策、本機和 Google Drive 的相
 
 ## 驗證入口
 
-`npm test`、`npm run lint`、`npm run build`；`tests/tasks-layout.cjs`、`tests/tasks-progress.cjs`、`tests/tasks-feedback.cjs`、`tests/tasks-pool.test.mjs`、`tests/tasks-pool.cjs`、`tests/tasks-deletion.cjs`、`tests/tasks.test.mjs`、`tests/tasks.cjs`、`tests/tasks-ai.cjs`、`tests/tasks-upper.cjs`、`tests/tasks-schedule.cjs`，以及首頁、app-shell、設定頁籤、個人圖片、還原和暖快取回歸。瀏覽器腳本的 `BASE_URL` 指向本機或建置成果的子路徑。公開部署結果須另行核對，不能用這些本機結果代替。
+`npm test`、`npm run lint`、`npm run build`；`tests/tasks-context.cjs`、`tests/tasks-context-races.cjs`、`tests/tasks-cache.cjs`、`tests/tasks-layout.cjs`、`tests/tasks-progress.cjs`、`tests/tasks-feedback.cjs`、`tests/tasks-pool.test.mjs`、`tests/tasks-pool.cjs`、`tests/tasks-deletion.cjs`、`tests/tasks.test.mjs`、`tests/tasks.cjs`、`tests/tasks-ai.cjs`、`tests/tasks-upper.cjs`、`tests/tasks-schedule.cjs`，以及首頁、app-shell、設定頁籤、個人圖片、還原和暖快取回歸。瀏覽器腳本的 `BASE_URL` 指向本機或建置成果的子路徑。公開部署結果須另行核對，不能用這些本機結果代替。
 
-本次單元測試涵蓋分類顏色與舊資料、清除日期、批次衝突、歷史獎勵、統一逾期及既有共用服務。瀏覽器驗證含 449／450／451px 的九種寬度、四種字型、200% 文字、分類管理、方框／名稱隔離、日期視窗焦點、重複例外、跨年午夜、首頁同步、跨分頁與 AI 備援；另檢查既有頁面、還原及暖快取升級。原生手機鍵盤僅以短視窗模擬，未以實體裝置驗證；未使用真實 AI 金鑰或 Google Drive 授權。
+本次132項單元測試通過；新增測試涵蓋單次簡述／歷史快照、分配比對重用、整批多日安排與備份／Undo／Redo。建置子路徑的瀏覽器測試驗證320–1280px（含450／451px）、全選混合狀態、跨年多選與首頁簡述；兩個真實瀏覽器分頁驗證改期衝突整批拒絕、全選中失效項目移除與略過後 Undo。Mock AI 以6次完成驗證5次請求（相同輸入重用1次；簡述／名稱／分類／點數改變各重新判斷），不等於真實供應商驗證。上一發布版50e99fb的暖快取亦驗證待辦與設定升級。既有單元測試涵蓋分類顏色與舊資料、清除日期、批次衝突、歷史獎勵、統一逾期及既有共用服務。瀏覽器驗證含 449／450／451px 的九種寬度、四種字型、200% 文字、分類管理、方框／名稱隔離、日期視窗焦點、重複例外、跨年午夜、首頁同步、跨分頁與 AI 備援；另檢查既有頁面、還原及暖快取升級。原生手機鍵盤僅以短視窗模擬，未以實體裝置驗證；未使用真實 AI 金鑰或 Google Drive 授權。
 
 分類顏色可為 null／缺省（使用既有文字色），或 #RRGGBB；沿用共用 luminance 計算，對白底至少 4.5:1，拒絕淺色及非十六進位值。每日名稱使用目前分類顏色，不新增標籤／色塊，也不修改完成歷史中的名稱、分類文字或實際獎勵。刪除分類只將定義的 categoryId 設 null 並增加版本；完成紀錄不變。既有備份缺色可讀，新備份及快照會驗證顏色，無效資料整體拒絕。
 

@@ -1,12 +1,13 @@
-import {createActivityHeightSync} from './activity-height.mjs?v=task-pool-5';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-pool-5';
-import {createTaskPool} from './task-pool.mjs?v=task-pool-5';
-import {dataStore} from './data.mjs?v=task-pool-5';
-import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-pool-5';
-import {taskActions} from './task-actions.mjs?v=task-layout-6';
-import {mountTaskCompanion} from './task-companion.mjs';
-import {createTaskEditor} from './task-editor.mjs?v=task-pool-5';
-import {createCategoryManager} from './task-categories.mjs?v=task-pool-5';
+import {createActivityHeightSync} from './activity-height.mjs?v=task-context-7';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-context-7';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-context-7';
+import {createTaskPool} from './task-pool.mjs?v=task-context-7';
+import {dataStore} from './data.mjs?v=task-context-7';
+import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-context-7';
+import {taskActions} from './task-actions.mjs?v=task-context-7';
+import {mountTaskCompanion} from './task-companion.mjs?v=task-context-7';
+import {createTaskEditor} from './task-editor.mjs?v=task-context-7';
+import {createCategoryManager} from './task-categories.mjs?v=task-context-7';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');let mobileCalendarOpen=false,contentTab=0;
@@ -38,11 +39,12 @@ export function mountTasks(root,context){
  dateDialog.querySelector('[type=button]').onclick=()=>dateDialog.close();dateDialog.addEventListener('close',()=>{const target=focus?.isConnected?focus:$(desktop.matches?'#new-task':'#task-settings');target?.focus({preventScroll:true});});
  function askDate(work){scheduleWork=work;focus=document.activeElement;dateDialog.querySelector('input').value=selected;dateDialog.querySelector('p').textContent='';dateDialog.showModal();}
  dateDialog.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=dateDialog.querySelector('[type=submit]');b.disabled=true;try{await scheduleWork(dateDialog.querySelector('input').value);dateDialog.close();actions.say('日期安排已儲存。');}catch(error){dateDialog.querySelector('p').textContent=error.message;}finally{b.disabled=false;}};
+ const multiSchedule=createMultiSchedule(root,actions,context);
  const confirm=message=>window.confirm(message);
  const menu=el('dialog');menu.className='task-dialog';menu.id='task-item-menu';menu.setAttribute('aria-labelledby','task-item-menu-title');let menuFocus;
  menu.addEventListener('close',()=>{if(menuFocus?.isConnected)menuFocus.focus({preventScroll:true});else $(desktop.matches?'#new-task':'#task-settings').focus({preventScroll:true});});root.append(menu);
  function openMenu(task,o=null,pool=false){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const controls=el('div',undefined,'task-menu-actions');
-  if(pool)controls.append(button('安排日期',()=>{menu.close();askDate(date=>actions.service.arrange(task.id,date,o?.date??null));}));
+  if(pool)controls.append(button('安排日期',()=>{menu.close();if(task.kind==='repeat'&&!o)multiSchedule.open(task);else askDate(date=>actions.service.arrange(task.id,date,o?.date??null));}));
   controls.append(button('編輯事件',()=>{menu.close();return openEditor(task,o?.date??null);}));
   const remove=button(task.kind==='repeat'&&o?'刪除此日安排':'刪除事件',async()=>{
    if(o?.status==='done'){menu.close();await actions.deleteCompleted(task.id,o.date);return;}
@@ -56,7 +58,7 @@ export function mountTasks(root,context){
  const pool=createTaskPool(root,context,actions,{openMenu,askDate});
  function dailyRow(r){const {task,occurrence:o}=r,node=el('article',undefined,'task-daily-row');node.dataset.taskId=task.id;node.dataset.date=o.date;
   const check=el('label',undefined,'task-check-control'),input=el('input');input.type='checkbox';const pending=actions.isPending(task.id,o.date);input.checked=o.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));node.classList.toggle('is-processing',pending);node.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${r.name}`:`${input.checked?'取消完成':'完成'} ${r.name}`);input.onchange=()=>{if(actions.isPending(task.id,o.date))return;input.checked=true;if(o.status==='done')actions.cancel(task.id,o.date).catch(()=>{});else actions.complete(task.id,o.date,node);};check.append(input);
-  const name=button(r.name,()=>openMenu(task,o));name.className='task-daily-name';const category=renderingData.categories.find(c=>c.id===task.categoryId);if(category?.color)name.style.color=category.color;node.append(check,name);return node;
+  const name=button(r.name,()=>openMenu(task,o));name.className='task-daily-name';if(r.brief){const brief=el('span',r.brief,'task-occurrence-brief');name.append(brief);}const category=renderingData.categories.find(c=>c.id===task.categoryId);if(category?.color)name.style.color=category.color;node.append(check,name);return node;
  }
  function choose(date,follow=false){selected=date;followToday=follow;month=date.slice(0,7);limits={};render();}
  function render(){syncCalendar();const focused=document.activeElement,focusedDate=focused?.closest('#month-grid')?focused.getAttribute('aria-label')?.slice(0,10):null,focusedRow=focused?.closest('.task-daily-row'),focusedTask=focusedRow?.dataset.taskId,focusedRowDate=focusedRow?.dataset.date,focusedCheckbox=focused?.matches('input[type=checkbox]');const today=localDate();if(today!==lastToday){if(followToday&&month===lastToday.slice(0,7))month=today.slice(0,7);if(followToday&&selected===lastToday)selected=today;lastToday=today;}const data=dataStore.get().tasks;renderingData=data;const visible=selected===today?[today,addDays(today,1)]:[addDays(selected,-1),selected,addDays(selected,1)];

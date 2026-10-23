@@ -98,3 +98,8 @@ test('undo invalidation cancels pending and in-flight replies without generation
  try {c.recordSuccess(action('1'));await until(()=>resolve);c.cancelPending();resolve(reply('已撤銷不可顯示'));await pause(10);assert.deepEqual(renders,[]);}
  finally {c.dispose();}
 });
+
+test('provisional completion generation is independent and invalidated before late reply or fallback',async()=>{
+ let resolve;const rendered=[],requests=[];const c=createCompanionController({debounceMs:0,generate:r=>{requests.push(r);return new Promise(r=>{resolve=r;});},render:r=>rendered.push(r)});
+ try{c.recordSuccess({type:'task.processing',actionId:'pending',label:'正在處理閱讀',brief:'p.1–5'});await until(()=>resolve);assert.equal(requests[0].actions[0].brief,'p.1–5');c.invalidateAction('pending');resolve(reply('過期稱讚'));await pause(10);assert.deepEqual(rendered,[]);c.recordSuccess(action('valid'));await until(()=>requests.length===2);resolve(reply('有效回應'));await until(()=>rendered.length===1);assert.equal(rendered[0].dialogue,'有效回應');}finally{c.dispose();}
+});

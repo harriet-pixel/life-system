@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=task-pool-5';
-import {emptyTasks,localDate,addDays,rowsForDate,catchUp,validateTasks,allocation} from '../assets/tasks-model.mjs?v=task-pool-5';
+import {createTaskService} from '../assets/tasks-service.mjs?v=task-context-7';
+import {emptyTasks,localDate,addDays,rowsForDate,catchUp,validateTasks,allocation} from '../assets/tasks-model.mjs?v=task-context-7';
 import {validateDocument,encodeBackup,readBackup,dataCount,restoreBackup} from '../assets/backup.mjs';
 function fixture(){let raw=null,time=new Date('2026-10-23T12:00:00'),seq=0;const storage={getItem:()=>raw,setItem:(_,s)=>raw=s},store=createDataStore(storage,{now:()=>+time}),service=createTaskService(store,{now:()=>time,id:()=>`id-${++seq}`});return {store,service,storage,advance:d=>{time=new Date(time);time.setDate(time.getDate()+d);},reload:()=>createDataStore(storage,{now:()=>+time})};}
 const values=(extra={})=>({name:'閱讀',points:2,kind:'once',date:null,start:'2026-10-23',end:null,days:[],overdue:'keep',categoryId:null,...extra});
 const dist={physique:0,wisdom:2,charisma:0,resilience:0,perception:0};
 test('overdue grace day is shared by queries and atomic batches without changing scheduled dates',async()=>{
- const {isOverdue}=await import('../assets/tasks-model.mjs?v=task-pool-5');
+ const {isOverdue}=await import('../assets/tasks-model.mjs?v=task-context-7');
  const f=fixture(),yesterday=await f.service.edit(values({date:'2026-10-22'})),earlier=await f.service.edit(values({date:'2026-10-21'}));await f.service.reconcile();
  const before=f.store.get(),entries=before.tasks.occurrences;
  assert.equal(isOverdue(entries.find(o=>o.taskId===yesterday),'2026-10-23'),false);assert.equal(isOverdue(entries.find(o=>o.taskId===earlier),'2026-10-23'),true);
@@ -65,3 +65,31 @@ test('batch conflicts leave whole document untouched, batch skip is one reversib
 test('cross-store stale completion and failed storage cannot partially change rewards',async()=>{const f=fixture(),id=await f.service.edit(values()),other=createDataStore(f.storage),second=createTaskService(other);const ticket=f.service.prepare(id),ticket2=second.prepare(id);await f.service.complete(ticket,dist);await assert.rejects(second.complete(ticket2,dist),/更新/);other.refresh();assert.equal(other.get().stats.currency,2);const initial=f.store.get(),bad=createDataStore({getItem:()=>JSON.stringify(initial),setItem:()=>{throw new Error('quota');}});await assert.rejects(createTaskService(bad).cancel(id,'2026-10-23'));assert.equal(bad.get().stats.currency,2);});
 test('unsafe or expired cancellation gives concrete reason, completion history outlives undo snapshots',async()=>{const f=fixture(),id=await f.service.edit(values());await f.service.complete(f.service.prepare(id),dist);f.store.transact({changes:{stats:{...f.store.get().stats,currency:0}},type:'stats.manual'});await assert.rejects(f.service.cancel(id,'2026-10-23'),/相依/);f.advance(8);await assert.rejects(f.service.cancel(id,'2026-10-23'),/七天|15/);assert.equal(f.store.get().tasks.completions.length,1);});
 test('new and pre-task backups validate atomically and migrate missing tasks without deleting demo keys',async()=>{const f=fixture();const id=await f.service.edit(values());await f.service.complete(f.service.prepare(id),dist);f.store.transact({changes:{activities:{'task-0':true,'custom-user-activity':true}}});const doc=f.store.get();validateDocument(doc);const payload={formatVersion:1,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(doc),imageCount:0,document:doc,images:[]};const restored=await readBackup(await encodeBackup(payload));assert.deepEqual(restored.payload.document.tasks,doc.tasks);const old=structuredClone(doc);delete old.tasks;old.undoHistory=[];const oldPayload={...payload,document:old,dataCount:dataCount(old)};const migrated=await readBackup(await encodeBackup(oldPayload));assert.deepEqual(migrated.payload.document.tasks,emptyTasks());assert.equal(migrated.payload.document.activities['custom-user-activity'],true);const invalid=structuredClone(doc);invalid.tasks.definitions[0].points=4;assert.throws(()=>validateDocument(invalid));const orphan=structuredClone(doc);orphan.tasks.completions[0].transactionId='missing';assert.throws(()=>validateDocument(orphan),/獎勵交易/);assert.deepEqual(f.store.get(),doc);assert.throws(()=>validateTasks({...emptyTasks(),version:99}));});
+
+test('occurrence briefs move with one arrangement, stay out of the definition and freeze in completion history',async()=>{
+ const {store,service,reload}=fixture();const id=await service.edit(values({kind:'repeat',days:[5]}));
+ let task=store.get().tasks.definitions.find(t=>t.id===id);await service.edit(task,id,task.version,{fromDate:'2026-10-23',date:'2026-10-23',brief:'p.1–5 <script>'});
+ assert.equal(rowsForDate(store.get().tasks,'2026-10-23')[0].brief,'p.1–5 <script>');assert.equal(rowsForDate(store.get().tasks,'2026-10-30')[0].brief,'');
+ await service.arrange(id,'2026-10-24','2026-10-23');assert.equal(rowsForDate(store.get().tasks,'2026-10-24')[0].brief,'p.1–5 <script>');
+ const ticket=service.prepare(id,'2026-10-24');await service.complete(ticket,dist,'manual');const c=store.get().tasks.completions.at(-1);assert.equal(c.brief,'p.1–5 <script>');
+ task=store.get().tasks.definitions.find(t=>t.id===id);await service.edit({...task,name:'新名稱',points:3},id,task.version);assert.equal(store.get().tasks.completions.at(-1).brief,c.brief);assert.equal(store.get().tasks.completions.at(-1).reward.currency,2);
+ assert.equal(reload().get().tasks.completions.at(-1).brief,c.brief);assert.equal(Object.hasOwn(task,'brief'),false);
+ await assert.rejects(service.edit(store.get().tasks.definitions[0],id,store.get().tasks.definitions[0].version,{fromDate:'2026-10-30',date:'2026-10-30',brief:'two\nlines'}),/單行/);
+});
+test('repeat allocation reuse matches actual input and successful validated source only',async()=>{
+ const {reusableAllocation,allocationKey}=await import('../assets/tasks-model.mjs?v=task-context-7');const {store,service}=fixture();const id=await service.edit(values({kind:'repeat',days:[5,6]}));const original=service.prepare(id,'2026-10-23');assert.equal(reusableAllocation(store.get().tasks,original),null);await service.complete(original,dist,'manual');const next=service.prepare(id,'2026-10-24');assert.deepEqual(reusableAllocation(store.get().tasks,next),{distribution:dist,source:'manual'});
+ for(const changed of [{name:'不同'},{category:'不同'},{categoryId:'new'},{points:3},{brief:'p.6–10'}])assert.equal(reusableAllocation(store.get().tasks,{...next,...changed}),null);
+ assert.equal(reusableAllocation(store.get().tasks,{...next,kind:'once'}),null);assert.notEqual(allocationKey(next),allocationKey({...next,brief:'next'}));
+ await service.complete(next,dist,'manual');assert.equal(store.get().stats.currency,4);assert.equal(store.get().tasks.completions.length,2);await assert.rejects(service.complete(next,dist,'manual'));assert.equal(store.get().stats.currency,4);
+ const bad=store.get().tasks;bad.completions[0].allocation.basis=bad.completions[0].allocation.basis.replace('"rules":"1"','"rules":"old"');bad.completions[1].cancelledAt='2026-10-24T12:00:00Z';assert.equal(reusableAllocation(bad,next),null);
+});
+test('multi-date arrangement is atomic, respects automatic/terminal exceptions and range, and creates blank briefs',async()=>{
+ const {store,service}=fixture();const id=await service.edit(values({kind:'repeat',days:[5],end:'2026-11-03'}));let t=store.get().tasks.definitions[0];await service.arrangeMany(id,['2026-10-24','2026-11-02'],t.version);assert.equal(rowsForDate(store.get().tasks,'2026-10-24')[0].brief,'');assert.equal(rowsForDate(store.get().tasks,'2026-11-02')[0].brief,'');assert.deepEqual(store.get().tasks.definitions[0].days,[5]);
+ const before=store.get();for(const dates of [['2026-10-25','2026-10-30'],['2026-10-25','2026-11-04'],['2026-10-25','2026-10-24'],['2026-10-25','2026-10-25']]){await assert.rejects(service.arrangeMany(id,dates,t.version));assert.deepEqual(store.get(),before);}
+ await service.remove(id,'2026-10-24');await assert.rejects(service.arrangeMany(id,['2026-10-24'],t.version),/例外/);await assert.rejects(service.arrangeMany(id,['2026-10-25'],t.version+1),/修改/);
+});
+test('briefs and allocation evidence survive backup/restore, Undo and Redo; invalid brief rejects entire backup',async()=>{
+ const {store,service}=fixture();const id=await service.edit(values({kind:'repeat',days:[]}));await service.arrangeMany(id,['2026-10-23','2026-10-24'],1);const scheduled=store.get().tasks;await store.undo();assert.equal(store.get().tasks.occurrences.length,0);await store.redo();assert.deepEqual(store.get().tasks,scheduled);
+ const t=store.get().tasks.definitions[0];await service.edit(t,id,t.version,{fromDate:'2026-10-23',date:'2026-10-23',brief:'p.1–5'});const edited=store.get().tasks;await store.undo();assert.equal(rowsForDate(store.get().tasks,'2026-10-23')[0].brief,'');await store.redo();assert.deepEqual(store.get().tasks,edited);await service.complete(service.prepare(id,'2026-10-23'),dist,'ai');const doc=store.get(),payload={formatVersion:1,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(doc),imageCount:0,document:doc,images:[]};assert.deepEqual((await readBackup(await encodeBackup(payload))).payload.document.tasks,doc.tasks);await store.undo();assert.equal(store.get().stats.currency,0);await store.redo();assert.deepEqual(store.get().tasks,doc.tasks);
+ const beforeInvalid=store.get(),invalid=structuredClone(doc);invalid.tasks.occurrences[0].brief='bad\nline';assert.throws(()=>validateDocument(invalid));assert.deepEqual(store.get(),beforeInvalid);
+});

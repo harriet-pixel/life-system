@@ -64,6 +64,12 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
     revealCurrent(nav);
   };
   build(desktopLinks);build(mobileLinks);
+  for(const nav of [desktopLinks,mobileLinks])nav.addEventListener('wheel',event=>{
+    if(event.ctrlKey||event.metaKey||event.deltaX!==0||!event.deltaY||nav.scrollWidth<=nav.clientWidth+1)return;
+    event.preventDefault();
+    const scale=event.deltaMode===1?(parseFloat(getComputedStyle(nav).lineHeight)||20):event.deltaMode===2?nav.clientWidth:1;
+    nav.scrollLeft+=event.deltaY*scale;
+  },{passive:false});
   const refreshRoutes=()=>{
     for(const nav of [desktopLinks,mobileLinks]){for(const link of nav.querySelectorAll('a')){if(isCurrentRoute(link.href,location.href))link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}revealCurrent(nav);}
     const currentItem=navigationItems.find(item=>item.available&&isCurrentRoute(item.href,location.href)),currentPage=document.querySelector('#current-page-name');
@@ -95,7 +101,7 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
         const result = await undoManager[method]();
         if (result.reason === 'unavailable') return;
         feedback().hidden=false;
-        if (result.ok) { onSuccess();feedback().textContent=`已${action}「${result.label}」。`; }
+        if (result.ok) { document.dispatchEvent(new CustomEvent('life-system:recovery-succeeded'));onSuccess();feedback().textContent=`已${action}「${result.label}」。`; }
         else feedback().textContent=result.error?.message || `${action}失敗，請重試。`;
       } catch(error) { feedback().hidden=false;feedback().textContent=error.message || `${action}失敗，請重試。`; }
       finally { pending=false;refreshControls(); }
