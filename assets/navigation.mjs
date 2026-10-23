@@ -22,8 +22,7 @@ export function isCurrentRoute(href, locationURL) {
 export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, onRedoSuccess = () => {}, onBusyChange = () => {} }) {
   const desktopLinks = document.querySelector('#desktop-links');
   const mobileLinks = document.querySelector('#mobile-links');
-  const currentPage = document.querySelector('#current-page-name');
-  const feedback = document.querySelector('#operation-status');
+  const feedback=()=>document.querySelector('#operation-status');
   const mobileBar = document.querySelector('.mobile-navigation');
   const undoButtons = [...document.querySelectorAll('[data-undo]')];
   const redoButtons = undoButtons.map(undo => {
@@ -36,7 +35,7 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   let pending = false;
   const revealCurrent = (nav) => {
     const current = nav.querySelector('[aria-current="page"]');
-    if (current && nav.getClientRects().length) current.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (current && nav.getClientRects().length) nav.scrollLeft=Math.max(0,current.offsetLeft-nav.clientWidth/2+current.offsetWidth/2);
   };
   const build = (nav) => {
     const list = document.createElement('div');
@@ -48,10 +47,7 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
       if (item.available) {
         element.href = item.href;
         if (isCurrentRoute(item.href, window.location.href)) element.setAttribute('aria-current', 'page');
-        element.addEventListener('click', (event) => {
-          // Clicking the current page does not reload and discard demo state.
-          if (isCurrentRoute(item.href, window.location.href)) event.preventDefault();
-        });
+
       } else {
         element.setAttribute('role', 'link');
         element.setAttribute('aria-disabled', 'true');
@@ -61,26 +57,25 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
         unavailable.textContent = '（未開放）';
         element.append(unavailable);
       }
-      element.addEventListener('focus', () => element.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
+      element.addEventListener('focus',()=>{const rect=element.getBoundingClientRect(),outer=nav.getBoundingClientRect();const delta=rect.left<outer.left?rect.left-outer.left:rect.right>outer.right?rect.right-outer.right:0;if(delta)nav.scrollLeft+=delta;});
       list.append(element);
     });
     nav.replaceChildren(list);
     revealCurrent(nav);
   };
-  const refreshRoutes = () => {
-    build(desktopLinks); build(mobileLinks);
-    const currentItem = navigationItems.find(item => item.available && isCurrentRoute(item.href, window.location.href));
-    currentPage.textContent = currentItem ? `｜${currentItem.label}${currentItem.englishLabel ? ` ${currentItem.englishLabel}` : ''}` : '';
+  build(desktopLinks);build(mobileLinks);
+  const refreshRoutes=()=>{
+    for(const nav of [desktopLinks,mobileLinks]){for(const link of nav.querySelectorAll('a')){if(isCurrentRoute(link.href,location.href))link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}revealCurrent(nav);}
+    const currentItem=navigationItems.find(item=>item.available&&isCurrentRoute(item.href,location.href)),currentPage=document.querySelector('#current-page-name');
+    if(currentPage){currentPage.hidden=false;currentPage.textContent=currentItem?`｜${currentItem.label} ${currentItem.englishLabel}`:'';}
   };
   refreshRoutes();
-  window.addEventListener('popstate', refreshRoutes);
-  window.addEventListener('pageshow', refreshRoutes);
 
   desktopLinks.hidden = false;
-  currentPage.hidden = false;
+
   const refreshControls = () => {
     const {available,redoAvailable,busy,recoveryNotice} = undoManager.getState();
-    if(recoveryNotice&&feedback.hidden){feedback.hidden=false;feedback.textContent=recoveryNotice;}
+    if(recoveryNotice&&feedback()?.hidden){feedback().hidden=false;feedback().textContent=recoveryNotice;}
     for (const [buttons,enabled,action] of [[undoButtons,available,'撤銷'],[redoButtons,redoAvailable,'恢復']]) {
       buttons.forEach(button => {
         button.disabled = !enabled || pending || busy;
@@ -99,10 +94,10 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
       try {
         const result = await undoManager[method]();
         if (result.reason === 'unavailable') return;
-        feedback.hidden=false;
-        if (result.ok) { onSuccess();feedback.textContent=`已${action}「${result.label}」。`; }
-        else feedback.textContent=result.error?.message || `${action}失敗，請重試。`;
-      } catch(error) { feedback.hidden=false;feedback.textContent=error.message || `${action}失敗，請重試。`; }
+        feedback().hidden=false;
+        if (result.ok) { onSuccess();feedback().textContent=`已${action}「${result.label}」。`; }
+        else feedback().textContent=result.error?.message || `${action}失敗，請重試。`;
+      } catch(error) { feedback().hidden=false;feedback().textContent=error.message || `${action}失敗，請重試。`; }
       finally { pending=false;refreshControls(); }
     }));
   }
@@ -113,4 +108,5 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   };
   new ResizeObserver(updateBarHeight).observe(mobileBar);
   updateBarHeight();
+  return {refreshRoutes,refreshControls};
 }

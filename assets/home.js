@@ -1,22 +1,23 @@
-import { createMobileTabPositioner } from './tab-position.mjs';
-import { createActivityHeightSync } from './activity-height.mjs';
+import { createMobileTabPositioner } from './tab-position.mjs?v=app-shell-6';
+import { createActivityHeightSync } from './activity-height.mjs?v=app-shell-6';
 import { undoManager } from './undo.mjs?v=ai-connection-1';
 import { createCompanionController, generateMockReply } from './companion.mjs';
 import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=ai-connection-1';
-import { initializeNavigation } from './navigation.mjs';
 
+
+export function mountHome(root,context){
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {
   neutral: { label: '平靜', src: null },
   pleased: { label: '欣喜', src: null },
   calm: { label: '放鬆', src: null },
 };
-const portrait = document.querySelector('.companion-portrait');
-const portraitImage = document.querySelector('#companion-image');
-const placeholder = document.querySelector('#portrait-placeholder');
-const emotionLabel = document.querySelector('#portrait-emotion');
-const dialogue = document.querySelector('#companion-dialogue');
-const status = document.querySelector('#companion-status');
+const portrait = root.querySelector('.companion-portrait');
+const portraitImage = root.querySelector('#companion-image');
+const placeholder = root.querySelector('#portrait-placeholder');
+const emotionLabel = root.querySelector('#portrait-emotion');
+const dialogue = root.querySelector('#companion-dialogue');
+const status = root.querySelector('#companion-status');
 function showPlaceholder(label) {
   portraitImage.hidden = true;
   placeholder.hidden = false;
@@ -60,7 +61,7 @@ const companion = createCompanionController({
 
 // Future adapters emit this event only AFTER their data operation succeeds.
 // There are deliberately no pointer, scroll, focus, or menu listeners.
-document.addEventListener('life-system:action-succeeded', (event) => {
+context.listen(document,'life-system:action-succeeded', (event) => {
   companion.recordSuccess(event.detail);
 });
 function emitDemoSuccess(type, input, index, label) {
@@ -71,15 +72,15 @@ function emitDemoSuccess(type, input, index, label) {
 }
 
 // Shared persistent activity state and journal; demo labels and companion remain unchanged.
-const taskInputs = [...document.querySelectorAll('[data-task]')];
-const habitInputs = [...document.querySelectorAll('[data-habit]')];
+const taskInputs = [...root.querySelectorAll('[data-task]')];
+const habitInputs = [...root.querySelectorAll('[data-habit]')];
 const entries = [
   ...taskInputs.map((input, index) => ({ input, index, id: `task-${index}`, type: 'task', label: input.closest('label').querySelector('.task-name').textContent })),
   ...habitInputs.map((input, index) => ({ input, index, id: `habit-${index}`, type: 'habit', label: input.closest('label').querySelector('.habit-name').textContent })),
 ];
 const defaults = Object.fromEntries(entries.map(({ input, id }) => [id, input.defaultChecked]));
 const activityStore = { get: id => ({ checked: dataStore.get().activities[id] ?? defaults[id] }) };
-const taskCount = document.querySelector('#task-count');
+const taskCount = root.querySelector('#task-count');
 function renderActivities() {
   if(undoManager.getState().busy)return;
   entries.forEach(({ input, id, type }) => {
@@ -96,22 +97,18 @@ entries.forEach((entry) => entry.input.addEventListener('change', async () => {
       label: `${entry.type === 'task' ? (entry.input.checked ? '完成待辦' : '取消完成待辦') : (entry.input.checked ? '習慣打卡' : '取消習慣打卡')}：${entry.label}`,
       changes: { activities: { ...defaults, ...dataStore.get().activities, [entry.id]: entry.input.checked } } });
   } catch (error) {
-    const notice = document.querySelector('#operation-status'); notice.hidden = false; notice.textContent = error.message;
+    const notice = root.querySelector('#operation-status'); notice.hidden = false; notice.textContent = error.message;
     renderActivities(); return;
   }
   renderActivities();
   emitDemoSuccess(entry.type === 'task' ? 'task.completed' : 'habit.checked-in', entry.input, entry.index, entry.label);
 }));
-initializeNavigation({
-  undoManager,
-  onUndoSuccess: () => companion.cancelPending(),
-  onRedoSuccess: () => companion.cancelPending(),
-  onBusyChange: (busy) => entries.forEach(({ input }) => { input.disabled = busy; }),
-});
-dataStore.subscribe(() => {
+context.setHooks({onUndoSuccess:()=>companion.cancelPending(),onRedoSuccess:()=>companion.cancelPending(),onBusyChange:busy=>entries.forEach(({input})=>input.disabled=busy)});
+context.onSuspend(()=>{const previous=status.textContent;companion.cancelPending();status.textContent=previous;});
+context.subscribe(dataStore,() => {
   renderActivities();
   const stats = dataStore.get().stats;
-  const summary = document.querySelector('#home-stats');
+  const summary = root.querySelector('#home-stats');
   const [experience, level, currency] = profileSummary(stats).split(' ｜ ');
   summary.textContent = `${level} ｜ ${experience}｜ ${currency}`;
   summary.setAttribute('aria-label', `累積總經驗值：${visibleExperience(stats.experience)}，等級：${stats.level}，貨幣：${stats.currency}`);
@@ -120,16 +117,17 @@ dataStore.subscribe(() => {
 
 // Responsive tabs share the existing DOM, so switching never resets selections
 // and never emits a successful-action event or triggers companion generation.
-const activityTabs = document.querySelector('.activity-tabs');
+const activityTabs = root.querySelector('.activity-tabs');
 const tabButtons = [...activityTabs.querySelectorAll('button')];
-const activityPanels = tabButtons.map((button) => document.getElementById(button.dataset.panel));
-const updateActivityHeight = createActivityHeightSync(document.querySelector('.home-grid'), activityPanels);
+const activityPanels = tabButtons.map((button) => root.querySelector("#"+CSS.escape(button.dataset.panel)));
+const updateActivityHeight = createActivityHeightSync(root.querySelector('.home-grid'),activityPanels,context);
 const positionActivityTabs = createMobileTabPositioner(activityTabs, updateActivityHeight);
-dataStore.subscribe(updateActivityHeight);
+context.onSuspend(()=>positionActivityTabs.cancel());
+context.subscribe(dataStore,updateActivityHeight);
 const desktopLayout = window.matchMedia('(min-width: 1024px)');
 let selectedPanel = 0;
 function syncActivityTabs() {
-  document.querySelector('#main').dataset.activityTabs = 'true';
+  root.querySelector('#main').dataset.activityTabs = 'true';
   activityTabs.hidden = false;
   activityTabs.setAttribute('role', 'tablist');
   placeholder.firstElementChild.textContent = desktopLayout.matches ? '立繪佔位' : '頭像佔位';
@@ -159,5 +157,8 @@ tabButtons.forEach((button, index) => {
     tabButtons[selectedPanel].focus();
   });
 });
-desktopLayout.addEventListener('change', syncActivityTabs);
+context.listen(desktopLayout,'change',syncActivityTabs);
+context.onResume(syncActivityTabs);
 syncActivityTabs();
+
+}

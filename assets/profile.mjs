@@ -1,12 +1,13 @@
 import {bindProfileValidation} from './validation.mjs?v=ai-connection-1';
 import { holdDraft } from './coordination.mjs';
-import { createProfileImages } from './profile-images.mjs?v=ai-connection-1';
+import { createProfileImages } from './profile-images.mjs?v=app-shell-6';
 import { imageURL, prepareImageReferences } from './image-store.mjs';
 import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=ai-connection-1';
 import { undoManager } from './undo.mjs?v=ai-connection-1';
 import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=ai-connection-1';
-import { initializeNavigation } from './navigation.mjs';
-const $ = selector => document.querySelector(selector);
+
+export function mountProfile(root,context){
+const $ = selector => root.querySelector(selector);
 const notice = message => { $('#operation-status').hidden = false; $('#operation-status').textContent = message; };
 let renderedImageVersion = 0;
 const photoFrame = $('.photo-frame');
@@ -75,7 +76,7 @@ function renderRadar() {
   });
   container.replaceChildren(svg);
 }
-new ResizeObserver(renderRadar).observe($('#ability-radar'));
+context.observe(new ResizeObserver(renderRadar),[$('#ability-radar')]);
 document.fonts.ready.then(renderRadar);
 function render() {
   const state = dataStore.get();
@@ -98,7 +99,7 @@ function render() {
 }
 const desktopPanels = matchMedia('(min-width:1024px)');
 function positionResponsiveContent(){(desktopPanels.matches?$('.profile-portrait-column'):$('.profile-content')).append($('#operation-status'));}
-positionResponsiveContent();desktopPanels.addEventListener('change',positionResponsiveContent);
+positionResponsiveContent();context.listen(desktopPanels,'change',positionResponsiveContent);context.onResume(positionResponsiveContent);
 const dialog = $('#profile-dialog'), form = $('#profile-form');
 const personalKeys = ['name', 'age', 'gender', 'bio', 'boundaries', 'motto'];
 const genderChoices=[...form.querySelectorAll('[name="gender-choice"]')];
@@ -113,7 +114,7 @@ for (const field of numericFields) {
 }
 const settingTabs = [...$('#settings-tabs').querySelectorAll('button')];
 function selectSetting(index) {
-  settingTabs.forEach((tab,i) => { tab.setAttribute('aria-selected',String(i===index)); tab.tabIndex = i===index ? 0 : -1; document.getElementById(tab.getAttribute('aria-controls')).hidden = i!==index; });
+  settingTabs.forEach((tab,i) => { tab.setAttribute('aria-selected',String(i===index)); tab.tabIndex = i===index ? 0 : -1; root.querySelector("#"+CSS.escape(tab.getAttribute('aria-controls'))).hidden = i!==index; });
 }
 settingTabs.forEach((tab,i) => {
   tab.addEventListener('click',()=>selectSetting(i));
@@ -125,7 +126,7 @@ settingTabs.forEach((tab,i) => {
 });
 const imageTabs=[...$('#image-tabs').querySelectorAll('button')];
 function selectImage(index) {
-  imageTabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;document.getElementById(tab.getAttribute('aria-controls')).hidden=i!==index;});
+  imageTabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;root.querySelector("#"+CSS.escape(tab.getAttribute('aria-controls'))).hidden=i!==index;});
 }
 imageTabs.forEach((tab,index)=>{
   tab.addEventListener('click',()=>selectImage(index));
@@ -140,7 +141,8 @@ function hasUnsavedChanges(){
   if(Object.entries(initialFields).some(([key,value])=>form.elements[key].value!==value)||imageDraft.hasChanges)return true;
   return false;
 }
-function syncSaveButtons(){$('#save-settings').disabled=saving||imageBusy;$('#save-unsaved-settings').disabled=saving||imageBusy;}
+function syncSaveButtons(){
+  context.notify();$('#save-settings').disabled=saving||imageBusy;$('#save-unsaved-settings').disabled=saving||imageBusy;}
 function requestBackdropClose(focus){
   if(!dialog.open||saving||unsavedDialog.open)return;
   if(!hasUnsavedChanges()){dialog.close();return;}
@@ -181,13 +183,14 @@ function fieldError(key,message,index) {
   selectSetting(index);if(ABILITIES.some(a=>a.id===key))$('#ability-edit-details').open=true;
   if(key==='photo')selectImage(0);if(key==='avatar')selectImage(1);if(key==='portraits')selectImage(2);
   $('#form-error').textContent=message;const input=key==='photo'?$('#choose-photo'):key==='avatar'?$('#choose-avatar'):key==='portraits'?$('#portrait-library'):form.elements[key];
-  document.getElementById(`${key}-error`).textContent=message;input.setAttribute('aria-invalid','true');input.focus();
+  root.querySelector("#"+CSS.escape(`${key}-error`)).textContent=message;input.setAttribute('aria-invalid','true');input.focus();
 }
-const imageDraft=createProfileImages({onError:(key,message)=>fieldError(key,message,1),onSelect:selectImage,onBusy:busy=>{imageBusy=busy;syncSaveButtons();}});
+const imageDraft=createProfileImages({root,onError:(key,message)=>fieldError(key,message,1),onSelect:selectImage,onBusy:busy=>{imageBusy=busy;syncSaveButtons();}});
 function lockSave(value){saving=value;syncSaveButtons();$('.settings-scroll').inert=value;$('#settings-tabs').inert=value;}
 $('#edit-profile').addEventListener('click',async()=>{
   if(openingProfile||dialog.open)return;openingProfile=true;
   try {releaseDraft=await holdDraft();} catch(error){notice(error.message);return;} finally{openingProfile=false;}
+  if(!context.active){releaseDraft?.();releaseDraft=null;return;}
   baseState=dataStore.get();$('#values-reset-status').textContent='';saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
   personalKeys.forEach(key=>{form.elements[key].value=baseState.profile[key];form.elements[key].dispatchEvent(new Event('profile-populate'));});
   syncGenderChoices();
@@ -240,5 +243,9 @@ form.addEventListener('submit',async event=>{
   }catch(error){if(dialog.open&&version===saveVersion){lockSave(false);if(error.field)fieldError(error.field,error.message,1);else $('#form-error').textContent=error.message;}}
   finally{if(version===saveVersion)lockSave(false);}
 });
-initializeNavigation({undoManager});
-dataStore.subscribe(render);
+
+context.subscribe(dataStore,render);
+
+context.setHooks({hasDraft:()=>dialog.open&&hasUnsavedChanges(),busy:()=>saving||imageBusy||restarting});
+
+}

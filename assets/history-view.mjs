@@ -13,7 +13,7 @@ export function historyRow(record,state) {
     return li;
 }
 
-export function createHistoryView({store:dataStore,afterRender=()=>{},root=document}) {
+export function createHistoryView({store:dataStore,afterRender=()=>{},root=document,context}) {
 const $=selector=>root.querySelector(selector);
 const HISTORY_PAGE_SIZE = 5;
 let historyPage = 1, lastHistoryId = null;
@@ -48,6 +48,6 @@ function positionHistory(){
     list.before(pagination); list.after(retention);
   }
 }
-positionHistory();desktopPanels.addEventListener('change',positionHistory);
+positionHistory();if(context){context.listen(desktopPanels,'change',positionHistory);context.onResume(positionHistory);}else desktopPanels.addEventListener('change',positionHistory);
 return {render:renderHistory};
 }

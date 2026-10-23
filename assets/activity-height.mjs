@@ -1,6 +1,6 @@
 // Measure the existing panels synchronously, offscreen and inaccessible: no clones
 // or extra interactive content are introduced, and hidden state is restored before paint.
-export function createActivityHeightSync(container, panels) {
+export function createActivityHeightSync(container, panels, lifecycle) {
   const narrow = matchMedia('(max-width: 450px)');
   let frame = 0;
   function update() {
@@ -35,18 +35,22 @@ export function createActivityHeightSync(container, panels) {
     else container.style.removeProperty('min-height');
   }
   function schedule() {
+    if(lifecycle&&!lifecycle.active)return;
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(update);
   }
   const resize = new ResizeObserver(schedule);
-  resize.observe(container);
-  panels.forEach(panel => resize.observe(panel));
+  const watchResize=()=>{resize.observe(container);panels.forEach(panel=>resize.observe(panel));};
+  watchResize();
   const mutations = new MutationObserver(schedule);
   mutations.observe(container, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
-  window.addEventListener('resize', schedule);
-  narrow.addEventListener('change', update);
+  const listen=(target,event,fn)=>lifecycle?lifecycle.listen(target,event,fn):target.addEventListener(event,fn);
+  listen(window,'resize',schedule);
+  listen(narrow,'change',update);
   document.fonts.ready.then(schedule);
-  document.fonts.addEventListener('loadingdone', schedule);
+  listen(document.fonts,'loadingdone',schedule);
+  lifecycle?.onSuspend(()=>{cancelAnimationFrame(frame);resize.disconnect();mutations.disconnect();});
+  lifecycle?.onResume(()=>{watchResize();mutations.observe(container,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});update();});
   update();
   return update;
 }
