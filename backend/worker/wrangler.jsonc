@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "life-system-personal-ai",
+  "main": "index.mjs",
+  "compatibility_date": "2026-10-23",
+  "workers_dev": true,
+  "preview_urls": false,
+  "keep_vars": true,
+  "observability": {"enabled": false},
+  "vars": {"SITE_URL": "https://harriet-pixel.github.io/life-system/"},
+  "durable_objects": {"bindings": [{"name": "PERSONAL_GATE", "class_name": "PersonalGate"}]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["PersonalGate"]}]
+}

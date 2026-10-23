@@ -1,3 +1,4 @@
+import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=personal-worker-5';
 import {createServer} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {createJWTVerifier} from './auth.mjs';
@@ -44,7 +45,7 @@ export function createAIHandler({authenticate,origins,trustedProxyIPs=[],fetcher
         const listing=await adapter.listModels();
         if(body.operation==='models'){send(200,listing);return;}
         if(!listing.models.some(model=>model.id===body.model))fail('model_unavailable',404);
-        const result=await adapter.generate({descriptor:listing.models.find(model=>model.id===body.model),model:body.model,text:body.operation==='test'?'Reply only with OK.':body.text,maxOutputTokens:body.operation==='test'?64:body.maxOutputTokens});
+        const result=await adapter.generate({descriptor:listing.models.find(model=>model.id===body.model),model:body.model,text:body.operation==='test'?AI_TEST_TEXT:body.text,maxOutputTokens:body.operation==='test'?64:body.maxOutputTokens});
         send(200,body.operation==='test'?{ok:true}:result);
       } finally {slot.active--;}
     } catch(error) {

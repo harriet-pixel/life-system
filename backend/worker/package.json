@@ -1,0 +1,1 @@
+{"name":"life-system-personal-ai-worker","private":true,"type":"module","scripts":{"check":"wrangler deploy --dry-run --outdir ../../work/worker-build","deploy":"wrangler deploy"},"devDependencies":{"wrangler":"4.152.0"}}

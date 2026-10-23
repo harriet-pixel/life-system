@@ -91,21 +91,22 @@
 
 ## AI 連線
 
-- 沿用同一 AI service 與四家 provider。正式後端原始碼保留，未部署／未接登入；本次只做開發者自用瀏覽器直連，不建立登入、後端平台、雲端或付費資源。
+- 沿用同一 AI service 與四家 provider。新增 Cloudflare Workers 個人後端（GitHub OAuth 本人 numeric ID、Worker Secret、SQLite DO 限額），部署指南與免費界線見 `docs/CLOUDFLARE_PERSONAL_AI.md`；原 Node BYOK 後端保留，不是本次部署目標。控制台未部署前如實尚未設定，不購買網域、不搬 DNS、不升級付費。瀏覽器直連保留作手動備用，不自動切換／重送。
 - 「瀏覽器直連測試模式」預設關閉，啟用前明確提示金鑰暴露與測試 key／用量限制並確認。測試模式不因正式 endpoint 空白或未登入而停用輸入；只呼叫官方 HTTPS API，不用公共代理或停用瀏覽器安全性。
 - 明確同意後，一組 provider/key/model/原始期限只存專用 sessionStorage `life-system.ai-test.v1`，最長 2 小時、不因讀取／切頁／重載延長。啟動、恢復、可見與每次請求前檢查；pagehide 只取消執行記憶體，不刪仍有效的測試 entry。關閉模式、中斷或到期清除；換商取消並清空金鑰、模型與狀態，不保留多家 key。
 - sessionStorage 不是加密保管庫，不保證關閉分頁可靠抹除；不寫其他瀏覽器儲存、一般設定／歷史／Undo／Redo／備份／URL／日誌，不跨頁籤廣播，不要求使用者把 key 貼到聊天或 Git。新分頁可能由瀏覽器複製 opener session，不宣稱可靠共用或完全隔離。
 - `ai-runtime`／`ai-client`／`ai-session` 集中恢復與生命週期；`ai-service` 統一狀態、生成、取消與錯誤；`assets/ai-providers`／`ai-capabilities`／`ai-errors` 前後端共用，不另建重複系統。backend/ 的 server/auth/env 永不進 work/build。
-- 正式模式仍僅本頁記憶體、需 HTTPS 後端與 JWT/scope、固定目的地及限制；沒有設定則停用正式模式，不能混用 Drive token。測試金鑰不走一般 settings.ai；原非敏感 provider/model 偏好及備份白名單保留。
+- 個人 Worker 金鑰只放 Cloudflare Secret，不回前端；GitHub access token 只用於 callback／user，不保存。本站 opaque session 最長一小時，專用 sessionStorage `life-system.ai-worker-session.v1`，DO 只存 hash、期限與限額，登出後端撤銷。CORS 不是認證，不混用 Drive／Cloudflare 管理 token。缺設定安全停用後端，直連不受影響。舊 Node BYOK 模式仍僅本頁 key＋JWT/scope，不與 Worker 模式混稱。測試金鑰不走一般 settings.ai；原非敏感 provider/model 偏好及備份白名單保留。
 - 四家模型 schema、能力、分頁、生成相容性及官方來源見 `docs/AI_PROVIDER_AUDIT.md`。DeepSeek 優先使用模態／API 能力 metadata，Gemini／OpenAI 精確規則需依官方來源維護；Claude deprecated 不等於 retired。介面區分暫存金鑰、查詢、選取與生成，安全診斷區分空清單和全部篩除。模型動態查詢與已知能力資訊／精確 ID 相容規則交集，可能排除新模型；失敗不以固定／過期清單代替。僅主動測選取模型，不附帶個人資料，限輸入／輸出、不重試；AI 輸出只當文字，不直接改數值。首頁夥伴角色等規格仍未完整，維持 mock，首頁／資料頁提供獨立開發跨頁文字測試入口。
-- 官方瀏覽器支援、Claude 危險直連標頭、DeepSeek CORS 未確認、HTTP 與未知網路錯誤的區分及驗收限制見 AI_CONNECTION.md。mock 不代表四家真實 API／CORS 都通過。
+- 共用 `ai-prompts.mjs` 統一繁體中文／臺灣詞彙，service 組裝、provider 原生 system／instructions 套用；角色不能覆蓋，結構化代碼／數字、程式碼、URL、ID 及明確保留原文不翻譯，不改使用者資料。未來功能必須經同一層。
+- 官方瀏覽器支援與驗收限制見 AI_CONNECTION.md。使用者已回報 DeepSeek 直連連線成功；不擴大為其他 provider、生成、跨頁或 Worker 部署已驗證。mock 不等於真實結果。
 
 ## 夥伴事件契約
 
 - 只有成功完成待辦／打卡才發出有意義事件；初始化、取消勾選、切頁、捲動、聚焦不生成對話。
 - 同則回應 dialogue／emotion 成對驗證，連續事件合併，新事件使舊請求失效；舊結果與錯誤不可覆蓋新回應。
 - 等待時保留對話，生成失敗不回滾行動；目前使用中性開發備援，不能宣稱符合未設定角色。
-- 不自訂好感度。正式 BYOK 金鑰僅本頁記憶體及當次後端轉送；明確啟用的開發直連可依上述 2 小時 session 規則跨頁測試，GitHub Pages 不執行 AI 後端，夥伴仍未接入真實生成。
+- 不自訂好感度。個人 Worker AI 金鑰僅 Secret 及官方轉送；舊 Node BYOK 僅本頁記憶體及後端轉送；明確啟用的開發直連可依上述 2 小時 session 規則跨頁測試，GitHub Pages 不執行 AI 後端，Worker 不加入靜態發布，夥伴仍未接入真實生成。
 - neutral／pleased／calm 是開發槽，非正式角色規格。
 
 ## 分支與發布

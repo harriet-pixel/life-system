@@ -1,8 +1,10 @@
-# AI 連線：開發直連測試與正式後端模式
+# AI 連線：個人 Workers 後端與瀏覽器直連備用
 
 ## 現況與產品界線
 
-Life system 沿用原生三頁與同一個 AI service。**本次交付可由設定頁明確啟用瀏覽器直連測試，無需後端或登入**；預設關閉。正式後端原始碼保留，AI_BACKEND_URL 仍留白、登入未接入；不新增登入、部署、雲端資源或共用金鑰。
+Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Cloudflare Workers 個人後端**（GitHub OAuth 本人帳號驗證、Worker Secret 保存 AI 金鑰）；控制台尚未部署，公開 Worker URL 留白時如實顯示尚未設定。原瀏覽器直連作手動備用，預設關閉，不因後端未設定而停用。無自動切換或重送，不搬資料或自動接入夥伴／分點。部署與免費額度見 [個人 Worker 指南](docs/CLOUDFLARE_PERSONAL_AI.md)。
+
+使用者已回報 DeepSeek 瀏覽器直連連線成功；其餘服務商、生成、跨頁及 Worker 真實流程不因此視為驗證通過。
 
 首次啟用會顯示確認：
 
@@ -17,7 +19,8 @@ Life system 沿用原生三頁與同一個 AI service。**本次交付可由設�
 | 模式 | 金鑰與傳送路徑 | 目前可用性 |
 | --- | --- | --- |
 | 瀏覽器直連測試 | 設定輸入 → 本頁記憶體及專用 sessionStorage → 選定官方 HTTPS API 的認證標頭 | 明確啟用後可測試，不要求本站登入或後端 |
-| 正式後端 | 本頁記憶體 → HTTPS POST `/v1/ai` 的保護 JSON body → 本站後端驗證 JWT/scope → 官方 HTTPS API | 後端／登入尚未設定，保持停用；不冒充可用 |
+| 個人 Workers | AI key 只在 Worker Secret → 官方 HTTPS API；Pages 僅帶本站 opaque session | 程式備妥，控制台部署／本人登入真實驗收待完成 |
+| 舊 Node BYOK 後端 | 本頁 key → HTTPS POST `/v1/ai` → JWT/scope → 官方 API | 保留原始碼，不是本次部署目標 |
 
 ### 測試分頁生命週期
 
@@ -32,16 +35,23 @@ Life system 沿用原生三頁與同一個 AI service。**本次交付可由設�
 
 ## 共用程式與跨頁入口
 
-- `assets/ai-service.mjs`：原有 createAIConnection，統一 provider/model 狀態、查詢、生成、取消、逾時、安全錯誤與競態；本次增加 transport 注入，沒有另建第二套服務。
-- `assets/ai-client.mjs`：同一控制器切換正式 transport／明確啟用的瀏覽器 transport；兩小時檢查、恢復與取消集中於此。
+- `assets/ai-service.mjs`：原有 createAIConnection，並透過 ai-prompts 組裝共用語言規則；統一 provider/model 狀態、查詢、生成、取消、逾時、安全錯誤與競態；本次增加 transport 注入，沒有另建第二套服務。
+- `assets/ai-client.mjs`：同一控制器切換個人 Worker／舊 Node／明確啟用的瀏覽器 transport；直連兩小時檢查、恢復與取消集中於此。
+- `assets/ai-worker-auth.mjs`：GitHub popup 訊息驗證、本站一小時工作階段、Workers 認證請求／登出；`ai-worker-config.mjs` 只有公開 Worker URL。
 - `assets/ai-session.mjs`：專用 session schema／原始到期時間；只有此模組讀寫測試 entry。
 - `assets/ai-runtime.mjs`：每個文件一個共用實例 `getSharedAIConnection()`；各頁使用同一邏輯，狀態不含可見金鑰或認證標頭。
 - `assets/ai-providers.mjs`、`ai-errors.mjs`、`ai-capabilities.mjs`：原 backend adapter 移至瀏覽器安全的共用模組；backend 下原檔只 re-export，不複製邏輯，不把 server/auth/env 放靜態成果。
 - `assets/ai-settings.mjs`：設定分類的模式開關、風險確認與原有 provider/key/model 控制項。
 - `assets/ai-test-panel.mjs`：統一短文字輸入（1–1,000 字元）、64/128/256 output-token 上限、送出／取消、文字回應與狀態；所有生成由使用者主動觸發，無重試。
-- `assets/ai-page.mjs`：首頁與我的資料，在有效測試模式下顯示「開發用 AI 跨頁測試」。不改夥伴 mock、數值與交易規則，未來頁面可沿用同一 service／面板。
+- `assets/ai-page.mjs`：首頁與我的資料，在本人後端登入或有效直連測試模式下顯示「開發用 AI 跨頁測試」。不改夥伴 mock、數值與交易規則，未來頁面可沿用同一 service／面板。
 
-未定義的 AI 產品功能不自動接入；AI 失敗不阻擋原本資料操作。只傳送使用者在測試區明確輸入的文字，不預設附帶 profile、禁忌、歷史、圖片或備份。回應以 textContent 呈現，模型名稱用 Option，不執行 HTML。連線測試只用固定 `Reply only with OK.`、64 output tokens；均提示可能產生 API 費用，不逐一測試模型。
+未定義的 AI 產品功能不自動接入；AI 失敗不阻擋原本資料操作。只傳送使用者在測試區明確輸入的文字，不預設附帶 profile、禁忌、歷史、圖片或備份。回應以 textContent 呈現，模型名稱用 Option，不執行 HTML。連線測試只用固定 `請只回覆「測試成功」。`、64 output tokens；均提示可能產生 API 費用，不逐一測試模型。
+
+## 全站共用語言規則
+
+`assets/ai-prompts.mjs` 統一提供繁體中文及臺灣常用詞彙規則，由共用 AI service 組裝提示，adapter 在伺服器端也套同一份規則，防止繞過前端。Gemini systemInstruction、OpenAI instructions、Claude／DeepSeek Messages 的 system、DeepSeek Chat 的 system message 均使用同一規則。角色設定不得覆蓋；結構化欄位／固定代碼／數字契約，以及程式碼、URL、模型 ID、必要專有名詞與明確保留原文均豁免。使用者文字保持原樣，不做資料翻譯或保存改寫。
+
+目前涵蓋真實 service 的測試區及未來接入的分析／分點說明／角色對話；未規劃功能仍不新增，首頁 mock 不因語言規則而接入真實生成。mock 測試證明請求正確附帶規則，不代表每個模型真實輸出必然遵循。
 
 ## 官方瀏覽器支援與限制（2026-10-23 查核）
 
@@ -50,7 +60,7 @@ Life system 沿用原生三頁與同一個 AI service。**本次交付可由設�
 | Gemini | Google js-genai README 的 Browser 章節明確支援、並警告生產環境避免暴露 key；本實作以 x-goog-api-key 標頭直接呼叫官方 REST | 已實作，仍需使用者以真實帳戶／地區驗收 |
 | OpenAI／GPT | 官方 openai-node README：瀏覽器預設禁用，需 dangerouslyAllowBrowser:true 明確承擔風險。本專案不用 SDK、只在同意測試模式後直接呼叫官方 REST | 已實作；沒有全域放寬正式模式或嵌入共用 key |
 | Claude | 官方 SDK README／src/client.ts：瀏覽器需 dangerouslyAllowBrowser:true；對應 `anthropic-dangerous-direct-browser-access: true`。僅瀏覽器測試 transport 加此標頭，原正式 backend 不加 | 已實作；仍依官方 CORS、帳戶權限及所在地政策 |
-| DeepSeek | 官方文件網站仍遇環境 403；官方整合來源不足以證明全面 CORS 支援。提供官方 api.deepseek.com 直連嘗試，介面明確提示跨來源支援未確認 | 未保證可直連。若實際回應不允許 Origin／認證標頭，需服務商允許或未來正式後端；不以公共代理繞過 |
+| DeepSeek | 已核對官方 harness／provider metadata；使用者已回報直連連線成功，仍不足以證明所有生成與跨頁情境 | 其他情境仍待驗證。若實際回應不允許 Origin／認證標頭，需服務商允許或未來正式後端；不以公共代理繞過 |
 
 官方來源（實際讀取）：
 
@@ -83,9 +93,9 @@ Life system 沿用原生三頁與同一個 AI service。**本次交付可由設�
 
 ## 模型／能力資料查閱界線
 
-模型介面原已查閱 Google js-genai src/models.ts／src/types.ts、OpenAI SDK src/resources/models.ts／shared.ts、Anthropic SDK src/resources/models.ts／messages、DeepSeek 官方 DeepSeek-V3／awesome-deepseek-integration。2026-10-23 四家更新的來源、端點、能力規則及限制見 [四家相容性查核](docs/AI_PROVIDER_AUDIT.md)。DeepSeek 優先採能力 metadata；Gemini／OpenAI 更新來源支持的文字模型規則；Claude 不再把 deprecated 一律當退役。不能用寫死清單冒充當前可用清單。真實四家 API、實際 CORS 與帳戶權限由使用者在網站自行輸入金鑰驗收，測試不要求金鑰出現在聊天或 Git。
+模型介面原已查閱 Google js-genai src/models.ts／src/types.ts、OpenAI SDK src/resources/models.ts／shared.ts、Anthropic SDK src/resources/models.ts／messages、DeepSeek 官方 DeepSeek-V3／awesome-deepseek-integration。2026-10-23 四家更新的來源、端點、能力規則及限制見 [四家相容性查核](docs/AI_PROVIDER_AUDIT.md)。DeepSeek 優先採能力 metadata；Gemini／OpenAI 更新來源支持的文字模型規則；Claude 不再把 deprecated 一律當退役。不能用寫死清單冒充當前可用清單。直連真實 API、CORS 由使用者在網站輸入測試 key；個人後端則於 Cloudflare Secret 設定後登入驗收，測試不要求金鑰出現在聊天或 Git。
 
-## 正式後端模式（保留原始碼，本次不部署）
+## 舊 Node BYOK 後端（保留原始碼，本次不部署）
 
 若未來啟用正式模式才需確認：後端平台／HTTPS 網址、本站登入 IdP、issuer／audience／JWKS、授權範圍及允許使用的使用者／群組、固定出口和日誌政策。以下程式不會自動建立資源。
 
@@ -105,5 +115,5 @@ Life system 沿用原生三頁與同一個 AI service。**本次交付可由設�
 - tests/ai-browser-mode.cjs：四家 mock 官方 API；設定 → 首頁 → 我的資料 → 重新整理，確實由共用服務發出生成請求，不只測設定連線；驗證安全文字、同一期限、換商競態、關閉／清除／到期、一般資料及備份無金鑰。沒有真實金鑰、沒有金鑰截圖或 trace。
 - tests/ai-settings.cjs：原正式模式未設定／mock backend 流程與 32 組尺寸字型、200% 文字。
 - tests/settings-tabs.cjs、tests/settings.cjs、tests/ai-cache.cjs、tests/settings-cache.cjs：既有頁籤定位／鍵盤、資料與備份、Undo／Redo、暖快取回歸。新模式不在狀態更新或資料更新觸發定位。
-- main 保存原始碼，gh-pages 僅 work/build 成果，保留發布歷史／設定；無後端部署、登入或資源建立。公開 Pages workflow 與網站可讀性須分別確認，推送不代表部署已驗證。
-- 四家**真實 API 與 CORS 尚未驗證**，mock 通過不能宣稱皆可真實連線。
+- main 保存原始碼，gh-pages 僅 work/build 成果，保留發布歷史／設定；Worker 由使用者在控制台設定免費服務後部署，尚未部署不可宣稱完成。公開 Pages workflow 與網站可讀性須分別確認，推送不代表部署已驗證。
+- 使用者已回報 DeepSeek 直連連線成功；其他真實 API、生成、跨頁及個人 Worker 部署／OAuth 仍待驗證，mock 通過不能擴大宣稱。

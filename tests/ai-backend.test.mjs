@@ -40,6 +40,6 @@ test('concurrent requests are bounded and client/timeout cancellation reaches up
 });
 test('test request uses only fixed harmless text, never persists or returns credentials',async()=>{
  const outgoing=[];await server({authenticate:async()=> 'user-one',fetcher:async(url,o)=>{outgoing.push(o.body&&JSON.parse(o.body));return new Response(JSON.stringify(o.method==='GET'?{data:[{id:'gpt-4.1'}]}:{output:[{type:'message',content:[{type:'output_text',text:'OK'}]}]}));}},async url=>{
-  const response=await fetch(url,options({...body,operation:'test',model:'gpt-4.1'}));assert.deepEqual(await response.json(),{ok:true});assert.equal(outgoing[1].input,'Reply only with OK.');assert.equal(outgoing[1].max_output_tokens,64);assert.equal(outgoing[1].store,false);
+  const response=await fetch(url,options({...body,operation:'test',model:'gpt-4.1'}));assert.deepEqual(await response.json(),{ok:true});assert.equal(outgoing[1].input,'請只回覆「測試成功」。');assert.equal(outgoing[1].max_output_tokens,64);assert.equal(outgoing[1].store,false);
  });
 });

@@ -5,3 +5,6 @@ node_modules/
 .env.*
 
 !backend/.env.example
+.wrangler/
+.dev.vars
+.dev.vars.*
