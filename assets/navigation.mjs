@@ -1,7 +1,7 @@
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
   { id: 'home', label: '首頁', englishLabel: 'Home', href: new URL('../', import.meta.url).href, available: true },
-  { id: 'tasks', label: '待辦事項', href: null, available: false },
+  { id: 'tasks', label: '待辦事項', englishLabel:'Tasks', href: new URL('../tasks.html',import.meta.url).href, available: true },
   { id: 'habits', label: '習慣打卡', href: null, available: false },
   { id: 'reading', label: '陪讀系統', href: null, available: false },
   { id: 'wallet', label: '錢包帳本', href: null, available: false },

@@ -1,13 +1,13 @@
-import {initializeAISettings} from './ai-settings.mjs?v=app-shell-6';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=ai-connection-1';
-import {dataStore,persistentUndo} from './data.mjs?v=ai-connection-1';
-import {createMobileTabPositioner} from './tab-position.mjs?v=app-shell-6';
-import {createHistoryView} from './history-view.mjs?v=app-shell-6';
-import {auditImages,deleteUnusedImages} from './image-references.mjs';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=ai-connection-1';
-import {holdDraft} from './coordination.mjs';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=ai-connection-1';
-import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=ai-connection-1';
+import {initializeAISettings} from './ai-settings.mjs?v=tasks-shell-7';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=tasks-data-1';
+import {dataStore,persistentUndo} from './data.mjs?v=tasks-data-1';
+import {createMobileTabPositioner} from './tab-position.mjs?v=tasks-shell-7';
+import {createHistoryView} from './history-view.mjs?v=tasks-shell-7';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=tasks-1';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=tasks-data-1';
+import {holdDraft} from './coordination.mjs?v=tasks-1';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=tasks-data-1';
+import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=tasks-data-1';
 
 export function mountSettings(root,context){
 const $=selector=>root.querySelector(selector);
