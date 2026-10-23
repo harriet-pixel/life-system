@@ -38,3 +38,14 @@ test('provider errors use safe codes, distinguish quota/rate/auth/model/service,
  const controller=new AbortController();controller.abort();await assert.rejects(createProviderAdapter('openai',key,{signal:controller.signal,fetcher:async()=>{throw new Error(key);}}).listModels(),e=>e.code==='timeout'&&!e.message.includes(key));
  await assert.rejects(createProviderAdapter('openai',key,{fetcher:async()=>{throw new Error(key);}}).listModels(),e=>e.code==='network'&&!e.message.includes(key));
 });
+
+test('Claude dangerous browser header is present only for explicitly selected browser transport',async()=>{
+ for(const browser of [false,true]){
+  let headers;await createProviderAdapter('claude',key,{browser,fetcher:async(_,o)=>{headers=o.headers;assert.equal(o.credentials,'omit');assert.equal(o.referrerPolicy,'no-referrer');return json({data:[]});}}).listModels();
+  assert.equal(headers['anthropic-dangerous-direct-browser-access'],browser?'true':undefined);
+ }
+});
+
+test('available HTTP error status is classified even when the error body is not JSON',async()=>{
+ for(const[status,code]of [[403,'permission'],[429,'rate_limit'],[503,'provider_service']])await assert.rejects(createProviderAdapter('openai',key,{browser:true,fetcher:async()=>new Response('untrusted non-JSON error',{status})}).listModels(),error=>error.code===code);
+});

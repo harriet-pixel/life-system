@@ -91,19 +91,21 @@
 
 ## AI 連線
 
-- 本次明確允許準備必要 AI 後端；沿用設定分類，不另建網站。未指定平台／登入，不自動建立資源或公開未驗證代理。
-- `assets/ai-service.mjs`／`ai-settings.mjs` 為頁內 BYOK 共用服務；`backend/` 為獨立最小 Node 服務，永不複製到 work/build。正式 endpoint 與登入尚未設定，介面如實停用。
-- 一次一組 provider/key/model，key 僅本頁記憶體；換商、離頁、重載及 disconnect 清除，取消舊結果；不寫任何儲存、備份、歷史、日誌或跨頁廣播。只保存 settings.ai 的 provider/model 白名單，不影響一般 Undo／Redo 分支。
-- 後端需 HTTPS、驗簽 JWT 與 scope 授權、固定官方目的地、限流／併發／大小／token／逾時限制。CORS 不是身分驗證。無部署前不啟用，不重用 Drive token；不要求使用者把金鑰放聊天或 Git。
-- 官方動態模型清單與精確能力對應交集，未知用途不開放；失敗不以固定／過期清單代替，列舉不保證生成權限。測試只用最小固定文字，提示可能付費，不含個人資料、不改數值。夥伴／能力分類等產品功能仍未接入。
-- 完整官方資料可讀性限制、金鑰資料流、部署與 mock／真實驗證界線見 AI_CONNECTION.md；不把單一 process 限流宣稱為分散式部署保護。
+- 沿用同一 AI service 與四家 provider。正式後端原始碼保留，未部署／未接登入；本次只做開發者自用瀏覽器直連，不建立登入、後端平台、雲端或付費資源。
+- 「瀏覽器直連測試模式」預設關閉，啟用前明確提示金鑰暴露與測試 key／用量限制並確認。測試模式不因正式 endpoint 空白或未登入而停用輸入；只呼叫官方 HTTPS API，不用公共代理或停用瀏覽器安全性。
+- 明確同意後，一組 provider/key/model/原始期限只存專用 sessionStorage `life-system.ai-test.v1`，最長 2 小時、不因讀取／切頁／重載延長。啟動、恢復、可見與每次請求前檢查；pagehide 只取消執行記憶體，不刪仍有效的測試 entry。關閉模式、中斷或到期清除；換商取消並清空金鑰、模型與狀態，不保留多家 key。
+- sessionStorage 不是加密保管庫，不保證關閉分頁可靠抹除；不寫其他瀏覽器儲存、一般設定／歷史／Undo／Redo／備份／URL／日誌，不跨頁籤廣播，不要求使用者把 key 貼到聊天或 Git。新分頁可能由瀏覽器複製 opener session，不宣稱可靠共用或完全隔離。
+- `ai-runtime`／`ai-client`／`ai-session` 集中恢復與生命週期；`ai-service` 統一狀態、生成、取消與錯誤；`assets/ai-providers`／`ai-capabilities`／`ai-errors` 前後端共用，不另建重複系統。backend/ 的 server/auth/env 永不進 work/build。
+- 正式模式仍僅本頁記憶體、需 HTTPS 後端與 JWT/scope、固定目的地及限制；沒有設定則停用正式模式，不能混用 Drive token。測試金鑰不走一般 settings.ai；原非敏感 provider/model 偏好及備份白名單保留。
+- 模型動態查詢與已知能力資訊／精確 ID 相容規則交集，可能排除新模型；失敗不以固定／過期清單代替。僅主動測選取模型，不附帶個人資料，限輸入／輸出、不重試；AI 輸出只當文字，不直接改數值。首頁夥伴角色等規格仍未完整，維持 mock，首頁／資料頁提供獨立開發跨頁文字測試入口。
+- 官方瀏覽器支援、Claude 危險直連標頭、DeepSeek CORS 未確認、HTTP 與未知網路錯誤的區分及驗收限制見 AI_CONNECTION.md。mock 不代表四家真實 API／CORS 都通過。
 
 ## 夥伴事件契約
 
 - 只有成功完成待辦／打卡才發出有意義事件；初始化、取消勾選、切頁、捲動、聚焦不生成對話。
 - 同則回應 dialogue／emotion 成對驗證，連續事件合併，新事件使舊請求失效；舊結果與錯誤不可覆蓋新回應。
 - 等待時保留對話，生成失敗不回滾行動；目前使用中性開發備援，不能宣稱符合未設定角色。
-- 不自訂好感度。BYOK 金鑰僅本頁記憶體及當次後端轉送使用，不持久保存；GitHub Pages 不執行 AI 後端，夥伴仍未接入真實生成。
+- 不自訂好感度。正式 BYOK 金鑰僅本頁記憶體及當次後端轉送；明確啟用的開發直連可依上述 2 小時 session 規則跨頁測試，GitHub Pages 不執行 AI 後端，夥伴仍未接入真實生成。
 - neutral／pleased／calm 是開發槽，非正式角色規格。
 
 ## 分支與發布

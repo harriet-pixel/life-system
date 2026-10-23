@@ -44,7 +44,7 @@ document.dispatchEvent(new CustomEvent('life-system:action-succeeded', {
 - 具備適當存取控制的伺服器端 AI 端點。伺服器應取得可信的角色與好感度資料，勿信任客戶端傳來的數值。金鑰只放伺服器端安全設定，不能交給前端或 GitHub Pages。
 - 正式首頁資料持久化成功事件。現階段只有記憶體示意成功，重新整理會重設。
 
-GitHub Pages 只能發布靜態前端；目前沒有 AI 端點，不需要也不應在 Pages 中設定 AI 金鑰。
+GitHub Pages 只能發布靜態前端，正式夥伴仍未接 AI；不能把金鑰寫進發布檔。本次獨立開發測試允許使用者在設定頁明確同意後，以專用兩小時 sessionStorage 直連官方服務、跨頁生成短文字；不接管本文件尚未齊備的夥伴角色規格。詳見 AI_CONNECTION.md。
 
 ## 目前首頁呈現
 

@@ -1,4 +1,4 @@
-import {initializeAISettings} from './ai-settings.mjs?v=ai-connection-1';
+import {initializeAISettings} from './ai-settings.mjs?v=browser-ai-2';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=ai-connection-1';
 import {dataStore,persistentUndo} from './data.mjs?v=ai-connection-1';
 import {initializeNavigation} from './navigation.mjs';
@@ -14,12 +14,12 @@ const element=(tag,text)=>{const e=document.createElement(tag);if(text!==undefin
 const notice=message=>{$('#operation-status').hidden=false;$('#operation-status').textContent=message;};
 const bytes=value=>value<1024?value+' B':value<1024**2?(value/1024).toFixed(1)+' KiB':(value/1024**2).toFixed(2)+' MiB';
 const time=value=>value&&Number.isFinite(Date.parse(value))?new Date(value).toLocaleString('zh-TW'):'建立時間未記錄';
-let busy=false;
+let busy=false,aiConnection;
 async function run(work){
   if(busy)return;const priorError=document.querySelector('dialog[open] [data-dialog-error]');if(priorError)priorError.textContent='';busy=true;document.body.setAttribute('aria-busy','true');
   const buttons=[...document.querySelectorAll('button,input,select')].map(e=>[e,e.disabled]);buttons.forEach(([e])=>e.disabled=true);syncRestoreControls();
   try{return await work();}catch(error){const message=error.message||'操作失敗；原資料未清除。';notice(message);const target=document.querySelector('dialog[open] [data-dialog-error]');if(target)target.textContent=message;}
-  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo],#restore-confirm button,#restore-password'))e.disabled=disabled;});syncSelection();syncDrive();syncRestoreControls();if($('#restore-confirm').open)(prepared?$('#confirm-restore'):restoreEncrypted?$('#restore-password'):$('#cancel-restore')).focus({preventScroll:true});dataStore.notify();}
+  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo],#restore-confirm button,#restore-password'))e.disabled=disabled;});syncSelection();syncDrive();syncRestoreControls();if($('#restore-confirm').open)(prepared?$('#confirm-restore'):restoreEncrypted?$('#restore-password'):$('#cancel-restore')).focus({preventScroll:true});dataStore.notify();aiConnection?.notify();}
 }
 initializeNavigation({undoManager:{...persistentUndo,getState:()=>({...persistentUndo.getState(),busy:busy||persistentUndo.getState().busy})}});
 const history=createHistoryView({store:dataStore});
@@ -182,5 +182,5 @@ $('#revoke-drive').addEventListener('click',()=>run(async()=>{await revokeDrive(
 dataStore.subscribe(state=>{history.render(state);if(!appearanceDirty){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}});
 window.addEventListener('pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();clearRestore();for(const id of ['backup-password','cloud-password'])$('#'+id).value='';});
 window.addEventListener('pageshow',event=>{if(event.persisted){cancelAppearance();if(selectedTab===0)refreshStorage();}});
-initializeAISettings(dataStore);
+aiConnection=initializeAISettings(dataStore);
 renderAppearanceControls();syncDrive();selectTab(0);

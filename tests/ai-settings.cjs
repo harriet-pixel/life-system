@@ -10,9 +10,10 @@ for(const width of [320,375,390,450,451,768,1024,1280])for(const font of ['devic
  await p.evaluate(async font=>{const{dataStore:s}=await import('./assets/data.mjs?v=ai-connection-1');await s.transact({type:'appearance.update',changes:{settings:{...s.get().settings,appearance:{...s.get().settings.appearance,font}}}});await document.fonts.ready;},font);
  await p.evaluate(()=>document.documentElement.style.fontSize='200%');assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}/${font}: page overflow`);
  await p.locator('#ai-tab').focus({preventScroll:true});await p.keyboard.press('Home');assert.equal(await p.locator('#storage-tab').getAttribute('aria-selected'),'true');await p.keyboard.press('End');assert.equal(await p.locator('#ai-tab').getAttribute('aria-selected'),'true');
+ await p.locator('#ai-browser-mode').click();await p.locator('#ai-mode-confirm').waitFor({state:'visible'});assert.ok(await p.evaluate(()=>document.querySelector('#ai-mode-confirm').getBoundingClientRect().right<=innerWidth));await p.locator('#ai-enable-browser').click();assert.equal(await p.locator('#ai-key').isEnabled(),true);assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'enabled developer controls must not overflow');
  assert.deepEqual(errors,[]);await context.close();
 }
-console.log('PASS unconfigured AI UI: 32 width/font combinations, 200% text, keyboard and no whole-page overflow');
+console.log('PASS formal-unconfigured and browser-enabled AI UI: 32 width/font combinations, 200% text, consent dialog, keyboard and no whole-page overflow');
 const context=await browser.newContext({viewport:{width:375,height:900},reducedMotion:'reduce'}),p=await context.newPage(),requests=[],errors=[],logs=[];
 p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>logs.push(m.text()));
 await p.route('**/assets/ai-config.mjs*',route=>route.fulfill({contentType:'text/javascript',body:"export const AI_BACKEND_URL='https://backend.example.invalid/v1/ai';"}));

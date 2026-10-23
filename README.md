@@ -50,4 +50,6 @@ BASE_URL=http://127.0.0.1:3000/ node tests/restore-actions.cjs
 
 ## AI 連線（BYOK）
 
-設定頁新增 AI 連線與四家 provider 的共用介面；正式 HTTPS 後端及本站登入尚未設定，不會呼叫真實 AI 或改動夥伴 mock。`backend/` 為需獨立部署的受驗證 Node 原始碼，不進靜態建置；不在前端或後端設定檔放服務商金鑰。資料流、官方文件存取限制、部署待確認及 mock 測試見 [AI_CONNECTION.md](AI_CONNECTION.md)。
+設定頁可明確啟用預設關閉的瀏覽器直連測試，一組金鑰在專用 sessionStorage 最長保留兩小時，同分頁切換首頁／我的資料與重新整理後可從共用開發入口生成短文字。這是有風險的自用測試，不是加密金鑰保管方案；使用者自行在網站輸入測試 key，勿提交或貼到聊天。
+
+正式受驗證後端模式仍未部署，backend/ 不進靜態成果，登入與 endpoint 空白不阻擋已同意的直連測試。夥伴 mock、資料／數值規則不變；不新增登入或雲端資源。詳見 [AI_CONNECTION.md](AI_CONNECTION.md)。
