@@ -1,22 +1,29 @@
 # 待辦事項（日期清單、手機設定與共用分類）
 
-本次修改基準為遠端 main `0e93b1f`，沿用乾淨的隔離 checkout，原 `work` 分支及其他工作保留。發布前比較過 gh-pages：四頁與 assets 和 main 一致，沒有待回收的發布獨有功能修正。未建置或部署 Cloudflare、OAuth、Secrets。
+本次修改基準為遠端 main `f5d1684`，沿用乾淨的隔離 checkout，原 `work` 分支及其他工作保留。發布前比較過 gh-pages：四頁與 assets 和 main 一致，沒有待回收的發布獨有功能修正。未建置或部署 Cloudflare、OAuth、Secrets。
 
 ## 共用入口與資料
 
-- `tasks.html`、`assets/tasks.mjs`：沿用 app-shell 的常駐導覽、跨頁 DOM／草稿、1024px 斷點與 appearance 四種字型。桌面只保留上方頁面識別，手機保留黑色標題。主要入口及新增表單稱「新增事件」。選定日期是實際當地今天時顯示今天及明天，適用預設、今日按鈕及直接點月曆今天；其他日期顯示選定日前一天、當天、後一天。「今日」回當月並選今天。昨天未完成並未因預設隱藏而改期或刪除。桌面月曆展開在左；手機預設收合，由標題右側（待辦事項設定之後）的月曆 icon 控制，內容仍在夥伴區下與清單上。手機移除獨立新增／管理分類列；設定按鈕開新增事件／管理分類頁籤，預設新增事件。共用原事件 form 及分類清單，切換保留 DOM 草稿、日期及 radio；手機設定框高度依 visualViewport 固定、標題與關閉及頁籤維持可達，內文捲動，不會隨頁籤內容縮放；桌面入口不變。每日＋在手機開此設定窗並預帶日期。月份箭頭只改月曆，不改清單；今天以 aria-current/date 外框標示，選取日期另有填色。不提供週導航、七日列、週清單或跳至日期。手機月曆開關不改清單日期，具 aria-expanded 與 aria-controls。待辦池保持可收合及既有管理功能。
+- `tasks.html`、`assets/tasks.mjs`：沿用 app-shell 的常駐導覽、跨頁 DOM／草稿、1024px 斷點與 appearance 四種字型。桌面只保留上方頁面識別，手機保留黑色標題。主要入口及新增表單稱「新增事件」。選定日期是實際當地今天時顯示今天及明天，適用預設、今日按鈕及直接點月曆今天；其他日期顯示選定日前一天、當天、後一天。「今日」回當月並選今天。昨天未完成並未因預設隱藏而改期或刪除。待辦事項／待辦池改為共用區塊的內容頁籤（預設待辦事項），共用工具與夥伴不重建。沿用 createMobileTabPositioner 與 createActivityHeightSync：450px以下以已呈現兩面板較高內容同步，451px以上不作點擊垂直定位；工作區覆寫不適用的歷史預留整個 viewport 高度，避免人工空白。不預建更多資料。待辦頁另觀察 root 外觀／文字倍率變更，避免同步高度在文字縮回後保留過高空白；共用首頁程式不改。桌面月曆展開在左；手機預設收合，由標題右側（待辦事項設定之後）的月曆 icon 控制，內容仍在夥伴區下與清單上。手機移除獨立新增／管理分類列；設定按鈕開新增事件／管理分類頁籤，預設新增事件。共用原事件 form 及分類清單，切換保留 DOM 草稿、日期及 radio；手機設定框高度依 visualViewport 固定、標題與關閉及頁籤維持可達，內文捲動，不會隨頁籤內容縮放；桌面入口不變。每日＋在手機開此設定窗並預帶日期。月份箭頭只改月曆，不改清單；今天以 aria-current/date 外框標示，選取日期另有填色。不提供週導航、七日列、週清單或跳至日期。手機月曆開關不改清單日期，具 aria-expanded 與 aria-controls。待辦池由頁籤呈現，工具 details 仍獨立收合；切換保留所有表單／日期／篩選狀態。
 - `assets/task-pool.mjs`：任務看板／懸而未決／常駐任務只呈現名稱（分類文字色），穩定 task／execution ID 操作。同列彈性換行、單名不拆行、長名省略，title 及操作窗標題可查看全文；裝飾分隔符不朗讀不點擊，ResizeObserver 隱藏換行行首的分隔符。工具區預設收合，搜尋／分類／排序條件保留且外顯提示，無類型篩選。獨立批次窗列出全部資格紀錄，與搜尋無關，名稱 aria-pressed 選取，日期區分同名，提供確認改期／略過、無選取禁用與結果；批次後忙碌狀態通知共用導覽。單筆選單只有安排／編輯／刪除（區分單次與定義），池不直接完成或略過。
 - `assets/task-editor.mjs`：點數及類型直接以 radio 單選；既有事項類型仍固定。名稱旁日期按鈕開啟獨立日期視窗，可設定／清除；選擇只改草稿，儲存時才與事項一起交易。每日圓形＋預帶當日。新增與編輯提交文字統一為「儲存事件」。點數文字僅 <450px 隱藏「點」單位，radio 值及可存取名稱保持 1點／2點／3點；名稱與分類使用共用 task-form-field／task-field-label 間距。重複事項的額外日期可新增、移動或清除，保留單次例外與自動週期。
 - `assets/task-categories.mjs`：主窗只含分類清單、44px 編輯／刪除 SVG icon、並排的新增分類／關閉。新增或編輯使用另一個獨立對話框，先關閉主窗但保留草稿 lease；儲存成功或取消後返回主清單，依分類 ID 還原編輯觸發焦點，取消不寫入。任一時間只有一個開啟的分類 modal。新增／修改名稱與顏色／刪除。事件分類標籤旁的新增 icon 可開同一個分類新增視窗；父窗暫停顯示而不釋放草稿 lease，成功更新選項並選新分類，取消保留原分類。返回父窗與觸發焦點，不疊開分類與父 modal。操作經共用交易與復原。
 - `assets/tasks-model.mjs`：當地日期、版本 1 結構驗證、日期投影、逾期補算與單日唯一性。
 - `assets/tasks-service.mjs`：所有變更經唯一 `dataStore.transact`，與 Web Locks／revision 衝突保護共用；批次先在副本驗證，任一衝突不寫入。
 - `assets/task-actions.mjs`：首頁和待辦頁共用 AI／手動分配與取消完成；AI service 和共用語言提示不變。等待生成不持資料鎖，提交要求相同 revision、事項版本、點數及當地日期。任一變更即拒絕舊結果，需使用者重新操作。
-- `assets/task-reward-feedback.mjs`：只有發起完成流程收到已提交 completion 才顯示實際貨幣／經驗／正值能力；不訂閱資料或重播紀錄。固定浮層不占清單高度、限制視窗範圍、不攔點擊，3 秒緩慢上浮消失；reduced-motion 用 1.8 秒靜態提示。切頁清除。共用狀態列只說完成，避免重複堆獎勵。
+- `assets/task-completion.mjs`：同文件單例能力分配佇列，僅記憶體 pending map。點擊立即勾選／disabled該筆／aria-busy並重繪當前頁，其他事件可入列；首頁與待辦頁讀同一 map，正式完成仍只在 service 原子交易寫入。工作開始前重新 prepare 並核對點擊時事項版本、點數與當地日；每次只呼叫一次既有 AI。共用原生 radio 分配視窗在 body，跨 route 保留同一進度；若其他編輯窗開著，等待關閉，不搶 modal 焦點。取消或失敗 refresh 正式資料後清除暫時狀態，重載不恢復 pending。app-shell 只對此擁有中的 AI 保留請求，其他開發 AI 切頁取消規則不變。
+- `assets/task-reward-feedback.mjs`：只有發起完成流程收到已提交 completion 才顯示實際貨幣／經驗／正值能力；不訂閱資料或重播紀錄。各文字是 body 的獨立 fixed span，無共同外框／底色，不占清單高度、不攔點擊。以 visualViewport 中央及可見範圍配置錯落位置，取 active current-page-name computed font／行高／字距，resize／字型載入重新布局；錯開110ms、2.8秒上浮淡出，結束移除。群組依序播放，極短視窗分批容納以避免重疊。reduced-motion 用1.6秒靜態文字。切頁清除舊視覺與待播舊群組，進行中的完成工作不清除；其後真正成功是新回饋，不是跨頁重播。
 - `assets/task-companion.mjs` 與既有 `companion.mjs`：成功的新增、編輯、分類、安排、刪除、批次、完成及取消完成才發事件，450ms 合併、舊回應失效、對話／情緒一起更新。日期瀏覽和自動逾期整理不生成對話。
 
 唯一文件仍是 `life-system.data.v1`。新增 `tasks`，內含 `definitions`、`categories`、`occurrences`、`completions`。未指派分類以 null 保存，畫面顯示「未定義」。未新增第二份 localStorage 數值或待辦來源。
 
 事項 ID 在建立時固定；一次性執行 ID 為事項 ID，重複執行為 `事項ID@YYYY-MM-DD`。同日完成、例外與手動／自動安排共用此身份，目標已存在（包含略過／移動例外）時明確拒絕，不能靜默合併。一次性／重複性在建立後固定；需要不同類型時新增另一事項，避免變動身份與獎勵意義。
+
+## 量測與布局
+
+變更前450px／明體／16px下，日期格實測54×45.1875px、gap4px、七欄402px。桌面固定此基準（文字放大時高度可擴展避免裁字），手機保留等分欄規則。日清單用餘寬，工作區不足706px上下排；長名可換行，不讓整頁溢出。資料頁 .photo-frame 實測約445.953×594.594且宣告3/4，img使用cover；待辦原為240×520（min-height520使宣告比例失效），改為390×520，保留既有高度及資料頁本身。
+
+原頁在1600px下工具收合高度約927.84px、展開約1036.22px，確會跨越垂直捲動門檻；本機覆蓋式捲軸未直接重現橫移，傳統捲軸可改變置中空間。僅 tasks route 的 html 使用 scrollbar-gutter:stable（不支援時用正常常駐垂直捲軸），不鎖捲動、不作水平補償；驗證無／有垂直捲動、工具及頁籤切換的頁面／導覽／立繪／工作區水平座標一致。日期清單整體底線與日期間線同樣1px #dadddc，同日事件無線，最後空日期仍有底線，首頁不改。
 
 ## 週期與歷史
 
@@ -46,7 +53,7 @@ tasks 已納入共用驗證、七天復原政策、本機和 Google Drive 的相
 
 ## 驗證入口
 
-`npm test`、`npm run lint`、`npm run build`；`tests/tasks-pool.test.mjs`、`tests/tasks-pool.cjs`、`tests/tasks-deletion.cjs`、`tests/tasks.test.mjs`、`tests/tasks.cjs`、`tests/tasks-ai.cjs`、`tests/tasks-upper.cjs`、`tests/tasks-schedule.cjs`，以及首頁、app-shell、設定頁籤、個人圖片、還原和暖快取回歸。瀏覽器腳本的 `BASE_URL` 指向本機或建置成果的子路徑。公開部署結果須另行核對，不能用這些本機結果代替。
+`npm test`、`npm run lint`、`npm run build`；`tests/tasks-layout.cjs`、`tests/tasks-progress.cjs`、`tests/tasks-feedback.cjs`、`tests/tasks-pool.test.mjs`、`tests/tasks-pool.cjs`、`tests/tasks-deletion.cjs`、`tests/tasks.test.mjs`、`tests/tasks.cjs`、`tests/tasks-ai.cjs`、`tests/tasks-upper.cjs`、`tests/tasks-schedule.cjs`，以及首頁、app-shell、設定頁籤、個人圖片、還原和暖快取回歸。瀏覽器腳本的 `BASE_URL` 指向本機或建置成果的子路徑。公開部署結果須另行核對，不能用這些本機結果代替。
 
 本次單元測試涵蓋分類顏色與舊資料、清除日期、批次衝突、歷史獎勵、統一逾期及既有共用服務。瀏覽器驗證含 449／450／451px 的九種寬度、四種字型、200% 文字、分類管理、方框／名稱隔離、日期視窗焦點、重複例外、跨年午夜、首頁同步、跨分頁與 AI 備援；另檢查既有頁面、還原及暖快取升級。原生手機鍵盤僅以短視窗模擬，未以實體裝置驗證；未使用真實 AI 金鑰或 Google Drive 授權。
 

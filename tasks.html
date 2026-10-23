@@ -11,7 +11,7 @@
 
 
 
-  <link rel="stylesheet" href="assets/styles.css?v=task-pool-5"><link rel="stylesheet" href="assets/profile.css?v=task-pool-5"><link rel="stylesheet" href="assets/appearance.css?v=task-pool-5"><link rel="stylesheet" href="assets/ai.css?v=task-pool-5"><meta name="life-system-shell" content="task-pool-5"><script type="module" src="assets/app-shell.mjs?v=task-pool-5"></script><link rel="stylesheet" href="assets/tasks.css?v=task-pool-5"></head>
+  <link rel="stylesheet" href="assets/styles.css?v=task-pool-5"><link rel="stylesheet" href="assets/profile.css?v=task-pool-5"><link rel="stylesheet" href="assets/appearance.css?v=task-pool-5"><link rel="stylesheet" href="assets/ai.css?v=task-pool-5"><meta name="life-system-shell" content="task-layout-6"><script type="module" src="assets/app-shell.mjs?v=task-layout-6"></script><link rel="stylesheet" href="assets/tasks.css?v=task-layout-6"></head>
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
     <div class="page-shell">
@@ -41,9 +41,9 @@
 
 <div class="task-workspace">
 <div class="task-toolbar"><button id="new-task" type="button">新增事件</button><button id="manage-categories" type="button">管理分類</button></div>
-<div class="task-calendar-layout"><section class="task-calendar" id="task-calendar" aria-label="月曆" hidden><div class="task-toolbar"><button id="previous-month" type="button" aria-label="上個月">←</button><span id="month-label" aria-live="polite"></span><button id="next-month" type="button" aria-label="下個月">→</button><button id="today" type="button">今日</button></div><div id="month-grid" class="task-month-grid"></div></section>
+<div class="activity-tabs task-content-tabs" role="tablist" aria-label="待辦內容切換"><button type="button" id="task-schedule-tab" role="tab" aria-controls="task-schedule-panel" aria-selected="true">待辦事項</button><button type="button" id="task-pool-tab" role="tab" aria-controls="task-pool" aria-selected="false" tabindex="-1">待辦池</button></div><div class="task-panel-stack"><section id="task-schedule-panel" class="task-content-panel" role="tabpanel" aria-labelledby="task-schedule-tab"><div class="task-calendar-layout"><section class="task-calendar" id="task-calendar" aria-label="月曆" hidden><div class="task-toolbar"><button id="previous-month" type="button" aria-label="上個月">←</button><span id="month-label" aria-live="polite"></span><button id="next-month" type="button" aria-label="下個月">→</button><button id="today" type="button">今日</button></div><div id="month-grid" class="task-month-grid"></div></section>
 <div id="schedule" class="task-schedule" aria-label="每日待辦"></div></div>
-<details id="task-pool" open><summary>待辦池</summary><p id="task-filter-status" class="small-note" role="status"></p><details id="task-pool-tools"><summary>搜尋、分類與批次工具</summary><div class="task-filters"><label>名稱搜尋<input id="task-search" type="search"></label><label>分類<select id="category-filter"><option value="">全部分類</option><option value="none">未定義</option></select></label><label>排序<select id="task-sort"><option value="new">建立時間（新至舊）</option><option value="old">建立時間（舊至新）</option><option value="points">點數（高至低）</option></select></label><button id="open-task-batch" type="button">批次處理</button></div></details><div id="pool-lists"></div></details>
+</section><section id="task-pool" class="task-content-panel" role="tabpanel" aria-labelledby="task-pool-tab" hidden><p id="task-filter-status" class="small-note" role="status"></p><details id="task-pool-tools"><summary>搜尋、分類與批次工具</summary><div class="task-filters"><label>名稱搜尋<input id="task-search" type="search"></label><label>分類<select id="category-filter"><option value="">全部分類</option><option value="none">未定義</option></select></label><label>排序<select id="task-sort"><option value="new">建立時間（新至舊）</option><option value="old">建立時間（舊至新）</option><option value="points">點數（高至低）</option></select></label><button id="open-task-batch" type="button">批次處理</button></div></details><div id="pool-lists"></div></section></div>
 <p id="operation-status" class="small-note" role="status" hidden></p>
 </div></div>
       </main>

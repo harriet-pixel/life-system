@@ -1,14 +1,16 @@
+import {createActivityHeightSync} from './activity-height.mjs?v=task-pool-5';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-pool-5';
 import {createTaskPool} from './task-pool.mjs?v=task-pool-5';
 import {dataStore} from './data.mjs?v=task-pool-5';
 import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-pool-5';
-import {taskActions} from './task-actions.mjs?v=task-pool-5';
+import {taskActions} from './task-actions.mjs?v=task-layout-6';
 import {mountTaskCompanion} from './task-companion.mjs';
 import {createTaskEditor} from './task-editor.mjs?v=task-pool-5';
 import {createCategoryManager} from './task-categories.mjs?v=task-pool-5';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
- const desktop=matchMedia('(min-width:1024px)');let mobileCalendarOpen=false;
- const syncCalendar=()=>{const expanded=desktop.matches||mobileCalendarOpen,calendar=$('#task-calendar');if(!expanded&&calendar.contains(document.activeElement))$('#toggle-calendar').focus({preventScroll:true});calendar.hidden=!expanded;$('#toggle-calendar').setAttribute('aria-expanded',String(expanded));};
+ const desktop=matchMedia('(min-width:1024px)');let mobileCalendarOpen=false,contentTab=0;
+ const syncCalendar=()=>{const expanded=desktop.matches||mobileCalendarOpen,calendar=$('#task-calendar');if(!expanded&&calendar.contains(document.activeElement))$('#toggle-calendar').focus({preventScroll:true});calendar.hidden=!expanded;$('#toggle-calendar').hidden=contentTab!==0;$('#toggle-calendar').setAttribute('aria-expanded',String(expanded));};
  let lastToday=localDate();
  let selected=localDate(),followToday=true,month=selected.slice(0,7),limits={},renderingData;
  const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
@@ -53,7 +55,7 @@ export function mountTasks(root,context){
  }
  const pool=createTaskPool(root,context,actions,{openMenu,askDate});
  function dailyRow(r){const {task,occurrence:o}=r,node=el('article',undefined,'task-daily-row');node.dataset.taskId=task.id;node.dataset.date=o.date;
-  const check=el('label',undefined,'task-check-control'),input=el('input');input.type='checkbox';input.checked=o.status==='done';input.setAttribute('aria-label',`${input.checked?'取消完成':'完成'} ${r.name}`);input.onchange=()=>{input.checked=o.status==='done';if(input.checked)actions.cancel(task.id,o.date).catch(()=>{});else actions.complete(task.id,o.date,node);};check.append(input);
+  const check=el('label',undefined,'task-check-control'),input=el('input');input.type='checkbox';const pending=actions.isPending(task.id,o.date);input.checked=o.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));node.classList.toggle('is-processing',pending);node.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${r.name}`:`${input.checked?'取消完成':'完成'} ${r.name}`);input.onchange=()=>{if(actions.isPending(task.id,o.date))return;input.checked=true;if(o.status==='done')actions.cancel(task.id,o.date).catch(()=>{});else actions.complete(task.id,o.date,node);};check.append(input);
   const name=button(r.name,()=>openMenu(task,o));name.className='task-daily-name';const category=renderingData.categories.find(c=>c.id===task.categoryId);if(category?.color)name.style.color=category.color;node.append(check,name);return node;
  }
  function choose(date,follow=false){selected=date;followToday=follow;month=date.slice(0,7);limits={};render();}
@@ -68,9 +70,14 @@ export function mountTasks(root,context){
  }));
  pool.render(data,today);
  $('#month-label').textContent=month;const first=month+'-01',next=new Date(first+'T12:00:00');next.setMonth(next.getMonth()+1);const count=Number(addDays(localDate(next),-1).slice(-2));const cells=[];for(const name of ['一','二','三','四','五','六','日'])cells.push(el('span',name));for(let i=0;i<(weekday(first)+6)%7;i++)cells.push(el('span',''));for(let i=1;i<=count;i++){const date=month+'-'+String(i).padStart(2,'0');const b=button(String(i),()=>choose(date));b.setAttribute('aria-label',`${date}${date===today?' 今天':''}${date===selected?' 已選取':''}`);if(date===today)b.setAttribute('aria-current','date');b.setAttribute('aria-pressed',String(date===selected));cells.push(b);}$('#month-grid').replaceChildren(...cells);
- if(!focused?.isConnected&&!root.querySelector('dialog[open]')){const replacement=focusedDate?[...$('#month-grid').querySelectorAll('button')].find(b=>b.getAttribute('aria-label').startsWith(focusedDate)):focusedTask?[...$('#schedule').querySelectorAll('.task-daily-row')].find(n=>n.dataset.taskId===focusedTask&&n.dataset.date===focusedRowDate)?.querySelector(focusedCheckbox?'input':'.task-daily-name'):null;replacement?.focus({preventScroll:true});}
+ if(!focused?.isConnected&&!root.querySelector('dialog[open]')){const replacement=focusedDate?[...$('#month-grid').querySelectorAll('button')].find(b=>b.getAttribute('aria-label').startsWith(focusedDate)):focusedTask?[...$('#schedule').querySelectorAll('.task-daily-row')].find(n=>n.dataset.taskId===focusedTask&&n.dataset.date===focusedRowDate)?.querySelector(focusedCheckbox?'input':'.task-daily-name'):null;const target=replacement?.disabled?replacement.closest('.task-daily-row')?.querySelector('.task-daily-name'):replacement;target?.focus({preventScroll:true});}
  }
  $('#new-task').onclick=()=>openEditor().catch(e=>actions.say(e.message));$('#manage-categories').onclick=()=>categories.open().catch(e=>actions.say(e.message));$('#today').onclick=()=>choose(localDate(),true);$('#toggle-calendar').onclick=()=>{mobileCalendarOpen=!mobileCalendarOpen;syncCalendar();};
  for(const [id,delta]of [['previous-month',-1],['next-month',1]])$('#'+id).onclick=()=>{const d=new Date(month+'-01T12:00:00');d.setMonth(d.getMonth()+delta);month=localDate(d).slice(0,7);render();};
+ const contentTabs=$('.task-content-tabs'),contentButtons=[...contentTabs.querySelectorAll('[role=tab]')],contentPanels=contentButtons.map(b=>$('#'+b.getAttribute('aria-controls'))),heightSync=createActivityHeightSync($('.task-panel-stack'),contentPanels,context),positionTabs=createMobileTabPositioner(contentTabs,heightSync);
+ const appearanceObserver=new MutationObserver(heightSync),watchAppearance=()=>appearanceObserver.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-font']});watchAppearance();context.onSuspend(()=>appearanceObserver.disconnect());context.onResume(watchAppearance);
+ function selectContent(index,event){contentTab=index;contentButtons.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;contentPanels[i].hidden=i!==index;});syncCalendar();heightSync();if(event)positionTabs(event);}
+ contentButtons.forEach((b,i)=>{b.onclick=event=>selectContent(i,event);b.addEventListener('keydown',event=>{const targets={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(!(event.key in targets))return;event.preventDefault();selectContent(targets[event.key]);contentButtons[contentTab].focus({preventScroll:true});});});context.onSuspend(()=>positionTabs.cancel());context.onResume(()=>selectContent(contentTab));
+ context.subscribe(actions.completions,render);
  context.subscribe(dataStore,render);context.listen(desktop,'change',render);context.onResume(render);
 }
