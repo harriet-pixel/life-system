@@ -1,4 +1,4 @@
-import {initializeAISettings} from './ai-settings.mjs?v=provider-audit-3';
+import {initializeAISettings} from './ai-settings.mjs?v=ai-status-4';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=ai-connection-1';
 import {dataStore,persistentUndo} from './data.mjs?v=ai-connection-1';
 import {initializeNavigation} from './navigation.mjs';
