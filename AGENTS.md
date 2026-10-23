@@ -1,6 +1,6 @@
 # 專案協作規範
 
-本文件整理至 2026-10-23，核對原始碼基準為 `73a66023902d49539bfdb96e32c531bd9be71de2`。這是現行規則，不是歷次需求追加紀錄；後續修改請更新對應章節，避免追加互相衝突的「最新規則」。
+本文件整理至 2026-10-23，核對原始碼基準為 `3d1ae4ccca4a8c09ca04612f3a48d84b365430f8`。這是現行規則，不是歷次需求追加紀錄；後續修改請更新對應章節，避免追加互相衝突的「最新規則」。
 
 ## 目標與優先順序
 
@@ -25,7 +25,8 @@
 | `assets/validation.mjs` | 欄位及密碼驗證 |
 | `assets/image-store.mjs`、`assets/image-references.mjs` | IndexedDB 圖片資產及集中引用檢查 |
 | `assets/coordination.mjs` | 寫入與維護操作的跨分頁協調 |
-| `assets/navigation.mjs`、`assets/tab-position.mjs` | 共用導覽與手機頁籤定位 |
+| `assets/app-shell.mjs`、`assets/page-lifecycle.mjs` | 三頁共用外框、History 路由、有界草稿 DOM 與暫停／恢復 |
+| `assets/navigation.mjs`、`assets/navigation-size.mjs`、`assets/tab-position.mjs` | 常駐導覽、鍵盤／高度避讓與手機頁籤定位 |
 | `assets/appearance-core.js`、`assets/appearance.css` | 全站外觀與初次繪製前套用 |
 | `scripts/build.mjs` | 產生 `work/build/` 靜態發布成果 |
 
@@ -78,8 +79,15 @@
 - 稱呼 30、一句話 100、簡介與禁忌各 2000 Unicode code points；字數提示在標籤後一字元，沿用共用 small-note，與一句話欄的說明同字級、色彩與字重。舊超長資料可讀，不靜默截斷；只驗證變更欄位。
 - 數字使用既有範圍與安全整數驗證；文字以安全文字 API 呈現，不直接作 HTML 執行。
 
+## 共用頁面外框
+
+- 三份 HTML 保留直接網址與 Pages 子路徑；一般站內連結只更新內容，導覽／dataStore／AI runtime 常駐。新分頁、修飾鍵、外部連結、下載保持 anchor 原行為，History API 處理前後頁／捲動／焦點。詳見 `docs/APP_SHELL.md`。
+- 每頁最多一份離開 document 的草稿 DOM，僅首次 mount；非目前頁面暫停全域事件、資料／AI 訂閱、觀察器與待處理定位。DOM-local 事件保留但不得重綁。資料與圖片 dialog 暫停不得觸發取消草稿。真正離頁僅有未保存輸入才提示。
+- AI 切頁不重建連線、不重查或重送；離開處理中頁面取消並失效舊回覆，保留 key 的原期限、模型與未送出文字。原 draft locks 仍保護跨頁未提交內容。
+
 ## 設定與備份整合
 
+- 設定上層僅「一般設定」（外觀、AI）與「資料管理」（備份、儲存、歷史）；內部 details／summary，不恢復五個上層頁籤或新增子頁籤。舊 fragment／tab query 必須映射新分類，分類／收合不清草稿或 AI。
 - 主題與四種字型保存後同步三頁與同來源其他分頁，初次繪製前套用；預覽不寫入資料，取消回到最近保存值。
 - 移除三種恢復預設按鈕；預設色票無 #b58a36，但既有使用者自訂色不因此重設。
 - 本機下載密碼留白不加密；有填須 8–64 碼英文、數字或符號（可含空格），不改寫密碼。
@@ -91,9 +99,9 @@
 
 ## AI 連線
 
-- 沿用同一 AI service 與四家 provider。新增 Cloudflare Workers 個人後端（GitHub OAuth 本人 numeric ID、Worker Secret、SQLite DO 限額），部署指南與免費界線見 `docs/CLOUDFLARE_PERSONAL_AI.md`；原 Node BYOK 後端保留，不是本次部署目標。控制台未部署前如實尚未設定，不購買網域、不搬 DNS、不升級付費。瀏覽器直連保留作手動備用，不自動切換／重送。
+- 沿用同一 AI service 與四家 provider。新增 Cloudflare Workers 個人後端（GitHub OAuth 本人 numeric ID、Worker Secret、SQLite DO 限額），部署指南與免費界線見 `docs/CLOUDFLARE_PERSONAL_AI.md`；原 Node BYOK 後端保留，不是本次部署目標。Cloudflare 建置依使用者要求暫停，待網頁完成後再處理；本次不得建立或部署服務。控制台未部署前如實尚未設定，不購買網域、不搬 DNS、不升級付費。瀏覽器直連保留作手動備用，不自動切換／重送。
 - 「瀏覽器直連測試模式」預設關閉，啟用前明確提示金鑰暴露與測試 key／用量限制並確認。測試模式不因正式 endpoint 空白或未登入而停用輸入；只呼叫官方 HTTPS API，不用公共代理或停用瀏覽器安全性。
-- 明確同意後，一組 provider/key/model/原始期限只存專用 sessionStorage `life-system.ai-test.v1`，最長 2 小時、不因讀取／切頁／重載延長。啟動、恢復、可見與每次請求前檢查；pagehide 只取消執行記憶體，不刪仍有效的測試 entry。關閉模式、中斷或到期清除；換商取消並清空金鑰、模型與狀態，不保留多家 key。
+- 明確同意後，一組 provider/key/model/原始期限只存專用 sessionStorage `life-system.ai-test.v1`，最長 2 小時、不因讀取／切頁／重載延長。啟動、恢復、可見與每次請求前檢查；同文件站內切頁不觸發 pagehide、不重建連線；真正 pagehide 只取消執行記憶體，不刪仍有效的測試 entry。關閉模式、中斷或到期清除；換商取消並清空金鑰、模型與狀態，不保留多家 key。
 - sessionStorage 不是加密保管庫，不保證關閉分頁可靠抹除；不寫其他瀏覽器儲存、一般設定／歷史／Undo／Redo／備份／URL／日誌，不跨頁籤廣播，不要求使用者把 key 貼到聊天或 Git。新分頁可能由瀏覽器複製 opener session，不宣稱可靠共用或完全隔離。
 - `ai-runtime`／`ai-client`／`ai-session` 集中恢復與生命週期；`ai-service` 統一狀態、生成、取消與錯誤；`assets/ai-providers`／`ai-capabilities`／`ai-errors` 前後端共用，不另建重複系統。backend/ 的 server/auth/env 永不進 work/build。
 - 個人 Worker 金鑰只放 Cloudflare Secret，不回前端；GitHub access token 只用於 callback／user，不保存。本站 opaque session 最長一小時，專用 sessionStorage `life-system.ai-worker-session.v1`，DO 只存 hash、期限與限額，登出後端撤銷。CORS 不是認證，不混用 Drive／Cloudflare 管理 token。缺設定安全停用後端，直連不受影響。舊 Node BYOK 模式仍僅本頁 key＋JWT/scope，不與 Worker 模式混稱。測試金鑰不走一般 settings.ai；原非敏感 provider/model 偏好及備份白名單保留。

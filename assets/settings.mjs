@@ -1,38 +1,51 @@
-import {initializeAISettings} from './ai-settings.mjs?v=personal-worker-5';
+import {initializeAISettings} from './ai-settings.mjs?v=app-shell-6';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=ai-connection-1';
 import {dataStore,persistentUndo} from './data.mjs?v=ai-connection-1';
-import {initializeNavigation} from './navigation.mjs';
-import {createMobileTabPositioner} from './tab-position.mjs';
-import {createHistoryView} from './history-view.mjs?v=ai-connection-1';
+import {createMobileTabPositioner} from './tab-position.mjs?v=app-shell-6';
+import {createHistoryView} from './history-view.mjs?v=app-shell-6';
 import {auditImages,deleteUnusedImages} from './image-references.mjs';
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=ai-connection-1';
 import {holdDraft} from './coordination.mjs';
 import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=ai-connection-1';
 import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=ai-connection-1';
-const $=selector=>document.querySelector(selector);
+
+export function mountSettings(root,context){
+const $=selector=>root.querySelector(selector);
 const element=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
 const notice=message=>{$('#operation-status').hidden=false;$('#operation-status').textContent=message;};
 const bytes=value=>value<1024?value+' B':value<1024**2?(value/1024).toFixed(1)+' KiB':(value/1024**2).toFixed(2)+' MiB';
 const time=value=>value&&Number.isFinite(Date.parse(value))?new Date(value).toLocaleString('zh-TW'):'建立時間未記錄';
 let busy=false,aiConnection;
 async function run(work){
-  if(busy)return;const priorError=document.querySelector('dialog[open] [data-dialog-error]');if(priorError)priorError.textContent='';busy=true;document.body.setAttribute('aria-busy','true');
-  const buttons=[...document.querySelectorAll('button,input,select')].map(e=>[e,e.disabled]);buttons.forEach(([e])=>e.disabled=true);syncRestoreControls();
-  try{return await work();}catch(error){const message=error.message||'操作失敗；原資料未清除。';notice(message);const target=document.querySelector('dialog[open] [data-dialog-error]');if(target)target.textContent=message;}
-  finally{busy=false;document.body.removeAttribute('aria-busy');buttons.forEach(([e,disabled])=>{if(e.isConnected&&!e.matches('[data-undo],[data-redo],#restore-confirm button,#restore-password'))e.disabled=disabled;});syncSelection();syncDrive();syncRestoreControls();if($('#restore-confirm').open)(prepared?$('#confirm-restore'):restoreEncrypted?$('#restore-password'):$('#cancel-restore')).focus({preventScroll:true});dataStore.notify();aiConnection?.notify();}
+  if(busy)return;const priorError=root.querySelector('dialog[open] [data-dialog-error]');if(priorError)priorError.textContent='';busy=true;root.setAttribute('aria-busy','true');document.body.setAttribute('aria-busy','true');context.notify();
+  const buttons=[...root.querySelectorAll('button,input,select')].map(e=>[e,e.disabled]);buttons.forEach(([e])=>e.disabled=true);syncRestoreControls();
+  try{return await work();}catch(error){const message=error.message||'操作失敗；原資料未清除。';notice(message);const target=root.querySelector('dialog[open] [data-dialog-error]');if(target)target.textContent=message;}
+  finally{busy=false;root.removeAttribute('aria-busy');document.body.removeAttribute('aria-busy');context.notify();buttons.forEach(([e,disabled])=>{if(root.contains(e)&&!e.matches('[data-undo],[data-redo],#restore-confirm button,#restore-password'))e.disabled=disabled;});syncSelection();syncDrive();syncRestoreControls();if($('#restore-confirm').open)(prepared?$('#confirm-restore'):restoreEncrypted?$('#restore-password'):$('#cancel-restore')).focus({preventScroll:true});dataStore.notify();aiConnection?.notify();}
 }
-initializeNavigation({undoManager:{...persistentUndo,getState:()=>({...persistentUndo.getState(),busy:busy||persistentUndo.getState().busy})}});
-const history=createHistoryView({store:dataStore});
+context.setHooks({busy:()=>busy});
+const history=createHistoryView({store:dataStore,root,context});
 const tabs=[...$('.settings-content > .activity-tabs').children],positionTabs=createMobileTabPositioner(tabs[0].parentElement);
-let selectedTab=-1;
+let selectedTab=-1,storageLoaded=false;
+const storageVisible=()=>context.active&&selectedTab===1&&$('#storage-section').open;
 function selectTab(index,event){
-  if(index===selectedTab)return;
-  selectedTab=index;
-  tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;const panel=document.getElementById(tab.getAttribute('aria-controls'));panel.hidden=i!==index;panel.inert=i!==index;});
-  if(index===0)refreshStorage();else{storageVersion++;releaseThumbnails();$('#asset-list').replaceChildren();}
+  const changed=index!==selectedTab;selectedTab=index;
+  tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;const panel=root.querySelector('#'+tab.getAttribute('aria-controls'));panel.hidden=i!==index;panel.inert=i!==index;});
+  if(changed&&storageVisible()&&!storageLoaded)refreshStorage({preserveSelection:true});
   if(event)positionTabs(event);
 }
-tabs.forEach((tab,index)=>{tab.addEventListener('click',event=>selectTab(index,event));tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+tabs.length-1)%tabs.length,ArrowRight:(index+1)%tabs.length,Home:0,End:tabs.length-1}[event.key];if(next===undefined)return;event.preventDefault();selectTab(next,event);tabs[next].focus({preventScroll:true});});});
+root.querySelectorAll('.settings-disclosure > summary').forEach(summary=>summary.addEventListener('click',()=>positionTabs.cancel()));
+tabs.forEach((tab,index)=>{tab.addEventListener('click',event=>selectTab(index,event));tab.addEventListener('keydown',event=>{const next={ArrowLeft:(index+1)%2,ArrowRight:(index+1)%2,Home:0,End:1}[event.key];if(next===undefined)return;event.preventDefault();selectTab(next,event);tabs[next].focus({preventScroll:true});});});
+$('#storage-section').addEventListener('toggle',()=>{if(storageVisible()&&!storageLoaded)refreshStorage({preserveSelection:true});});
+function reveal(url){
+  const target=new URL(url,location.href),raw=(target.searchParams.get('tab')||target.searchParams.get('section')||target.hash.slice(1)).replace(/-(?:tab|panel|section)$/,'');
+  const aliases={appearance:'appearance',ai:'ai',backup:'backup',storage:'storage',history:'history',general:'general',management:'management'};
+  const key=aliases[raw];if(!key)return null;
+  selectTab(['backup','storage','history','management'].includes(key)?1:0);
+  const section=$('#'+key+'-section');if(section){section.open=true;if(key==='storage'&&!storageLoaded)refreshStorage();return $('#'+key+'-tab');}
+  return $('#'+key+'-tab');
+}
+context.onSuspend(()=>{positionTabs.cancel();storageVersion++;});
+context.onResume(()=>{if(storageVisible()&&!storageLoaded)refreshStorage({preserveSelection:true});});
 
 let unused=[],selected=new Set(),thumbnailURLs=[],storageVersion=0;
 function releaseThumbnails(){thumbnailURLs.forEach(url=>URL.revokeObjectURL(url));thumbnailURLs=[];}
@@ -43,13 +56,15 @@ function syncSelection(){
   $('#select-all-assets').disabled=!unused.length||busy;$('#select-no-assets').disabled=!count||busy;
   $('#asset-list').querySelectorAll('input').forEach(input=>input.checked=selected.has(input.value));
 }
-async function refreshStorage(){
-  const version=++storageVersion;releaseThumbnails();unused=[];selected.clear();$('#asset-list').replaceChildren();syncSelection();
+async function refreshStorage(options={}){
+  storageLoaded=false;
+  const retained=options.preserveSelection?new Set(selected):new Set();
+  const version=++storageVersion;releaseThumbnails();unused=[];selected=retained;$('#asset-list').replaceChildren();syncSelection();
   $('#storage-state').textContent='正在載入圖片與檢查完整引用…';
   for(const id of ['asset-total','asset-bytes','unused-total','unused-bytes'])$('#'+id).textContent='—';
   try{
-    const result=await auditImages(dataStore);if(version!==storageVersion||selectedTab!==0)return;
-    unused=result.unused;
+    const result=await auditImages(dataStore);if(version!==storageVersion||!context.active)return;storageLoaded=true;
+    unused=result.unused;selected=new Set([...selected].filter(id=>unused.some(asset=>asset.id===id)));
     $('#asset-total').textContent=String(result.assets.length);$('#asset-bytes').textContent=bytes(result.assets.reduce((n,a)=>n+a.blob.size,0));
     $('#unused-total').textContent=String(unused.length);$('#unused-bytes').textContent=bytes(unused.reduce((n,a)=>n+a.blob.size,0));
     $('#storage-state').textContent=!result.assets.length?'尚未儲存任何圖片。':!unused.length?'沒有可安全清理的未使用圖片。':'以下圖片未被已保存資料、歷史、Undo／Redo 或編輯引用；暫存保護期內的圖片也不列入。';
@@ -74,7 +89,7 @@ for(const [id,trigger] of [['delete-confirm','delete-assets'],['restore-confirm'
   const dialog=$('#'+id);dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});dialog.addEventListener('close',()=>$('#'+trigger).focus({preventScroll:true}));
 }
 
-let appearanceDraft={...dataStore.get().settings.appearance},appearanceDirty=false,appearanceRevision,releaseAppearance,draftPromise,previewVersion=0;
+let appearanceDraft={...dataStore.get().settings.appearance},appearanceDirty=false,appearanceInput=false,appearanceRevision,releaseAppearance,draftPromise,previewVersion=0;
 function renderAppearanceControls(){
   $('#theme-color').value=appearanceDraft.color;$('#theme-hex').value=appearanceDraft.color;$('#theme-font').value=appearanceDraft.font;
   applyAppearance(appearanceDraft,$('#appearance-preview'));
@@ -98,12 +113,12 @@ async function previewAppearance(changes){
     $('#appearance-error').textContent='';renderAppearanceControls();
   }catch(error){$('#appearance-error').textContent=error.message;draftPromise=null;}
 }
-function cancelAppearance(){previewVersion++;releaseAppearance?.();releaseAppearance=null;draftPromise=null;appearanceDirty=false;appearanceDraft={...dataStore.get().settings.appearance};$('#appearance-error').textContent='';renderAppearanceControls();}
+function cancelAppearance(){previewVersion++;releaseAppearance?.();releaseAppearance=null;draftPromise=null;appearanceDirty=false;appearanceInput=false;appearanceDraft={...dataStore.get().settings.appearance};$('#appearance-error').textContent='';renderAppearanceControls();}
 for(const color of ['#104a7a','#315e46','#744251','#605079','#eddfbc']){
   const button=element('button');button.type='button';button.style.setProperty('--swatch',color);button.setAttribute('aria-label','預覽主題色 '+color);button.addEventListener('click',()=>previewAppearance({color}));$('#theme-swatches').append(button);
 }
 $('#theme-color').addEventListener('input',event=>previewAppearance({color:event.target.value}));
-$('#theme-hex').addEventListener('input',event=>{if(validHex(event.target.value))previewAppearance({color:event.target.value});else $('#appearance-error').textContent='請輸入完整 HEX 色碼，例如 #104A7A。';});
+$('#theme-hex').addEventListener('input',event=>{appearanceInput=true;if(validHex(event.target.value))previewAppearance({color:event.target.value});else $('#appearance-error').textContent='請輸入完整 HEX 色碼，例如 #104A7A。';});
 $('#theme-font').addEventListener('change',event=>previewAppearance({font:event.target.value}));
 $('#cancel-appearance').addEventListener('click',cancelAppearance);
 $('#save-appearance').addEventListener('click',()=>run(async()=>{
@@ -113,7 +128,6 @@ $('#save-appearance').addEventListener('click',()=>run(async()=>{
   const saved=await dataStore.transact({type:'appearance.update',label:'已更新外觀設定',target:'settings',fields:[],changes:{settings:{...dataStore.get().settings,appearance:appearanceDraft}}});
   cancelAppearance();notice(saved?'外觀已儲存並套用全站。':'沒有外觀變更需要儲存。');
 }));
-window.addEventListener('beforeunload',event=>{if(appearanceDirty){event.preventDefault();event.returnValue='';}});
 
 async function downloadCurrent(){
   const secret=validateNewPassword($('#backup-password').value);
@@ -179,8 +193,14 @@ $('#list-drive').addEventListener('click',()=>run(async()=>{
 }));
 $('#disconnect-drive').addEventListener('click',()=>{disconnectDrive();$('#drive-list').replaceChildren();$('#drive-state').textContent='已中斷本頁連接；既有雲端備份沒有刪除。';});
 $('#revoke-drive').addEventListener('click',()=>run(async()=>{await revokeDrive();$('#drive-list').replaceChildren();$('#drive-state').textContent='已撤銷授權；既有雲端備份沒有刪除。';}));
-dataStore.subscribe(state=>{history.render(state);if(!appearanceDirty){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}});
-window.addEventListener('pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();clearRestore();for(const id of ['backup-password','cloud-password'])$('#'+id).value='';});
-window.addEventListener('pageshow',event=>{if(event.persisted){cancelAppearance();if(selectedTab===0)refreshStorage();}});
-aiConnection=initializeAISettings(dataStore);
+let storageRevision=dataStore.get().revision;
+context.subscribe(dataStore,state=>{if(state.revision!==storageRevision){storageRevision=state.revision;storageLoaded=false;}history.render(state);if(!appearanceDirty&&!appearanceInput){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}});
+context.listen(window,'pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();clearRestore();for(const id of ['backup-password','cloud-password'])$('#'+id).value='';});
+context.listen(window,'pageshow',event=>{if(event.persisted){cancelAppearance();if(storageVisible())refreshStorage();}});
+aiConnection=initializeAISettings(root,context);
 renderAppearanceControls();syncDrive();selectTab(0);
+const hasAIInput=context.hooks.hasDraft;
+context.setHooks({hasDraft:()=>Boolean(appearanceDirty||appearanceInput||$('#backup-password').value||$('#restore-file').files.length||hasAIInput?.()),reveal});
+return {reveal};
+
+}

@@ -5,7 +5,7 @@ export function createMobileTabPositioner(tablist, beforeMeasure = () => {}) {
   const region = tablist.parentElement;
   region.classList.add('mobile-tab-scroll-region');
   let pendingFrame = 0;
-  return function positionAfterClick(event) {
+  function positionAfterClick(event) {
     if (!event.isTrusted || document.querySelector('dialog[open]')) return;
     cancelAnimationFrame(pendingFrame);
     // Reveal only inside the horizontal tab scroller; never scroll its ancestors.
@@ -19,7 +19,7 @@ export function createMobileTabPositioner(tablist, beforeMeasure = () => {}) {
     if (event.type !== 'click' || !mobile.matches) return;
     pendingFrame = requestAnimationFrame(() => {
       pendingFrame = 0;
-      if (!mobile.matches || document.querySelector('dialog[open]')) return;
+      if (!tablist.isConnected || !mobile.matches || document.querySelector('dialog[open]')) return;
       beforeMeasure();
       let headerBottom = 0;
       document.querySelectorAll('header, [role="banner"], [data-tab-scroll-header]').forEach(header => {
@@ -58,5 +58,7 @@ export function createMobileTabPositioner(tablist, beforeMeasure = () => {}) {
       if (Math.abs(scrollY - target) <= 1) return;
       window.scrollTo({ top: target, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
     });
-  };
+  }
+  positionAfterClick.cancel=()=>{cancelAnimationFrame(pendingFrame);pendingFrame=0;};
+  return positionAfterClick;
 }

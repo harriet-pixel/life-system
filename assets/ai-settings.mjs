@@ -1,17 +1,31 @@
 import {MODEL_REASONS} from './ai-capabilities.mjs?v=provider-audit-3';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=personal-worker-5';
-import {mountAITestPanel} from './ai-test-panel.mjs?v=personal-worker-5';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=app-shell-6';
+import {mountAITestPanel} from './ai-test-panel.mjs?v=app-shell-6';
 const providerNotes={
  gemini:'Gemini 官方 SDK 支援瀏覽器；實際可用性仍依金鑰、地區與官方跨來源政策。',
  openai:'OpenAI／GPT：官方 SDK 要求明確啟用危險瀏覽器模式；本測試採官方 REST 直連，僅在你啟用後送出金鑰。',
  claude:'Claude：僅此測試模式加入官方 anthropic-dangerous-direct-browser-access 標頭；仍受帳戶與跨來源政策限制。',
  deepseek:'DeepSeek：目前已回報直連連線成功；生成、跨頁與其他帳戶仍須分別驗收，本站不使用非官方代理。',
 };
-export function initializeAISettings(){
- const $=id=>document.getElementById(id),key=$('ai-key'),connection=getSharedAIConnection();
+export function aiStatusSummary(state){
+ if(state.busy)return '請求處理中';
+ if(state.status==='generation_succeeded')return '生成成功';
+ if(state.status==='model_selected')return '模型已選取，尚未生成';
+ if(state.status==='models_loaded')return '模型已取得，尚未選取';
+ if(state.status==='models_empty')return '模型查詢完成：空清單';
+ if(state.status==='models_filtered')return '模型查詢完成：全部被篩除';
+ if(state.status==='error')return '操作失敗，請展開查看';
+ if(state.status==='cancelled')return '本次請求已取消';
+ if(state.hasKey)return '金鑰已暫存，尚未查詢模型';
+ if(state.backendReady)return '本人已登入，尚未查詢模型';
+ return '尚未設定';
+}
+export function initializeAISettings(root=document,context){
+ const $=id=>root.querySelector('#'+CSS.escape(id)),key=$('ai-key'),connection=getSharedAIConnection();
  function hideKey(){key.type='password';$('ai-toggle-key').textContent='顯示金鑰';$('ai-toggle-key').setAttribute('aria-pressed','false');}
  let priorProvider,priorMode;
- connection.subscribe(state=>{
+ const subscribe=fn=>context?context.subscribe(connection,fn):connection.subscribe(fn);
+ subscribe(state=>{
   if(priorProvider!==state.provider||priorMode!==state.mode||!state.hasKey){key.value='';hideKey();}priorProvider=state.provider;priorMode=state.mode;
   $('ai-browser-mode').checked=state.mode==='browser';$('ai-provider').value=state.provider;
   $('ai-provider-help').textContent=state.mode==='browser'?providerNotes[state.provider]:'正式後端模式需本站 HTTPS 後端與登入；目前未部署。';
@@ -22,6 +36,7 @@ export function initializeAISettings(){
   $('ai-worker-summary').textContent=state.mode==='browser'?'目前使用手動瀏覽器直連備用模式。':!state.personal?.configured?'個人 Workers 後端尚未設定；瀏覽器直連仍可使用。':state.personal.authenticated?'本人已登入個人後端；AI 金鑰保留在 Cloudflare Secret。':'個人後端已設定，請先以 GitHub 本人帳號登入。';
   $('ai-key-controls').hidden=Boolean(personal);$('ai-key-label').hidden=Boolean(personal);
   if(personal){$('ai-lifecycle').textContent='AI 金鑰只由 Cloudflare Worker Secret 送往所選官方服務，不會傳回瀏覽器；本站登入工作階段最多一小時，以本分頁暫存支援跨頁。';$('ai-provider-help').textContent='僅已於後端設定 Secret 的服務商可用。後端失敗時請手動切換直連；不自動重送生成。';}
+  if($('ai-collapse-state'))$('ai-collapse-state').textContent=aiStatusSummary(state);
   $('ai-panel').setAttribute('aria-busy',String(state.busy));$('ai-state').textContent=state.message;
   const diagnostic=state.diagnostics;$('ai-model-diagnostics').hidden=!diagnostic;
   $('ai-model-counts').textContent=diagnostic?`官方取得 ${diagnostic.received} 筆，本站保留 ${diagnostic.retained} 筆，排除 ${diagnostic.excluded.length} 筆。`:'';
@@ -46,6 +61,6 @@ export function initializeAISettings(){
  $('ai-toggle-key').addEventListener('click',()=>{const show=key.type==='password';key.type=show?'text':'password';$('ai-toggle-key').textContent=show?'隱藏金鑰':'顯示金鑰';$('ai-toggle-key').setAttribute('aria-pressed',String(show));});
  $('ai-connect').addEventListener('click',()=>connection.connect());$('ai-refresh').addEventListener('click',()=>connection.refresh());$('ai-model').addEventListener('change',()=>connection.selectModel($('ai-model').value));$('ai-test').addEventListener('click',()=>connection.test());
  $('ai-disconnect').addEventListener('click',()=>connection.disconnect());
- window.addEventListener('pagehide',()=>{key.value='';hideKey();});
- mountAITestPanel($('ai-text-test'),connection,{statusElement:$('ai-state')});return connection;
+ if(context){context.listen(window,'pagehide',()=>{key.value='';hideKey();});context.onSuspend(hideKey);}else window.addEventListener('pagehide',()=>{key.value='';hideKey();});
+ mountAITestPanel($('ai-text-test'),connection,{statusElement:$('ai-state'),context});return connection;
 }

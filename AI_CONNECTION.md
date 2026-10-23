@@ -2,7 +2,7 @@
 
 ## 現況與產品界線
 
-Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Cloudflare Workers 個人後端**（GitHub OAuth 本人帳號驗證、Worker Secret 保存 AI 金鑰）；控制台尚未部署，公開 Worker URL 留白時如實顯示尚未設定。原瀏覽器直連作手動備用，預設關閉，不因後端未設定而停用。無自動切換或重送，不搬資料或自動接入夥伴／分點。部署與免費額度見 [個人 Worker 指南](docs/CLOUDFLARE_PERSONAL_AI.md)。
+Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Cloudflare Workers 個人後端**（GitHub OAuth 本人帳號驗證、Worker Secret 保存 AI 金鑰）；Cloudflare 建置已暫停，待網頁完成後再處理；本次不建立或部署服務。公開 Worker URL 留白時如實顯示尚未設定。原瀏覽器直連作手動備用，預設關閉，不因後端未設定而停用。無自動切換或重送，不搬資料或自動接入夥伴／分點。部署與免費額度見 [個人 Worker 指南](docs/CLOUDFLARE_PERSONAL_AI.md)。
 
 使用者已回報 DeepSeek 瀏覽器直連連線成功；其餘服務商、生成、跨頁及 Worker 真實流程不因此視為驗證通過。
 
@@ -27,7 +27,7 @@ Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Clo
 - 唯一命名空間 `life-system.ai-test.v1`，欄位固定為 version、enabled、provider、apiKey、model、issuedAt、expiresAt；一次一組，不另保存四家金鑰。與 localStorage 的 life-system.data.v1 完全分離。
 - 只有使用者確認啟用後才可寫入 sessionStorage。原始金鑰首次非空輸入時起算最長 **2 小時**；讀取、模型選取、切頁、bfcache 返回、重新整理都不延長。連續編輯已輸入金鑰亦保留同一期限；清空後重新輸入是一個新的輸入週期。
 - 啟動、pageshow 恢復、回到可見頁面、每次 AI 操作前檢查；另有到期計時器。逾時、未來時間、錯誤 schema、非法延長等資料清除，不影響一般使用者資料。背景分頁計時器可能被瀏覽器節流，因此不可只依賴計時器，送請求前會再檢查。瀏覽器停止執行時，實體暫存可能留到下次啟動才能刪除；過期內容恢復前會清除且拒絕使用，不宣稱離線期間可可靠抹除。
-- pagehide 只取消在途請求、清除該文件的執行記憶體／金鑰輸入框，不刪有效測試 session；同分頁跨本站 HTML 與重載仍可恢復。模型清單不保存，恢復後第一次生成會先動態重新列舉、確認已選模型仍有效，再送出該模型的請求。
+- 同文件站內路由保留同一 runtime、模型清單及輸入，僅取消離開頁面未完成的請求，不重送；真正 pagehide 才取消在途請求、清除該文件的執行記憶體／金鑰輸入框，不刪有效測試 session；同分頁跨本站 HTML 與重載仍可恢復。模型清單不保存，恢復後第一次生成會先動態重新列舉、確認已選模型仍有效，再送出該模型的請求。
 - 切換服務商、關閉模式或「中斷連線並清除金鑰」取消舊請求，清空金鑰、模型及狀態；模式關閉／中斷移除專用 session entry。換商只保留已同意的測試模式及新 provider，金鑰與模型為空。取消單次請求可保留仍有效的同一組測試設定。
 - 不寫 localStorage、IndexedDB、Cookie、一般設定文件、歷史、Undo／Redo、備份、URL、console／日誌；不使用 BroadcastChannel 或其他跨頁籤同步。sessionStorage 被瀏覽器或擴充功能讀取的風險由啟用提示明確說明。
 - 新分頁不保證共用；瀏覽器有時會複製 opener 的 sessionStorage，因此也不保證每個新分頁一定空白。不為此引入持久儲存或 URL 憑證傳遞。sessionStorage 不可用時安全停止測試模式，顯示提示，不退回 localStorage。
@@ -117,3 +117,7 @@ Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Clo
 - tests/settings-tabs.cjs、tests/settings.cjs、tests/ai-cache.cjs、tests/settings-cache.cjs：既有頁籤定位／鍵盤、資料與備份、Undo／Redo、暖快取回歸。新模式不在狀態更新或資料更新觸發定位。
 - main 保存原始碼，gh-pages 僅 work/build 成果，保留發布歷史／設定；Worker 由使用者在控制台設定免費服務後部署，尚未部署不可宣稱完成。公開 Pages workflow 與網站可讀性須分別確認，推送不代表部署已驗證。
 - 使用者已回報 DeepSeek 直連連線成功；其他真實 API、生成、跨頁及個人 Worker 部署／OAuth 仍待驗證，mock 通過不能擴大宣稱。
+
+## 共用外框整合
+
+設定改為「一般設定 → AI 連線」展開區塊；收合摘要區分金鑰暫存、模型取得／選取、生成成功、取消及錯誤。控制項不因收合／分類／站內切頁重建。首頁／我的資料共用同一執行中的 service，切頁不重新查模型或生成；離開請求頁面時取消，舊回覆不能寫入新頁面。詳見 [APP_SHELL](docs/APP_SHELL.md)。真正重載仍以原始期限恢復，下一次主動生成前重查模型；不把模擬跨頁驗證當真實生成已通過。

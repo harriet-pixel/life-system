@@ -1,3 +1,4 @@
+const {openSettingsSection}=require('./settings-ui.cjs');
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -7,11 +8,11 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'
 const context=await browser.newContext({viewport:{width:375,height:900},acceptDownloads:true});
 const errors=[];context.on('page',p=>p.on('pageerror',e=>errors.push(e.message)));
 try{
- const page=await context.newPage();await page.goto(base+'settings.html');await page.waitForSelector('#asset-total:text("0")');
+ const page=await context.newPage();await page.goto(base+'settings.html');await openSettingsSection(page,'storage');await page.waitForSelector('#asset-total:text("0")');
  const profile=await context.newPage();await profile.goto(base+'profile.html');await profile.waitForSelector('#profile-name');
  const home=await context.newPage();await home.goto(base);await home.waitForSelector('body[data-navigation=ready]');
  // Preview never writes; a single save propagates to all pages and across reload.
- await page.locator('#appearance-tab').click();
+ await openSettingsSection(page,'appearance');
  await page.locator('#theme-color').evaluate(e=>{e.value='#ffffff';e.dispatchEvent(new Event('input',{bubbles:true}));});
  await page.waitForTimeout(100);
  assert.equal(await home.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim()),'#104a7a');
@@ -23,7 +24,7 @@ try{
  await page.locator('.mobile-navigation [data-redo]').click();await home.waitForFunction(()=>document.documentElement.dataset.font==='rounded');
  console.log('PASS appearance: preview/save/reload/cross-page/cross-tab/Undo/Redo');
  // Recovery is fixed by the system; no history recording toggle remains.
- await page.locator('#history-tab').click();assert.equal(await page.locator('#history-record-all').count(),0);
+ await openSettingsSection(page,'history');assert.equal(await page.locator('#history-record-all').count(),0);
  const count=await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length);
  await home.locator('[data-task]').first().check();await home.waitForTimeout(200);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length),count+1);
@@ -41,7 +42,7 @@ try{
   const db=await images.openDatabase();await new Promise((resolve,reject)=>{const tx=db.transaction('images','readwrite');const store=tx.objectStore('images');ids.forEach((id,index)=>{const r=store.get(id);r.onsuccess=()=>{const a=r.result;a.protectedUntil=index===7?Date.now()+86400000:0;delete a.name;delete a.createdAt;store.put(a);};});tx.oncomplete=resolve;tx.onerror=reject;});
   return {ids};
  });
- await page.locator('#storage-tab').click();await page.waitForFunction(()=>document.querySelectorAll('.asset-row').length===2);
+ await openSettingsSection(page,'storage');await page.locator('#refresh-storage').click();await page.waitForFunction(()=>document.querySelectorAll('.asset-row').length===2);
  const visible=await page.locator('.asset-row input').evaluateAll(nodes=>nodes.map(n=>n.value));assert.deepEqual(visible.sort(),[fixture.ids[5],fixture.ids[6]].sort());
  assert.ok((await page.locator('.asset-row').first().innerText()).includes('建立時間未記錄'));
  // Candidate becomes referenced between listing and final confirmation: skip it.
@@ -52,9 +53,9 @@ try{
  // A draft in another tab blocks cleanup/backup; closing the tab releases it.
  await profile.locator('#edit-profile').click();await profile.waitForSelector('#profile-dialog[open]');
  await page.locator('#refresh-storage').click();await page.waitForFunction(()=>document.querySelector('#storage-state').textContent.includes('我的資料'));
- await page.locator('#backup-tab').click();await page.locator('#download-backup').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('使用者設定'));
+ await openSettingsSection(page,'backup');await page.locator('#download-backup').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('使用者設定'));
  await profile.close();
- await page.locator('#storage-tab').click();await page.waitForFunction(()=>document.querySelectorAll('.asset-row').length===2);
+ await openSettingsSection(page,'storage');await page.locator('#refresh-storage').click();await page.waitForFunction(()=>document.querySelectorAll('.asset-row').length===2);
  await page.locator('.asset-row input').evaluateAll((nodes,id)=>nodes.find(n=>n.value===id).click(),fixture.ids[6]);await page.locator('#delete-assets').click();await page.locator('#confirm-delete').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('已永久刪除 1'));
  const state=await page.evaluate(async()=>{const {dataStore:s}=await import('./assets/data.mjs?v=ai-connection-1');const {listImageAssets}=await import('./assets/image-store.mjs');return {doc:s.get(),ids:(await listImageAssets()).map(a=>a.id)};});
  assert.ok(!state.ids.includes(fixture.ids[6]));for(const i of [0,1,2,3,4,5,7])assert.ok(state.ids.includes(fixture.ids[i]));
@@ -85,7 +86,7 @@ try{
   return out;
  },roundtrip.text);assert.ok(protections.every(Boolean));
  console.log('PASS backup: encrypted round trip, wrong password/corruption/missing image/version rejection, failed publication rollback, cleanup concurrency');
- await page.locator('#backup-tab').click();assert.ok((await page.locator('#drive-state').innerText()).includes('尚未設定'));assert.equal(await page.locator('#upload-drive').isDisabled(),true);
+ await openSettingsSection(page,'backup');assert.ok((await page.locator('#drive-state').innerText()).includes('尚未設定'));assert.equal(await page.locator('#upload-drive').isDisabled(),true);
  const downloadEvent=page.waitForEvent('download');await page.locator('#download-backup').click();const download=await downloadEvent;assert.ok(download.suggestedFilename().startsWith('Life system '));
  await page.locator('#restore-file').setInputFiles(await download.path());await page.locator('#read-backup').click();await page.waitForSelector('#restore-confirm[open]');await page.keyboard.press('Escape');await page.waitForSelector('#restore-confirm:not([open])',{state:'attached'});
  await page.locator('#read-backup').click();await page.waitForSelector('#restore-confirm[open]');
@@ -95,17 +96,17 @@ try{
  console.log('PASS local download and explicit restore confirmation; unconfigured cloud does not pretend success');
  // All four fonts, each page, responsive widths, 200% text, keyboard and failed fonts.
  const fonts=['device','serif','sans','rounded'];
- for(const font of fonts){await page.locator('#appearance-tab').click();await page.locator('#theme-font').selectOption(font);await page.locator('#save-appearance').click();await home.waitForFunction(f=>document.documentElement.dataset.font===f,font);await page.evaluate(()=>document.fonts.ready);}
+ for(const font of fonts){await openSettingsSection(page,'appearance');await page.locator('#theme-font').selectOption(font);await page.locator('#save-appearance').click();await home.waitForFunction(f=>document.documentElement.dataset.font===f,font);await page.evaluate(()=>document.fonts.ready);}
  fs.mkdirSync('work/screenshots',{recursive:true});
  for(const width of [320,375,390,768,1280]){
   for(const name of ['index.html','profile.html','settings.html']){const p=await context.newPage();await p.setViewportSize({width,height:900});await p.goto(base+name);await p.waitForSelector('body[data-navigation=ready]');await p.evaluate(()=>document.fonts.ready);
-   if(name==='settings.html'){for(const id of ['storage','history','backup','appearance']){await p.locator('#'+id+'-tab').click();assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' '+width+' '+id);}}
+   if(name==='settings.html'){for(const id of ['storage','history','backup','appearance']){await openSettingsSection(p,id);assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' '+width+' '+id);}}
    assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' '+width);
    await p.evaluate(()=>document.documentElement.style.fontSize='200%');assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' zoom '+width);
    await p.evaluate(()=>document.documentElement.style.removeProperty('font-size'));if(width===375||width===1280)await p.screenshot({path:'work/screenshots/'+name+'-'+width+'.png',fullPage:true});await p.close();
   }
  }
- const failed=await browser.newContext({viewport:{width:375,height:900},reducedMotion:'reduce'});await failed.route('**/*.woff2',route=>route.abort());const p=await failed.newPage();await p.goto(base+'settings.html');await p.waitForSelector('body[data-navigation=ready]');await p.locator('#appearance-tab').click();await p.locator('#theme-font').selectOption('sans');await p.locator('#save-appearance').click();await p.waitForFunction(()=>!document.querySelector('#save-appearance').disabled);await p.locator('#history-tab').focus();await p.keyboard.press('End');assert.equal(await p.locator('#ai-tab').getAttribute('aria-selected'),'true');await p.locator('#appearance-tab').click();assert.ok(await p.locator('#save-appearance').isEnabled());await failed.close();
+ const failed=await browser.newContext({viewport:{width:375,height:900},reducedMotion:'reduce'});await failed.route('**/*.woff2',route=>route.abort());const p=await failed.newPage();await p.goto(base+'settings.html');await p.waitForSelector('body[data-navigation=ready]');await openSettingsSection(p,'appearance');await p.locator('#theme-font').selectOption('sans');await p.locator('#save-appearance').click();await p.waitForFunction(()=>!document.querySelector('#save-appearance').disabled);await p.locator('#general-tab').focus();await p.keyboard.press('End');assert.equal(await p.locator('#management-tab').getAttribute('aria-selected'),'true');await openSettingsSection(p,'appearance');assert.ok(await p.locator('#save-appearance').isEnabled());await failed.close();
  assert.deepEqual(errors,[]);console.log('PASS 320/375/390/768/1280 all pages, 200% text, 4 font choices, keyboard, reduced motion and font failure');
 }finally{await context.close();await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

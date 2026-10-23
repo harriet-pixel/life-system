@@ -213,3 +213,27 @@ body[data-navigation="ready"] .page-shell { padding-bottom: calc(var(--bottom-na
   .companion-portrait { border-radius: 50%; }
   .companion-portrait img { object-fit: cover; }
 }
+
+/* The navigation belongs to one document shell; only app-view is swapped. */
+.page-shell:has(> #app-view) {display:flex;flex-direction:column;gap:24px;}
+#app-view,[data-page-view] {min-width:0;}
+.mobile-navigation {bottom:var(--keyboard-inset,0px);padding-inline:env(safe-area-inset-left) env(safe-area-inset-right);}
+body[data-navigation="ready"] .page-shell {padding-bottom:calc(var(--bottom-nav-height,64px) + var(--keyboard-inset,0px) + 24px);}
+@media(min-width:1024px){body[data-navigation="ready"] .page-shell {padding-bottom:0;}}
+@media(max-width:1023px){
+ html[data-nav-density="compact"] .mobile-navigation {min-height:48px;}
+ html[data-nav-density="tight"] .mobile-navigation {min-height:44px;}
+ html[data-nav-density="compact"] .mobile-navigation .navigation-item {padding-block:2px;}
+ html[data-nav-density="tight"] .mobile-navigation .navigation-item {padding:0 12px;font-size:.8125rem;}
+ html[data-nav-density="tight"] .mobile-navigation .toolbar-button {padding:8px;}
+ html[data-nav-density="tight"] .mobile-navigation .toolbar-button svg {width:20px;height:20px;}
+ html:is([data-nav-density="tight"],[data-nav-density="compact"]) .mobile-undo {flex-basis:92px;width:92px;}
+}
+@media(min-width:1024px){
+ html:is([data-nav-density="tight"],[data-nav-density="compact"]) .desktop-navigation .navigation-item {padding-block:4px;min-height:44px;}
+ html:is([data-nav-density="tight"],[data-nav-density="compact"]) .desktop-navigation .toolbar-button {width:44px;min-width:44px;min-height:44px;padding:10px;}
+ html[data-nav-density="tight"] .desktop-navigation .navigation-item {font-size:1rem;}
+}
+
+/* Programmatic landmark focus announces a route without framing the whole page. */
+#main:focus {outline:none;}

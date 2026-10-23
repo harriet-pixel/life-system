@@ -72,3 +72,13 @@ input[type=checkbox],input[type=radio] { accent-color:var(--color-primary); }
 .ai-key-row input {flex:1 1 140px;width:0;min-width:0;}
 .ai-key-row button {flex:0 0 auto;}
 #ai-model {width:100%;min-width:0;}
+
+/* Two settings categories; their existing feature controls stay mounted. */
+.settings-group {display:grid;gap:16px;min-width:0;align-content:start;}
+.settings-content > .activity-tabs button {flex:1 1 0;white-space:normal;}
+.settings-disclosure {min-width:0;border-bottom:1px solid var(--color-border);}
+.settings-disclosure > summary {min-height:48px;padding:12px 4px;cursor:pointer;color:var(--color-primary);font:inherit;}
+.settings-disclosure > summary .small-note {display:inline;margin-inline-start:1em;color:var(--color-muted);}
+.settings-disclosure > section {padding:12px 0 24px;}
+.settings-disclosure > summary:focus-visible {outline-offset:-2px;}
+.settings-content.mobile-tab-scroll-region:not(:has(#history-section[open])) {min-height:0;}

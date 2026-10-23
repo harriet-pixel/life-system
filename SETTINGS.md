@@ -1,6 +1,6 @@
 # 共用設定與資料服務
 
-本文件描述現行原生三頁共用系統；歷史交付與過去驗證筆數移至 [docs/DELIVERY_HISTORY.md](docs/DELIVERY_HISTORY.md)。來源使用最新main，gh-pages只接收建置成果。產品與視覺規範見AGENTS.md、design.md，發布流程見DEPLOYMENT.md。
+本文件描述現行原生三頁共用系統與常駐頁面外框（詳見 [APP_SHELL](docs/APP_SHELL.md)）；歷史交付與過去驗證筆數移至 [docs/DELIVERY_HISTORY.md](docs/DELIVERY_HISTORY.md)。來源使用最新main，gh-pages只接收建置成果。產品與視覺規範見AGENTS.md、design.md，發布流程見DEPLOYMENT.md。
 
 ## 資料及歷史
 
@@ -114,3 +114,11 @@
 lint、build、單元與瀏覽器命令見README.md。瀏覽器腳本涵蓋三頁、跨分頁、Undo／Redo、裁切／最愛、還原及外觀；Google為mock，真實授權仍須Console設定及正式來源實測。字型來源與SIL OFL授權保存於各字型目錄。
 
 [DATA_AUDIT.md](DATA_AUDIT.md)說明資料遷移何時寫回、相容用途及整理結果，不能據此宣稱已檢查使用者裝置。舊資料／備份相容與一次性數值遷移仍保留；不藉整理重跑數值重設、不清空儲存、不自動刪圖。
+
+## 設定分類與跨頁草稿
+
+上層為「一般設定」（預設：外觀、AI）及「資料管理」（備份、儲存、歷史），內層可獨立展開／收合，不再使用五個分類頁籤。原控制項不重建，資料與歷史分頁不改。舊 fragment／tab query 會對應到新分類及區塊。
+
+站內切換由共用外框保留最多三份頁面 DOM，非目前頁面離開 document 並暫停事件／訂閱／量測；草稿與其原鎖保留。尚未儲存的資料／外觀仍可能阻擋維護，需要先返回該頁儲存或取消；不偷偷丟棄。真正重載／外部離開才依未保存輸入提示。
+
+AI runtime 同文件常駐，分類、收合及切頁不重建連線、不延長 key 期限或重送生成；離開處理中的頁面取消並失效舊結果。瀏覽器直連保留，Cloudflare 部署暫停。

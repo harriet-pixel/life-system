@@ -1,7 +1,7 @@
 import {createImageCropper,readImageFile,decodeImage} from './avatar-crop.mjs?v=ai-connection-1';
 import {imageURL} from './image-store.mjs';
-const $=selector=>document.querySelector(selector);
-export function createProfileImages({onError,onSelect,onBusy=()=>{}}) {
+export function createProfileImages({root=document,onError,onSelect,onBusy=()=>{}}) {
+  const $=selector=>root.querySelector(selector);
   let session=0,jobs=0,opened=false,base,photo,avatar,portraits=[],currentId=null,manualAvatar=false,newPhoto=false,slotTarget=null;
   let editingPhoto=false,editingAvatar=false,collectionMode=false,pendingCollection=null,collectionSlot=null,photoWorkingBase=null,avatarWorkingBase=null;
   let photoVersion=0,uploadVersion=0,avatarVersion=0,photoError='',avatarError='';
