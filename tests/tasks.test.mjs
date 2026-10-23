@@ -1,12 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=calendar-2';
+import {createTaskService} from '../assets/tasks-service.mjs?v=three-day-3';
 import {emptyTasks,localDate,addDays,rowsForDate,catchUp,validateTasks,allocation} from '../assets/tasks-model.mjs?v=calendar-2';
 import {validateDocument,encodeBackup,readBackup,dataCount,restoreBackup} from '../assets/backup.mjs';
 function fixture(){let raw=null,time=new Date('2026-10-23T12:00:00'),seq=0;const storage={getItem:()=>raw,setItem:(_,s)=>raw=s},store=createDataStore(storage,{now:()=>+time}),service=createTaskService(store,{now:()=>time,id:()=>`id-${++seq}`});return {store,service,storage,advance:d=>{time=new Date(time);time.setDate(time.getDate()+d);},reload:()=>createDataStore(storage,{now:()=>+time})};}
 const values=(extra={})=>({name:'閱讀',points:2,kind:'once',date:null,start:'2026-10-23',end:null,days:[],overdue:'keep',categoryId:null,...extra});
 const dist={physique:0,wisdom:2,charisma:0,resilience:0,perception:0};
+test('overdue grace day is shared by queries and atomic batches without changing scheduled dates',async()=>{
+ const {isOverdue}=await import('../assets/tasks-model.mjs?v=three-day-3');
+ const f=fixture(),yesterday=await f.service.edit(values({date:'2026-10-22'})),earlier=await f.service.edit(values({date:'2026-10-21'}));await f.service.reconcile();
+ const before=f.store.get(),entries=before.tasks.occurrences;
+ assert.equal(isOverdue(entries.find(o=>o.taskId===yesterday),'2026-10-23'),false);assert.equal(isOverdue(entries.find(o=>o.taskId===earlier),'2026-10-23'),true);
+ for(const date of [null,'2026-10-25'])await assert.rejects(f.service.batch([{taskId:earlier,date:'2026-10-21'},{taskId:yesterday,date:'2026-10-22'}],date),/前天/);
+ assert.deepEqual(f.store.get(),before);assert.equal(rowsForDate(before.tasks,'2026-10-22').length,1);
+ f.advance(1);await f.service.reconcile();assert.equal(isOverdue(f.store.get().tasks.occurrences.find(o=>o.taskId===yesterday),'2026-10-24'),true);
+ assert.equal(f.store.get().tasks.occurrences.find(o=>o.taskId===yesterday).date,'2026-10-22');assert.equal(f.store.get().stats.currency,0);
+ await f.service.batch([{taskId:yesterday,date:'2026-10-22'}]);assert.equal(f.store.get().tasks.occurrences.find(o=>o.taskId===yesterday).status,'skipped');
+ await f.store.undo();assert.equal(f.store.get().tasks.occurrences.find(o=>o.taskId===yesterday).status,'pending');
+});
 test('category colour validation, rename, deletion and Undo preserve completion rewards',async()=>{
  const f=fixture(),categoryId=await f.service.category('學習','#104a7a');
  const id=await f.service.edit(values({categoryId,date:'2026-10-23'}));await f.service.complete(f.service.prepare(id),dist);
@@ -34,7 +46,7 @@ test('repeat editor creates and moves one extra date atomically, clearing retain
 });
 test('legacy auto-skip is inert in overdue reconciliation and Undo; existing terminal states remain',async()=>{
  const f=fixture(),id=await f.service.edit(values({kind:'repeat',days:[0,1,2,3,4,5,6],start:'2026-10-20',overdue:'skip'}));
- const old=f.store.get();old.tasks.definitions[0].overdue='skip';old.tasks.occurrences=[{id:id+'@2026-10-20',taskId:id,date:'2026-10-20',originalDate:'2026-10-20',status:'skipped',source:'auto',completionId:null}];old.undoHistory=[];
+ const old=f.store.get();old.tasks.definitions[0].overdue='skip';old.tasks.definitions[0].checkedThrough='2026-10-20';old.tasks.occurrences=[{id:id+'@2026-10-20',taskId:id,date:'2026-10-20',originalDate:'2026-10-20',status:'skipped',source:'auto',completionId:null}];old.undoHistory=[];
  f.storage.setItem(STORAGE_KEY,JSON.stringify(old));f.store.refresh();await f.service.reconcile();const data=f.store.get().tasks;assert.equal(data.occurrences.find(o=>o.date==='2026-10-20').status,'skipped');assert.equal(data.occurrences.find(o=>o.date==='2026-10-21').status,'pending');assert.equal(data.definitions[0].overdue,'keep');
  await f.store.undo();await f.service.reconcile();assert.equal(f.store.get().tasks.occurrences.find(o=>o.date==='2026-10-22').status,'pending');assert.equal(f.store.get().stats.currency,0);
 });
