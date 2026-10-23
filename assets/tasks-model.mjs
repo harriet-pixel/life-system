@@ -1,5 +1,5 @@
-import {validHex,luminance} from './settings-model.mjs?v=tasks-data-2';
-import {ABILITIES} from './abilities.mjs?v=tasks-data-2';
+import {validHex,luminance} from './settings-model.mjs?v=task-pool-5';
+import {ABILITIES} from './abilities.mjs?v=task-pool-5';
 export function categoryColor(color){if(color===null||color===undefined||color==='')return null;if(!validHex(color))throw new Error('分類顏色請使用 #RRGGBB 格式。');if(1.05/(luminance(color)+.05)<4.5)throw new Error('此顏色在白底上不夠清楚，請選擇較深的文字顏色。');return color.toLowerCase();}
 export const emptyTasks=()=>({version:1,categories:[],definitions:[],occurrences:[],completions:[]});
 const requireValue=(ok,message='待辦資料格式不正確，原資料已保留。')=>{if(!ok)throw new Error(message);};
@@ -19,7 +19,8 @@ export function validateTasks(value){
  value.categories.forEach(c=>{if(c.color!==undefined)categoryColor(c.color);});
  value.definitions.forEach(t=>requireValue(text(t.id)&&!t.id.includes('@')&&text(t.name)&&(t.categoryId===null||cats.has(t.categoryId))&&Number.isInteger(t.points)&&t.points>=1&&t.points<=3&&['once','repeat'].includes(t.kind)&&validDate(t.start)&&(t.end===null||validDate(t.end)&&t.end>=t.start)&&(t.date===null||validDate(t.date))&&Array.isArray(t.days)&&new Set(t.days).size===t.days.length&&t.days.every(d=>Number.isInteger(d)&&d>=0&&d<=6)&&['keep','skip'].includes(t.overdue)&&Number.isSafeInteger(t.version)&&t.version>0&&Number.isFinite(Date.parse(t.createdAt))&&typeof t.deleted==='boolean'&&(t.checkedThrough===null||validDate(t.checkedThrough))));
  value.occurrences.forEach(o=>{const t=defs.get(o.taskId);requireValue(t&&o.id===occurrenceId(t,o.date)&&validDate(o.date)&&validDate(o.originalDate)&&['pending','done','skipped','moved','deleted','unarranged'].includes(o.status)&&['auto','manual','pool'].includes(o.source)&&(o.completionId===null||typeof o.completionId==='string'));});
- value.completions.forEach(c=>{requireValue(text(c.id)&&defs.has(c.taskId)&&text(c.occurrenceId)&&text(c.transactionId)&&Number.isFinite(Date.parse(c.time))&&validDate(c.date)&&text(c.name)&&text(c.category)&&Number.isInteger(c.points)&&c.points>=1&&c.points<=3&&c.reward?.currency===c.points&&c.reward?.experience===c.points&&(c.cancelledAt===null||Number.isFinite(Date.parse(c.cancelledAt))));allocation(c.reward.abilities,c.points);requireValue(c.occurrenceId===occurrenceId(defs.get(c.taskId),c.date));if(c.cancelledAt===null){const o=executions.get(c.occurrenceId);requireValue(o?.status==='done'&&o.completionId===c.id&&o.taskId===c.taskId&&o.date===c.date);}});
+ value.completions.forEach(c=>{requireValue(c.reward==null||typeof c.reward==='object'&&!Array.isArray(c.reward));requireValue(text(c.id)&&defs.has(c.taskId)&&text(c.occurrenceId)&&text(c.transactionId)&&Number.isFinite(Date.parse(c.time))&&validDate(c.date)&&text(c.name)&&text(c.category)&&Number.isInteger(c.points)&&c.points>=1&&c.points<=3&&(c.reward?.currency==null||c.reward.currency===c.points)&&(c.reward?.experience==null||c.reward.experience===c.points)&&(c.cancelledAt===null||Number.isFinite(Date.parse(c.cancelledAt))));if(c.reward?.abilities!=null)allocation(c.reward.abilities,c.points);if(c.retraction){const r=c.retraction;requireValue(text(r.transactionId)&&Number.isFinite(Date.parse(r.time))&&r.time===c.cancelledAt&&['recorded','history','estimated-ai','estimated-manual'].includes(r.method)&&r.reward?.currency===c.points&&r.reward?.experience===c.points);allocation(r.reward.abilities,c.points);if(c.reward?.abilities!=null)requireValue(ABILITIES.every(a=>r.reward.abilities[a.id]===c.reward.abilities[a.id])&&r.method==='recorded');requireValue(executions.get(c.occurrenceId)?.status==='deleted');}requireValue(c.occurrenceId===occurrenceId(defs.get(c.taskId),c.date));if(c.cancelledAt===null){const o=executions.get(c.occurrenceId);requireValue(o?.status==='done'&&o.completionId===c.id&&o.taskId===c.taskId&&o.date===c.date);}});
+ const reversals=value.completions.filter(c=>c.retraction);requireValue(new Set(reversals.map(c=>c.retraction.transactionId)).size===reversals.length&&reversals.every(c=>c.retraction.transactionId!==c.transactionId));
  requireValue(new Set(value.completions.filter(c=>c.cancelledAt===null).map(c=>c.occurrenceId)).size===value.completions.filter(c=>c.cancelledAt===null).length);
  value.occurrences.filter(o=>o.status==='done').forEach(o=>{const c=completions.get(o.completionId);requireValue(c&&c.occurrenceId===o.id&&c.taskId===o.taskId&&c.date===o.date&&c.cancelledAt===null);});
  return structuredClone(value);
@@ -36,7 +37,7 @@ export function rowsForDate(data,date){const stored=new Map(data.occurrences.map
 export function catchUp(data,today){
  const next=structuredClone(data),yesterday=addDays(today,-1),seen=new Set(data.occurrences.map(o=>o.id));
  for(const t of next.definitions){t.overdue='keep';if(t.deleted)continue;
-  if(t.kind==='repeat'&&t.days.length){for(let d=t.checkedThrough?addDays(t.checkedThrough,1):t.start;d<=yesterday;d=addDays(d,1)){if(automatic(t,d)&&!seen.has(occurrenceId(t,d))){const id=occurrenceId(t,d);next.occurrences.push({id,taskId:t.id,date:d,originalDate:d,status:'pending',source:'auto',completionId:null});seen.add(id);}}if(yesterday>=t.start)t.checkedThrough=yesterday;}
+  if(t.kind==='repeat'&&t.days.length){for(let d=t.checkedThrough?addDays(t.checkedThrough,1):t.start;d<=yesterday&&(!t.end||d<=t.end);d=addDays(d,1)){if(automatic(t,d)&&!seen.has(occurrenceId(t,d))){const id=occurrenceId(t,d);next.occurrences.push({id,taskId:t.id,date:d,originalDate:d,status:'pending',source:'auto',completionId:null});seen.add(id);}}if(yesterday>=t.start)t.checkedThrough=yesterday;}
   if(t.kind==='once'&&t.date&&t.date<today&&!seen.has(t.id))next.occurrences.push(occurrence(next,t,t.date));
  }
  return next;
@@ -60,5 +61,21 @@ export function clearSchedule(data,task,from=null){
  if(task.kind==='once')task.date=null;
 }
 
-// Yesterday remains in the three-day list; only earlier pending dates enter the overdue pool.
+// Yesterday is handled through daily date navigation; only earlier pending dates enter the pool.
 export const isOverdue=(entry,today=localDate())=>Boolean(entry&&entry.status==='pending'&&entry.date<addDays(today,-1));
+
+// Expiration hides a library definition, never its pending or completed executions.
+export const inResidentLibrary=(task,today=localDate())=>!task.deleted&&task.kind==='repeat'&&(!task.end||task.end>=today);
+// Verify against the permanent transaction metadata, independently of short Undo snapshots.
+export function deletionEvidence(document,completion){
+ const record=document.history.find(r=>r.id===completion.transactionId);
+ requireValue(record?.type==='task.completed'&&!record.undone,'原完成交易無法驗證或已撤回，請先補足完成紀錄。');
+ const points=completion.points,currency=completion.reward?.currency??record.delta?.currency,experience=completion.reward?.experience??record.delta?.experience;
+ requireValue(currency===points&&experience===points&&record.delta?.currency===currency&&record.delta?.experience===experience,'無法確認當時實際獎勵總量，請先補足原完成交易資訊；本次未刪除或扣款。');
+ let abilities=completion.reward?.abilities,method='recorded';
+ const entries=record.delta?.abilities??[];
+ if(abilities!=null){allocation(abilities,points);requireValue(entries.length===5&&ABILITIES.every(a=>entries.filter(d=>d.id===a.id).length===1&&entries.find(d=>d.id===a.id).value===abilities[a.id]),'完成能力明細與原交易不一致，無法安全撤回。');}
+ else if(entries.length===5){abilities=Object.fromEntries(entries.map(a=>[a.id,a.value]));allocation(abilities,points);method='history';}
+ else{requireValue(entries.length===0,'原能力交易只有部分資訊，請先補足資訊，不能以推估覆蓋。');abilities=null;method=null;}
+ return {currency,experience,abilities,method};
+}

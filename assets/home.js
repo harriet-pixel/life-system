@@ -1,10 +1,10 @@
-import {taskActions} from './task-actions.mjs?v=task-panel-4';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=calendar-2';
-import { createMobileTabPositioner } from './tab-position.mjs?v=tasks-shell-8';
-import { createActivityHeightSync } from './activity-height.mjs?v=tasks-shell-8';
-import { undoManager } from './undo.mjs?v=tasks-data-2';
-import { createCompanionController, generateMockReply } from './companion.mjs?v=calendar-2';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=tasks-data-2';
+import {taskActions} from './task-actions.mjs?v=task-pool-5';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=task-pool-5';
+import { createMobileTabPositioner } from './tab-position.mjs?v=task-pool-5';
+import { createActivityHeightSync } from './activity-height.mjs?v=task-pool-5';
+import { undoManager } from './undo.mjs?v=task-pool-5';
+import { createCompanionController, generateMockReply } from './companion.mjs?v=task-pool-5';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=task-pool-5';
 
 
 export function mountHome(root,context){
@@ -79,7 +79,7 @@ const tasks=taskActions(root,context);
 const todayList=root.querySelector('.task-list');
 function renderToday(){
  const rows=rowsForDate(dataStore.get().tasks,localDate());
- todayList.replaceChildren(...rows.map(row=>{const li=document.createElement('li'),label=document.createElement('label');label.className='task-row';const input=document.createElement('input');input.type='checkbox';input.dataset.task='';input.checked=row.occurrence.status==='done';input.setAttribute('aria-label',`${input.checked?'取消完成':'完成'} ${row.name}`);input.onchange=()=>{const done=row.occurrence.status==='done';input.checked=done;if(done)tasks.cancel(row.task.id,row.occurrence.date).catch(()=>{});else tasks.complete(row.task.id,row.occurrence.date);};const name=document.createElement('span');name.className='task-content';name.textContent=row.name;const category=document.createElement('span');category.className='task-time';category.textContent=row.category+(input.checked?' · 已完成':'');label.append(input,name,category);li.append(label);return li;}));
+ todayList.replaceChildren(...rows.map(row=>{const li=document.createElement('li'),label=document.createElement('label');li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;label.className='task-row';const input=document.createElement('input');input.type='checkbox';input.dataset.task='';input.checked=row.occurrence.status==='done';input.setAttribute('aria-label',`${input.checked?'取消完成':'完成'} ${row.name}`);input.onchange=()=>{const done=row.occurrence.status==='done';input.checked=done;if(done)tasks.cancel(row.task.id,row.occurrence.date).catch(()=>{});else tasks.complete(row.task.id,row.occurrence.date);};const name=document.createElement('span');name.className='task-content';name.textContent=row.name;const category=document.createElement('span');category.className='task-time';category.textContent=row.category+(input.checked?' · 已完成':'');label.append(input,name,category);li.append(label);return li;}));
  if(!rows.length){const li=document.createElement('li');li.className='small-note';li.textContent='今天尚無待辦，前往待辦事項安排生活。';todayList.append(li);}
  root.querySelector('#task-count').textContent=`${rows.filter(r=>r.occurrence.status==='done').length} / ${rows.length} 完成`;
 }

@@ -1,10 +1,10 @@
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=calendar-2';
-import {persistentUndo,dataStore} from './data.mjs?v=tasks-data-2';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=tasks-shell-8';
-import {initializeNavigationSize} from './navigation-size.mjs?v=tasks-shell-8';
-import {mountAIPage} from './ai-page.mjs?v=tasks-shell-8';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=tasks-shell-8';
-const routes={tasks:{mount:()=>import('./tasks.mjs?v=task-panel-4'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=task-panel-4'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=tasks-shell-8'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=tasks-shell-8'),export:'mountSettings'}};
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=task-pool-5';
+import {persistentUndo,dataStore} from './data.mjs?v=task-pool-5';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=task-pool-5';
+import {initializeNavigationSize} from './navigation-size.mjs?v=task-pool-5';
+import {mountAIPage} from './ai-page.mjs?v=task-pool-5';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-pool-5';
+const routes={tasks:{mount:()=>import('./tasks.mjs?v=task-pool-5'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=task-pool-5'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=task-pool-5'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=task-pool-5'),export:'mountSettings'}};
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
 const host=document.createElement('div');host.id='app-view';const announcement=document.createElement('p');announcement.id='route-status';announcement.className='small-note';announcement.setAttribute('role','status');announcement.hidden=true;

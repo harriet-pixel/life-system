@@ -1,11 +1,11 @@
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=calendar-2';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=calendar-2';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=tasks-data-2';
-import {ABILITIES} from './abilities.mjs?v=tasks-data-2';
-import {maintenance} from './coordination.mjs?v=calendar-2';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=calendar-2';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=task-pool-5';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=task-pool-5';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=task-pool-5';
+import {ABILITIES} from './abilities.mjs?v=task-pool-5';
+import {maintenance} from './coordination.mjs?v=task-pool-5';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=task-pool-5';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=tasks-data-2';
+import {normalizeSettings} from './settings-model.mjs?v=task-pool-5';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -65,7 +65,8 @@ export function validateDocument(doc,{legacy=false}={}){
   check(new Set(doc.undoHistory.map(r=>r.id)).size===doc.undoHistory.length);
   for(const r of doc.undoHistory){validateRecord(r,doc,{snapshot:true});const meta=doc.history.find(m=>m.id===r.id);check(meta&&JSON.stringify(actionMetadata(r))===JSON.stringify(meta),'復原紀錄與行動紀錄不一致。');}
  }
- if(doc.tasks){const actions=new Map(doc.history.map(r=>[r.id,r]));for(const c of doc.tasks.completions){const r=actions.get(c.transactionId);check(r?.type==='task.completed'&&r.delta.currency===c.reward.currency&&r.delta.experience===c.reward.experience&&c.reward.abilities&&ABILITIES.every(a=>r.delta.abilities.find(delta=>delta.id===a.id)?.value===c.reward.abilities[a.id]),'完成紀錄與獎勵交易不一致。');}}
+ if(doc.tasks){const actions=new Map(doc.history.map(r=>[r.id,r]));for(const c of doc.tasks.completions){const r=actions.get(c.transactionId);check(r?.type==='task.completed','完成紀錄缺少原獎勵交易。');for(const key of ['currency','experience'])if(c.reward?.[key]!=null)check(r.delta[key]===c.reward[key],'完成紀錄與獎勵交易不一致。');if(c.reward?.abilities)check(ABILITIES.every(a=>r.delta.abilities.filter(d=>d.id===a.id).length===1&&r.delta.abilities.find(d=>d.id===a.id)?.value===c.reward.abilities[a.id]),'完成紀錄與能力交易不一致。');if(c.retraction){const reversal=actions.get(c.retraction.transactionId),reward=c.retraction.reward;if(['recorded','history'].includes(c.retraction.method))check(ABILITIES.every(a=>r.delta.abilities.find(d=>d.id===a.id)?.value===reward.abilities[a.id]),'撤回能力與原交易不一致。');else check(c.reward?.abilities==null&&r.delta.abilities.length===0,'有原始能力紀錄時不得改用推估。');check(reversal?.type==='task.deleted-completed'&&!reversal.undone&&reversal.delta.currency===-reward.currency&&reversal.delta.experience===-reward.experience&&ABILITIES.every(a=>reversal.delta.abilities.find(d=>d.id===a.id)?.value===-reward.abilities[a.id]),'撤回紀錄與反向交易不一致。');}}}
+
  return doc;
 }
 export const dataCount=doc=>3+doc.portraits.length+Object.keys(doc.activities).length+doc.history.length+(doc.tasks?doc.tasks.definitions.length+doc.tasks.occurrences.length+doc.tasks.completions.length+doc.tasks.categories.length:0);
