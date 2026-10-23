@@ -1,9 +1,10 @@
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=ai-connection-1';
-import { coordinatedWrite } from './coordination.mjs';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=ai-connection-1';
+import {emptyTasks,validateTasks} from './tasks-model.mjs';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=tasks-1';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=tasks-data-1';
+import { coordinatedWrite } from './coordination.mjs?v=tasks-1';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=tasks-data-1';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=ai-connection-1';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=tasks-data-1';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -12,7 +13,7 @@ export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
 const undoRecord = undoCandidate;
 const redoRecord = redoCandidate;
-const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
+const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, tasks: emptyTasks(), stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
 // Preserve the published one-time legacy restart, but perform the write only
 // under the shared write lock; existing v2 progress and settings are untouched.
 export function migrateStatsRules(storage) {
@@ -33,6 +34,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     if (!raw) return initial();
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
+    value.tasks = validateTasks(value.tasks ?? emptyTasks());
     value.settings = normalizeSettings(value.settings);
     value.statsRulesVersion ??= STATS_RULES_VERSION;
     value.profile.motto ??= '';
@@ -67,17 +69,19 @@ export function createDataStore(storage,{now=Date.now}={}) {
     replace(value) { const next=copy(value);next.revision=Math.max(value.revision,state.revision+1);persist(next); },
     subscribe(fn) { listeners.add(fn); fn(copy(effective().document)); return () => listeners.delete(fn); },
     refresh() { state = load(); notify(); },
-    transact({ type, label, target, changes, fields = [] }) {
+    transact({ type, label, target, changes, fields = [], expectedRevision, id }) {
+      if(expectedRevision!==undefined&&state.revision!==expectedRevision)throw new Error('等待期間資料已更新，請重新操作。');
       api.maintain();
       const next = effective().document, before = {}, after = {};
       for (const [key, rawValue] of Object.entries(changes)) {
         let value = key==='settings'?normalizeSettings(rawValue):rawValue;
         if(key==='profile')value=validateProfileFields(rawValue,state.profile);
+        if(key==='tasks')value=validateTasks(rawValue);
         if(key==='activities')value=validateActivities(rawValue);
         if (key === 'stats') {
           value = validateStats(rawValue, state.stats);
         }
-        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'stats', 'settings'].includes(key)) throw new Error('不支援的資料類型');
+        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'tasks', 'stats', 'settings'].includes(key)) throw new Error('不支援的資料類型');
         if (key === 'portraits' && (!Array.isArray(value) || value.length>6 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 6 個立繪，請先刪除或更換既有項目。');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
@@ -88,7 +92,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
       for (const key of ['experience', 'level', 'currency']) delta[key] = typeof next.stats[key] === 'number' && typeof state.stats[key] === 'number' ? next.stats[key] - state.stats[key] : 0;
       delta.abilities = next.stats.abilities.map(a => ({ id: a.id, value: a.value - (state.stats.abilities.find(x => x.id === a.id)?.value ?? 0) }));
       {
-        const record={id:crypto.randomUUID(),time:new Date(now()).toISOString(),type:type??'data.update',label:label??'已更新資料',target:target??'user',fields,before,after,delta,undone:false,undoneAt:null};
+        const record={id:id??crypto.randomUUID(),time:new Date(now()).toISOString(),type:type??'data.update',label:label??'已更新資料',target:target??'user',fields,before,after,delta,undone:false,undoneAt:null};
         next.history.push(actionMetadata(record));next.undoHistory.push(record);
       }
       persist(next); return true;

@@ -1,8 +1,10 @@
-import { createMobileTabPositioner } from './tab-position.mjs?v=app-shell-6';
-import { createActivityHeightSync } from './activity-height.mjs?v=app-shell-6';
-import { undoManager } from './undo.mjs?v=ai-connection-1';
-import { createCompanionController, generateMockReply } from './companion.mjs';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=ai-connection-1';
+import {taskActions} from './task-actions.mjs';
+import {rowsForDate,localDate} from './tasks-model.mjs';
+import { createMobileTabPositioner } from './tab-position.mjs?v=tasks-shell-7';
+import { createActivityHeightSync } from './activity-height.mjs?v=tasks-shell-7';
+import { undoManager } from './undo.mjs?v=tasks-data-1';
+import { createCompanionController, generateMockReply } from './companion.mjs?v=tasks-1';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=tasks-data-1';
 
 
 export function mountHome(root,context){
@@ -72,7 +74,15 @@ function emitDemoSuccess(type, input, index, label) {
 }
 
 // Shared persistent activity state and journal; demo labels and companion remain unchanged.
-const taskInputs = [...root.querySelectorAll('[data-task]')];
+const taskInputs = [];
+const tasks=taskActions(root,context);
+const todayList=root.querySelector('.task-list');
+function renderToday(){
+ const rows=rowsForDate(dataStore.get().tasks,localDate());
+ todayList.replaceChildren(...rows.map(row=>{const li=document.createElement('li'),label=document.createElement('label');label.className='task-row';const input=document.createElement('input');input.type='checkbox';input.dataset.task='';input.checked=row.occurrence.status==='done';input.setAttribute('aria-label',`${input.checked?'取消完成':'完成'} ${row.name}`);input.onchange=()=>{const done=row.occurrence.status==='done';input.checked=done;if(done)tasks.cancel(row.task.id,row.occurrence.date).catch(()=>{});else tasks.complete(row.task.id,row.occurrence.date);};const name=document.createElement('span');name.className='task-content';name.textContent=row.name;const category=document.createElement('span');category.className='task-time';category.textContent=row.category+(input.checked?' · 已完成':'');label.append(input,name,category);li.append(label);return li;}));
+ if(!rows.length){const li=document.createElement('li');li.className='small-note';li.textContent='今天尚無待辦，前往待辦事項安排生活。';todayList.append(li);}
+ root.querySelector('#task-count').textContent=`${rows.filter(r=>r.occurrence.status==='done').length} / ${rows.length} 完成`;
+}
 const habitInputs = [...root.querySelectorAll('[data-habit]')];
 const entries = [
   ...taskInputs.map((input, index) => ({ input, index, id: `task-${index}`, type: 'task', label: input.closest('label').querySelector('.task-name').textContent })),
@@ -88,7 +98,7 @@ function renderActivities() {
     if (type === 'habit') input.nextElementSibling.textContent = input.checked ? '已打卡' : '未打卡';
   });
   const completed = entries.filter(({ id, type }) => type === 'task' && activityStore.get(id).checked).length;
-  taskCount.textContent = `${completed} / ${taskInputs.length} 完成`;
+  renderToday();
 }
 entries.forEach((entry) => entry.input.addEventListener('change', async () => {
   if (undoManager.getState().busy) { renderActivities(); return; }

@@ -1,10 +1,10 @@
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=app-shell-6';
-import {persistentUndo,dataStore} from './data.mjs?v=ai-connection-1';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=app-shell-6';
-import {initializeNavigationSize} from './navigation-size.mjs?v=app-shell-6';
-import {mountAIPage} from './ai-page.mjs?v=app-shell-6';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=app-shell-6';
-const routes={home:{mount:()=>import('./home.js?v=app-shell-6'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=app-shell-6'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=app-shell-6'),export:'mountSettings'}};
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=tasks-1';
+import {persistentUndo,dataStore} from './data.mjs?v=tasks-data-1';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=tasks-shell-7';
+import {initializeNavigationSize} from './navigation-size.mjs?v=tasks-shell-7';
+import {mountAIPage} from './ai-page.mjs?v=tasks-shell-7';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=tasks-shell-7';
+const routes={tasks:{mount:()=>import('./tasks.mjs?v=tasks-1'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=tasks-1'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=tasks-shell-7'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=tasks-shell-7'),export:'mountSettings'}};
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
 const host=document.createElement('div');host.id='app-view';const announcement=document.createElement('p');announcement.id='route-status';announcement.className='small-note';announcement.setAttribute('role','status');announcement.hidden=true;

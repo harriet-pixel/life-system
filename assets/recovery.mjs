@@ -1,7 +1,7 @@
 // One policy for startup, replay, mutations, image references and backups.
 export const RECOVERY_LIMIT=15, DAY=86400000, HISTORY_VERSION=1;
 const shortKeys=new Set(['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','settings']);
-const longKeys=new Set(['stats','activities']);
+const longKeys=new Set(['stats','activities','tasks']);
 const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 export function recoveryLifetime(record){
  const keys=Object.keys(record.after??{}).filter(k=>!equal(record.before?.[k],record.after[k]));
