@@ -1,8 +1,8 @@
-import {dataStore} from './data.mjs?v=tasks-data-1';
-import {createTaskService} from './tasks-service.mjs';
-import {allocation,localDate} from './tasks-model.mjs';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=tasks-data-1';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=tasks-shell-7';
+import {dataStore} from './data.mjs?v=tasks-data-2';
+import {createTaskService} from './tasks-service.mjs?v=calendar-2';
+import {allocation,localDate} from './tasks-model.mjs?v=calendar-2';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=tasks-data-2';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=tasks-shell-8';
 export function taskActions(root,context){
  const status=root.querySelector('#operation-status'),say=text=>{status.hidden=false;status.textContent=text;};
  const service=createTaskService(dataStore,{emit:detail=>document.dispatchEvent(new CustomEvent('life-system:action-succeeded',{detail}))});

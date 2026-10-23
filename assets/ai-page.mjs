@@ -1,5 +1,5 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=tasks-shell-7';
-import {mountAITestPanel} from './ai-test-panel.mjs?v=tasks-shell-7';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=tasks-shell-8';
+import {mountAITestPanel} from './ai-test-panel.mjs?v=tasks-shell-8';
 export function mountAIPage(root,context){
 const connection=getSharedAIConnection(),panel=document.createElement('details');panel.className='ai-developer-test settings-section';panel.hidden=true;
 const title=document.createElement('summary');title.textContent='開發用 AI 跨頁測試';panel.append(title);

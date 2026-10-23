@@ -1,10 +1,10 @@
-import {taskActions} from './task-actions.mjs';
-import {rowsForDate,localDate} from './tasks-model.mjs';
-import { createMobileTabPositioner } from './tab-position.mjs?v=tasks-shell-7';
-import { createActivityHeightSync } from './activity-height.mjs?v=tasks-shell-7';
-import { undoManager } from './undo.mjs?v=tasks-data-1';
-import { createCompanionController, generateMockReply } from './companion.mjs?v=tasks-1';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=tasks-data-1';
+import {taskActions} from './task-actions.mjs?v=calendar-2';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=calendar-2';
+import { createMobileTabPositioner } from './tab-position.mjs?v=tasks-shell-8';
+import { createActivityHeightSync } from './activity-height.mjs?v=tasks-shell-8';
+import { undoManager } from './undo.mjs?v=tasks-data-2';
+import { createCompanionController, generateMockReply } from './companion.mjs?v=calendar-2';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=tasks-data-2';
 
 
 export function mountHome(root,context){

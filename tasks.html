@@ -7,11 +7,11 @@
     <meta name="description" content="Life System 首頁視覺提案，以清楚而平靜的方式整理日常。">
     <title>待辦事項 · Life System</title>
     <link rel="icon" href="data:,">
-    <script src="assets/appearance-core.js?v=tasks-data-1" data-appearance-core></script>
+    <script src="assets/appearance-core.js?v=tasks-data-2" data-appearance-core></script>
 
 
 
-  <link rel="stylesheet" href="assets/styles.css?v=tasks-shell-7"><link rel="stylesheet" href="assets/profile.css?v=tasks-shell-7"><link rel="stylesheet" href="assets/appearance.css?v=tasks-shell-7"><link rel="stylesheet" href="assets/ai.css?v=tasks-shell-7"><meta name="life-system-shell" content="tasks-shell-7"><script type="module" src="assets/app-shell.mjs?v=tasks-shell-7"></script><link rel="stylesheet" href="assets/tasks.css?v=tasks-1"></head>
+  <link rel="stylesheet" href="assets/styles.css?v=tasks-shell-8"><link rel="stylesheet" href="assets/profile.css?v=tasks-shell-8"><link rel="stylesheet" href="assets/appearance.css?v=tasks-shell-8"><link rel="stylesheet" href="assets/ai.css?v=tasks-shell-8"><meta name="life-system-shell" content="tasks-shell-8"><script type="module" src="assets/app-shell.mjs?v=tasks-shell-8"></script><link rel="stylesheet" href="assets/tasks.css?v=calendar-2"></head>
   <body>
     <a class="skip-link" href="#main">跳至主要內容</a>
     <div class="page-shell">
@@ -40,10 +40,9 @@
 
 
 <div class="task-workspace">
-<div class="task-toolbar"><button id="new-task">＋ 新增事項</button><button id="previous-week" aria-label="上一週">← 上週</button><button id="today">今天</button><button id="next-week" aria-label="下一週">下週 →</button></div>
-<p id="week-label"></p><div id="date-strip" class="task-date-strip" aria-label="七日日期導航"></div>
-<details class="task-calendar"><summary>展開月曆</summary><div class="task-toolbar"><button id="previous-month" aria-label="上個月">←</button><span id="month-label"></span><button id="next-month" aria-label="下個月">→</button></div><div id="month-grid" class="task-month-grid"></div><label>跳至日期 <input type="date" id="jump-date"></label></details>
-<div id="schedule" class="task-schedule"></div>
+<div class="task-toolbar"><button id="new-task" type="button">＋ 新增事項</button><button id="manage-categories" type="button">管理分類</button></div>
+<div class="task-calendar-layout"><section class="task-calendar" aria-label="月曆"><div class="task-toolbar"><button id="previous-month" type="button" aria-label="上個月">←</button><span id="month-label" aria-live="polite"></span><button id="next-month" type="button" aria-label="下個月">→</button><button id="today" type="button">今日</button></div><div id="month-grid" class="task-month-grid"></div></section>
+<div id="schedule" class="task-schedule" aria-label="每日待辦"></div></div>
 <details id="task-pool" open><summary>待辦池</summary><div class="task-filters"><label>名稱搜尋<input id="task-search" type="search"></label><label>分類<select id="category-filter"><option value="">全部分類</option><option value="none">未定義</option></select></label><label>類型<select id="type-filter"><option value="">全部類型</option><option value="once">一次性</option><option value="repeat">重複性</option></select></label><label>排序<select id="task-sort"><option value="new">建立時間（新至舊）</option><option value="old">建立時間（舊至新）</option><option value="points">點數（高至低）</option></select></label></div>
 <div class="task-batch"><span id="selected-count">已選 0 筆逾期</span><button id="batch-arrange">批次安排日期</button><button id="batch-skip">批次不再處理</button></div><div id="pool-lists"></div></details>
 <p id="operation-status" class="small-note" role="status" hidden></p>
