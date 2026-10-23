@@ -1,11 +1,11 @@
-import {emptyTasks,validateTasks} from './tasks-model.mjs';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=tasks-1';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=tasks-data-1';
-import {ABILITIES} from './abilities.mjs?v=tasks-data-1';
-import {maintenance} from './coordination.mjs?v=tasks-1';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=tasks-1';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=calendar-2';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=calendar-2';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=tasks-data-2';
+import {ABILITIES} from './abilities.mjs?v=tasks-data-2';
+import {maintenance} from './coordination.mjs?v=calendar-2';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=calendar-2';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=tasks-data-1';
+import {normalizeSettings} from './settings-model.mjs?v=tasks-data-2';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;

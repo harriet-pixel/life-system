@@ -1,6 +1,6 @@
-import {maintainRecovery} from './recovery.mjs?v=tasks-1';
+import {maintainRecovery} from './recovery.mjs?v=calendar-2';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs';
-import {maintenance} from './coordination.mjs?v=tasks-1';
+import {maintenance} from './coordination.mjs?v=calendar-2';
 const providers=new Map();
 export function registerImageReferenceSource(name,read) {
   if(providers.has(name)) throw new Error('重複的圖片引用來源');

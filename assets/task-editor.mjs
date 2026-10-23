@@ -1,0 +1,48 @@
+import {dataStore} from './data.mjs?v=tasks-data-2';
+import {localDate} from './tasks-model.mjs?v=calendar-2';
+import {holdDraft} from './coordination.mjs?v=calendar-2';
+
+// The editor owns one draft. Its date picker is a nested modal and never submits that draft.
+export function createTaskEditor(root,context,actions){
+ const editor=document.createElement('dialog');editor.className='task-dialog';editor.id='task-editor';editor.setAttribute('aria-labelledby','task-editor-title');
+ editor.innerHTML=`<form>
+ <h2 id="task-editor-title">新增事項</h2>
+ <div class="task-name-label"><label for="task-name-input">名稱（必填）</label><span id="task-chosen-date" class="small-note"></span><button type="button" id="task-date-button" aria-label="設定事項日期" title="設定事項日期"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 11h18"/></svg></button></div>
+ <input name="name" id="task-name-input" required>
+ <label>分類<select name="categoryId"></select></label>
+ <fieldset><legend>點數</legend><div class="task-radio-options"><label><input type="radio" name="points" value="1" checked>1 點</label><label><input type="radio" name="points" value="2">2 點</label><label><input type="radio" name="points" value="3">3 點</label></div></fieldset>
+ <fieldset><legend>類型</legend><div class="task-radio-options"><label><input type="radio" name="kind" value="once" checked>一次性</label><label><input type="radio" name="kind" value="repeat">重複性</label></div><p class="small-note" data-kind-note hidden>既有事項類型固定；可新增另一類型的事項。</p></fieldset>
+ <fieldset data-repeat hidden><legend>自動週期（可不選，僅手動安排）</legend><div class="task-weekdays"></div><label>開始日期<input type="date" name="start" required></label><label>結束日期（可留白）<input type="date" name="end"></label></fieldset>
+ <p data-editor-error role="alert"></p><div class="task-buttons"><button type="button" data-editor-cancel>取消</button><button type="submit">儲存事項</button></div></form>`;
+ root.append(editor);
+ const form=editor.querySelector('form'),field=name=>form.elements.namedItem(name);
+ const picker=document.createElement('dialog');picker.className='task-dialog';picker.id='task-date-picker';picker.setAttribute('aria-labelledby','task-date-title');
+ picker.innerHTML='<form><h2 id="task-date-title">設定事項日期</h2><label>日期<input name="date" type="date" required></label><p class="small-note" data-date-note></p><p data-date-error role="alert"></p><button type="button" data-date-clear>清除日期</button><div class="task-buttons"><button type="button" data-date-cancel>取消</button><button type="submit">設定日期</button></div></form>';root.append(picker);
+ let editing=null,sourceDate=null,draftDate=null,dateChanged=false,returnFocus,release,opening=false,busy=false;
+ const updateDate=()=>{editor.querySelector('#task-chosen-date').textContent=draftDate??'';editor.querySelector('#task-date-button').setAttribute('aria-label',draftDate?`修改事項日期：${draftDate}`:'設定事項日期');};
+ for(const [day,label] of [[1,'一'],[2,'二'],[3,'三'],[4,'四'],[5,'五'],[6,'六'],[0,'日']]){const l=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.name='days';input.value=day;l.append(input,document.createTextNode('週'+label));editor.querySelector('.task-weekdays').append(l);}
+ const updateKind=()=>{editor.querySelector('[data-repeat]').hidden=field('kind').value!=='repeat';};
+ editor.querySelectorAll('[name=kind]').forEach(input=>input.addEventListener('change',updateKind));
+ function updateCategories(){const old=field('categoryId').value;field('categoryId').replaceChildren(new Option('未定義',''),...dataStore.get().tasks.categories.map(c=>new Option(c.name,c.id)));field('categoryId').value=[...field('categoryId').options].some(o=>o.value===old)?old:'';}
+ async function open(task=null,date=null){
+  if(editor.open||opening)return;opening=true;
+  try{release=await holdDraft('tasks');editing=task?structuredClone(task):null;sourceDate=task?.kind==='repeat'?date:null;draftDate=task?.kind==='once'?(task.date??date):date;dateChanged=false;draftDate??=task?null:date;returnFocus=document.activeElement;form.reset();updateCategories();field('name').value=task?.name??'';field('categoryId').value=task?.categoryId??'';field('points').value=String(task?.points??1);field('kind').value=task?.kind??'once';editor.querySelectorAll('[name=kind]').forEach(i=>i.disabled=Boolean(task));editor.querySelector('[data-kind-note]').hidden=!task;field('start').value=task?.start??localDate();field('end').value=task?.end??'';editor.querySelectorAll('[name=days]').forEach(i=>i.checked=task?.days.includes(Number(i.value))??false);editor.querySelector('h2').textContent=task?'編輯事項':'新增事項';editor.querySelector('[data-editor-error]').textContent='';updateKind();updateDate();editor.showModal();context.notify();}finally{opening=false;}
+ }
+ editor.querySelector('[data-editor-cancel]').onclick=()=>{if(!busy)editor.close();};
+ editor.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
+ editor.addEventListener('close',()=>{release?.();release=null;(returnFocus?.isConnected?returnFocus:root.querySelector('#new-task')).focus({preventScroll:true});context.notify();});
+ editor.querySelector('#task-date-button').onclick=()=>{
+  const completed=editing&&dataStore.get().tasks.occurrences.some(o=>o.taskId===editing.id&&o.status==='done'&&(editing.kind==='once'||o.date===sourceDate));
+  picker.querySelector('input').value=draftDate??'';picker.querySelector('[data-date-error]').textContent='';picker.querySelector('[data-date-note]').textContent=completed?'已完成紀錄保留原日期；請先安全取消完成後再調整。':'日期可留白；重複事項的額外安排不影響自動週期。';picker.querySelectorAll('input,button[type=submit],[data-date-clear]').forEach(control=>control.disabled=Boolean(completed));picker.showModal();
+ };
+ picker.querySelector('[data-date-cancel]').onclick=()=>picker.close();
+ picker.querySelector('[data-date-clear]').onclick=()=>{draftDate=null;dateChanged=true;updateDate();picker.close();};
+ picker.querySelector('form').onsubmit=event=>{event.preventDefault();draftDate=picker.querySelector('input').value||null;dateChanged=true;updateDate();picker.close();};
+ picker.addEventListener('close',()=>editor.querySelector('#task-date-button').focus({preventScroll:true}));
+ form.onsubmit=async event=>{
+  event.preventDefault();if(busy)return;busy=true;context.notify();const submit=form.querySelector('[type=submit]');submit.disabled=true;
+  try{const kind=field('kind').value;await actions.service.edit({name:field('name').value.trim(),categoryId:field('categoryId').value||null,points:Number(field('points').value),kind,date:kind==='once'?(editing&&!dateChanged?editing.date:draftDate):null,start:kind==='repeat'?field('start').value:localDate(),end:kind==='repeat'?(field('end').value||null):null,days:kind==='repeat'?[...editor.querySelectorAll('[name=days]:checked')].map(i=>Number(i.value)):[],overdue:'keep'},editing?.id,editing?.version,kind==='repeat'?{fromDate:sourceDate,date:draftDate}:undefined);editor.close();actions.say('事項已儲存。');}catch(error){editor.querySelector('[data-editor-error]').textContent=error.message;}finally{busy=false;submit.disabled=false;context.notify();}
+ };
+ context.subscribe(dataStore,()=>{if(editor.open)updateCategories();});
+ return {open,hasDraft:()=>editor.open,busy:()=>busy};
+}
