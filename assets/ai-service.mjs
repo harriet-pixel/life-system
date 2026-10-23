@@ -2,13 +2,13 @@ export const AI_PROVIDERS = Object.freeze(['gemini','deepseek','openai','claude'
 export const AI_MESSAGES = Object.freeze({
  unconfigured:'尚未設定：需要部署 HTTPS AI 後端及本站登入。', login_required:'請先完成本站登入；目前尚未設定登入整合。', auth_unavailable:'本站登入驗證服務暫時無法使用，請稍後重試。', unauthenticated:'本站登入已失效，請重新登入。', forbidden:'目前帳戶未獲本站 AI 使用授權。',
  provider_auth:'API 金鑰驗證失敗，請重新輸入。', permission:'服務商權限不足，請檢查帳戶權限。', model_unavailable:'模型不存在、已停用或明確無權使用；請重新選擇模型。',
- rate_limit:'請求過於頻繁，請稍後手動重試。', quota:'服務商額度或餘額不足，請檢查自己的服務商帳戶。', network:'無法連接服務，請檢查網路後重試。', timeout:'連線逾時，請稍後重試。', provider_service:'AI 服務暫時故障，請稍後重試。',
+ rate_limit:'請求過於頻繁，請稍後手動重試。', quota:'服務商額度或餘額不足，請檢查自己的服務商帳戶。', network:'網路請求未完成，無法判定是否為連線、跨來源或服務問題；沒有自動重試。', timeout:'連線逾時，請稍後重試。', provider_service:'AI 服務暫時故障，請稍後重試。',
  empty_response:'服務已回應但沒有可用文字；可能達到測試輸出限制，請確認模型相容性。', key_format:'請輸入有效格式的 API 金鑰。', model_limit:'模型清單超過安全上限或分頁格式異常，未使用不完整清單。',
  response_size:'服務回應超過大小上限。', provider_response:'服務回應格式無法辨識。', provider_request:'服務商拒絕此請求，請確認帳戶與模型相容性。', input:'請確認服務商、金鑰及模型設定。', busy:'服務忙碌，請稍後手動重試。', internal:'連線失敗；未變更任何網站資料。', preference:'連線偏好未能儲存；金鑰不會因此保存。',
 });
 const safeCode=code=>Object.hasOwn(AI_MESSAGES,code)?code:'internal';
-export function createAIConnection({endpoint='',getAccessToken=async()=>null,fetcher=fetch,preference={},savePreference=async()=>{},timeoutMs=25000}={}) {
- let configured=false;
+export function createAIConnection({endpoint='',getAccessToken=async()=>null,fetcher=fetch,preference={},savePreference=async()=>{},timeoutMs=25000,transport=null}={}) {
+ let configured=typeof transport==='function';
  if(endpoint){const url=new URL(endpoint);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash||url.pathname!=='/v1/ai')throw new Error('Invalid HTTPS AI endpoint');configured=true;}
  let apiKey='',generation=0,controller=null,desiredModel=preference.model||'';
  const listeners=new Set(),blocked=new Set();
@@ -20,6 +20,7 @@ export function createAIConnection({endpoint='',getAccessToken=async()=>null,fet
  async function remember(model){const version=generation;try{await savePreference({provider:state.provider,model});}catch{if(version===generation){state.message=AI_MESSAGES.preference;emit();}}}
  async function request(operation, model, extra, context) {
   if(!configured)throw {code:'unconfigured'};
+  if(transport)return transport({operation,model,...extra,...context});
   if(!context.apiKey)throw {code:'key_format'};
   let aborted;
   const cancelled=new Promise((_,reject)=>{aborted=()=>reject({code:'cancelled'});context.signal.addEventListener('abort',aborted,{once:true});if(context.signal.aborted)aborted();});
@@ -83,6 +84,7 @@ export function createAIConnection({endpoint='',getAccessToken=async()=>null,fet
   test(){if(!state.model||!state.connected||state.busy)return;return operate('test');},
   generate({text,maxOutputTokens=64}={}){if(!state.model||!state.connected||state.busy)return;return operate('generate',{text,maxOutputTokens});},
   disconnect(){cancel();apiKey='';blocked.clear();clearList();state.hasKey=false;state.status=configured?'unset':'unconfigured';state.message=configured?'已中斷連線並清除本頁金鑰。':AI_MESSAGES.unconfigured;emit();},
+  cancel(){cancel();state.status='cancelled';state.message='已取消本次 AI 請求。';emit();},
   configured,
  };
  return api;
