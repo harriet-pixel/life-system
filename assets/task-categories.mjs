@@ -10,21 +10,22 @@ export function createCategoryManager(root,context,actions){
  editor.innerHTML='<form><h2 id="category-editor-title">新增分類</h2><label>分類名稱<input name="categoryName" required></label><label>文字顏色（留白使用預設文字色）<input name="categoryColor" placeholder="#222222" spellcheck="false"></label><label>選擇顏色<input type="color" name="colorPicker" value="#222222"></label><p data-category-preview>分類文字預覽</p><p data-category-error role="alert"></p><div class="task-buttons"><button type="button" data-category-cancel>取消</button><button type="submit">儲存分類</button></div></form>';
  root.append(dialog,editor);
  const form=editor.querySelector('form'),field=name=>form.elements.namedItem(name),error=editor.querySelector('[data-category-error]'),listError=dialog.querySelector('[data-category-list-error]');
- let editing=null,release,focus,busy=false,opening=false,mode='closed',ignoredListCloses=0,editorTrigger=null;
+ let listRoot=dialog;
+ let editing=null,release,focus,busy=false,opening=false,mode='closed',ignoredListCloses=0,editorTrigger=null,externalReturn=null,savedId=null,embedded=null;
  const icons={edit:'<path d="m15 4 5 5M4 20l4-1L20 7a2 2 0 0 0-5-5L3 14l-1 7Z"/>',remove:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>'};
  function iconButton(kind,label){const button=document.createElement('button');button.type='button';button.className='category-icon-button';button.setAttribute('aria-label',label);button.title=label;button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icons[kind]+'</svg>';return button;}
  function preview(){const color=field('categoryColor').value;editor.querySelector('[data-category-preview]').style.color=/^#[0-9a-f]{6}$/i.test(color)?color:'';if(/^#[0-9a-f]{6}$/i.test(color))field('colorPicker').value=color;}
  field('colorPicker').oninput=()=>{field('categoryColor').value=field('colorPicker').value;preview();};field('categoryColor').oninput=preview;
- function restoreListFocus(){const target=editorTrigger?.kind==='edit'?[...dialog.querySelectorAll('[data-category-edit]')].find(b=>b.dataset.categoryEdit===editorTrigger.id):null;(target??dialog.querySelector('[data-category-new]')).focus({preventScroll:true});}
+ function restoreListFocus(){const target=editorTrigger?.kind==='edit'?[...listRoot.querySelectorAll('[data-category-edit]')].find(b=>b.dataset.categoryEdit===editorTrigger.id):null;(target??listRoot.querySelector('[data-category-new]')).focus({preventScroll:true});}
  function openEditor(category=null){
   if(busy||mode!=='list')return;
   editing=category?structuredClone(category):null;editorTrigger=category?{kind:'edit',id:category.id}:{kind:'new'};
-  form.reset();field('categoryName').value=category?.name??'';field('categoryColor').value=category?.color??'';editor.querySelector('h2').textContent=category?'編輯分類':'新增分類';error.textContent='';preview();
+  savedId=null;form.reset();field('categoryName').value=category?.name??'';field('categoryColor').value=category?.color??'';editor.querySelector('h2').textContent=category?'編輯分類':'新增分類';error.textContent='';preview();
   // Keep the draft lease across this transition, while only one modal owns focus.
-  mode='form';ignoredListCloses++;dialog.close();editor.showModal();context.notify();
+  mode='form';if(embedded)embedded.pause();else{ignoredListCloses++;dialog.close();}editor.showModal();context.notify();
  }
  function render(){
-  const list=dialog.querySelector('[data-category-list]'),focused=document.activeElement,focusId=focused?.dataset.categoryEdit??focused?.dataset.categoryRemove,focusKind=focused?.hasAttribute('data-category-edit')?'edit':'remove';
+  const list=listRoot.querySelector('[data-category-list]'),focused=document.activeElement,focusId=focused?.dataset.categoryEdit??focused?.dataset.categoryRemove,focusKind=focused?.hasAttribute('data-category-edit')?'edit':'remove';
   list.replaceChildren();
   for(const category of dataStore.get().tasks.categories){
    const row=document.createElement('div');row.className='category-management-row';
@@ -41,26 +42,29 @@ export function createCategoryManager(root,context,actions){
    row.append(name,edit,remove);list.append(row);
   }
   if(!list.childElementCount){const note=document.createElement('p');note.className='small-note';note.textContent='尚無分類。';list.append(note);}
-  if(mode==='list'&&dialog.open&&focusId&&!focused.isConnected){const target=[...dialog.querySelectorAll(focusKind==='edit'?'[data-category-edit]':'[data-category-remove]')].find(b=>(b.dataset.categoryEdit??b.dataset.categoryRemove)===focusId);(target??dialog.querySelector('[data-category-new]')).focus({preventScroll:true});}
+  if(mode==='list'&&(dialog.open||embedded)&&focusId&&!focused.isConnected){const target=[...listRoot.querySelectorAll(focusKind==='edit'?'[data-category-edit]':'[data-category-remove]')].find(b=>(b.dataset.categoryEdit??b.dataset.categoryRemove)===focusId);(target??listRoot.querySelector('[data-category-new]')).focus({preventScroll:true});}
  }
  form.onsubmit=async event=>{
   event.preventDefault();if(busy)return;busy=true;context.notify();const submit=form.querySelector('[type=submit]');submit.disabled=true;
-  try{const values={name:field('categoryName').value,color:field('categoryColor').value||null};if(editing)await actions.service.updateCategory(editing.id,values,editing);else await actions.service.category(values.name,values.color);actions.say('分類已儲存。');editor.close();}
+  try{const values={name:field('categoryName').value,color:field('categoryColor').value||null};if(editing){await actions.service.updateCategory(editing.id,values,editing);savedId=editing.id;}else savedId=await actions.service.category(values.name,values.color);actions.say('分類已儲存。');editor.close();}
   catch(e){error.textContent=e.message;}
   finally{busy=false;submit.disabled=false;context.notify();}
  };
  editor.querySelector('[data-category-cancel]').onclick=()=>{if(!busy)editor.close();};editor.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
- editor.addEventListener('close',()=>{mode='list';render();if(context.active){dialog.showModal();restoreListFocus();}context.notify();});
- dialog.querySelector('[data-category-new]').onclick=()=>openEditor();
- dialog.querySelector('[data-category-close]').onclick=()=>{if(!busy)dialog.close();};dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
+ editor.addEventListener('close',()=>{if(externalReturn){const back=externalReturn;externalReturn=null;mode=embedded?'list':'closed';back(savedId);context.notify();return;}mode='list';render();if(context.active){if(embedded)embedded.resume();else dialog.showModal();restoreListFocus();}context.notify();});
+ listRoot.querySelector('[data-category-new]').onclick=()=>openEditor();
+ dialog.querySelector('[data-category-close]').onclick=()=>{if(!busy){if(embedded)embedded.close();else dialog.close();}};dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
  dialog.addEventListener('close',()=>{
   if(ignoredListCloses){ignoredListCloses--;return;}
   mode='closed';release?.();release=null;
   if(context.active)(focus?.isConnected?focus:root.querySelector('#manage-categories')).focus({preventScroll:true});context.notify();
  });
  context.subscribe(dataStore,render);
- context.onResume(()=>{if(mode==='list'&&!dialog.open){dialog.showModal();restoreListFocus();}});
+ context.onResume(()=>{if(mode==='list'&&!embedded&&!dialog.open){dialog.showModal();restoreListFocus();}});
  return {
+  attach(container,callbacks){embedded=callbacks;while(dialog.firstChild)container.append(dialog.firstChild);listRoot=container;mode='list';render();},
+  detach(){while(listRoot!==dialog&&listRoot.firstChild)dialog.append(listRoot.firstChild);listRoot=dialog;embedded=null;mode='closed';},
+  async create(back){if(busy||editor.open)return;externalReturn=back;savedId=null;editing=null;mode='external';form.reset();editor.querySelector('h2').textContent='新增分類';error.textContent='';preview();editor.showModal();context.notify();},
   async open(){if(mode!=='closed'||opening)return;opening=true;try{release=await holdDraft('tasks');focus=document.activeElement;mode='list';listError.hidden=true;render();dialog.showModal();context.notify();}finally{opening=false;}},
   hasDraft:()=>mode!=='closed',busy:()=>busy,
  };
