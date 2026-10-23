@@ -1,6 +1,6 @@
-import {dataStore} from './data.mjs?v=tasks-data-2';
-import {localDate} from './tasks-model.mjs?v=calendar-2';
-import {holdDraft} from './coordination.mjs?v=calendar-2';
+import {dataStore} from './data.mjs?v=task-pool-5';
+import {localDate} from './tasks-model.mjs?v=task-pool-5';
+import {holdDraft} from './coordination.mjs?v=task-pool-5';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){
@@ -26,7 +26,7 @@ export function createTaskEditor(root,context,actions){
  function updateCategories(){const old=field('categoryId').value;field('categoryId').replaceChildren(new Option('未定義',''),...dataStore.get().tasks.categories.map(c=>new Option(c.name,c.id)));field('categoryId').value=[...field('categoryId').options].some(o=>o.value===old)?old:'';}
  async function open(task=null,date=null){
   if(editor.open||opening)return;opening=true;
-  try{release=await holdDraft('tasks');editing=task?structuredClone(task):null;sourceDate=task?.kind==='repeat'?date:null;draftDate=task?.kind==='once'?(task.date??date):date;dateChanged=false;draftDate??=task?null:date;returnFocus=document.activeElement;form.reset();updateCategories();field('name').value=task?.name??'';field('categoryId').value=task?.categoryId??'';field('points').value=String(task?.points??1);field('kind').value=task?.kind??'once';editor.querySelectorAll('[name=kind]').forEach(i=>i.disabled=Boolean(task));editor.querySelector('[data-kind-note]').hidden=!task;field('start').value=task?.start??localDate();field('end').value=task?.end??'';editor.querySelectorAll('[name=days]').forEach(i=>i.checked=task?.days.includes(Number(i.value))??false);editor.querySelector('h2').textContent=task?'編輯事項':'新增事件';editor.querySelector('[data-editor-error]').textContent='';updateKind();updateDate();editor.showModal();context.notify();}finally{opening=false;}
+  try{release=await holdDraft('tasks');editing=task?structuredClone(task):null;sourceDate=task?.kind==='repeat'?date:null;draftDate=task?.kind==='once'?(task.date??date):date;dateChanged=false;draftDate??=task?null:date;returnFocus=document.activeElement;form.reset();updateCategories();field('name').value=task?.name??'';field('categoryId').value=task?.categoryId??'';field('points').value=String(task?.points??1);field('kind').value=task?.kind??'once';editor.querySelectorAll('[name=kind]').forEach(i=>i.disabled=Boolean(task));editor.querySelector('[data-kind-note]').hidden=!task;field('start').value=task?.start??localDate();field('end').value=task?.end??'';editor.querySelectorAll('[name=days]').forEach(i=>i.checked=task?.days.includes(Number(i.value))??false);editor.querySelector('#task-editor-title').textContent=task?'編輯事件':'新增事件';editor.querySelector('[data-editor-error]').textContent='';updateKind();updateDate();editor.showModal();context.notify();}finally{opening=false;}
  }
  editor.querySelector('[data-editor-cancel]').onclick=()=>{if(!busy)editor.close();};
  editor.addEventListener('cancel',event=>{if(busy)event.preventDefault();});

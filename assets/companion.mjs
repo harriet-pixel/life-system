@@ -1,6 +1,6 @@
 /** Provider-independent coordinator; real AI must live behind a server endpoint. */
 export const EMOTIONS = Object.freeze(['neutral', 'pleased', 'calm']);
-const ACTION_TYPES = new Set(['task.completed', 'habit.checked-in', 'task.created', 'task.updated', 'task.scheduled', 'task.deleted', 'task.batch', 'task.cancelled', 'task.category']);
+const ACTION_TYPES = new Set(['task.completed', 'habit.checked-in', 'task.created', 'task.updated', 'task.scheduled', 'task.deleted', 'task.deleted-completed', 'task.batch', 'task.cancelled', 'task.category']);
 
 export function validateReply(reply) {
   if (!reply || typeof reply.dialogue !== 'string' || !reply.dialogue.trim()

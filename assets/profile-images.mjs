@@ -1,4 +1,4 @@
-import {createImageCropper,readImageFile,decodeImage} from './avatar-crop.mjs?v=tasks-data-2';
+import {createImageCropper,readImageFile,decodeImage} from './avatar-crop.mjs?v=task-pool-5';
 import {imageURL} from './image-store.mjs';
 export function createProfileImages({root=document,onError,onSelect,onBusy=()=>{}}) {
   const $=selector=>root.querySelector(selector);
