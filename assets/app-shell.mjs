@@ -1,10 +1,11 @@
+import {ownsCompletionAI} from './task-completion.mjs?v=task-layout-6';
 import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=task-pool-5';
 import {persistentUndo,dataStore} from './data.mjs?v=task-pool-5';
 import {createPageLifecycle} from './page-lifecycle.mjs?v=task-pool-5';
 import {initializeNavigationSize} from './navigation-size.mjs?v=task-pool-5';
 import {mountAIPage} from './ai-page.mjs?v=task-pool-5';
 import {getSharedAIConnection} from './ai-runtime.mjs?v=task-pool-5';
-const routes={tasks:{mount:()=>import('./tasks.mjs?v=task-pool-5'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=task-pool-5'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=task-pool-5'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=task-pool-5'),export:'mountSettings'}};
+const routes={tasks:{mount:()=>import('./tasks.mjs?v=task-layout-6'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=task-layout-6'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=task-pool-5'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=task-pool-5'),export:'mountSettings'}};
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
 const host=document.createElement('div');host.id='app-view';const announcement=document.createElement('p');announcement.id='route-status';announcement.className='small-note';announcement.setAttribute('role','status');announcement.hidden=true;
@@ -48,7 +49,7 @@ async function go(url,{pop=false,state=null,initial=false}={}){
  try{
   view=initial?active:await load(target,id,loading.signal);if(ticket!==sequence)return false;
   rememberPosition();const position=pop?positions.get(targetIndex):null;navigating=true;
-  if(previous!==view){if(connection.getState().busy)connection.cancel();if(previous)suspend(previous);active=view;await activate(view);}
+  if(previous!==view){if(connection.getState().busy&&!ownsCompletionAI())connection.cancel();if(previous)suspend(previous);active=view;await activate(view);}
   if(ticket!==sequence)return false;
   if(!initial&&!pop)history.pushState({lifeShell:{index:targetIndex}},'',target.href);index=targetIndex;view.url=target.href;
   navigation?.refreshRoutes();navigation?.refreshControls();announcement.hidden=true;
