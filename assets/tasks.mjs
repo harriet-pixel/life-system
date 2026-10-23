@@ -1,9 +1,9 @@
 import {dataStore} from './data.mjs?v=tasks-data-2';
 import {localDate,addDays,rowsForDate,categoryName,weekday,isOverdue} from './tasks-model.mjs?v=three-day-3';
-import {taskActions} from './task-actions.mjs?v=three-day-3';
+import {taskActions} from './task-actions.mjs?v=task-panel-4';
 import {mountTaskCompanion} from './task-companion.mjs';
-import {createTaskEditor} from './task-editor.mjs?v=three-day-3';
-import {createCategoryManager} from './task-categories.mjs?v=three-day-3';
+import {createTaskEditor} from './task-editor.mjs?v=task-panel-4';
+import {createCategoryManager} from './task-categories.mjs?v=task-panel-4';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');let mobileCalendarOpen=false;
@@ -15,7 +15,20 @@ export function mountTasks(root,context){
  const run=work=>actions.attempt(work).catch(()=>{});
  const completionBusy=context.hooks.busy;
  const editor=createTaskEditor(root,context,actions),categories=createCategoryManager(root,context,actions);
- const openEditor=(task=null,date=null)=>editor.open(task,date);
+ const panel=editor.element,tabs=el('div',undefined,'task-settings-tabs'),eventPane=editor.form,categoryPane=el('section');
+ tabs.hidden=true;tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','待辦事項設定');categoryPane.hidden=true;categoryPane.id='task-settings-categories';panel.append(categoryPane);
+ const eventTab=button('新增事件',()=>selectTab('event')),categoryTab=button('管理分類',()=>selectTab('categories'));
+ eventPane.id='task-settings-event';eventTab.id='task-settings-event-tab';categoryTab.id='task-settings-categories-tab';
+ for(const [tab,pane] of [[eventTab,eventPane],[categoryTab,categoryPane]]){tab.setAttribute('role','tab');tab.setAttribute('aria-controls',pane.id);}
+ tabs.append(eventTab,categoryTab);panel.prepend(tabs);let settingsOpen=false;
+ function selectTab(value){const event=value==='event';eventPane.hidden=!event;categoryPane.hidden=event;for(const [tab,active] of [[eventTab,event],[categoryTab,!event]]){tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}panel.setAttribute('aria-labelledby',event?eventTab.id:categoryTab.id);}
+ tabs.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const target=e.key==='Home'?eventTab:e.key==='End'?categoryTab:document.activeElement===eventTab?categoryTab:eventTab;target.click();target.focus({preventScroll:true});});
+ const configureSettings=()=>{settingsOpen=true;tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);categoryPane.setAttribute('role','tabpanel');categoryPane.setAttribute('aria-labelledby',categoryTab.id);categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});selectTab('event');};
+ panel.addEventListener('cancel',event=>{if(categories.busy())event.preventDefault();});
+ panel.addEventListener('close',()=>{if(editor.hasDraft())return;if(settingsOpen){categories.detach();settingsOpen=false;}tabs.hidden=true;eventPane.hidden=false;categoryPane.hidden=true;eventPane.removeAttribute('role');eventPane.removeAttribute('aria-labelledby');panel.setAttribute('aria-labelledby','task-editor-title');});
+ async function openEditor(task=null,date=null){await editor.open(task,date);if(!task&&!desktop.matches)configureSettings();}
+ $('#task-settings').onclick=()=>openEditor().catch(e=>actions.say(e.message));
+ panel.querySelector('#task-add-category').onclick=()=>{const trigger=panel.querySelector('#task-add-category');editor.pause();categories.create(id=>{editor.updateCategories();if(id)editor.selectCategory(id);editor.resume();trigger.focus({preventScroll:true});});};
  context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>context.active&&(editor.busy()||categories.busy()||Boolean(completionBusy?.()))});
  const dateDialog=el('dialog');dateDialog.className='task-dialog';dateDialog.setAttribute('aria-labelledby','schedule-dialog-title');dateDialog.innerHTML='<form><h2 id="schedule-dialog-title">安排日期</h2><label>日期<input name="date" type="date" required></label><p role="alert"></p><div class="task-buttons"><button type="button">取消</button><button type="submit">確認安排</button></div></form>';root.append(dateDialog);let scheduleWork,focus;
  dateDialog.querySelector('[type=button]').onclick=()=>dateDialog.close();dateDialog.addEventListener('close',()=>focus?.focus({preventScroll:true}));
@@ -27,7 +40,7 @@ export function mountTasks(root,context){
  if(isOverdue(o)){const select=el('label','選取逾期事項'),input=el('input');input.type='checkbox';input.checked=selection.has(o.id);input.onchange=()=>{if(input.checked)selection.set(o.id,{taskId:task.id,date:o.date});else selection.delete(o.id);$('#selected-count').textContent=`已選 ${selection.size} 筆逾期`;};select.prepend(input);node.append(el('p',`原訂 ${o.originalDate}${o.originalDate!==o.date?' · 目前 '+o.date:''}`,'small-note'),select);}
  const controls=el('div',undefined,'task-item-controls');if(!c){controls.append(button('安排日期',()=>askDate(date=>actions.service.arrange(task.id,date,o?.date))),button('編輯',()=>openEditor(task,o?.date??null)));if(isOverdue(o))controls.append(button('不再處理',()=>confirm('將此筆逾期事項標記為不再處理？不發放獎勵。')&&run(()=>actions.service.batch([{taskId:task.id,date:o.date}]))));if(o)controls.append(button('刪除本次',()=>confirm('只刪除此日期安排；重複週期及完成歷史會保留。')&&run(()=>actions.service.remove(task.id,o.date))));else controls.append(button('刪除事項',()=>confirm(task.kind==='repeat'?'刪除整個重複事項及未完成安排？既有完成歷史與獎勵會保留。':'刪除此事項？完成歷史會保留。')&&run(()=>actions.service.remove(task.id))));node.draggable=matchMedia('(min-width:1024px)').matches;node.ondragstart=e=>e.dataTransfer.setData('text/plain',JSON.stringify({taskId:task.id,date:o?.date??null}));}node.append(controls);return node;}
  const menu=el('dialog');menu.className='task-dialog';menu.id='task-item-menu';menu.setAttribute('aria-labelledby','task-item-menu-title');let menuFocus;
- menu.addEventListener('close',()=>{if(menuFocus?.isConnected)menuFocus.focus({preventScroll:true});else $('#new-task').focus({preventScroll:true});});root.append(menu);
+ menu.addEventListener('close',()=>{if(menuFocus?.isConnected)menuFocus.focus({preventScroll:true});else $(desktop.matches?'#new-task':'#task-settings').focus({preventScroll:true});});root.append(menu);
  function openMenu(task,o){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const controls=el('div',undefined,'task-menu-actions');
   controls.append(button('編輯事項',()=>{menu.close();return openEditor(task,o.date);}));
   const removeOne=button(task.kind==='repeat'?'刪除此日安排':'刪除事項',async()=>{if(!confirm(task.kind==='repeat'?'只刪除此日安排？其他日期及重複週期會保留。':'刪除此事項？'))return;await actions.attempt(()=>actions.service.remove(task.id,o.date));menu.close();});removeOne.disabled=o.status==='done';controls.append(removeOne);
@@ -40,7 +53,7 @@ export function mountTasks(root,context){
   const name=button(r.name,()=>openMenu(task,o));name.className='task-daily-name';const category=renderingData.categories.find(c=>c.id===task.categoryId);if(category?.color)name.style.color=category.color;node.append(check,name);return node;
  }
  function choose(date,follow=false){selected=date;followToday=follow;month=date.slice(0,7);limits={};render();}
- function render(){syncCalendar();const focused=document.activeElement,focusedDate=focused?.closest('#month-grid')?focused.getAttribute('aria-label')?.slice(0,10):null,focusedRow=focused?.closest('.task-daily-row'),focusedTask=focusedRow?.dataset.taskId,focusedRowDate=focusedRow?.dataset.date,focusedCheckbox=focused?.matches('input[type=checkbox]');const today=localDate();if(today!==lastToday){if(followToday&&month===lastToday.slice(0,7))month=today.slice(0,7);if(followToday&&selected===lastToday)selected=today;lastToday=today;}const data=dataStore.get().tasks;renderingData=data;const definitionsById=new Map(data.definitions.map(t=>[t.id,t])),scheduledTasks=new Set(data.occurrences.map(o=>o.taskId));const visible=[addDays(selected,-1),selected,addDays(selected,1)];
+ function render(){syncCalendar();const focused=document.activeElement,focusedDate=focused?.closest('#month-grid')?focused.getAttribute('aria-label')?.slice(0,10):null,focusedRow=focused?.closest('.task-daily-row'),focusedTask=focusedRow?.dataset.taskId,focusedRowDate=focusedRow?.dataset.date,focusedCheckbox=focused?.matches('input[type=checkbox]');const today=localDate();if(today!==lastToday){if(followToday&&month===lastToday.slice(0,7))month=today.slice(0,7);if(followToday&&selected===lastToday)selected=today;lastToday=today;}const data=dataStore.get().tasks;renderingData=data;const definitionsById=new Map(data.definitions.map(t=>[t.id,t])),scheduledTasks=new Set(data.occurrences.map(o=>o.taskId));const visible=selected===today?[today,addDays(today,1)]:[addDays(selected,-1),selected,addDays(selected,1)];
  $('#schedule').replaceChildren(...visible.map(date=>{
   const day=el('section',undefined,'task-day'),heading=el('div',undefined,'task-day-heading');day.dataset.date=date;
   const title=`${date}（${['日','一','二','三','四','五','六'][weekday(date)]}）${date===today?' 今天':date===addDays(today,-1)?' 昨天':date===addDays(today,1)?' 明天':''}`;

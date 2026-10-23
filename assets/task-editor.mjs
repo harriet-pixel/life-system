@@ -9,16 +9,16 @@ export function createTaskEditor(root,context,actions){
  <h2 id="task-editor-title">新增事件</h2>
  <div class="task-form-field"><div class="task-name-label task-field-label"><label for="task-name-input">名稱（必填）</label><span id="task-chosen-date" class="small-note"></span><button type="button" id="task-date-button" aria-label="設定事項日期" title="設定事項日期"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 11h18"/></svg></button></div>
  <input name="name" id="task-name-input" required></div>
- <div class="task-form-field"><div class="task-field-label"><label for="task-category-input">分類</label></div><select name="categoryId" id="task-category-input"></select></div>
+ <div class="task-form-field"><div class="task-field-label"><label for="task-category-input">分類</label><button type="button" class="task-inline-icon" id="task-add-category" aria-label="新增分類"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 4v16M4 12h16"/></svg></button></div><select name="categoryId" id="task-category-input"></select></div>
  <fieldset><legend>點數</legend><div class="task-radio-options"><label><input type="radio" name="points" value="1" aria-label="1點" checked><span>1<span class="task-point-unit" aria-hidden="true">點</span></span></label><label><input type="radio" name="points" value="2" aria-label="2點"><span>2<span class="task-point-unit" aria-hidden="true">點</span></span></label><label><input type="radio" name="points" value="3" aria-label="3點"><span>3<span class="task-point-unit" aria-hidden="true">點</span></span></label></div></fieldset>
  <fieldset><legend>類型</legend><div class="task-radio-options"><label><input type="radio" name="kind" value="once" checked>一次性</label><label><input type="radio" name="kind" value="repeat">重複性</label></div><p class="small-note" data-kind-note hidden>既有事項類型固定；可新增另一類型的事項。</p></fieldset>
  <fieldset data-repeat hidden><legend>自動週期（可不選，僅手動安排）</legend><div class="task-weekdays"></div><label>開始日期<input type="date" name="start" required></label><label>結束日期（可留白）<input type="date" name="end"></label></fieldset>
- <p data-editor-error role="alert"></p><div class="task-buttons"><button type="button" data-editor-cancel>取消</button><button type="submit">儲存事項</button></div></form>`;
+ <p data-editor-error role="alert"></p><div class="task-buttons"><button type="button" data-editor-cancel>取消</button><button type="submit">儲存事件</button></div></form>`;
  root.append(editor);
  const form=editor.querySelector('form'),field=name=>form.elements.namedItem(name);
  const picker=document.createElement('dialog');picker.className='task-dialog';picker.id='task-date-picker';picker.setAttribute('aria-labelledby','task-date-title');
  picker.innerHTML='<form><h2 id="task-date-title">設定事項日期</h2><label>日期<input name="date" type="date" required></label><p class="small-note" data-date-note></p><p data-date-error role="alert"></p><button type="button" data-date-clear>清除日期</button><div class="task-buttons"><button type="button" data-date-cancel>取消</button><button type="submit">設定日期</button></div></form>';root.append(picker);
- let editing=null,sourceDate=null,draftDate=null,dateChanged=false,returnFocus,release,opening=false,busy=false;
+ let editing=null,sourceDate=null,draftDate=null,dateChanged=false,returnFocus,release,opening=false,busy=false,paused=false,ignoredCloses=0;
  const updateDate=()=>{editor.querySelector('#task-chosen-date').textContent=draftDate??'';editor.querySelector('#task-date-button').setAttribute('aria-label',draftDate?`修改事項日期：${draftDate}`:'設定事項日期');};
  for(const [day,label] of [[1,'一'],[2,'二'],[3,'三'],[4,'四'],[5,'五'],[6,'六'],[0,'日']]){const l=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.name='days';input.value=day;l.append(input,document.createTextNode('週'+label));editor.querySelector('.task-weekdays').append(l);}
  const updateKind=()=>{editor.querySelector('[data-repeat]').hidden=field('kind').value!=='repeat';};
@@ -30,7 +30,7 @@ export function createTaskEditor(root,context,actions){
  }
  editor.querySelector('[data-editor-cancel]').onclick=()=>{if(!busy)editor.close();};
  editor.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
- editor.addEventListener('close',()=>{release?.();release=null;(returnFocus?.isConnected?returnFocus:root.querySelector('#new-task')).focus({preventScroll:true});context.notify();});
+ editor.addEventListener('close',()=>{if(ignoredCloses){ignoredCloses--;return;}paused=false;release?.();release=null;(returnFocus?.isConnected?returnFocus:root.querySelector(matchMedia('(min-width:1024px)').matches?'#new-task':'#task-settings')).focus({preventScroll:true});context.notify();});
  editor.querySelector('#task-date-button').onclick=()=>{
   const completed=editing&&dataStore.get().tasks.occurrences.some(o=>o.taskId===editing.id&&o.status==='done'&&(editing.kind==='once'||o.date===sourceDate));
   picker.querySelector('input').value=draftDate??'';picker.querySelector('[data-date-error]').textContent='';picker.querySelector('[data-date-note]').textContent=completed?'已完成紀錄保留原日期；請先安全取消完成後再調整。':'日期可留白；重複事項的額外安排不影響自動週期。';picker.querySelectorAll('input,button[type=submit],[data-date-clear]').forEach(control=>control.disabled=Boolean(completed));picker.showModal();
@@ -44,5 +44,5 @@ export function createTaskEditor(root,context,actions){
   try{const kind=field('kind').value;await actions.service.edit({name:field('name').value.trim(),categoryId:field('categoryId').value||null,points:Number(field('points').value),kind,date:kind==='once'?(editing&&!dateChanged?editing.date:draftDate):null,start:kind==='repeat'?field('start').value:localDate(),end:kind==='repeat'?(field('end').value||null):null,days:kind==='repeat'?[...editor.querySelectorAll('[name=days]:checked')].map(i=>Number(i.value)):[],overdue:'keep'},editing?.id,editing?.version,kind==='repeat'?{fromDate:sourceDate,date:draftDate}:undefined);editor.close();actions.say('事項已儲存。');}catch(error){editor.querySelector('[data-editor-error]').textContent=error.message;}finally{busy=false;submit.disabled=false;context.notify();}
  };
  context.subscribe(dataStore,()=>{if(editor.open)updateCategories();});
- return {open,hasDraft:()=>editor.open,busy:()=>busy};
+ return {open,element:editor,form,updateCategories,selectCategory:id=>{updateCategories();field('categoryId').value=id;},pause(){paused=true;ignoredCloses++;editor.close();},resume(){paused=false;if(context.active&&!editor.open)editor.showModal();},hasDraft:()=>editor.open||paused,busy:()=>busy};
 }
