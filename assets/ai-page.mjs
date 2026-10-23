@@ -1,5 +1,5 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=browser-ai-2';
-import {mountAITestPanel} from './ai-test-panel.mjs?v=browser-ai-2';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=provider-audit-3';
+import {mountAITestPanel} from './ai-test-panel.mjs?v=provider-audit-3';
 const connection=getSharedAIConnection(),panel=document.createElement('details');panel.className='ai-developer-test settings-section';panel.hidden=true;
 const title=document.createElement('summary');title.textContent='開發用 AI 跨頁測試';panel.append(title);
 const note=document.createElement('p');note.className='small-note';note.textContent='瀏覽器直連測試模式；金鑰僅在本分頁暫存，首頁夥伴仍使用 mock。';panel.append(note);

@@ -1,0 +1,144 @@
+{
+  "note": "Mock responses assembled from official SDK/Google cookbook/DeepSeek harness schemas and model IDs. Not live API captures; sources in docs/AI_PROVIDER_AUDIT.md.",
+  "gemini": {
+    "models": [
+      {
+        "name": "models/gemini-3.7-flash",
+        "displayName": "Gemini 3.7 Flash",
+        "description": "Gemini 3.7 Flash",
+        "inputTokenLimit": 1048576,
+        "outputTokenLimit": 65536,
+        "supportedGenerationMethods": [
+          "generateContent",
+          "countTokens"
+        ]
+      },
+      {
+        "name": "models/gemini-embedding-2",
+        "supportedGenerationMethods": [
+          "embedContent"
+        ]
+      },
+      {
+        "name": "models/gemini-3.8-flash-tts",
+        "supportedGenerationMethods": [
+          "generateContent"
+        ],
+        "description": "Speech generation model"
+      }
+    ]
+  },
+  "deepseek": {
+    "object": "list",
+    "data": [
+      {
+        "id": "deepseek-flash",
+        "object": "model",
+        "owned_by": "deepseek",
+        "name": "DeepSeek-V4.1-Flash",
+        "context_window": 1048576,
+        "max_output_tokens": 393216,
+        "input_modalities": [
+          "text",
+          "image"
+        ],
+        "output_modalities": [
+          "text"
+        ],
+        "effort": {
+          "supported_levels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "default_level": "high"
+        },
+        "api_capabilities": {
+          "anthropic_messages": {
+            "system_prompt_update": "in-history"
+          }
+        }
+      },
+      {
+        "id": "deepseek-v4-pro",
+        "object": "model",
+        "owned_by": "deepseek",
+        "name": "DeepSeek-V4-Pro",
+        "context_window": 1048576,
+        "max_output_tokens": 393216,
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "text"
+        ],
+        "api_capabilities": {
+          "anthropic_messages": {
+            "system_prompt_update": "leading-only"
+          }
+        }
+      }
+    ]
+  },
+  "openai": {
+    "object": "list",
+    "data": [
+      {
+        "id": "gpt-6.1-sol",
+        "object": "model",
+        "created": 1700000000,
+        "owned_by": "openai",
+        "shutdown_date": null
+      },
+      {
+        "id": "gpt-5.5",
+        "object": "model",
+        "created": 1700000000,
+        "owned_by": "openai"
+      },
+      {
+        "id": "text-embedding-3-large",
+        "object": "model",
+        "created": 1700000000,
+        "owned_by": "openai"
+      },
+      {
+        "id": "gpt-audio-mini",
+        "object": "model",
+        "created": 1700000000,
+        "owned_by": "openai"
+      }
+    ]
+  },
+  "claude": {
+    "data": [
+      {
+        "id": "claude-opus-5-5",
+        "type": "model",
+        "display_name": "Claude Opus 5.5",
+        "created_at": "2026-01-01T00:00:00Z",
+        "capabilities": null,
+        "lifecycle": "active",
+        "deprecated_at": null,
+        "line": "opus",
+        "max_input_tokens": 200000,
+        "max_tokens": 64000,
+        "retires_at": null
+      },
+      {
+        "id": "claude-deprecated-fixture",
+        "type": "model",
+        "lifecycle": "deprecated",
+        "display_name": "Deprecated but callable fixture"
+      },
+      {
+        "id": "claude-retired-fixture",
+        "type": "model",
+        "lifecycle": "retired"
+      }
+    ],
+    "has_more": false,
+    "first_id": "claude-opus-5-5",
+    "last_id": "claude-retired-fixture"
+  }
+}

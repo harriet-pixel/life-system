@@ -18,7 +18,7 @@ test('saved missing model clears selection/preference; failed refresh never disp
 });
 test('model unavailable is blocked and refreshes; transient failures retain model; test sends only fixed operation',async()=>{
  let mode='success';const sent=[];const service=setup({fetcher:async(_,options)=>{const body=JSON.parse(options.body);sent.push(body);if(body.operation==='models')return list(['valid','other']);return mode==='success'?new Response('{"ok":true}'):new Response(JSON.stringify({error:{code:mode,message:key}}),{status:mode==='model_unavailable'?404:429});}});
- service.setKey(key);await service.connect();service.selectModel('valid');await service.test();assert.equal(service.getState().status,'tested');assert.deepEqual(Object.keys(sent.at(-1)).sort(),['apiKey','model','operation','provider']);
+ service.setKey(key);await service.connect();service.selectModel('valid');await service.test();assert.equal(service.getState().status,'generation_succeeded');assert.deepEqual(Object.keys(sent.at(-1)).sort(),['apiKey','model','operation','provider']);
  for(const modeName of ['rate_limit','quota','network','timeout','provider_service']){mode=modeName;await service.test();assert.equal(service.getState().model,'valid');assert.ok(!service.getState().message.includes(key));}
  mode='model_unavailable';await service.test();assert.equal(service.getState().model,'');assert.deepEqual(service.getState().models.map(m=>m.id),['other']);assert.match(service.getState().message,/重新選擇/);
 });

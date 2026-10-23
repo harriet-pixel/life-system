@@ -1,7 +1,8 @@
 // Official API traffic is intercepted with fabricated credentials. No screenshots/traces.
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 const base=(process.env.BASE_URL||'http://127.0.0.1:3013/').replace(/\/?$/,'/'),sessionKey='life-system.ai-test.v1',key='test-only-invalid-credential';
-const models={gemini:'models/gemini-2.5-flash',deepseek:'deepseek-chat',openai:'gpt-4.1',claude:'claude-fixture'};
+const fixtures=require('./fixtures/provider-catalogues-20261023.json');
+const models={gemini:'models/gemini-3.7-flash',deepseek:'deepseek-flash',openai:'gpt-6.1-sol',claude:'claude-opus-5-5'};
 const origins={gemini:'https://generativelanguage.googleapis.com',deepseek:'https://api.deepseek.com',openai:'https://api.openai.com',claude:'https://api.anthropic.com'};
 (async()=>{const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{
 for(const provider of ['gemini','deepseek','openai','claude']){
@@ -11,9 +12,9 @@ for(const provider of ['gemini','deepseek','openai','claude']){
   const req=route.request();if(req.method()==='OPTIONS'){await route.fulfill({status:204,headers:{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, POST','Access-Control-Allow-Headers':'authorization,content-type,x-goog-api-key,x-api-key,anthropic-version,anthropic-dangerous-direct-browser-access'}});return;}
   calls.push({url:req.url(),method:req.method(),body:req.postData(),headers:req.headers()});
   if(slow){slow=false;await new Promise(r=>pending=r);}
-  const list=provider==='gemini'?{models:[{name:models[provider],supportedGenerationMethods:['generateContent']},{name:'models/unknown-image',supportedGenerationMethods:['generateContent']}]}:{data:[{id:models[provider],type:'model',lifecycle:'active'},{id:'unrecognized-image',type:'image'}]};
+  const list=fixtures[provider];
   const text='mock response <img src=x onerror=alert(1)>';
-  const response={gemini:{candidates:[{content:{parts:[{text}]}}]},deepseek:{choices:[{message:{content:text}}]},openai:{output:[{type:'message',content:[{type:'output_text',text}]}]},claude:{content:[{type:'text',text}]}}[provider];
+  const response={gemini:{candidates:[{content:{parts:[{text}]}}]},deepseek:{content:[{type:'text',text}]},openai:{output:[{type:'message',content:[{type:'output_text',text}]}]},claude:{content:[{type:'text',text}]}}[provider];
   await route.fulfill({headers:{'Access-Control-Allow-Origin':'*'},json:req.method()==='GET'?list:response}).catch(()=>{});
  });
  await p.goto(base+'settings.html');await p.waitForSelector('body[data-navigation=ready]');await p.locator('#ai-tab').click();assert.equal(await p.locator('#ai-key').isDisabled(),true);

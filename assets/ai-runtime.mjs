@@ -1,4 +1,4 @@
-import {createPageAIConnection} from './ai-client.mjs?v=browser-ai-2';
+import {createPageAIConnection} from './ai-client.mjs?v=provider-audit-3';
 import {AI_BACKEND_URL} from './ai-config.mjs?v=ai-connection-1';
 import {getAIAccessToken} from './ai-auth.mjs?v=ai-connection-1';
 import {dataStore} from './data.mjs?v=ai-connection-1';

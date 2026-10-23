@@ -69,19 +69,21 @@ Life system 沿用原生三頁與同一個 AI service。**本次交付可由設�
 
 | Provider | 列舉／分頁 | 文字呼叫／篩選 |
 | --- | --- | --- |
-| Gemini | GET `generativelanguage.googleapis.com/v1beta/models`，pageSize=100、pageToken／nextPageToken | `supportedGenerationMethods` 包含 generateContent（亦兼容 SDK 的 supportedActions）且精確已知文字 ID；排除 embedding、未知及圖片專用變體。POST `/v1beta/{官方 resource name}:generateContent`，金鑰僅 x-goog-api-key 標頭 |
-| DeepSeek | GET `api.deepseek.com/models`；目前常見格式為 data 清單，若回 has_more／last_id 則接續 after | 僅官方 API 清單內、精確對應已知 chat/reasoner 的 ID；POST `/chat/completions`。官方列舉不提供充分用途 metadata，未知 ID 不開放 |
+| Gemini | GET `generativelanguage.googleapis.com/v1beta/models`，pageSize=100、pageToken／nextPageToken | `supportedGenerationMethods` 包含 generateContent（亦兼容 SDK 的 supportedActions）且精確已知文字 ID 或有明確文字生成描述；排除 embedding、未知及圖片專用變體。POST `/v1beta/{官方 resource name}:generateContent`，金鑰僅 x-goog-api-key 標頭 |
+| DeepSeek | GET `api.deepseek.com/models`；目前常見格式為 data 清單，若回 has_more／last_id 則接續 after | 優先依官方文字模態及 api_capabilities.anthropic_messages 判斷，呼叫 `/anthropic/v1/messages`；無 metadata 時僅精確官方相容 ID 走 `/chat/completions`。不再限於舊 chat/reasoner 名稱 |
 | OpenAI | GET `api.openai.com/v1/models`；官方 SDK 說明目前不真正分頁，仍處理 has_more／last_id 的後續格式 | 清單只含 ID、owner 等不足以判斷用途；以精確文字相容對應規則篩選，排除未確認、圖片、語音、embedding、moderation。POST `/v1/responses`，store:false |
-| Claude | GET `api.anthropic.com/v1/models`，limit=100、after_id／last_id／has_more | 官方 Messages 模型目錄中 type=model，若有 lifecycle 則僅 active；不從名稱推測 line／能力。POST `/v1/messages`、anthropic-version:2023-06-01 |
+| Claude | GET `api.anthropic.com/v1/models`，limit=100、after_id／last_id／has_more | 官方 Messages 模型目錄中 type=model，排除 retired，deprecated 仍可列舉；不從名稱推測 line／能力。POST `/v1/messages`、anthropic-version:2023-06-01 |
 
 - 20 頁／2,000 個模型為硬上限，循環游標、異常格式或超限整筆失敗，不以截斷或過期清單偽裝完整結果。保留 API ID，顯示名稱只是文字。
 - 列舉不是生成授權或餘額保證；不逐一生成測試，也不保證所有列出項目一定能呼叫。各家組織權限、地區、quota、模型 lifecycle 及輸出限制會影響結果。
 - 模型不存在／退役／明確 model access denied：移除目前選項、清選取、重新取得清單，直到本次連線重新建立前不讓同一失效項目復活。一般權限錯誤不推論所有模型已下架。限流、額度、網路、逾時及服務故障分開提示，不把它們當永久失效。
 - 最小測試的 reasoning 模型可能耗完 output budget 而沒有可見文字；回報空文字，不能宣稱成功，也不自動追加可能計費請求。
 
+介面區分「金鑰已暫存」「模型查詢成功」「模型已選取」「生成成功」。模型診斷顯示取得／保留數量及排除 ID／固定原因；官方空清單與全部被篩除分開提示，不顯示憑證或原始錯誤。
+
 ## 模型／能力資料查閱界線
 
-模型介面原已查閱 Google js-genai src/models.ts／src/types.ts、OpenAI SDK src/resources/models.ts／shared.ts、Anthropic SDK src/resources/models.ts／messages、DeepSeek 官方 DeepSeek-V3／awesome-deepseek-integration。精確能力規則會排除未知新 ID；不能用寫死清單冒充當前可用清單。真實四家 API、實際 CORS 與帳戶權限由使用者在網站自行輸入金鑰驗收，測試不要求金鑰出現在聊天或 Git。
+模型介面原已查閱 Google js-genai src/models.ts／src/types.ts、OpenAI SDK src/resources/models.ts／shared.ts、Anthropic SDK src/resources/models.ts／messages、DeepSeek 官方 DeepSeek-V3／awesome-deepseek-integration。2026-10-23 四家更新的來源、端點、能力規則及限制見 [四家相容性查核](docs/AI_PROVIDER_AUDIT.md)。DeepSeek 優先採能力 metadata；Gemini／OpenAI 更新來源支持的文字模型規則；Claude 不再把 deprecated 一律當退役。不能用寫死清單冒充當前可用清單。真實四家 API、實際 CORS 與帳戶權限由使用者在網站自行輸入金鑰驗收，測試不要求金鑰出現在聊天或 Git。
 
 ## 正式後端模式（保留原始碼，本次不部署）
 
