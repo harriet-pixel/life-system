@@ -28,3 +28,19 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 @keyframes task-reward-scatter{0%{transform:translateY(8px);opacity:0}15%{opacity:1}65%{opacity:1}100%{transform:translateY(calc(-1 * var(--reward-rise,36px)));opacity:0}}
 @media(prefers-reduced-motion:reduce){.task-reward-text{animation:none;opacity:1}}
 @supports not (scrollbar-gutter:stable){html:has(body[data-page="tasks"]){overflow-y:scroll}}
+
+/* Tasks-only presentation: two tool rows and shared-name occurrence detail. */
+.task-schedule>.task-day:first-child{border-top:0}
+.task-workspace #task-pool-tools{border-bottom:0}
+#pool-lists{padding-inline:1em;min-width:0}
+.task-workspace .task-filters{grid-template-columns:repeat(2,minmax(0,1fr));align-items:center;gap:12px 8px}
+.task-workspace .task-filters label{flex-direction:row;align-items:center;white-space:nowrap;min-width:0}
+.task-workspace .task-filters input,.task-workspace .task-filters select{flex:1;min-width:0;width:0}
+.task-workspace .task-filters button{min-width:0;max-width:100%}
+.task-tab-english{display:block;font:.875rem/var(--line-height) var(--font-latin);color:var(--color-muted);margin-top:2px}
+.task-occurrence-brief{font-size:.8em;color:var(--color-muted,#626970);margin-inline-start:.65em;overflow-wrap:anywhere;white-space:normal}
+.task-dialog .task-select-all{display:flex;flex-direction:row;align-items:center;gap:6px;min-height:44px;white-space:nowrap}
+.task-multi-month{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.task-multi-grid{margin-block:12px;min-width:0}.task-multi-grid button{min-width:0;padding:4px}
+.task-multi-grid button[aria-pressed=true]{background:var(--color-primary);color:var(--color-on-primary,#fff)}
+.task-multi-grid button:disabled{opacity:.45;cursor:default;text-decoration:underline}

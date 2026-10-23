@@ -1,11 +1,11 @@
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=task-pool-5';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=task-pool-5';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=task-pool-5';
-import {ABILITIES} from './abilities.mjs?v=task-pool-5';
-import {maintenance} from './coordination.mjs?v=task-pool-5';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=task-pool-5';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=task-context-7';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=task-context-7';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=task-context-7';
+import {ABILITIES} from './abilities.mjs?v=task-context-7';
+import {maintenance} from './coordination.mjs?v=task-context-7';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=task-context-7';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=task-pool-5';
+import {normalizeSettings} from './settings-model.mjs?v=task-context-7';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
