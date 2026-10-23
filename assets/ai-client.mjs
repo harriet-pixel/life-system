@@ -1,13 +1,13 @@
-import {createAIConnection} from './ai-service.mjs?v=browser-ai-2';
-import {createAISession} from './ai-session.mjs?v=browser-ai-2';
-import {createProviderAdapter} from './ai-providers.mjs?v=browser-ai-2';
+import {createAIConnection} from './ai-service.mjs?v=provider-audit-3';
+import {createAISession} from './ai-session.mjs?v=provider-audit-3';
+import {createProviderAdapter} from './ai-providers.mjs?v=provider-audit-3';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs}={}){
  const session=createAISession(storage,{now}),listeners=new Set();
  let core,unsubscribe,mode='backend',epoch=0,timer=null,override='';
  function read(){try{return session.read();}catch{return null;}}
  const initial=read();
- function state(){const value=mode==='browser'?read():null,current=core.getState();const message=mode==='browser'&&current.status==='unset'?(current.hasKey?'已暫存此分頁測試金鑰；可取得模型，跨頁生成會先重新驗證模型。':'測試模式已啟用，請輸入測試專用金鑰。'):current.message;return {...current,message,mode,configured:core.configured,expiresAt:value?.expiresAt??null,restorableModel:Boolean(value?.apiKey&&value.model),sessionModel:value?.model??'',...(override?{message:override}:{})};}
+ function state(){const value=mode==='browser'?read():null,current=core.getState();const message=mode==='browser'&&['unset','key_stored'].includes(current.status)?(current.hasKey?'金鑰已暫存於此分頁；可取得模型，跨頁生成會先重新驗證模型。':'測試模式已啟用，請輸入測試專用金鑰。'):current.message;return {...current,message,mode,configured:core.configured,expiresAt:value?.expiresAt??null,restorableModel:Boolean(value?.apiKey&&value.model),sessionModel:value?.model??'',...(override?{message:override}:{})};}
  const emit=()=>listeners.forEach(listener=>listener(state()));
  function deadline(){clearTimeout(timer);const value=read();if(mode==='browser'&&(value?.expiresAt||!value)){timer=setTimeout(checkExpiry,value?Math.max(1,value.expiresAt-now()):1);timer.unref?.();}}
  function install(browser,value=null){
@@ -19,7 +19,7 @@ export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpo
     if(!checkExpiry())throw {code:'expired'};
     const adapter=createProviderAdapter(request.provider,request.apiKey,{fetcher,signal:request.signal,browser:true});
     if(request.operation==='models')return adapter.listModels();
-    const result=await adapter.generate({model:request.model,text:request.operation==='test'?'Reply only with OK.':request.text,maxOutputTokens:request.operation==='test'?64:request.maxOutputTokens});
+    const result=await adapter.generate({model:request.model,text:request.operation==='test'?'Reply only with OK.':request.text,maxOutputTokens:request.operation==='test'?64:request.maxOutputTokens,descriptor:request.descriptor});
     return request.operation==='test'?{ok:true}:result;
    }:null,
   });
