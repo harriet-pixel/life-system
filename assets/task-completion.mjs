@@ -1,11 +1,11 @@
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-save-11';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=task-save-11';
-import {dataStore} from './data.mjs?v=task-save-11';
-import {createTaskService} from './tasks-service.mjs?v=task-save-11';
-import {allocation,allocationContext} from './tasks-model.mjs?v=task-save-11';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-save-11';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=task-save-11';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-save-11';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-daily-12';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=task-daily-12';
+import {dataStore} from './data.mjs?v=task-daily-12';
+import {createTaskService} from './tasks-service.mjs?v=task-daily-12';
+import {allocation,allocationContext} from './tasks-model.mjs?v=task-daily-12';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-daily-12';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-daily-12';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-daily-12';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}
@@ -33,7 +33,7 @@ function createCompletionFlow(){
    const commitStart=performance.now();try{result=await service.complete(ticket,distribution,source);recordTaskTiming('commit',commitStart);}catch(error){recordTaskTiming('commit',commitStart,'failed');throw error;}if(result){finishCompletionCompanion(job.token,result);feedback(result);publish(`已完成「${ticket.name}」。`);}
   }catch(error){try{dataStore.refresh();}catch{/* Preserve the store's own read diagnostics. */}publish(error.message);}finally{if(!result)invalidateCompletionCompanion(job.token);jobs.delete(job.key);publish();if(job.usedManual&&document.activeElement===document.body){const row=[...document.querySelectorAll('.task-daily-row')].find(n=>n.dataset.taskId===job.ticket.taskId&&n.dataset.date===job.ticket.date)??[...document.querySelectorAll('[data-reward-task]')].find(n=>n.dataset.rewardTask===job.ticket.taskId&&n.dataset.rewardDate===job.ticket.date);row?.querySelector('input')?.focus({preventScroll:true});}job.resolve(result);}}
  }finally{running=false;}}
- return {ownsAI:()=>aiOwned,isPending:(id,date)=>jobs.has(id+'@'+date),subscribe(fn){listeners.add(fn);fn();return()=>listeners.delete(fn);},get notice(){return notice;},
+ return {showReward:result=>feedback(result),ownsAI:()=>aiOwned,isPending:(id,date)=>jobs.has(id+'@'+date),subscribe(fn){listeners.add(fn);fn();return()=>listeners.delete(fn);},get notice(){return notice;},
   complete(id,date){let ticket;try{ticket=service.prepare(id,date);}catch(error){publish(error.message);return Promise.resolve(null);}const key=id+'@'+ticket.date;if(jobs.has(key))return jobs.get(key).promise;let resolve;const promise=new Promise(done=>resolve=done),job={ticket,key,promise,resolve,token:crypto.randomUUID(),enqueuedAt:performance.now()};beginCompletionCompanion(ticket,job.token);jobs.set(key,job);queue.push(job);publish(`正在處理「${ticket.name}」…`);void drain();return promise;}
  };
 }

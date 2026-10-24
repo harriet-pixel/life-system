@@ -1,13 +1,13 @@
-import {initializeAISettings} from './ai-settings.mjs?v=task-save-11';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=task-save-11';
-import {dataStore,persistentUndo} from './data.mjs?v=task-save-11';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-save-11';
-import {createHistoryView} from './history-view.mjs?v=task-save-11';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=task-save-11';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=task-save-11';
-import {holdDraft} from './coordination.mjs?v=task-save-11';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=task-save-11';
-import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=task-save-11';
+import {initializeAISettings} from './ai-settings.mjs?v=task-daily-12';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=task-daily-12';
+import {dataStore,persistentUndo} from './data.mjs?v=task-daily-12';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-daily-12';
+import {createHistoryView} from './history-view.mjs?v=task-daily-12';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=task-daily-12';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=task-daily-12';
+import {holdDraft} from './coordination.mjs?v=task-daily-12';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=task-daily-12';
+import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=task-daily-12';
 
 export function mountSettings(root,context){
 const $=selector=>root.querySelector(selector);

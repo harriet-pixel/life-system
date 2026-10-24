@@ -1,5 +1,6 @@
-import {validHex} from './settings-model.mjs?v=task-save-11';
-import {ABILITIES} from './abilities.mjs?v=task-save-11';
+import {validateViews} from './task-view-model.mjs?v=task-daily-12';
+import {validHex} from './settings-model.mjs?v=task-daily-12';
+import {ABILITIES} from './abilities.mjs?v=task-daily-12';
 export function categoryColor(color){if(color===null||color===undefined||color==='')return null;if(!validHex(color))throw new Error('分類顏色請使用 #RRGGBB 格式。');return color.toLowerCase();}
 export const ALLOCATION_RULE_VERSION='1';
 export const validBrief=value=>value===undefined||(typeof value==='string'&&!/[\r\n]/.test(value));
@@ -20,6 +21,7 @@ export function allocation(value,points){requireValue(value&&typeof value==='obj
 const unique=items=>new Set(items.map(x=>x.id)).size===items.length;
 export function validateTasks(value){
  requireValue(value?.version===1&&['categories','definitions','occurrences','completions'].every(k=>Array.isArray(value[k])&&unique(value[k])));
+ validateViews(value.views,validDate);
  const cats=new Set(value.categories.map(x=>x.id)),defs=new Map(value.definitions.map(x=>[x.id,x])),executions=new Map(value.occurrences.map(o=>[o.id,o])),completions=new Map(value.completions.map(c=>[c.id,c]));
  const text=s=>typeof s==='string'&&s.trim().length>0;
  value.categories.forEach(c=>requireValue(text(c.id)&&text(c.name)));
@@ -28,7 +30,7 @@ export function validateTasks(value){
  value.definitions.forEach(t=>{if(t.fixedAllocation!==undefined){requireValue(t.kind==='repeat');validateFixedAllocation(t.fixedAllocation,t.points);}});
  value.occurrences.forEach(o=>{const t=defs.get(o.taskId);requireValue(validBrief(o.brief));requireValue(t&&o.id===occurrenceId(t,o.date)&&validDate(o.date)&&validDate(o.originalDate)&&['pending','done','skipped','moved','deleted','unarranged'].includes(o.status)&&['auto','manual','pool'].includes(o.source)&&(o.completionId===null||typeof o.completionId==='string'));});
  value.completions.forEach(c=>{requireValue(validBrief(c.brief));if(c.allocation){requireValue(['ai','manual','history'].includes(c.allocation.source)&&typeof c.allocation.basis==='string'&&c.reward?.abilities);let context;try{context=JSON.parse(c.allocation.basis);}catch{requireValue(false);}requireValue(context&&Object.keys(context).length===6&&typeof context.rules==='string'&&context.name===c.name&&context.category===c.category&&context.points===c.points&&context.brief===(c.brief??'')&&(context.categoryId===null||typeof context.categoryId==='string'));}requireValue(c.reward==null||typeof c.reward==='object'&&!Array.isArray(c.reward));requireValue(text(c.id)&&defs.has(c.taskId)&&text(c.occurrenceId)&&text(c.transactionId)&&Number.isFinite(Date.parse(c.time))&&validDate(c.date)&&text(c.name)&&text(c.category)&&Number.isInteger(c.points)&&c.points>=1&&c.points<=3&&(c.reward?.currency==null||c.reward.currency===c.points)&&(c.reward?.experience==null||c.reward.experience===c.points)&&(c.cancelledAt===null||Number.isFinite(Date.parse(c.cancelledAt))));if(c.reward?.abilities!=null)allocation(c.reward.abilities,c.points);if(c.retraction){const r=c.retraction;requireValue(text(r.transactionId)&&Number.isFinite(Date.parse(r.time))&&r.time===c.cancelledAt&&['recorded','history','estimated-ai','estimated-manual'].includes(r.method)&&r.reward?.currency===c.points&&r.reward?.experience===c.points);allocation(r.reward.abilities,c.points);if(c.reward?.abilities!=null)requireValue(ABILITIES.every(a=>r.reward.abilities[a.id]===c.reward.abilities[a.id])&&r.method==='recorded');requireValue(executions.get(c.occurrenceId)?.status==='deleted');}requireValue(c.occurrenceId===occurrenceId(defs.get(c.taskId),c.date));if(c.cancelledAt===null){const o=executions.get(c.occurrenceId);requireValue(o?.status==='done'&&o.completionId===c.id&&o.taskId===c.taskId&&o.date===c.date);}});
- const reversals=value.completions.filter(c=>c.retraction);requireValue(new Set(reversals.map(c=>c.retraction.transactionId)).size===reversals.length&&reversals.every(c=>c.retraction.transactionId!==c.transactionId));
+ const reversals=value.completions.filter(c=>c.retraction);requireValue(new Set(reversals.map(c=>c.retraction.transactionId+'@'+c.id)).size===reversals.length&&reversals.every(c=>c.retraction.transactionId!==c.transactionId));
  requireValue(new Set(value.completions.filter(c=>c.cancelledAt===null).map(c=>c.occurrenceId)).size===value.completions.filter(c=>c.cancelledAt===null).length);
  value.occurrences.filter(o=>o.status==='done').forEach(o=>{const c=completions.get(o.completionId);requireValue(c&&c.occurrenceId===o.id&&c.taskId===o.taskId&&c.date===o.date&&c.cancelledAt===null);});
  return structuredClone(value);
@@ -76,7 +78,9 @@ export const isOverdue=(entry,today=localDate())=>Boolean(entry&&entry.status===
 export const inResidentLibrary=(task,today=localDate())=>!task.deleted&&task.kind==='repeat'&&(!task.end||task.end>=today);
 // Verify against the permanent transaction metadata, independently of short Undo snapshots.
 export function deletionEvidence(document,completion){
- const record=document.history.find(r=>r.id===completion.transactionId);
+ let record=document.history.find(r=>r.id===completion.transactionId);
+ if(record?.type==='task.completed.batch'){const group=document.tasks.completions.filter(c=>c.transactionId===record.id),sum={currency:0,experience:0,abilities:Object.fromEntries(ABILITIES.map(a=>[a.id,0]))};for(const c of group){requireValue(c.reward?.currency===c.points&&c.reward?.experience===c.points,'批次原獎勵資訊不完整，請先補足紀錄。');allocation(c.reward.abilities,c.points);sum.currency+=c.points;sum.experience+=c.points;ABILITIES.forEach(a=>sum.abilities[a.id]+=c.reward.abilities[a.id]);}requireValue(group.length>0&&record.delta.currency===sum.currency&&record.delta.experience===sum.experience&&record.delta.abilities.length===5&&ABILITIES.every(a=>record.delta.abilities.filter(d=>d.id===a.id).length===1&&record.delta.abilities.find(d=>d.id===a.id).value===sum.abilities[a.id]),'批次完成明細與原交易不一致，無法安全撤回。');record={...record,type:'task.completed',delta:{currency:completion.reward.currency,experience:completion.reward.experience,abilities:ABILITIES.map(a=>({id:a.id,value:completion.reward.abilities[a.id]}))}};}
+
  requireValue(record?.type==='task.completed'&&!record.undone,'原完成交易無法驗證或已撤回，請先補足完成紀錄。');
  const points=completion.points,currency=completion.reward?.currency??record.delta?.currency,experience=completion.reward?.experience??record.delta?.experience;
  requireValue(currency===points&&experience===points&&record.delta?.currency===currency&&record.delta?.experience===experience,'無法確認當時實際獎勵總量，請先補足原完成交易資訊；本次未刪除或扣款。');
