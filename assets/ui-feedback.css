@@ -1,0 +1,17 @@
+/* Shared interaction feedback; selection controls keep their own states. */
+:is(button,a,input,label,summary,[role=tab]){-webkit-tap-highlight-color:transparent}
+button{transition:transform 100ms ease-out,background-color 100ms ease-out,filter 100ms ease-out}
+button:not([role=tab]):not([aria-pressed]):not([role=checkbox]):not([role=radio]):enabled:not([aria-disabled=true]):is([data-pressed],html:not([data-press-pointer=touch]) :active){transform:scale(.97);background-color:color-mix(in srgb,var(--color-primary) 10%,transparent)}
+:is(.primary-button,.form-actions button[type=submit],#save-unsaved-settings):not([role=tab]):enabled:not([aria-disabled=true]):is([data-pressed],html:not([data-press-pointer=touch]) :active){background-color:var(--color-accent);color:var(--color-on-accent,#fff);filter:brightness(.94)}
+/* Preserve swatch/selection colors; icons get a circle without scaling the glyph. */
+:is(.toolbar-button,.task-day-add,.task-day-settings,.task-inline-icon,.task-panel-close,#task-settings,#toggle-calendar,#task-date-button,.category-management-row button,#previous-month,#next-month,#history-previous,#history-next,.task-multi-month button,button[aria-label]:has(>svg)):not([role=tab]):enabled:not([aria-disabled=true]):is([data-pressed],html:not([data-press-pointer=touch]) :active){transform:none;background-color:transparent;background-image:radial-gradient(circle closest-side,color-mix(in srgb,var(--color-primary) 10%,transparent) 98%,transparent 100%);filter:none}
+:is(.task-panel-close,.toolbar-button,#task-date-button,.task-inline-icon):not(:is([data-pressed],html:not([data-press-pointer=touch]) :active)){background-image:none}
+/* The border boxes stay unchanged. A single compositor line marks each tab list. */
+[role=tablist][data-sliding-tabs]{position:relative}
+[role=tablist][data-sliding-tabs]::after{content:"";position:absolute;left:0;top:0;width:1px;height:2px;background:var(--color-primary);pointer-events:none;transform-origin:left center;transform:translate3d(var(--tab-line-x,0px),var(--tab-line-y,0px),0) scaleX(var(--tab-line-width,0));transition:var(--tab-line-motion,none)}
+[role=tablist] button[role=tab], [role=tablist] button[role=tab]:is(:hover,:active,[aria-selected=true]){background:transparent!important;transform:none!important;filter:none!important;box-shadow:none!important;transition:none;color:var(--color-muted)!important}
+[role=tablist] button[role=tab][aria-selected=true]{color:var(--color-primary)!important}
+[role=tablist][data-sliding-tabs] button[role=tab]{border-color:transparent!important}
+[role=tablist] button[role=tab]:not(:focus-visible){outline:none!important}
+[role=tablist] button[role=tab]:focus-visible{outline:2px solid var(--color-focus,var(--color-primary))!important;outline-offset:-2px!important}
+@media(prefers-reduced-motion:reduce){button{transition:none!important}button:is([data-pressed],html:not([data-press-pointer=touch]) :active){transform:none!important}[role=tablist][data-sliding-tabs]::after{transition:none!important}}
