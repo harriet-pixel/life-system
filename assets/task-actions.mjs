@@ -1,9 +1,9 @@
-import {getCompletionFlow} from './task-completion.mjs?v=task-entry-9';
-import {dataStore} from './data.mjs?v=task-entry-9';
-import {createTaskService} from './tasks-service.mjs?v=task-entry-9';
-import {allocation,localDate} from './tasks-model.mjs?v=task-entry-9';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-entry-9';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=task-entry-9';
+import {getCompletionFlow} from './task-completion.mjs?v=task-fixed-10';
+import {dataStore} from './data.mjs?v=task-fixed-10';
+import {createTaskService} from './tasks-service.mjs?v=task-fixed-10';
+import {allocation,localDate} from './tasks-model.mjs?v=task-fixed-10';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-fixed-10';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-fixed-10';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>{status.hidden=false;status.textContent=text;};

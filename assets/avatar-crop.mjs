@@ -1,4 +1,4 @@
-import {validateZoom} from './validation.mjs?v=task-entry-9';
+import {validateZoom} from './validation.mjs?v=task-fixed-10';
 export const RAW_IMAGE_LIMIT = 20 * 1024 * 1024;
 export const IMAGE_LIMIT = 1024 * 1024;
 export const AVATAR_LIMIT = 200 * 1024;

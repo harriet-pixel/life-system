@@ -1,6 +1,6 @@
 # 待辦事項（日期清單、手機設定與共用分類）
 
-本次修改基準為遠端 main `5adeb10`，沿用乾淨的隔離 checkout，原 `work` 分支及其他工作保留。發布前比較過 gh-pages：四頁與 assets 和 main 一致，沒有待回收的發布獨有功能修正。未建置或部署 Cloudflare、OAuth、Secrets。
+本次修改基準為遠端 main `2ea4ef2`，沿用乾淨的隔離 checkout，原 `work` 分支及其他工作保留。發布前比較過 gh-pages：四頁與 assets 和 main 一致，沒有待回收的發布獨有功能修正。未建置或部署 Cloudflare、OAuth、Secrets。
 
 ## 共用入口與資料
 
@@ -21,7 +21,7 @@
 
 ## 日期＋入口與一般通知
 
-`task-date-residents.mjs` 讀同份常駐任務投影，不建立第二份庫。雙頁籤共用原 editor DOM／draft lease；事件表單日期可修改，常駐批次目標仍是最初點擊的日期並明示，互不覆寫。以 taskId／version 選取，同名不混淆；已安排與各種歷史例外、未生效／結束日外禁選，單次安排簡述空白、週期不變。來源失效時確認顯示具體錯誤，不部分提交。每次確認以 `arrangeResidents` 一筆共用交易與 Undo／Redo 保存。成功後保留視窗及另一頁籤的事件草稿，清空已提交選取、改顯示已安排，供繼續操作；關閉才捨棄未提交草稿。大量定義先顯示40筆，可顯示更多。原手機待辦設定的新增事件／管理分類保持獨立入口。
+`task-date-residents.mjs` 讀同份常駐任務投影，不建立第二份庫。雙頁籤共用原 editor DOM／draft lease；事件表單日期可修改，常駐批次目標仍是最初點擊的日期並明示，互不覆寫。以 taskId／version 選取，同名不混淆；已安排與各種歷史例外、未生效／結束日外禁選，單次安排簡述空白、週期不變。來源失效時確認顯示具體錯誤，不部分提交。每次確認以 `arrangeResidents` 一筆共用交易與 Undo／Redo 保存。成功後自動關閉新增視窗、留在待辦頁並回到同日期新呈現的＋，不使用已被資料重繪移除的舊節點；失敗仍留窗與選取、顯示原因。右上關閉鈕改為無框無底色SVG叉叉、44px目標與focus-visible外框。選取列名稱後加入1em灰字分類，未指定為未定義，點名稱／分類皆切換同一ID；分類下拉預設全部，跨篩選保留選取，合計與提交含隱藏項目，空篩選有空狀態。大量定義先顯示40筆，可顯示更多。原手機待辦設定的新增事件／管理分類保持獨立入口。
 
 tasks.html 將原 operation-status 移至夥伴 section 內、banner／mock說明之後；桌面立繪下、手機頭像對話下，內容頁籤外共用。固定4.5em（三行、1.5行高）及內部 overflow:auto，空狀態仍保留；一次只更新文字、不堆疊、不捲頁或搶焦點。一般成功、失敗、完成流程及導覽 Undo 都沿同一 ID，不新增第二套通知服務。表單及 modal 即時錯誤仍留在原處。夥伴本身自然換行保留既有行為，通知內容更新不改預留高度；首頁的 operation-status 布局不改。
 
@@ -29,9 +29,13 @@ tasks.html 將原 operation-status 移至夥伴 section 內、banner／mock說�
 
 每日名稱選單的編輯提供單行簡述，保存於 `occurrences.brief`，不改共用定義；移動跟隨安排，新安排空白。完成時快照至 `completions.brief`，歷史依當時內容呈現；首頁今日清單也安全顯示同筆簡述，待辦池仍僅名稱。舊欄位缺省為空，不改資料版本或清空舊紀錄；驗證拒絕非文字與換行，備份／還原及 Undo 快照共用同一驗證。
 
-只有成功交易才保存 `completion.allocation={basis,source}`；basis 是實際能力提示輸入的規則版本、名稱、分類 ID／名稱、點數、單次簡述之固定順序 JSON，來源 ai 或 manual。後續同一常駐任務完全匹配才重用已驗證實際能力；無效、取消或已撤回紀錄不重用。每次仍重新驗證最新資料並提交獨立獎勵，Redo 使用原快照。規則或能力判斷提示改變時須更新 ALLOCATION_RULE_VERSION。
+固定分配取代完成時依內容匹配快取：`definition.fixedAllocation={points,abilities,source}`，source 為 ai／manual／history。建立重複事件由 `task-fixed-editor.mjs` 提供 AI推薦與五項0～3單選；AI只依名稱、分類及點數提議，使用者可調整，儲存即確認。AI未設定／忙碌／失敗／無效時直接手動，不換商、不重試。推薦前後比較判斷依據與表單編輯世代、來源定義版本，關閉／切頁或人工設定後的晚回應不覆蓋新草稿。名稱／分類改變不自動推薦；點數改變需有效新總和，不能按舊分配保存。
 
-`task-diagnostics.mjs` 的 `taskTimings()` 可由開發工具 import 查閱 allocation／companion／commit 的 durationMs、status、time（最多120筆，文件記憶體）。allocation 包含人工等待；重用標示 reused。沒有金鑰、提示內容、使用者輸入或回應原文，不寫入備份、不堆入產品介面。
+舊格式缺欄位仍可驗證讀取：`fixedAllocationFor` 先用已存設定，否則找同定義最新有效完成、當次實際五項分配且點數等於目前點數。`catchUp` 投影補固定設定，再沿共用 reconcile 或後續交易保存，避免直接修改快照破壞舊 Undo 相依鏈。沒有可信分配者，編輯可補設；若僅修改舊事項而尚未碰分配，可保留未設定，首次完成才走既有 AI／手動流程，成功時在同筆獎勵交易保存固定設定。取消／失敗不保存新分配。固定設定須通過五項非負整數及總和驗證，納入既有備份／還原與跨分頁。
+
+後續完成以共用 service 的固定設定為準，即使呼叫者傳其他分配也不更改實際設定；不再呼叫能力AI，也不因簡述、名稱或分類改變而重判。每次獨立 completion.reward 保存真實貨幣／經驗／能力及當時簡述；設定後續調整不重算舊紀錄。取消與刪除按舊快照精確撤回，Undo／Redo仍重用交易。舊 `completion.allocation.basis` 保留作稽核與相容，不再作快取比對入口，來源允許history。
+
+`task-diagnostics.mjs` 的 `taskTimings()` 記錄 queue／allocation／allocation-recommendation／companion／commit 的 durationMs、status、time，最多120筆、只在文件記憶體。queue 記錄既有完成佇列等待；allocation 標示fixed時只讀設定，不查詢或生成能力。legacy人工分配的allocation包含使用者等待，推薦獨立記錄有效／stale／失敗。companion仍是既有mock、450ms合併後約550ms生成，對話情緒成對更新；完成／獎勵動畫不await它，亦不新增固定停等。沒有金鑰、提示內容或回應原文，無產品除錯欄位、不納入備份。
 
 逾期批次視窗的全選只作用於全部合格、目前列出的穩定執行 ID，部分選取顯示 indeterminate，提交仍重驗資格。常駐任務的安排入口改用 `task-multi-schedule.mjs` 跨月多選月曆；既有安排及終止例外禁選，起訖限制不自動延長。跨月保留選取，可清除、取消，確認透過 `arrangeMany` 先檢查整批，再以一次交易保存；任一衝突完整拒絕，Undo／Redo 一次處理。其他既有單次改期不變。
 
@@ -71,9 +75,11 @@ tasks 已納入共用驗證、七天復原政策、本機和 Google Drive 的相
 
 ## 驗證入口
 
-`npm test`、`npm run lint`、`npm run build`；`tests/tasks-date-entry.cjs`、`tests/tasks-pop.cjs`、`tests/tasks-context.cjs`、`tests/tasks-context-races.cjs`、`tests/tasks-cache.cjs`、`tests/tasks-layout.cjs`、`tests/tasks-progress.cjs`、`tests/tasks-feedback.cjs`、`tests/tasks-pool.test.mjs`、`tests/tasks-pool.cjs`、`tests/tasks-deletion.cjs`、`tests/tasks.test.mjs`、`tests/tasks.cjs`、`tests/tasks-ai.cjs`、`tests/tasks-upper.cjs`、`tests/tasks-schedule.cjs`，以及首頁、app-shell、設定頁籤、個人圖片、還原和暖快取回歸。瀏覽器腳本的 `BASE_URL` 指向本機或建置成果的子路徑。公開部署結果須另行核對，不能用這些本機結果代替。
+`npm test`、`npm run lint`、`npm run build`；`tests/tasks-fixed.cjs`、`tests/tasks-date-entry.cjs`、`tests/tasks-pop.cjs`、`tests/tasks-context.cjs`、`tests/tasks-context-races.cjs`、`tests/tasks-cache.cjs`、`tests/tasks-layout.cjs`、`tests/tasks-progress.cjs`、`tests/tasks-feedback.cjs`、`tests/tasks-pool.test.mjs`、`tests/tasks-pool.cjs`、`tests/tasks-deletion.cjs`、`tests/tasks.test.mjs`、`tests/tasks.cjs`、`tests/tasks-ai.cjs`、`tests/tasks-upper.cjs`、`tests/tasks-schedule.cjs`，以及首頁、app-shell、設定頁籤、個人圖片、還原和暖快取回歸。瀏覽器腳本的 `BASE_URL` 指向本機或建置成果的子路徑。公開部署結果須另行核對，不能用這些本機結果代替。
 
-本次日期新增／簡述／通知／分類調整通過135項單元回歸，新增常駐單日批次與版本／週期／例外／期限原子檢查、淺色分類備份驗證；日期入口瀏覽器涵蓋320–1280px（含450／451px）、頁籤草稿、同名 ID、通知預留高度、首頁灰色簡述、淺色保存及兩個分頁衝突。前次獎勵跳字與緊湊列通過132項單元回歸，另以requestAnimationFrame逐幀驗證320／375／390／450／451／768／1024／1280px的放大回彈、停留及淡出、文字邊界與不重疊；減少動態無光點，短視窗200%文字分批不裁切。完成流程與兩分頁防重複發獎使用mock AI驗證，未呼叫真實AI。前次132項單元測試通過；新增測試涵蓋單次簡述／歷史快照、分配比對重用、整批多日安排與備份／Undo／Redo。建置子路徑的瀏覽器測試驗證320–1280px（含450／451px）、全選混合狀態、跨年多選與首頁簡述；兩個真實瀏覽器分頁驗證改期衝突整批拒絕、全選中失效項目移除與略過後 Undo。Mock AI 以6次完成驗證5次請求（相同輸入重用1次；簡述／名稱／分類／點數改變各重新判斷），不等於真實供應商驗證。上一發布版50e99fb的暖快取亦驗證待辦與設定升級。既有單元測試涵蓋分類顏色與舊資料、清除日期、批次衝突、歷史獎勵、統一逾期及既有共用服務。瀏覽器驗證含 449／450／451px 的九種寬度、四種字型、200% 文字、分類管理、方框／名稱隔離、日期視窗焦點、重複例外、跨年午夜、首頁同步、跨分頁與 AI 備援；另檢查既有頁面、還原及暖快取升級。原生手機鍵盤僅以短視窗模擬，未以實體裝置驗證；未使用真實 AI 金鑰或 Google Drive 授權。
+本次139項單元測試涵蓋固定設定、首次保存、依歷史安全沿用、不同簡述不重判、點數重新確認、備份及原始獎勵撤回／Undo／Redo。瀏覽器測試涵蓋320／375／390／450／451／768／1024／1280px、分類跨篩選選取與成功關窗／焦點、無AI手動建立、延遲推薦失效、無效／斷線推薦後手動保存、零能力完成請求、立即勾選、提交後實際動畫、跨分頁競爭、舊版暖快取、站內切頁與還原。mock推薦與夥伴不代表真實供應商性能；未使用真實AI金鑰、角色服務或Google Drive授權，Cloudflare仍暫停。原生手機鍵盤僅以短視窗模擬，未以實體裝置驗證。
+
+耗時測試會在終端輸出 TIMINGS JSON（不進介面或Git）。單筆固定完成須在夥伴450ms合併／生成之前提交並啟動動畫，固定三次完成不增加能力POST數；依機器負載實際提交耗時可不同，公開部署的網路及真實AI速度需另測。
 
 分類顏色可為 null／缺省（使用既有文字色），或 #RRGGBB；只驗證十六進位格式，允許所有深淺顏色，保留預覽而不阻擋對比度；任意 CSS 仍拒絕。每日名稱使用目前分類顏色，簡述固定灰色 #626970、較小字與1em間距，無簡述不建立空節點；不新增標籤／色塊，也不修改完成歷史中的名稱、分類文字或實際獎勵。刪除分類只將定義的 categoryId 設 null 並增加版本；完成紀錄不變。既有備份缺色可讀，新備份及快照會驗證顏色，無效資料整體拒絕。
 
