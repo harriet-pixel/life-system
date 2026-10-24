@@ -1,7 +1,7 @@
-import {createCompanionController,generateMockReply} from './companion.mjs?v=ui-feedback-13';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=ui-feedback-13';
-import {occurrence} from './tasks-model.mjs?v=ui-feedback-13';
-import {dataStore} from './data.mjs?v=ui-feedback-13';
+import {createCompanionController,generateMockReply} from './companion.mjs?v=task-compact-14';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=task-compact-14';
+import {occurrence} from './tasks-model.mjs?v=task-compact-14';
+import {dataStore} from './data.mjs?v=task-compact-14';
 let singleton;const operations=new Map();
 function validAction(action){if(action.type!=='task.processing')return true;const operation=operations.get(action.actionId);if(!operation)return false;const tasks=dataStore.get().tasks;if(operation.completionId)return tasks.completions.some(c=>c.id===operation.completionId&&!c.cancelledAt);const task=tasks.definitions.find(t=>t.id===operation.taskId);const o=task&&occurrence(tasks,task,operation.date);return Boolean(task&&!task.deleted&&task.version===operation.taskVersion&&(!o||o.status==='pending'));}
 function shared(){

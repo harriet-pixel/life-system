@@ -1,11 +1,12 @@
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=ui-feedback-13';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=ui-feedback-13';
-import {dataStore} from './data.mjs?v=ui-feedback-13';
-import {createTaskService} from './tasks-service.mjs?v=ui-feedback-13';
-import {allocation,allocationContext} from './tasks-model.mjs?v=ui-feedback-13';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=ui-feedback-13';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=ui-feedback-13';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=ui-feedback-13';
+import {setOperationNotice} from './operation-notice.mjs?v=task-compact-14';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-compact-14';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=task-compact-14';
+import {dataStore} from './data.mjs?v=task-compact-14';
+import {createTaskService} from './tasks-service.mjs?v=task-compact-14';
+import {allocation,allocationContext} from './tasks-model.mjs?v=task-compact-14';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-compact-14';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-compact-14';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-compact-14';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}
@@ -19,7 +20,7 @@ function createCompletionFlow(){
  function updateTotal(){const sum=Object.values(values()).reduce((a,b)=>a+b,0),points=Number(dialog.dataset.points);dialog.querySelector('[data-allocation-total]').textContent=`已分配 ${sum}／${points} 點。${sum===points?'可以確認完成。':sum<points?`還需分配 ${points-sum} 點。`:`超出 ${sum-points} 點，請調整選擇。`}`;dialog.querySelector('[type=submit]').disabled=sum!==points;}
  dialog.querySelector('form').addEventListener('change',updateTotal);dialog.querySelector('[data-cancel]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{const resolve=manualResolve;manualResolve=null;resolve?.(submitted);submitted=null;if(focus?.isConnected)focus.focus({preventScroll:true});});
  dialog.querySelector('form').onsubmit=event=>{event.preventDefault();try{submitted=allocation(values(),Number(dialog.dataset.points));dialog.close();}catch(error){dialog.querySelector('[data-allocation-error]').textContent=error.message;}};
- function publish(message){if(message)notice=message;listeners.forEach(fn=>fn());if(message){const status=document.querySelector('[data-page-view] #operation-status');if(status){status.hidden=false;status.textContent=message;}}}
+ function publish(message){if(message)notice=message;listeners.forEach(fn=>fn());if(message){const status=document.querySelector('[data-page-view] #operation-status');setOperationNotice(status,message);}}
  async function manual(ticket){
   // A different event editor can stay open during AI work. Do not steal its modal focus.
   while(document.querySelector('dialog[open]'))await new Promise(resolve=>setTimeout(resolve,100));

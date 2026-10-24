@@ -1,10 +1,11 @@
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=ui-feedback-13';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=ui-feedback-13';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=ui-feedback-13';
-import { coordinatedWrite } from './coordination.mjs?v=ui-feedback-13';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=ui-feedback-13';
+import {setOperationNotice} from './operation-notice.mjs?v=task-compact-14';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=task-compact-14';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=task-compact-14';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=task-compact-14';
+import { coordinatedWrite } from './coordination.mjs?v=task-compact-14';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=task-compact-14';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=ui-feedback-13';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=task-compact-14';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -156,7 +157,7 @@ function openBrowserStore() {
   try { return createDataStore(window.localStorage); }
   catch (error) {
     const status = document.querySelector('#operation-status');
-    if (status) { status.hidden = false; status.textContent = `無法讀取本機儲存，請確認瀏覽器允許儲存資料。${error.message}`; }
+    if (status) { status.hidden = false; setOperationNotice(status,`無法讀取本機儲存，請確認瀏覽器允許儲存資料。${error.message}`); }
     document.querySelectorAll('input, button').forEach(control => { control.disabled = true; });
     throw error;
   }
@@ -166,20 +167,20 @@ if (typeof window !== 'undefined') {
   try {
     const migrationNeeded=window.localStorage.getItem(STORAGE_KEY)?.includes('data:image/');
     const controls=migrationNeeded?[...document.querySelectorAll('input,button')].map(control=>[control,control.disabled]):[];
-    if(migrationNeeded){controls.forEach(([control])=>control.disabled=true);if(status){status.hidden=false;status.textContent='正在升級本機圖片儲存，請稍候。';}}
+    if(migrationNeeded){controls.forEach(([control])=>control.disabled=true);if(status){status.hidden=false;setOperationNotice(status,'正在升級本機圖片儲存，請稍候。');}}
     await coordinatedWrite(async()=>{await migrateImages(window.localStorage,STORAGE_KEY);migrateStatsRules(window.localStorage);});
     controls.forEach(([control,disabled])=>control.disabled=disabled);
     if(migrationNeeded&&status){status.hidden=true;status.textContent='';}
   } catch(error) {
-    if(status){status.hidden=false;status.textContent=`本機儲存讀取或圖片升級失敗，原資料已保留。${error.message}`;}
+    if(status){status.hidden=false;setOperationNotice(status,`本機儲存讀取或圖片升級失敗，原資料已保留。${error.message}`);}
     document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;
   }
 }
 export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : null;
 if (dataStore) {
-  try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;e.textContent='復原資料整理失敗，原資料已保留。'+error.message;}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
+  try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,'復原資料整理失敗，原資料已保留。'+error.message);}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
   let expiryTimer;
-  let appliedAppearance;dataStore.subscribe(state=>{const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;e.textContent=error.message;}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true});
+  let appliedAppearance;dataStore.subscribe(state=>{const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true});
   for(const method of ['transact','undo','redo','setAIPreferences']) {
     const original=dataStore[method];
     dataStore[method]=async(...args)=>{

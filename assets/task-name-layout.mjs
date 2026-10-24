@@ -1,1 +1,14 @@
-export function observeNameLists(container,context){let frame;const layout=()=>{if(!context.active)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{for(const list of container.querySelectorAll('.task-pool-names')){const separator=list.querySelector('.task-pool-separator');if(separator){const width=separator.getBoundingClientRect().width+'px';if(list.style.getPropertyValue('--event-divider-width')!==width)list.style.setProperty('--event-divider-width',width);}let top=null;for(const item of list.children){const next=item.offsetTop;item.classList.toggle('is-row-start',top!==next);top=next;}}});};const appearance=new MutationObserver(layout),watch=()=>appearance.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-font']});watch();context.onSuspend(()=>appearance.disconnect());context.onResume(watch);const observer=new ResizeObserver(layout);context.onSuspend(()=>{observer.disconnect();cancelAnimationFrame(frame);});context.onResume(()=>{observer.observe(container);layout();});observer.observe(container);context.listen(container,'toggle',layout,true);context.listen(window,'resize',layout);if(document.fonts)context.listen(document.fonts,'loadingdone',layout);return layout;}
+export function observeNameLists(container,context){
+ let frame;
+ function measure(){if(!context.active)return;for(const list of container.querySelectorAll('.task-pool-names')){
+  // Hidden panes have zero geometry; never save that as the separator width.
+  if(!list.getClientRects().length)continue;
+  const separator=list.querySelector('.task-pool-separator');if(separator){const width=separator.getBoundingClientRect().width+'px';if(list.style.getPropertyValue('--event-divider-width')!==width)list.style.setProperty('--event-divider-width',width);}
+  let top=null;for(const item of list.children){const next=item.offsetTop;item.classList.toggle('is-row-start',top!==next);top=next;}
+ }}
+ const layout=()=>{if(!context.active)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(measure);};
+ layout.flush=()=>{cancelAnimationFrame(frame);measure();};
+ const appearance=new MutationObserver(layout),watch=()=>appearance.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-font']});watch();context.onSuspend(()=>appearance.disconnect());context.onResume(watch);
+ const observer=new ResizeObserver(layout);context.onSuspend(()=>{observer.disconnect();cancelAnimationFrame(frame);});context.onResume(()=>{observer.observe(container);layout();});observer.observe(container);
+ context.listen(container,'toggle',layout,true);context.listen(window,'resize',layout);if(document.fonts)context.listen(document.fonts,'loadingdone',layout);return layout;
+}

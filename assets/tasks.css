@@ -96,4 +96,27 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 #task-day-settings [data-day-view]{display:grid;gap:12px}#task-day-settings [data-day-view][hidden]{display:none}#task-day-settings [data-day-selection][hidden]{display:none}
 .task-settings-panel .task-settings-tabs [hidden]{display:none}
 .task-choice-names .task-resident-choice[aria-pressed=true]{background:var(--color-tint,#f4f6f8);color:var(--color-primary)}.task-choice-names .task-resident-choice[aria-pressed=true] .task-resident-category{color:#626970;opacity:1}
-.task-choice-tab-count{display:block;font-size:.85em;line-height:1.5}.task-settings-panel:has(#task-settings-board-tab:not([hidden])) .task-settings-tabs{gap:4px}.task-settings-panel:has(#task-settings-board-tab:not([hidden])) .task-settings-tabs button{font-size:14px;padding-inline:0;line-height:1.5}
+.task-settings-panel:has(#task-settings-board-tab:not([hidden])) .task-settings-tabs{gap:4px}.task-settings-panel:has(#task-settings-board-tab:not([hidden])) .task-settings-tabs button{font-size:1rem;padding-inline:0;line-height:1.5}
+
+/* Compact task-page header, shared list preferences and date-add choices. */
+.task-workspace .task-day-add{border:0;border-radius:0;background:transparent}
+#pool-lists{padding-inline:0;margin-top:16px}#pool-lists>section{border-top:1px solid var(--color-border,#dadddc);padding:16px 1em}#pool-lists h2{font-size:1.25rem;font-weight:700;margin:0 0 12px}
+.task-global-settings [data-editor-cancel],.task-global-settings [data-category-close]{display:none!important}
+.task-settings-panel>#task-settings-list{flex:1;min-height:0;overflow:auto;padding-bottom:8px}
+.task-settings-panel[data-scroll-all=true]>#task-settings-list{overflow:visible;scroll-padding-bottom:0}
+.task-date-entry .task-settings-header h2{font-size:1.25rem}
+.task-choice-names summary,[data-resident-list] summary{color:var(--choice-color,var(--color-text,#222))}
+#task-settings-residents .task-resident-choice,#task-settings-board .task-resident-choice{border:0;background:transparent;min-height:44px;font-size:.875rem;padding:4px 0;color:var(--choice-color,var(--color-text,#222))}
+.task-choice-names .task-choice-name{font-weight:700}
+.task-dialog .task-choice-names .task-resident-choice[aria-pressed=true]{background:transparent;color:var(--choice-color,var(--color-text,#222));text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.task-dialog .task-choice-names .task-resident-choice[aria-pressed=true]:not(:focus-visible){outline:0}
+@media(width < 1024px){
+ .task-mobile-heading{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px;gap:8px;align-items:start;margin-bottom:0}
+ .task-mobile-heading>.task-notice-group{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin:0;min-width:0;align-self:center}
+ .task-mobile-heading .task-board-count{display:block;font-size:.875rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .task-mobile-heading .task-notifications{height:auto;max-height:none;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .task-mobile-heading button{border:0;border-radius:0;background:transparent}
+ .tasks-dashboard>.companion{border-top:0;padding-top:0}
+}
+#task-settings-list [data-list-error]:empty,#task-settings-list [data-list-status]:empty{display:none}
+@media(width < 1024px){.task-mobile-heading .task-notifications:empty{display:none}}

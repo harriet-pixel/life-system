@@ -1,18 +1,21 @@
-import {initializeUIFeedback} from './ui-feedback.mjs?v=ui-feedback-13';
-import {ownsCompletionAI} from './task-completion.mjs?v=ui-feedback-13';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=ui-feedback-13';
-import {persistentUndo,dataStore} from './data.mjs?v=ui-feedback-13';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=ui-feedback-13';
-import {initializeNavigationSize} from './navigation-size.mjs?v=ui-feedback-13';
-import {mountAIPage} from './ai-page.mjs?v=ui-feedback-13';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=ui-feedback-13';
-const routes={tasks:{mount:()=>import('./tasks.mjs?v=ui-feedback-13'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=ui-feedback-13'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=ui-feedback-13'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=ui-feedback-13'),export:'mountSettings'}};
+import {setOperationNotice} from './operation-notice.mjs?v=task-compact-14';
+import {initializeUIFeedback} from './ui-feedback.mjs?v=task-compact-14';
+import {ownsCompletionAI} from './task-completion.mjs?v=task-compact-14';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=task-compact-14';
+import {persistentUndo,dataStore} from './data.mjs?v=task-compact-14';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=task-compact-14';
+import {initializeNavigationSize} from './navigation-size.mjs?v=task-compact-14';
+import {mountAIPage} from './ai-page.mjs?v=task-compact-14';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-compact-14';
+const routes={tasks:{mount:()=>import('./tasks.mjs?v=task-compact-14'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=task-compact-14'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=task-compact-14'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=task-compact-14'),export:'mountSettings'}};
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
 const host=document.createElement('div');host.id='app-view';const announcement=document.createElement('p');announcement.id='route-status';announcement.className='small-note';announcement.setAttribute('role','status');announcement.hidden=true;
 let active=null,navigation,sequence=0,loading=null,navigating=false,index=history.state?.lifeShell?.index??0;
 history.scrollRestoration='manual';
 const connection=getSharedAIConnection();
+function announce(message){const target=active?.id==='tasks'?active.root.querySelector('#operation-status'):announcement;setOperationNotice(target,message);if(target!==announcement)announcement.hidden=true;}
+
 function collect(doc,id){
  const main=doc.querySelector('#main');if(!main||!routes[id])throw new Error('Unrecognized page');
  main.querySelector('.desktop-navigation')?.remove();const root=document.createElement('div');root.dataset.pageView=id;root.append(main);
@@ -43,7 +46,7 @@ function rememberPosition(){if(active)positions.set(index,{x:scrollX,y:scrollY,f
 async function go(url,{pop=false,state=null,initial=false}={}){
  const target=new URL(url,location.href),id=pageFor(target);if(!id)return false;
  if(active?.context.hooks.busy?.()){
-  announcement.hidden=false;announcement.textContent='資料操作進行中，請稍候再切換頁面。';if(pop){const difference=index-(state?.lifeShell?.index??index);if(difference)history.go(difference);}return false;
+  announce('資料操作進行中，請稍候再切換頁面。');if(pop){const difference=index-(state?.lifeShell?.index??index);if(difference)history.go(difference);}return false;
  }
  const ticket=++sequence;loading?.abort();loading=new AbortController();const previous=active,previousURL=active?.url??location.href,targetIndex=pop?(state?.lifeShell?.index??index):initial?index:index+1;
  let view;
@@ -65,7 +68,7 @@ async function go(url,{pop=false,state=null,initial=false}={}){
  }catch(error){if(ticket===sequence&&error.name!=='AbortError'){
    if(view&&previous&&view!==previous){view.context.dispose();views.delete(view.id);active=previous;await activate(previous);}
    if(pop&&previousURL!==location.href)history.replaceState({lifeShell:{index}},'',previousURL);
-   navigation?.refreshRoutes();announcement.hidden=false;announcement.textContent='頁面載入失敗，原頁面與草稿已保留，請稍後重試。';
+   navigation?.refreshRoutes();announce('頁面載入失敗，原頁面與草稿已保留，請稍後重試。');
   }return false;}finally{if(ticket===sequence)navigating=false;}
 
 }

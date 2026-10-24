@@ -1,6 +1,6 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=ui-feedback-13';
-import {dataStore} from './data.mjs?v=ui-feedback-13';
-import {holdDraft} from './coordination.mjs?v=ui-feedback-13';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-compact-14';
+import {dataStore} from './data.mjs?v=task-compact-14';
+import {holdDraft} from './coordination.mjs?v=task-compact-14';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

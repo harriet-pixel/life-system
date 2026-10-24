@@ -23,7 +23,7 @@
 
 只改裝飾separator為單一半形空格、全形直線、單一半形空格：` ｜ `。任務看板／懸而未決／常駐任務及兩個安排選取頁籤沿共用task-name-layout服務；column-gap等於separator在當下字型的實測文字寬度，沒有額外48px空間。separator是下一項的absolute前綴，aria-hidden／pointer-events:none，不是按鈕或名稱；行首前綴隱藏，所以不會在行尾留下孤立分隔。resize、分類收合、四種字型、200%文字變更皆重新核對行首。
 
-名稱、簡述和儲存內容不trim或取代；名稱後簡述／分類的1em保留。長名仍省略、title及原操作窗保留全文；不改按鈕既有padding／觸控框。
+名稱、簡述和儲存內容不trim或取代；名稱後簡述的1em保留；日期新增選取現已移除灰色分類小字，分組與名稱採分類色，詳見TASKS_COMPACT.md。長名仍省略、title及原操作窗保留全文；不改按鈕既有padding／觸控框。
 
 ## 驗證與限制
 

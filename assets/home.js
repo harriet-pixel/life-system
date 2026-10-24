@@ -1,10 +1,10 @@
-import {taskActions} from './task-actions.mjs?v=ui-feedback-13';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=ui-feedback-13';
-import { createMobileTabPositioner } from './tab-position.mjs?v=ui-feedback-13';
-import { createActivityHeightSync } from './activity-height.mjs?v=ui-feedback-13';
-import { undoManager } from './undo.mjs?v=ui-feedback-13';
-import {createSharedCompanionView} from './companion-events.mjs?v=ui-feedback-13';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=ui-feedback-13';
+import {taskActions} from './task-actions.mjs?v=task-compact-14';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=task-compact-14';
+import { createMobileTabPositioner } from './tab-position.mjs?v=task-compact-14';
+import { createActivityHeightSync } from './activity-height.mjs?v=task-compact-14';
+import { undoManager } from './undo.mjs?v=task-compact-14';
+import {createSharedCompanionView} from './companion-events.mjs?v=task-compact-14';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=task-compact-14';
 
 
 export function mountHome(root,context){

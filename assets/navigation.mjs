@@ -1,3 +1,4 @@
+import {setOperationNotice} from './operation-notice.mjs?v=task-compact-14';
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
   { id: 'home', label: '首頁', englishLabel: 'Home', href: new URL('../', import.meta.url).href, available: true },
@@ -81,7 +82,7 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
 
   const refreshControls = () => {
     const {available,redoAvailable,busy,recoveryNotice} = undoManager.getState();
-    if(recoveryNotice&&feedback()?.hidden){feedback().hidden=false;feedback().textContent=recoveryNotice;}
+    if(recoveryNotice&&feedback()?.hidden){setOperationNotice(feedback(),recoveryNotice);}
     for (const [buttons,enabled,action] of [[undoButtons,available,'撤銷'],[redoButtons,redoAvailable,'恢復']]) {
       buttons.forEach(button => {
         button.disabled = !enabled || pending || busy;
@@ -101,9 +102,9 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
         const result = await undoManager[method]();
         if (result.reason === 'unavailable') return;
         feedback().hidden=false;
-        if (result.ok) { document.dispatchEvent(new CustomEvent('life-system:recovery-succeeded'));onSuccess();feedback().textContent=`已${action}「${result.label}」。`; }
-        else feedback().textContent=result.error?.message || `${action}失敗，請重試。`;
-      } catch(error) { feedback().hidden=false;feedback().textContent=error.message || `${action}失敗，請重試。`; }
+        if (result.ok) { document.dispatchEvent(new CustomEvent('life-system:recovery-succeeded'));onSuccess();setOperationNotice(feedback(),`已${action}「${result.label}」。`); }
+        else setOperationNotice(feedback(),result.error?.message || `${action}失敗，請重試。`);
+      } catch(error) { feedback().hidden=false;setOperationNotice(feedback(),error.message || `${action}失敗，請重試。`); }
       finally { pending=false;refreshControls(); }
     }));
   }
