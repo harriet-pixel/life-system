@@ -5,7 +5,7 @@ import {createTaskService} from './tasks-service.mjs?v=task-context-7';
 import {allocation,reusableAllocation,allocationContext} from './tasks-model.mjs?v=task-context-7';
 import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-context-7';
 import {getSharedAIConnection} from './ai-runtime.mjs?v=task-context-7';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-context-7';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-pop-8';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}
