@@ -45,9 +45,16 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 .task-workspace .task-filters input,.task-workspace .task-filters select{flex:1;min-width:0;width:0}
 .task-workspace .task-filters button{min-width:0;max-width:100%}
 .task-tab-english{display:block;font:.875rem/var(--line-height) var(--font-latin);color:var(--color-muted);margin-top:2px}
-.task-occurrence-brief{font-size:.8em;color:var(--color-muted,#626970);margin-inline-start:.65em;overflow-wrap:anywhere;white-space:normal}
+.task-occurrence-brief{font-size:.8em;color:var(--color-muted,#626970);margin-inline-start:1em;overflow-wrap:anywhere;white-space:normal}
 .task-dialog .task-select-all{display:flex;flex-direction:row;align-items:center;gap:6px;min-height:44px;white-space:nowrap}
 .task-multi-month{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .task-multi-grid{margin-block:12px;min-width:0}.task-multi-grid button{min-width:0;padding:4px}
 .task-multi-grid button[aria-pressed=true]{background:var(--color-primary);color:var(--color-on-primary,#fff)}
 .task-multi-grid button:disabled{opacity:.45;cursor:default;text-decoration:underline}
+
+.task-settings-panel>#task-settings-residents{flex:1;min-height:0;overflow:auto;scroll-padding-bottom:80px}
+.task-dialog .task-resident-choice{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;margin-block:6px;overflow-wrap:anywhere}
+.task-dialog .task-resident-choice[aria-pressed=true]{outline:2px solid var(--color-primary);outline-offset:-3px;background:var(--color-tint,#f4f6f8)}
+.task-resident-choice .small-note{flex:none;color:#626970}
+.tasks-dashboard .task-notifications{height:4.5em;max-height:4.5em;overflow:auto;margin:8px 0 0;overflow-wrap:anywhere;line-height:1.5}
+.task-workspace .task-occurrence-brief,.task-list .task-occurrence-brief{color:#626970}

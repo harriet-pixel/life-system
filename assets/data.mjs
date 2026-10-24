@@ -1,10 +1,10 @@
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=task-context-7';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=task-context-7';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=task-context-7';
-import { coordinatedWrite } from './coordination.mjs?v=task-context-7';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=task-context-7';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=task-entry-9';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=task-entry-9';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=task-entry-9';
+import { coordinatedWrite } from './coordination.mjs?v=task-entry-9';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=task-entry-9';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=task-context-7';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=task-entry-9';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
