@@ -1,7 +1,7 @@
-import {boardTasks,DAY_DEFAULTS,validateViews} from './task-view-model.mjs?v=ui-feedback-13';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=ui-feedback-13';
-import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate} from './tasks-model.mjs?v=ui-feedback-13';
-import {expiresAt} from './recovery.mjs?v=ui-feedback-13';
+import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=task-compact-14';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=task-compact-14';
+import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate} from './tasks-model.mjs?v=task-compact-14';
+import {expiresAt} from './recovery.mjs?v=task-compact-14';
 export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.randomUUID(),emit=()=>{}}={}){
  const snapshot=()=>store.get();
  async function save(base,tasks,label,type='task.updated',stats,transactionId=id()){
@@ -11,6 +11,7 @@ export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.random
  }
  const fresh=()=>{const base=snapshot();return {base,tasks:catchUp(base.tasks??emptyTasks(),localDate(now()))};};
  const service={
+  async listSetting(value){const {base,tasks}=fresh();tasks.views??={};tasks.views.list=validateListSettings(value);return save(base,tasks,'調整全部日期清單設定','task.view-settings');},
   async viewSetting(date,value){const {base,tasks}=fresh();tasks.views??={};if(date===null)tasks.views.poolSort=value;else{if(!validDate(date))throw new Error('日期無效。');tasks.views.dates??={};if(JSON.stringify(value)===JSON.stringify(DAY_DEFAULTS))delete tasks.views.dates[date];else tasks.views.dates[date]=value;}validateViews(tasks.views,validDate);return save(base,tasks,'調整待辦檢視','task.view-settings');},
   async arrangeBoard(items,date){if(!validDate(date)||!items.length||new Set(items.map(i=>i.taskId)).size!==items.length)throw new Error('請選取不重複的任務與有效日期。');const {base,tasks}=fresh(),eligible=new Map(boardTasks(tasks).map(t=>[t.id,t]));for(const item of items){const t=eligible.get(item.taskId);if(!t||t.version!==item.version)throw new Error('任務看板事件已修改或安排，整批未加入。');schedule(tasks,t.id,date);}return save(base,tasks,`安排 ${items.length} 個任務看板事件至 ${date}`,'task.scheduled');},
   prepareDaily(date,entries,mode){if(!validDate(date)||!entries.length||new Set(entries.map(e=>e.id)).size!==entries.length||!['complete','delete'].includes(mode))throw new Error('請選取有效的每日事件。');const base=snapshot(),rows=rowsForDate(base.tasks,date),items=entries.map(entry=>{const r=rows.find(r=>r.occurrence.id===entry.id);if(!r||r.task.version!==entry.version||r.occurrence.status!==entry.status||r.occurrence.completionId!==entry.completionId)throw new Error('選取事件已更新，整批未處理，請重新選取。');if(mode==='complete'){if(r.occurrence.status!=='pending')throw new Error('批量完成僅限未完成事件。');return service.prepare(r.task.id,date);}return {taskId:r.task.id,date,occurrence:structuredClone(r.occurrence),taskVersion:r.task.version,...(r.occurrence.status==='done'?{deletion:service.prepareDeletion(r.task.id,date)}:{})};});return {revision:base.revision,localDay:localDate(now()),date,items};},

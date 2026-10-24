@@ -1,12 +1,13 @@
-import {getCompletionFlow} from './task-completion.mjs?v=ui-feedback-13';
-import {dataStore} from './data.mjs?v=ui-feedback-13';
-import {createTaskService} from './tasks-service.mjs?v=ui-feedback-13';
-import {allocation,localDate} from './tasks-model.mjs?v=ui-feedback-13';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=ui-feedback-13';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=ui-feedback-13';
+import {setOperationNotice} from './operation-notice.mjs?v=task-compact-14';
+import {getCompletionFlow} from './task-completion.mjs?v=task-compact-14';
+import {dataStore} from './data.mjs?v=task-compact-14';
+import {createTaskService} from './tasks-service.mjs?v=task-compact-14';
+import {allocation,localDate} from './tasks-model.mjs?v=task-compact-14';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-compact-14';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-compact-14';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
- const status=root.querySelector('#operation-status'),say=text=>{status.hidden=false;status.textContent=text;};
+ const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);
  const service=createTaskService(dataStore,{emit:detail=>document.dispatchEvent(new CustomEvent('life-system:action-succeeded',{detail}))});
  const dialog=document.createElement('dialog');dialog.className='task-dialog';dialog.setAttribute('aria-labelledby','allocation-title');
  dialog.innerHTML='<form><h2 id="allocation-title">分配能力點數</h2><p data-allocation-description></p><div data-allocation-fields></div><p data-allocation-error role="alert"></p><div class="task-buttons"><p data-allocation-total role="status" aria-live="polite"></p><button type="button" data-cancel>取消</button><button type="submit">確認完成</button></div></form>';root.append(dialog);

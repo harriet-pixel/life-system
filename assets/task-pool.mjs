@@ -1,6 +1,6 @@
-import {observeNameLists} from './task-name-layout.mjs?v=ui-feedback-13';
-import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=ui-feedback-13';
-import {isOverdue,inResidentLibrary} from './tasks-model.mjs?v=ui-feedback-13';
+import {observeNameLists} from './task-name-layout.mjs?v=task-compact-14';
+import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=task-compact-14';
+import {isOverdue,inResidentLibrary} from './tasks-model.mjs?v=task-compact-14';
 export function createTaskPool(root,context,actions,{openMenu,askDate}){
  const $=s=>root.querySelector(s),selection=new Map();let current=[],limits={},lastData,lastToday;
  const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
@@ -23,5 +23,5 @@ export function createTaskPool(root,context,actions,{openMenu,askDate}){
  }
  $('#task-sort').onchange=()=>actions.service.viewSetting(null,$('#task-sort').value).catch(e=>actions.say(e.message));
  for(const id of ['task-search','category-filter'])$('#'+id).addEventListener('input',()=>{limits={};if(lastData)render(lastData,undefined);});
- return {render,busy:()=>busy};
+ return {render,refresh:layout.flush,busy:()=>busy};
 }
