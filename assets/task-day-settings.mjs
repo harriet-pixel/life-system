@@ -1,8 +1,8 @@
-import {recordTaskTiming} from './task-diagnostics.mjs?v=task-daily-12';
-import {dataStore} from './data.mjs?v=task-daily-12';
-import {rowsForDate,allocation} from './tasks-model.mjs?v=task-daily-12';
-import {DAY_DEFAULTS} from './task-view-model.mjs?v=task-daily-12';
-import {ABILITIES} from './abilities.mjs?v=task-daily-12';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=ui-feedback-13';
+import {dataStore} from './data.mjs?v=ui-feedback-13';
+import {rowsForDate,allocation} from './tasks-model.mjs?v=ui-feedback-13';
+import {DAY_DEFAULTS} from './task-view-model.mjs?v=ui-feedback-13';
+import {ABILITIES} from './abilities.mjs?v=ui-feedback-13';
 const emptyReward=()=>({currency:0,experience:0,abilities:Object.fromEntries(ABILITIES.map(a=>[a.id,0]))});
 const addReward=(total,r)=>{total.currency+=r.currency;total.experience+=r.experience;ABILITIES.forEach(a=>total.abilities[a.id]+=r.abilities[a.id]);};
 export function createDaySettings(root,context,actions){

@@ -1,11 +1,12 @@
-import {ownsCompletionAI} from './task-completion.mjs?v=task-daily-12';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=task-daily-12';
-import {persistentUndo,dataStore} from './data.mjs?v=task-daily-12';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=task-daily-12';
-import {initializeNavigationSize} from './navigation-size.mjs?v=task-daily-12';
-import {mountAIPage} from './ai-page.mjs?v=task-daily-12';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=task-daily-12';
-const routes={tasks:{mount:()=>import('./tasks.mjs?v=task-daily-12'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=task-daily-12'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=task-daily-12'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=task-daily-12'),export:'mountSettings'}};
+import {initializeUIFeedback} from './ui-feedback.mjs?v=ui-feedback-13';
+import {ownsCompletionAI} from './task-completion.mjs?v=ui-feedback-13';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=ui-feedback-13';
+import {persistentUndo,dataStore} from './data.mjs?v=ui-feedback-13';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=ui-feedback-13';
+import {initializeNavigationSize} from './navigation-size.mjs?v=ui-feedback-13';
+import {mountAIPage} from './ai-page.mjs?v=ui-feedback-13';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=ui-feedback-13';
+const routes={tasks:{mount:()=>import('./tasks.mjs?v=ui-feedback-13'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=ui-feedback-13'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=ui-feedback-13'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=ui-feedback-13'),export:'mountSettings'}};
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
 const host=document.createElement('div');host.id='app-view';const announcement=document.createElement('p');announcement.id='route-status';announcement.className='small-note';announcement.setAttribute('role','status');announcement.hidden=true;
@@ -71,6 +72,7 @@ async function go(url,{pop=false,state=null,initial=false}={}){
 const initialId=pageFor(location.href);active=collect(document,initialId);views.set(initialId,active);shell.replaceChildren(desktop,host,announcement);await activate(active);
 navigation=initializeNavigation({undoManager:{...persistentUndo,getState:()=>({...persistentUndo.getState(),busy:persistentUndo.getState().busy||Boolean(active?.context.hooks.busy?.())})},onUndoSuccess:()=>active?.context.hooks.onUndoSuccess?.(),onRedoSuccess:()=>active?.context.hooks.onRedoSuccess?.(),onBusyChange:busy=>active?.context.hooks.onBusyChange?.(busy)});
 initializeNavigationSize(document.querySelector('.mobile-navigation'));
+initializeUIFeedback();
 document.addEventListener('click',event=>{
  const link=event.target.closest('a[href]');if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.altKey||event.shiftKey||link.hasAttribute('download')||link.target&&link.target!=='_self'||link.getAttribute('href')==='#main')return;
  const target=new URL(link.href);if(!pageFor(target))return;event.preventDefault();if(target.href!==location.href)go(target);
