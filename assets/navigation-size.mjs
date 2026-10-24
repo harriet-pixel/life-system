@@ -11,7 +11,7 @@ export function initializeNavigationSize(bar){
   const inset=keyboard?Math.max(0,height-(viewport?.offsetTop??0)-visualHeight):0;
   document.documentElement.style.setProperty('--keyboard-inset',inset+'px');
   document.documentElement.dataset.keyboard=keyboard?'open':'closed';
-  if(keyboard){const input=document.activeElement,rect=input?.getBoundingClientRect(),bottom=(viewport?.offsetTop??0)+visualHeight-bar.getBoundingClientRect().height-12;if(rect&&rect.bottom>bottom)window.scrollBy({top:rect.bottom-bottom,behavior:'instant'});}
+  if(keyboard&&!document.activeElement?.closest('dialog.task-dialog[open]')){const input=document.activeElement,rect=input?.getBoundingClientRect(),bottom=(viewport?.offsetTop??0)+visualHeight-bar.getBoundingClientRect().height-12;if(rect&&rect.bottom>bottom)window.scrollBy({top:rect.bottom-bottom,behavior:'instant'});}
  }
  const schedule=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(update);};
  window.addEventListener('resize',schedule);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);document.addEventListener('focusin',schedule);document.addEventListener('focusout',schedule);update();

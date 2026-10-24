@@ -1,5 +1,5 @@
-import {validHex} from './settings-model.mjs?v=task-fixed-10';
-import {ABILITIES} from './abilities.mjs?v=task-fixed-10';
+import {validHex} from './settings-model.mjs?v=task-save-11';
+import {ABILITIES} from './abilities.mjs?v=task-save-11';
 export function categoryColor(color){if(color===null||color===undefined||color==='')return null;if(!validHex(color))throw new Error('分類顏色請使用 #RRGGBB 格式。');return color.toLowerCase();}
 export const ALLOCATION_RULE_VERSION='1';
 export const validBrief=value=>value===undefined||(typeof value==='string'&&!/[\r\n]/.test(value));

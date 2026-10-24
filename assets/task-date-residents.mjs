@@ -1,5 +1,5 @@
-import {dataStore} from './data.mjs?v=task-fixed-10';
-import {localDate,inResidentLibrary,occurrence} from './tasks-model.mjs?v=task-fixed-10';
+import {dataStore} from './data.mjs?v=task-save-11';
+import {localDate,inResidentLibrary,occurrence} from './tasks-model.mjs?v=task-save-11';
 // A draft selection of existing definitions, not another task library.
 export function createDateResidents(pane,context,actions,{onSuccess=()=>{}}={}){
  pane.innerHTML='<p data-resident-target></p><p class="small-note">選取常駐任務加入此日；保留原週期，每個事件同日僅能安排一次。</p><label class="task-resident-filter">分類<select data-resident-category><option value="">全部分類</option></select></label><div data-resident-list></div><p data-resident-count role="status"></p><p data-resident-error role="alert"></p><div class="task-buttons"><button type="button" data-resident-clear>清除選取</button><button type="button" data-resident-confirm>確認加入</button></div>';
@@ -12,6 +12,6 @@ export function createDateResidents(pane,context,actions,{onSuccess=()=>{}}={}){
  $('[data-resident-category]').onchange=()=>{limit=40;render();};
  $('[data-resident-clear]').onclick=()=>{selected.clear();$('[data-resident-error]').textContent='';render();};
  $('[data-resident-confirm]').onclick=async()=>{if(busy||!selected.size)return;busy=true;render();context.notify();try{const count=selected.size;await actions.service.arrangeResidents([...selected.values()],date);selected.clear();actions.say(`已加入 ${count} 個重複性事件至 ${date}。`);onSuccess();}catch(error){$('[data-resident-error]').textContent=error.message;}finally{busy=false;render();context.notify();}};
- context.subscribe(dataStore,render);
+ context.subscribe(dataStore,render,{changesOnly:true});
  return {open(targetDate){date=targetDate;limit=40;$('[data-resident-category]').value='';selected.clear();$('[data-resident-error]').textContent='';render();},busy:()=>busy};
 }

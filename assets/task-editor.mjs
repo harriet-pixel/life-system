@@ -1,7 +1,8 @@
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=task-fixed-10';
-import {dataStore} from './data.mjs?v=task-fixed-10';
-import {localDate} from './tasks-model.mjs?v=task-fixed-10';
-import {holdDraft} from './coordination.mjs?v=task-fixed-10';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-save-11';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=task-save-11';
+import {dataStore} from './data.mjs?v=task-save-11';
+import {localDate} from './tasks-model.mjs?v=task-save-11';
+import {holdDraft} from './coordination.mjs?v=task-save-11';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){
@@ -17,7 +18,7 @@ export function createTaskEditor(root,context,actions){
  <fieldset data-repeat hidden><legend>自動週期（可不選，僅手動安排）</legend><div class="task-weekdays"></div><label>開始日期<input type="date" name="start" required></label><label>結束日期（可留白）<input type="date" name="end"></label></fieldset>
  <p data-editor-error role="alert"></p><div class="task-buttons"><button type="button" data-editor-cancel>取消</button><button type="submit">儲存事件</button></div></form>`;
  root.append(editor);
- const form=editor.querySelector('form'),field=name=>form.elements.namedItem(name);
+ const form=editor.querySelector('form'),submitStart=captureSubmitStart(form),field=name=>form.elements.namedItem(name);
  const picker=document.createElement('dialog');picker.className='task-dialog';picker.id='task-date-picker';picker.setAttribute('aria-labelledby','task-date-title');
  picker.innerHTML='<form><h2 id="task-date-title">設定事項日期</h2><label>日期<input name="date" type="date" required></label><p class="small-note" data-date-note></p><p data-date-error role="alert"></p><button type="button" data-date-clear>清除日期</button><div class="task-buttons"><button type="button" data-date-cancel>取消</button><button type="submit">設定日期</button></div></form>';root.append(picker);
  let editing=null,sourceDate=null,draftDate=null,dateChanged=false,returnFocus,release,opening=false,busy=false,paused=false,ignoredCloses=0;
@@ -43,9 +44,9 @@ export function createTaskEditor(root,context,actions){
  picker.querySelector('form').onsubmit=event=>{event.preventDefault();draftDate=picker.querySelector('input').value||null;dateChanged=true;updateDate();picker.close();};
  picker.addEventListener('close',()=>editor.querySelector('#task-date-button').focus({preventScroll:true}));
  form.onsubmit=async event=>{
-  event.preventDefault();if(busy)return;busy=true;context.notify();const submit=form.querySelector('[type=submit]');submit.disabled=true;
-  try{const kind=field('kind').value,fixedAllocation=kind==='repeat'?fixedEditor.value():undefined;await actions.service.edit({...(fixedAllocation?{fixedAllocation}:{}),name:field('name').value.trim(),categoryId:field('categoryId').value||null,points:Number(field('points').value),kind,date:kind==='once'?(editing&&!dateChanged?editing.date:draftDate):null,start:kind==='repeat'?field('start').value:localDate(),end:kind==='repeat'?(field('end').value||null):null,days:kind==='repeat'?[...editor.querySelectorAll('[name=days]:checked')].map(i=>Number(i.value)):[],overdue:'keep'},editing?.id,editing?.version,{fromDate:sourceDate,date:draftDate,...(!editor.querySelector('[data-brief-field]').hidden?{brief:field('brief').value}: {})});editor.close();actions.say('事項已儲存。');}catch(error){editor.querySelector('[data-editor-error]').textContent=error.message;}finally{busy=false;submit.disabled=false;context.notify();}
+  event.preventDefault();if(busy)return;const timing=beginSaveTrace(editing?'task.edit':'task.create',submitStart());let outcome='failed';busy=true;setSaving(form,true);context.notify();
+  try{const validatedAt=performance.now(),kind=field('kind').value,fixedAllocation=kind==='repeat'?fixedEditor.value():undefined;timing.phase('form-validation',validatedAt);await actions.service.edit({...(fixedAllocation?{fixedAllocation}:{}),name:field('name').value.trim(),categoryId:field('categoryId').value||null,points:Number(field('points').value),kind,date:kind==='once'?(editing&&!dateChanged?editing.date:draftDate):null,start:kind==='repeat'?field('start').value:localDate(),end:kind==='repeat'?(field('end').value||null):null,days:kind==='repeat'?[...editor.querySelectorAll('[name=days]:checked')].map(i=>Number(i.value)):[],overdue:'keep'},editing?.id,editing?.version,{fromDate:sourceDate,date:draftDate,...(!editor.querySelector('[data-brief-field]').hidden?{brief:field('brief').value}: {})});const closedAt=performance.now();editor.close();timing.phase('close',closedAt);const noticeAt=performance.now();actions.say('事項已儲存。');timing.phase('notice',noticeAt);outcome='success';}catch(error){editor.querySelector('[data-editor-error]').textContent=error.message;}finally{busy=false;setSaving(form,false);context.notify();timing.finish(outcome);}
  };
- context.subscribe(dataStore,()=>{if(editor.open)updateCategories();});
+ context.subscribe(dataStore,()=>{if(editor.open)updateCategories();},{changesOnly:true});
  return {open,element:editor,form,updateCategories,selectCategory:id=>{updateCategories();field('categoryId').value=id;},pause(){paused=true;ignoredCloses++;editor.close();},resume(){paused=false;if(context.active&&!editor.open)editor.showModal();},hasDraft:()=>editor.open||paused,busy:()=>busy};
 }

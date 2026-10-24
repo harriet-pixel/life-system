@@ -1,5 +1,6 @@
-import {dataStore} from './data.mjs?v=task-fixed-10';
-import {holdDraft} from './coordination.mjs?v=task-fixed-10';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-save-11';
+import {dataStore} from './data.mjs?v=task-save-11';
+import {holdDraft} from './coordination.mjs?v=task-save-11';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');
@@ -9,7 +10,7 @@ export function createCategoryManager(root,context,actions){
  editor.className='task-dialog';editor.id='category-editor';editor.setAttribute('aria-labelledby','category-editor-title');
  editor.innerHTML='<form><h2 id="category-editor-title">新增分類</h2><label>分類名稱<input name="categoryName" required></label><label>文字顏色（留白使用預設文字色）<input name="categoryColor" placeholder="#222222" spellcheck="false"></label><label>選擇顏色<input type="color" name="colorPicker" value="#222222"></label><p data-category-preview>分類文字預覽</p><p data-category-error role="alert"></p><div class="task-buttons"><button type="button" data-category-cancel>取消</button><button type="submit">儲存分類</button></div></form>';
  root.append(dialog,editor);
- const form=editor.querySelector('form'),field=name=>form.elements.namedItem(name),error=editor.querySelector('[data-category-error]'),listError=dialog.querySelector('[data-category-list-error]');
+ const form=editor.querySelector('form'),submitStart=captureSubmitStart(form),field=name=>form.elements.namedItem(name),error=editor.querySelector('[data-category-error]'),listError=dialog.querySelector('[data-category-list-error]');
  let listRoot=dialog;
  let editing=null,release,focus,busy=false,opening=false,mode='closed',ignoredListCloses=0,editorTrigger=null,externalReturn=null,savedId=null,embedded=null;
  const icons={edit:'<path d="m15 4 5 5M4 20l4-1L20 7a2 2 0 0 0-5-5L3 14l-1 7Z"/>',remove:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>'};
@@ -45,10 +46,10 @@ export function createCategoryManager(root,context,actions){
   if(mode==='list'&&(dialog.open||embedded)&&focusId&&!focused.isConnected){const target=[...listRoot.querySelectorAll(focusKind==='edit'?'[data-category-edit]':'[data-category-remove]')].find(b=>(b.dataset.categoryEdit??b.dataset.categoryRemove)===focusId);(target??listRoot.querySelector('[data-category-new]')).focus({preventScroll:true});}
  }
  form.onsubmit=async event=>{
-  event.preventDefault();if(busy)return;busy=true;context.notify();const submit=form.querySelector('[type=submit]');submit.disabled=true;
-  try{const values={name:field('categoryName').value,color:field('categoryColor').value||null};if(editing){await actions.service.updateCategory(editing.id,values,editing);savedId=editing.id;}else savedId=await actions.service.category(values.name,values.color);actions.say('分類已儲存。');editor.close();}
+  event.preventDefault();if(busy)return;const timing=beginSaveTrace(editing?'category.edit':'category.create',submitStart());let outcome='failed';busy=true;setSaving(form,true);context.notify();
+  try{const values={name:field('categoryName').value,color:field('categoryColor').value||null};if(editing){await actions.service.updateCategory(editing.id,values,editing);savedId=editing.id;}else savedId=await actions.service.category(values.name,values.color);const noticeAt=performance.now();actions.say('分類已儲存。');timing.phase('notice',noticeAt);const closeAt=performance.now();editor.close();timing.phase('close',closeAt);outcome='success';}
   catch(e){error.textContent=e.message;}
-  finally{busy=false;submit.disabled=false;context.notify();}
+  finally{busy=false;setSaving(form,false);context.notify();timing.finish(outcome);}
  };
  editor.querySelector('[data-category-cancel]').onclick=()=>{if(!busy)editor.close();};editor.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
  editor.addEventListener('close',()=>{if(externalReturn){const back=externalReturn;externalReturn=null;mode=embedded?'list':'closed';back(savedId);context.notify();return;}mode='list';render();if(context.active){if(embedded)embedded.resume();else dialog.showModal();restoreListFocus();}context.notify();});
@@ -59,7 +60,7 @@ export function createCategoryManager(root,context,actions){
   mode='closed';release?.();release=null;
   if(context.active)(focus?.isConnected?focus:root.querySelector('#manage-categories')).focus({preventScroll:true});context.notify();
  });
- context.subscribe(dataStore,render);
+ context.subscribe(dataStore,render,{changesOnly:true});
  context.onResume(()=>{if(mode==='list'&&!embedded&&!dialog.open){dialog.showModal();restoreListFocus();}});
  return {
   attach(container,callbacks){embedded=callbacks;while(dialog.firstChild)container.append(dialog.firstChild);listRoot=container;mode='list';render();},

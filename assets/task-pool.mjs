@@ -1,4 +1,4 @@
-import {isOverdue,inResidentLibrary} from './tasks-model.mjs?v=task-fixed-10';
+import {isOverdue,inResidentLibrary} from './tasks-model.mjs?v=task-save-11';
 export function createTaskPool(root,context,actions,{openMenu,askDate}){
  const $=s=>root.querySelector(s),selection=new Map();let current=[],limits={},lastData;
  const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
