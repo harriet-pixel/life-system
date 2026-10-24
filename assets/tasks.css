@@ -82,3 +82,18 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 .task-dialog.task-settings-panel[data-scroll-all=true]{display:block;overflow:auto}
 .task-settings-panel[data-scroll-all=true]>#task-settings-event,.task-settings-panel[data-scroll-all=true]>#task-settings-categories,.task-settings-panel[data-scroll-all=true]>#task-settings-residents{overflow:visible;scroll-padding-bottom:0}
 .task-settings-panel[data-scroll-all=true]>.task-settings-header,.task-settings-panel[data-scroll-all=true]>.task-settings-tabs{margin-bottom:4px}
+
+/* Per-date controls and intrinsic mobile notices. */
+.task-day-tools{display:flex;gap:4px;flex:none;align-items:center}.task-day-tools button{flex:none;width:44px;min-height:44px;padding:8px}.task-day-settings svg{display:block;width:24px;height:24px;margin:auto}.task-day-heading h2{min-width:0;overflow-wrap:anywhere}
+.task-day[data-spacing=compact] .task-daily-row{padding-block:0}.task-day[data-spacing=standard] .task-daily-row{padding-block:4px}.task-day[data-spacing=relaxed] .task-daily-row{padding-block:12px}
+.task-board-count{display:none}.task-board-count [data-board-count]{color:#A02139}
+@media(width < 1024px){.task-notice-group{display:flex;flex-wrap:wrap;gap:4px 1em;align-items:baseline;margin-top:8px}.task-notice-group .task-board-count{display:block;margin:0}.tasks-dashboard .task-notice-group .task-notifications{margin:0}.task-board-count{white-space:nowrap}}
+.task-dialog .task-settings-tabs button{min-width:0;flex:1;padding-inline:4px;overflow-wrap:anywhere}
+.task-settings-panel>#task-settings-board{flex:1;min-height:0;overflow:auto;scroll-padding-bottom:16px}
+.task-settings-panel[data-scroll-all=true]>#task-settings-board{overflow:visible;scroll-padding-bottom:0}
+.task-choice-names{display:flex;flex-wrap:wrap;min-width:0;gap:4px 48px;align-items:center}.task-choice-names .task-pool-name-item{display:inline-flex;max-width:100%;min-width:0;align-items:center}.task-choice-names .task-pool-separator{flex:none}.task-choice-names .task-resident-choice{display:inline-flex;flex-wrap:nowrap;gap:0;width:auto;min-width:0;max-width:100%;margin:0;padding:4px;white-space:nowrap;overflow:hidden}.task-choice-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.task-choice-names .task-resident-category{flex:none;max-width:40%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.task-choice-names .small-note{margin-left:8px;font-size:12px}
+[data-resident-list]>details{margin-block:12px;min-width:0}[data-resident-list] summary{cursor:pointer;overflow-wrap:anywhere}
+#task-day-settings [data-day-view]{display:grid;gap:12px}#task-day-settings [data-day-view][hidden]{display:none}#task-day-settings [data-day-selection][hidden]{display:none}
+.task-settings-panel .task-settings-tabs [hidden]{display:none}
+.task-choice-names .task-resident-choice[aria-pressed=true]{background:var(--color-tint,#f4f6f8);color:var(--color-primary)}.task-choice-names .task-resident-choice[aria-pressed=true] .task-resident-category{color:#626970;opacity:1}
+.task-choice-tab-count{display:block;font-size:.85em;line-height:1.5}.task-settings-panel:has(#task-settings-board-tab:not([hidden])) .task-settings-tabs{gap:4px}.task-settings-panel:has(#task-settings-board-tab:not([hidden])) .task-settings-tabs button{font-size:14px;padding-inline:0;line-height:1.5}
