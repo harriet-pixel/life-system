@@ -58,3 +58,13 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 .task-resident-choice .small-note{flex:none;color:#626970}
 .tasks-dashboard .task-notifications{height:4.5em;max-height:4.5em;overflow:auto;margin:8px 0 0;overflow-wrap:anywhere;line-height:1.5}
 .task-workspace .task-occurrence-brief,.task-list .task-occurrence-brief{color:#626970}
+
+.task-dialog .task-panel-close{display:inline-grid;place-items:center;flex:none;width:44px;min-height:44px;padding:8px;border:0;background:transparent;color:var(--color-primary)}
+.task-dialog .task-panel-close:hover{background:transparent;color:var(--color-text,#222)}
+.task-panel-close svg{width:24px;height:24px}.task-panel-close:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
+.task-resident-category{font-size:.8em;color:#626970;margin-inline-start:1em;white-space:normal}
+.task-dialog .task-resident-filter{display:flex;flex-direction:row;align-items:center;gap:8px;margin-block:12px}
+.task-resident-filter select{flex:1;min-width:0}
+.task-fixed-editor [data-fixed-fields]{display:grid;gap:8px;margin-block:12px}
+.task-fixed-editor fieldset{padding:4px 8px}.task-fixed-editor legend{font-size:.9em}
+.task-fixed-editor .task-allocation-options{grid-template-columns:repeat(4,minmax(0,1fr))}

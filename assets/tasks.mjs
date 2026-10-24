@@ -1,14 +1,14 @@
-import {createDateResidents} from './task-date-residents.mjs?v=task-entry-9';
-import {createActivityHeightSync} from './activity-height.mjs?v=task-entry-9';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-entry-9';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-entry-9';
-import {createTaskPool} from './task-pool.mjs?v=task-entry-9';
-import {dataStore} from './data.mjs?v=task-entry-9';
-import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-entry-9';
-import {taskActions} from './task-actions.mjs?v=task-entry-9';
-import {mountTaskCompanion} from './task-companion.mjs?v=task-entry-9';
-import {createTaskEditor} from './task-editor.mjs?v=task-entry-9';
-import {createCategoryManager} from './task-categories.mjs?v=task-entry-9';
+import {createDateResidents} from './task-date-residents.mjs?v=task-fixed-10';
+import {createActivityHeightSync} from './activity-height.mjs?v=task-fixed-10';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-fixed-10';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-fixed-10';
+import {createTaskPool} from './task-pool.mjs?v=task-fixed-10';
+import {dataStore} from './data.mjs?v=task-fixed-10';
+import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-fixed-10';
+import {taskActions} from './task-actions.mjs?v=task-fixed-10';
+import {mountTaskCompanion} from './task-companion.mjs?v=task-fixed-10';
+import {createTaskEditor} from './task-editor.mjs?v=task-fixed-10';
+import {createCategoryManager} from './task-categories.mjs?v=task-fixed-10';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');let mobileCalendarOpen=false,contentTab=0;
@@ -21,15 +21,15 @@ export function mountTasks(root,context){
  const completionBusy=context.hooks.busy;
  const editor=createTaskEditor(root,context,actions),categories=createCategoryManager(root,context,actions);
  const panel=editor.element,tabs=el('div',undefined,'task-settings-tabs'),eventPane=editor.form,categoryPane=el('section');
- tabs.hidden=true;tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','待辦事項設定');categoryPane.hidden=true;categoryPane.id='task-settings-categories';panel.append(categoryPane);const residentPane=el('section');residentPane.id='task-settings-residents';residentPane.hidden=true;panel.append(residentPane);const residents=createDateResidents(residentPane,context,actions);
+ tabs.hidden=true;tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','待辦事項設定');categoryPane.hidden=true;categoryPane.id='task-settings-categories';panel.append(categoryPane);const residentPane=el('section');residentPane.id='task-settings-residents';residentPane.hidden=true;panel.append(residentPane);const residents=createDateResidents(residentPane,context,actions,{onSuccess:()=>panel.close()});
  const eventTab=button('新增事件',()=>selectTab('event')),categoryTab=button('管理分類',()=>selectTab('categories'));
  eventPane.id='task-settings-event';eventTab.id='task-settings-event-tab';categoryTab.id='task-settings-categories-tab';
  for(const [tab,pane] of [[eventTab,eventPane],[categoryTab,categoryPane]]){tab.setAttribute('role','tab');tab.setAttribute('aria-controls',pane.id);}
- tabs.append(eventTab,categoryTab);const panelHeader=el('div',undefined,'task-settings-header'),panelTitle=el('h2','待辦事項設定'),panelClose=button('關閉',()=>{if(!editor.busy()&&!categories.busy()&&!residents.busy())panel.close();});panelTitle.id='task-settings-title';panelHeader.append(panelTitle,panelClose);panelHeader.hidden=true;panel.prepend(panelHeader,tabs);let settingsOpen=false,dateEntry=false;
+ tabs.append(eventTab,categoryTab);const panelHeader=el('div',undefined,'task-settings-header'),panelTitle=el('h2','待辦事項設定'),panelClose=button('關閉',()=>{if(!editor.busy()&&!categories.busy()&&!residents.busy())panel.close();});panelClose.className='task-panel-close';panelClose.setAttribute('aria-label','關閉');panelClose.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m6 6 12 12M18 6 6 18"/></svg>';panelTitle.id='task-settings-title';panelHeader.append(panelTitle,panelClose);panelHeader.hidden=true;panel.prepend(panelHeader,tabs);let settingsOpen=false,dateEntry=false;
  const sizePanel=()=>{const view=window.visualViewport;panel.style.setProperty('--task-dialog-height',(view?.height??innerHeight)+'px');panel.style.setProperty('--task-dialog-top',(view?.offsetTop??0)+'px');};context.listen(window,'resize',sizePanel);if(window.visualViewport){context.listen(window.visualViewport,'resize',sizePanel);context.listen(window.visualViewport,'scroll',sizePanel);}sizePanel();
  function selectTab(value){const event=value==='event',other=dateEntry?residentPane:categoryPane;eventPane.hidden=!event;categoryPane.hidden=dateEntry||event;residentPane.hidden=!dateEntry||event;for(const [tab,active] of [[eventTab,event],[categoryTab,!event]]){tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}categoryTab.setAttribute('aria-controls',other.id);panel.setAttribute('aria-labelledby','task-settings-title');}
  tabs.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const target=e.key==='Home'?eventTab:e.key==='End'?categoryTab:document.activeElement===eventTab?categoryTab:eventTab;target.click();target.focus({preventScroll:true});});
- const configureSettings=(date=null)=>{dateEntry=Boolean(date);settingsOpen=true;panelTitle.textContent=dateEntry?`新增事件至 ${date}`:'待辦事項設定';tabs.setAttribute('aria-label',dateEntry?'新增方式':'待辦事項設定');categoryTab.textContent=dateEntry?'重複性事件':'管理分類';panelHeader.hidden=false;panel.classList.add('task-settings-panel');sizePanel();tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);const other=dateEntry?residentPane:categoryPane;other.setAttribute('role','tabpanel');other.setAttribute('aria-labelledby',categoryTab.id);if(dateEntry)residents.open(date);else categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});selectTab('event');};
+ const configureSettings=(date=null)=>{dateEntry=Boolean(date);panelClose.classList.toggle('task-panel-close',dateEntry);panelClose.innerHTML=dateEntry?'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m6 6 12 12M18 6 6 18"/></svg>':'關閉';settingsOpen=true;panelTitle.textContent=dateEntry?`新增事件至 ${date}`:'待辦事項設定';tabs.setAttribute('aria-label',dateEntry?'新增方式':'待辦事項設定');categoryTab.textContent=dateEntry?'重複性事件':'管理分類';panelHeader.hidden=false;panel.classList.add('task-settings-panel');sizePanel();tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);const other=dateEntry?residentPane:categoryPane;other.setAttribute('role','tabpanel');other.setAttribute('aria-labelledby',categoryTab.id);if(dateEntry)residents.open(date);else categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});selectTab('event');};
  panel.addEventListener('cancel',event=>{if(categories.busy()||residents.busy())event.preventDefault();});
  panel.addEventListener('close',()=>{if(editor.hasDraft())return;if(settingsOpen&&!dateEntry)categories.detach();settingsOpen=false;dateEntry=false;tabs.hidden=true;panelHeader.hidden=true;panel.classList.remove('task-settings-panel');eventPane.hidden=false;categoryPane.hidden=true;residentPane.hidden=true;eventPane.removeAttribute('role');eventPane.removeAttribute('aria-labelledby');panel.setAttribute('aria-labelledby','task-editor-title');});
  async function openEditor(task=null,date=null,dateButton=false){await editor.open(task,date);if(dateButton)configureSettings(date);else if(!task&&!desktop.matches)configureSettings();}
