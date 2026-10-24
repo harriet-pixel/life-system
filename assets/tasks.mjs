@@ -1,14 +1,16 @@
-import {createDateResidents} from './task-date-residents.mjs?v=task-fixed-10';
-import {createActivityHeightSync} from './activity-height.mjs?v=task-fixed-10';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-fixed-10';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-fixed-10';
-import {createTaskPool} from './task-pool.mjs?v=task-fixed-10';
-import {dataStore} from './data.mjs?v=task-fixed-10';
-import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-fixed-10';
-import {taskActions} from './task-actions.mjs?v=task-fixed-10';
-import {mountTaskCompanion} from './task-companion.mjs?v=task-fixed-10';
-import {createTaskEditor} from './task-editor.mjs?v=task-fixed-10';
-import {createCategoryManager} from './task-categories.mjs?v=task-fixed-10';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=task-save-11';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-save-11';
+import {createDateResidents} from './task-date-residents.mjs?v=task-save-11';
+import {createActivityHeightSync} from './activity-height.mjs?v=task-save-11';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-save-11';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-save-11';
+import {createTaskPool} from './task-pool.mjs?v=task-save-11';
+import {dataStore} from './data.mjs?v=task-save-11';
+import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-save-11';
+import {taskActions} from './task-actions.mjs?v=task-save-11';
+import {mountTaskCompanion} from './task-companion.mjs?v=task-save-11';
+import {createTaskEditor} from './task-editor.mjs?v=task-save-11';
+import {createCategoryManager} from './task-categories.mjs?v=task-save-11';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');let mobileCalendarOpen=false,contentTab=0;
@@ -26,7 +28,7 @@ export function mountTasks(root,context){
  eventPane.id='task-settings-event';eventTab.id='task-settings-event-tab';categoryTab.id='task-settings-categories-tab';
  for(const [tab,pane] of [[eventTab,eventPane],[categoryTab,categoryPane]]){tab.setAttribute('role','tab');tab.setAttribute('aria-controls',pane.id);}
  tabs.append(eventTab,categoryTab);const panelHeader=el('div',undefined,'task-settings-header'),panelTitle=el('h2','待辦事項設定'),panelClose=button('關閉',()=>{if(!editor.busy()&&!categories.busy()&&!residents.busy())panel.close();});panelClose.className='task-panel-close';panelClose.setAttribute('aria-label','關閉');panelClose.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m6 6 12 12M18 6 6 18"/></svg>';panelTitle.id='task-settings-title';panelHeader.append(panelTitle,panelClose);panelHeader.hidden=true;panel.prepend(panelHeader,tabs);let settingsOpen=false,dateEntry=false;
- const sizePanel=()=>{const view=window.visualViewport;panel.style.setProperty('--task-dialog-height',(view?.height??innerHeight)+'px');panel.style.setProperty('--task-dialog-top',(view?.offsetTop??0)+'px');};context.listen(window,'resize',sizePanel);if(window.visualViewport){context.listen(window.visualViewport,'resize',sizePanel);context.listen(window.visualViewport,'scroll',sizePanel);}sizePanel();
+ const dialogViewport=initializeTaskDialogs(root,context),sizePanel=dialogViewport.update;
  function selectTab(value){const event=value==='event',other=dateEntry?residentPane:categoryPane;eventPane.hidden=!event;categoryPane.hidden=dateEntry||event;residentPane.hidden=!dateEntry||event;for(const [tab,active] of [[eventTab,event],[categoryTab,!event]]){tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}categoryTab.setAttribute('aria-controls',other.id);panel.setAttribute('aria-labelledby','task-settings-title');}
  tabs.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const target=e.key==='Home'?eventTab:e.key==='End'?categoryTab:document.activeElement===eventTab?categoryTab:eventTab;target.click();target.focus({preventScroll:true});});
  const configureSettings=(date=null)=>{dateEntry=Boolean(date);panelClose.classList.toggle('task-panel-close',dateEntry);panelClose.innerHTML=dateEntry?'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m6 6 12 12M18 6 6 18"/></svg>':'關閉';settingsOpen=true;panelTitle.textContent=dateEntry?`新增事件至 ${date}`:'待辦事項設定';tabs.setAttribute('aria-label',dateEntry?'新增方式':'待辦事項設定');categoryTab.textContent=dateEntry?'重複性事件':'管理分類';panelHeader.hidden=false;panel.classList.add('task-settings-panel');sizePanel();tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);const other=dateEntry?residentPane:categoryPane;other.setAttribute('role','tabpanel');other.setAttribute('aria-labelledby',categoryTab.id);if(dateEntry)residents.open(date);else categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});selectTab('event');};
@@ -62,7 +64,7 @@ export function mountTasks(root,context){
   const name=button(r.name,()=>openMenu(task,o));name.className='task-daily-name';if(r.brief){const brief=el('span',r.brief,'task-occurrence-brief');name.append(brief);}const category=renderingData.categories.find(c=>c.id===task.categoryId);if(category?.color)name.style.color=category.color;node.append(check,name);return node;
  }
  function choose(date,follow=false){selected=date;followToday=follow;month=date.slice(0,7);limits={};render();}
- function render(){syncCalendar();const focused=document.activeElement,focusedDate=focused?.closest('#month-grid')?focused.getAttribute('aria-label')?.slice(0,10):null,focusedRow=focused?.closest('.task-daily-row'),focusedTask=focusedRow?.dataset.taskId,focusedRowDate=focusedRow?.dataset.date,focusedCheckbox=focused?.matches('input[type=checkbox]');const today=localDate();if(today!==lastToday){if(followToday&&month===lastToday.slice(0,7))month=today.slice(0,7);if(followToday&&selected===lastToday)selected=today;lastToday=today;}const data=dataStore.get().tasks;renderingData=data;const visible=selected===today?[today,addDays(today,1)]:[addDays(selected,-1),selected,addDays(selected,1)];
+ function render(snapshot){const renderedAt=performance.now();syncCalendar();const focused=document.activeElement,focusedDate=focused?.closest('#month-grid')?focused.getAttribute('aria-label')?.slice(0,10):null,focusedRow=focused?.closest('.task-daily-row'),focusedTask=focusedRow?.dataset.taskId,focusedRowDate=focusedRow?.dataset.date,focusedCheckbox=focused?.matches('input[type=checkbox]');const today=localDate();if(today!==lastToday){if(followToday&&month===lastToday.slice(0,7))month=today.slice(0,7);if(followToday&&selected===lastToday)selected=today;lastToday=today;}const data=snapshot?.tasks??dataStore.get().tasks;renderingData=data;const visible=selected===today?[today,addDays(today,1)]:[addDays(selected,-1),selected,addDays(selected,1)];
  $('#schedule').replaceChildren(...visible.map(date=>{
   const day=el('section',undefined,'task-day'),heading=el('div',undefined,'task-day-heading');day.dataset.date=date;
   const title=`${date}（${['日','一','二','三','四','五','六'][weekday(date)]}）${date===today?' 今天':date===addDays(today,-1)?' 昨天':date===addDays(today,1)?' 明天':''}`;
@@ -74,7 +76,7 @@ export function mountTasks(root,context){
  pool.render(data,today);
  $('#month-label').textContent=month;const first=month+'-01',next=new Date(first+'T12:00:00');next.setMonth(next.getMonth()+1);const count=Number(addDays(localDate(next),-1).slice(-2));const cells=[];for(const name of ['一','二','三','四','五','六','日'])cells.push(el('span',name));for(let i=0;i<(weekday(first)+6)%7;i++)cells.push(el('span',''));for(let i=1;i<=count;i++){const date=month+'-'+String(i).padStart(2,'0');const b=button(String(i),()=>choose(date));b.setAttribute('aria-label',`${date}${date===today?' 今天':''}${date===selected?' 已選取':''}`);if(date===today)b.setAttribute('aria-current','date');b.setAttribute('aria-pressed',String(date===selected));cells.push(b);}$('#month-grid').replaceChildren(...cells);
  if(!focused?.isConnected&&!root.querySelector('dialog[open]')){const replacement=focusedDate?[...$('#month-grid').querySelectorAll('button')].find(b=>b.getAttribute('aria-label').startsWith(focusedDate)):focusedTask?[...$('#schedule').querySelectorAll('.task-daily-row')].find(n=>n.dataset.taskId===focusedTask&&n.dataset.date===focusedRowDate)?.querySelector(focusedCheckbox?'input':'.task-daily-name'):null;const target=replacement?.disabled?replacement.closest('.task-daily-row')?.querySelector('.task-daily-name'):replacement;target?.focus({preventScroll:true});}
- }
+ currentSaveTrace()?.phase('render',renderedAt);}
  $('#new-task').onclick=()=>openEditor().catch(e=>actions.say(e.message));$('#manage-categories').onclick=()=>categories.open().catch(e=>actions.say(e.message));$('#today').onclick=()=>choose(localDate(),true);$('#toggle-calendar').onclick=()=>{mobileCalendarOpen=!mobileCalendarOpen;syncCalendar();};
  for(const [id,delta]of [['previous-month',-1],['next-month',1]])$('#'+id).onclick=()=>{const d=new Date(month+'-01T12:00:00');d.setMonth(d.getMonth()+delta);month=localDate(d).slice(0,7);render();};
  const contentTabs=$('.task-content-tabs'),contentButtons=[...contentTabs.querySelectorAll('[role=tab]')],contentPanels=contentButtons.map(b=>$('#'+b.getAttribute('aria-controls'))),heightSync=createActivityHeightSync($('.task-panel-stack'),contentPanels,context),positionTabs=createMobileTabPositioner(contentTabs,heightSync);
@@ -82,5 +84,5 @@ export function mountTasks(root,context){
  function selectContent(index,event){contentTab=index;contentButtons.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;contentPanels[i].hidden=i!==index;});syncCalendar();heightSync();if(event)positionTabs(event);}
  contentButtons.forEach((b,i)=>{b.onclick=event=>selectContent(i,event);b.addEventListener('keydown',event=>{const targets={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(!(event.key in targets))return;event.preventDefault();selectContent(targets[event.key]);contentButtons[contentTab].focus({preventScroll:true});});});context.onSuspend(()=>positionTabs.cancel());context.onResume(()=>selectContent(contentTab));
  context.subscribe(actions.completions,render);
- context.subscribe(dataStore,render);context.listen(desktop,'change',render);context.onResume(render);
+ context.subscribe(dataStore,render,{changesOnly:true});context.listen(desktop,'change',render);context.onResume(render);
 }

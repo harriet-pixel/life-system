@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=task-fixed-10';
+import {integerValue} from './validation.mjs?v=task-save-11';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

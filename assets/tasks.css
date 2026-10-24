@@ -68,3 +68,17 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 .task-fixed-editor [data-fixed-fields]{display:grid;gap:8px;margin-block:12px}
 .task-fixed-editor fieldset{padding:4px 8px}.task-fixed-editor legend{font-size:.9em}
 .task-fixed-editor .task-allocation-options{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+/* Keyboard handling stays inside task dialogs; action rows cannot cover fields. */
+.task-dialog{max-height:calc(var(--task-dialog-height,100dvh) - 24px);overscroll-behavior:contain}
+.task-dialog[data-keyboard=open]{position:fixed;top:calc(var(--task-dialog-top,0px) + 12px);bottom:auto;margin:0 auto;max-height:calc(var(--task-dialog-height,100dvh) - 24px)}
+.task-dialog.task-settings-panel[data-keyboard=open]{top:calc(var(--task-dialog-top,0px) + 12px);max-height:calc(var(--task-dialog-height,100dvh) - 24px);height:calc(var(--task-dialog-height,100dvh) - 24px);padding:12px;gap:4px}
+.task-dialog[data-keyboard=open] .task-buttons{position:static;bottom:auto;margin-top:0;padding-block:8px}
+.task-settings-panel[data-keyboard=open] #task-editor-title{display:none}
+.task-settings-panel[data-keyboard=open] .task-settings-header h2{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-dialog[data-keyboard=open] input,.task-dialog[data-keyboard=open] select{scroll-margin-block:8px}
+@media(width < 1024px){.tasks-dashboard .task-notifications{height:auto;max-height:none;overflow:visible}.tasks-dashboard .task-notifications:empty{display:none}.task-workspace .task-content-tabs{margin-top:0}}
+
+.task-dialog.task-settings-panel[data-scroll-all=true]{display:block;overflow:auto}
+.task-settings-panel[data-scroll-all=true]>#task-settings-event,.task-settings-panel[data-scroll-all=true]>#task-settings-categories,.task-settings-panel[data-scroll-all=true]>#task-settings-residents{overflow:visible;scroll-padding-bottom:0}
+.task-settings-panel[data-scroll-all=true]>.task-settings-header,.task-settings-panel[data-scroll-all=true]>.task-settings-tabs{margin-bottom:4px}
