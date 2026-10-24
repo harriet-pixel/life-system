@@ -1,13 +1,14 @@
-import {createActivityHeightSync} from './activity-height.mjs?v=task-context-7';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-context-7';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-context-7';
-import {createTaskPool} from './task-pool.mjs?v=task-context-7';
-import {dataStore} from './data.mjs?v=task-context-7';
-import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-context-7';
-import {taskActions} from './task-actions.mjs?v=task-pop-8';
-import {mountTaskCompanion} from './task-companion.mjs?v=task-context-7';
-import {createTaskEditor} from './task-editor.mjs?v=task-context-7';
-import {createCategoryManager} from './task-categories.mjs?v=task-context-7';
+import {createDateResidents} from './task-date-residents.mjs?v=task-entry-9';
+import {createActivityHeightSync} from './activity-height.mjs?v=task-entry-9';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-entry-9';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-entry-9';
+import {createTaskPool} from './task-pool.mjs?v=task-entry-9';
+import {dataStore} from './data.mjs?v=task-entry-9';
+import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-entry-9';
+import {taskActions} from './task-actions.mjs?v=task-entry-9';
+import {mountTaskCompanion} from './task-companion.mjs?v=task-entry-9';
+import {createTaskEditor} from './task-editor.mjs?v=task-entry-9';
+import {createCategoryManager} from './task-categories.mjs?v=task-entry-9';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');let mobileCalendarOpen=false,contentTab=0;
@@ -20,21 +21,21 @@ export function mountTasks(root,context){
  const completionBusy=context.hooks.busy;
  const editor=createTaskEditor(root,context,actions),categories=createCategoryManager(root,context,actions);
  const panel=editor.element,tabs=el('div',undefined,'task-settings-tabs'),eventPane=editor.form,categoryPane=el('section');
- tabs.hidden=true;tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','待辦事項設定');categoryPane.hidden=true;categoryPane.id='task-settings-categories';panel.append(categoryPane);
+ tabs.hidden=true;tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','待辦事項設定');categoryPane.hidden=true;categoryPane.id='task-settings-categories';panel.append(categoryPane);const residentPane=el('section');residentPane.id='task-settings-residents';residentPane.hidden=true;panel.append(residentPane);const residents=createDateResidents(residentPane,context,actions);
  const eventTab=button('新增事件',()=>selectTab('event')),categoryTab=button('管理分類',()=>selectTab('categories'));
  eventPane.id='task-settings-event';eventTab.id='task-settings-event-tab';categoryTab.id='task-settings-categories-tab';
  for(const [tab,pane] of [[eventTab,eventPane],[categoryTab,categoryPane]]){tab.setAttribute('role','tab');tab.setAttribute('aria-controls',pane.id);}
- tabs.append(eventTab,categoryTab);const panelHeader=el('div',undefined,'task-settings-header'),panelTitle=el('h2','待辦事項設定'),panelClose=button('關閉',()=>{if(!editor.busy()&&!categories.busy())panel.close();});panelTitle.id='task-settings-title';panelHeader.append(panelTitle,panelClose);panelHeader.hidden=true;panel.prepend(panelHeader,tabs);let settingsOpen=false;
+ tabs.append(eventTab,categoryTab);const panelHeader=el('div',undefined,'task-settings-header'),panelTitle=el('h2','待辦事項設定'),panelClose=button('關閉',()=>{if(!editor.busy()&&!categories.busy()&&!residents.busy())panel.close();});panelTitle.id='task-settings-title';panelHeader.append(panelTitle,panelClose);panelHeader.hidden=true;panel.prepend(panelHeader,tabs);let settingsOpen=false,dateEntry=false;
  const sizePanel=()=>{const view=window.visualViewport;panel.style.setProperty('--task-dialog-height',(view?.height??innerHeight)+'px');panel.style.setProperty('--task-dialog-top',(view?.offsetTop??0)+'px');};context.listen(window,'resize',sizePanel);if(window.visualViewport){context.listen(window.visualViewport,'resize',sizePanel);context.listen(window.visualViewport,'scroll',sizePanel);}sizePanel();
- function selectTab(value){const event=value==='event';eventPane.hidden=!event;categoryPane.hidden=event;for(const [tab,active] of [[eventTab,event],[categoryTab,!event]]){tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}panel.setAttribute('aria-labelledby','task-settings-title');}
+ function selectTab(value){const event=value==='event',other=dateEntry?residentPane:categoryPane;eventPane.hidden=!event;categoryPane.hidden=dateEntry||event;residentPane.hidden=!dateEntry||event;for(const [tab,active] of [[eventTab,event],[categoryTab,!event]]){tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}categoryTab.setAttribute('aria-controls',other.id);panel.setAttribute('aria-labelledby','task-settings-title');}
  tabs.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const target=e.key==='Home'?eventTab:e.key==='End'?categoryTab:document.activeElement===eventTab?categoryTab:eventTab;target.click();target.focus({preventScroll:true});});
- const configureSettings=()=>{settingsOpen=true;panelHeader.hidden=false;panel.classList.add('task-settings-panel');sizePanel();tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);categoryPane.setAttribute('role','tabpanel');categoryPane.setAttribute('aria-labelledby',categoryTab.id);categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});selectTab('event');};
- panel.addEventListener('cancel',event=>{if(categories.busy())event.preventDefault();});
- panel.addEventListener('close',()=>{if(editor.hasDraft())return;if(settingsOpen){categories.detach();settingsOpen=false;}tabs.hidden=true;panelHeader.hidden=true;panel.classList.remove('task-settings-panel');eventPane.hidden=false;categoryPane.hidden=true;eventPane.removeAttribute('role');eventPane.removeAttribute('aria-labelledby');panel.setAttribute('aria-labelledby','task-editor-title');});
- async function openEditor(task=null,date=null){await editor.open(task,date);if(!task&&!desktop.matches)configureSettings();}
+ const configureSettings=(date=null)=>{dateEntry=Boolean(date);settingsOpen=true;panelTitle.textContent=dateEntry?`新增事件至 ${date}`:'待辦事項設定';tabs.setAttribute('aria-label',dateEntry?'新增方式':'待辦事項設定');categoryTab.textContent=dateEntry?'重複性事件':'管理分類';panelHeader.hidden=false;panel.classList.add('task-settings-panel');sizePanel();tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);const other=dateEntry?residentPane:categoryPane;other.setAttribute('role','tabpanel');other.setAttribute('aria-labelledby',categoryTab.id);if(dateEntry)residents.open(date);else categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});selectTab('event');};
+ panel.addEventListener('cancel',event=>{if(categories.busy()||residents.busy())event.preventDefault();});
+ panel.addEventListener('close',()=>{if(editor.hasDraft())return;if(settingsOpen&&!dateEntry)categories.detach();settingsOpen=false;dateEntry=false;tabs.hidden=true;panelHeader.hidden=true;panel.classList.remove('task-settings-panel');eventPane.hidden=false;categoryPane.hidden=true;residentPane.hidden=true;eventPane.removeAttribute('role');eventPane.removeAttribute('aria-labelledby');panel.setAttribute('aria-labelledby','task-editor-title');});
+ async function openEditor(task=null,date=null,dateButton=false){await editor.open(task,date);if(dateButton)configureSettings(date);else if(!task&&!desktop.matches)configureSettings();}
  $('#task-settings').onclick=()=>openEditor().catch(e=>actions.say(e.message));
  panel.querySelector('#task-add-category').onclick=()=>{const trigger=panel.querySelector('#task-add-category');editor.pause();categories.create(id=>{editor.updateCategories();if(id)editor.selectCategory(id);editor.resume();trigger.focus({preventScroll:true});});};
- context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>context.active&&(editor.busy()||categories.busy()||Boolean(completionBusy?.())||pool.busy())});
+ context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>context.active&&(editor.busy()||categories.busy()||Boolean(completionBusy?.())||pool.busy()||residents.busy())});
  const dateDialog=el('dialog');dateDialog.className='task-dialog';dateDialog.setAttribute('aria-labelledby','schedule-dialog-title');dateDialog.innerHTML='<form><h2 id="schedule-dialog-title">安排日期</h2><label>日期<input name="date" type="date" required></label><p role="alert"></p><div class="task-buttons"><button type="button">取消</button><button type="submit">確認安排</button></div></form>';root.append(dateDialog);let scheduleWork,focus;
  dateDialog.querySelector('[type=button]').onclick=()=>dateDialog.close();dateDialog.addEventListener('close',()=>{const target=focus?.isConnected?focus:$(desktop.matches?'#new-task':'#task-settings');target?.focus({preventScroll:true});});
  function askDate(work){scheduleWork=work;focus=document.activeElement;dateDialog.querySelector('input').value=selected;dateDialog.querySelector('p').textContent='';dateDialog.showModal();}
@@ -65,7 +66,7 @@ export function mountTasks(root,context){
  $('#schedule').replaceChildren(...visible.map(date=>{
   const day=el('section',undefined,'task-day'),heading=el('div',undefined,'task-day-heading');day.dataset.date=date;
   const title=`${date}（${['日','一','二','三','四','五','六'][weekday(date)]}）${date===today?' 今天':date===addDays(today,-1)?' 昨天':date===addDays(today,1)?' 明天':''}`;
-  const add=button('＋',()=>openEditor(null,date));add.className='task-day-add';add.setAttribute('aria-label',`新增 ${date} 的事項`);heading.append(el('h2',title),add);day.append(heading);
+  const add=button('＋',()=>openEditor(null,date,true));add.className='task-day-add';add.setAttribute('aria-label',`新增 ${date} 的事項`);heading.append(el('h2',title),add);day.append(heading);
   const rows=rowsForDate(data,date);if(!rows.length)day.append(el('p','尚無事項','small-note'));const limit=limits[date]??30;
   rows.slice(0,limit).forEach(r=>day.append(dailyRow(r)));if(rows.length>limit)day.append(button(`顯示更多（共 ${rows.length} 筆）`,()=>{limits[date]=limit+30;render();}));
   day.ondragover=e=>e.preventDefault();day.ondrop=e=>{e.preventDefault();try{const item=JSON.parse(e.dataTransfer.getData('text/plain'));run(()=>actions.service.arrange(item.taskId,date,item.date));}catch{actions.say('無法辨識拖曳的事項。');}};return day;

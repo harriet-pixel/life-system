@@ -1,6 +1,6 @@
-import {validHex,luminance} from './settings-model.mjs?v=task-context-7';
-import {ABILITIES} from './abilities.mjs?v=task-context-7';
-export function categoryColor(color){if(color===null||color===undefined||color==='')return null;if(!validHex(color))throw new Error('分類顏色請使用 #RRGGBB 格式。');if(1.05/(luminance(color)+.05)<4.5)throw new Error('此顏色在白底上不夠清楚，請選擇較深的文字顏色。');return color.toLowerCase();}
+import {validHex} from './settings-model.mjs?v=task-entry-9';
+import {ABILITIES} from './abilities.mjs?v=task-entry-9';
+export function categoryColor(color){if(color===null||color===undefined||color==='')return null;if(!validHex(color))throw new Error('分類顏色請使用 #RRGGBB 格式。');return color.toLowerCase();}
 export const ALLOCATION_RULE_VERSION='1';
 export const validBrief=value=>value===undefined||(typeof value==='string'&&!/[\r\n]/.test(value));
 export function allocationContext(ticket){return {rules:ALLOCATION_RULE_VERSION,name:ticket.name,categoryId:ticket.categoryId??null,category:ticket.category,points:ticket.points,brief:ticket.brief??''};}

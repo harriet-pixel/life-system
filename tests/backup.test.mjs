@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createDataStore} from '../assets/data.mjs';
 import {encodeBackup,readBackup,dataCount,hash,validateDocument} from '../assets/backup.mjs';
 import {themeTokens,luminance} from '../assets/settings-model.mjs';
-import {collectReferences,documentImageReferences} from '../assets/image-references.mjs?v=task-context-7';
+import {collectReferences,documentImageReferences} from '../assets/image-references.mjs?v=task-entry-9';
 const fixture=()=>{const d=createDataStore({getItem:()=>null,setItem:()=>{}}).get();return {formatVersion:1,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(d),imageCount:0,document:d,images:[]};};
 test('encrypted and plain backups round trip with identical settings and history',async()=>{
  for(const password of ['','測試密碼']){const payload=fixture(),blob=await encodeBackup(payload,password),restored=await readBackup(blob,password);assert.deepEqual(restored.payload,payload);assert.deepEqual(restored.assets,[]);}

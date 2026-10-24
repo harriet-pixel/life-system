@@ -1,6 +1,6 @@
-import {dataStore} from './data.mjs?v=task-context-7';
-import {localDate} from './tasks-model.mjs?v=task-context-7';
-import {holdDraft} from './coordination.mjs?v=task-context-7';
+import {dataStore} from './data.mjs?v=task-entry-9';
+import {localDate} from './tasks-model.mjs?v=task-entry-9';
+import {holdDraft} from './coordination.mjs?v=task-entry-9';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){
