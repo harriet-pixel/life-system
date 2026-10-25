@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=sync-retain-24';
+import {dataStore} from './data.mjs?v=drive-poll-25';
 // Presentation only: ephemeral local commits + their existing paired mock reply.
 // Nothing is persisted or replayed on route restore, storage sync, Undo or Redo.
 export function createMobileTaskResponse(root,context){

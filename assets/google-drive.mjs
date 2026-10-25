@@ -1,6 +1,6 @@
-import {createDriveAuthSession} from './drive-auth-session.mjs?v=sync-retain-24';
-import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=sync-retain-24';
-import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=sync-retain-24';
+import {createDriveAuthSession} from './drive-auth-session.mjs?v=drive-poll-25';
+import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=drive-poll-25';
+import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=drive-poll-25';
 const SCOPE='https://www.googleapis.com/auth/drive.appdata';
 export const driveConfigured=Boolean(GOOGLE_CLIENT_ID);
 let token=null,expires=0,loading;const listeners=new Set();const session=createDriveAuthSession({getItem:k=>globalThis.sessionStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.sessionStorage.setItem(k,v),removeItem:k=>globalThis.sessionStorage?.removeItem(k)},GOOGLE_CLIENT_ID);
@@ -30,8 +30,8 @@ export async function connectDrive(){
 export async function driveRequest(url,options={}) {
   getDriveState();if(!token||Date.now()>=expires){disconnectDrive();throw Object.assign(new Error('Google 尚未連接或授權已過期，請手動重新連接。'),{code:'auth'});}
   const headers=new Headers(options.headers);headers.set('Authorization','Bearer '+token);
-  const {timeoutMs,...requestOptions}=options;const signal=timeoutMs?AbortSignal.any([AbortSignal.timeout(timeoutMs),...(options.signal?[options.signal]:[])]):options.signal;let response;try{response=await fetch(url,{...requestOptions,headers,signal});}catch{throw new Error('Google Drive 網路連線失敗；本機資料與既有備份未更動。');}
-  if(!response.ok){if(response.status===401)disconnectDrive();throw Object.assign(new Error(response.status===401?'Google 授權已過期，請重新連接。':response.status===403?'Google Drive 權限或儲存容量不足，操作未完成。':'Google Drive 操作失敗（HTTP '+response.status+'），請稍後重試。'),{code:response.status===401?'auth':'drive',status:response.status});}
+  const {timeoutMs,...requestOptions}=options;const signal=timeoutMs?AbortSignal.any([AbortSignal.timeout(timeoutMs),...(options.signal?[options.signal]:[])]):options.signal;let response;try{response=await fetch(url,{...requestOptions,headers,signal});}catch{throw Object.assign(new Error('Google Drive 網路連線失敗；本機資料保留。'),{transient:true});}
+  if(!response.ok){if(response.status===401)disconnectDrive();const raw=response.headers.get('Retry-After'),retryAfterMs=raw?(Number.isFinite(Number(raw))?Number(raw)*1000:Math.max(0,Date.parse(raw)-Date.now())):0;let quota=false;if(response.status===403){try{const body=await response.clone().json();quota=body.error?.errors?.some(e=>/rateLimit|quota|dailyLimit|userRateLimit/i.test(e.reason));}catch{}}throw Object.assign(new Error(response.status===401?'Google 授權已過期，請重新連接。':response.status===403?'Google Drive 權限或儲存容量不足，操作未完成。':'Google Drive 操作失敗（HTTP '+response.status+'），請稍後重試。'),{code:response.status===401?'auth':'drive',status:response.status,transient:response.status===429||response.status>=500||quota,retryAfterMs:Number.isFinite(retryAfterMs)?retryAfterMs:0});}
   return response;
 }
 export async function uploadDriveBackup(blob,payload) {
@@ -71,3 +71,6 @@ export async function listSyncFiles(signal,kind='manifest-v1'){if(!['manifest-v1
 export async function readAppDataFile(id,limit=MAX_FILE_BYTES,signal){if(typeof id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(id))throw new Error('同步檔案ID無效。');const response=await driveRequest('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'?alt=media',{signal,timeoutMs:120000});if(Number(response.headers.get('Content-Length'))>limit)throw new Error('同步檔案過大。');const reader=response.body.getReader(),parts=[];let size=0;try{for(;;){const{done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit)throw new Error('同步檔案過大。');parts.push(value);}}catch(e){await reader.cancel();throw e;}return new Blob(parts,{type:'application/json'});}
 
 export async function deleteSyncSnapshot(id,signal){if(typeof id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(id))throw new Error('同步檔案ID無效。');try{await driveRequest('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id),{method:'DELETE',signal,timeoutMs:120000});}catch(error){if(error.status!==404)throw error;}}
+
+export async function startDriveChanges(signal){const data=await(await driveRequest('https://www.googleapis.com/drive/v3/changes/startPageToken?fields=startPageToken',{signal,timeoutMs:30000,cache:'no-store'})).json();if(typeof data.startPageToken!=='string'||!data.startPageToken)throw new Error('Drive變更游標格式錯誤。');return data.startPageToken;}
+export async function readDriveChanges(pageToken,signal){const params=new URLSearchParams({pageToken,spaces:'appDataFolder',pageSize:'1000',fields:'nextPageToken,newStartPageToken,changes(fileId,removed,file(id,appProperties))'});const data=await(await driveRequest('https://www.googleapis.com/drive/v3/changes?'+params,{signal,timeoutMs:30000,cache:'no-store'})).json();if(!Array.isArray(data.changes)||!(data.nextPageToken||data.newStartPageToken))throw new Error('Drive變更清單格式錯誤。');return data;}

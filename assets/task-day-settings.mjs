@@ -1,5 +1,5 @@
-import {dataStore} from './data.mjs?v=sync-retain-24';
-import {listSettings,spacingPixels} from './task-view-model.mjs?v=sync-retain-24';
+import {dataStore} from './data.mjs?v=drive-poll-25';
+import {listSettings,spacingPixels} from './task-view-model.mjs?v=drive-poll-25';
 export function createListSettings(pane,context,actions,{onSave=()=>{}}={}){
  pane.innerHTML='<form data-list-settings><label>事件排序<select name="sort"><option value="created">建立時間</option><option value="name">事件名稱</option><option value="category">分類</option><option value="points">點數</option></select></label><label>方向<select name="direction"><option value="asc">升冪（舊至新／低至高）</option><option value="desc">降冪（新至舊／高至低）</option></select></label><label for="task-spacing-range">行距 <output for="task-spacing-range" data-spacing-value>0 px</output></label><input id="task-spacing-range" name="spacing" type="range" min="0" max="24" step="1" value="0" aria-label="行距" aria-describedby="task-spacing-help"><p id="task-spacing-help" class="small-note">事件間額外留白，0 為最緊密。</p><p data-list-error role="alert"></p><p data-list-status role="status"></p><button type="submit">儲存設定</button></form>';
  const form=pane.querySelector('form'),range=form.elements.namedItem('spacing');const updateSpacing=()=>{pane.querySelector('[data-spacing-value]').textContent=range.value+' px';range.setAttribute('aria-valuetext',range.value+' 像素額外留白');};range.addEventListener('input',updateSpacing);let busy=false;form.addEventListener('change',()=>{pane.querySelector('[data-list-status]').textContent='';});
