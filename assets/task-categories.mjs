@@ -1,6 +1,6 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-compact-14';
-import {dataStore} from './data.mjs?v=task-compact-14';
-import {holdDraft} from './coordination.mjs?v=task-compact-14';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-mobile-15';
+import {dataStore} from './data.mjs?v=task-mobile-15';
+import {holdDraft} from './coordination.mjs?v=task-mobile-15';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

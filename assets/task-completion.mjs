@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=task-compact-14';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-compact-14';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=task-compact-14';
-import {dataStore} from './data.mjs?v=task-compact-14';
-import {createTaskService} from './tasks-service.mjs?v=task-compact-14';
-import {allocation,allocationContext} from './tasks-model.mjs?v=task-compact-14';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-compact-14';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=task-compact-14';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-compact-14';
+import {setOperationNotice} from './operation-notice.mjs?v=task-mobile-15';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-mobile-15';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=task-mobile-15';
+import {dataStore} from './data.mjs?v=task-mobile-15';
+import {createTaskService} from './tasks-service.mjs?v=task-mobile-15';
+import {allocation,allocationContext} from './tasks-model.mjs?v=task-mobile-15';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-mobile-15';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-mobile-15';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-mobile-15';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}
