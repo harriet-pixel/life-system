@@ -14,7 +14,7 @@
 - AI provider key **只在 Cloudflare runtime Secret 與當次處理記憶體／官方請求標頭**；不回前端、不放 Git、發布檔、一般資料、復原、備份或日誌。Cloudflare 平台與選定的官方 AI 服務會接觸金鑰，不宣稱完全不接觸。
 - GitHub OAuth client secret 也只放 Worker Secret。GitHub access token 僅 callback 處理時用於 `/user`，不回前端、不保存。OAuth 只請求公開身分，scope 空白，無 repo／email scope；不建立多人註冊或多人 key 系統。
 - 本站 session 是另一種敏感登入憑證，並非 provider key／GitHub access token／Cloudflare 管理 token。隨機 256-bit、最長 1 小時，專用 `life-system.ai-worker-session.v1`，只在同分頁 sessionStorage 與執行記憶體。DO 只保存 SHA-256 session hash 及期限，登出刪除 hash，無自動 refresh。sessionStorage 不是加密保管庫，XSS／擴充功能可能取得本站 session；同來源其他程式必須可信。新分頁可能由瀏覽器複製 opener session，不提供分頁隔離保證。
-- 手動備用：明確啟用原瀏覽器直連 → 自行重輸一組 key → 原 `life-system.ai-test.v1`（最長兩小時）→ 官方 AI API。後端不提供 key 下載。切換只取消當前請求，不自動重送或試用另一家；關閉備用清除直連 key。後端的本人登入仍可保留至登出／到期。
+- 手動備用：明確啟用原瀏覽器直連 → 自行重輸一組 key → 原 `life-system.ai-test.v1`（不自動到期，手動清除）→ 官方 AI API。後端不提供 key 下載。切換只取消當前請求，不自動重送或試用另一家；關閉備用清除直連 key。後端的本人登入仍可保留至登出／到期。
 - 不保存／搬移 profile、圖片、歷史、待辦或數值。不自動接入角色或分點。只有使用者明確送出的測試文字會傳 AI；生成回應只用安全文字顯示。
 
 ## 為何選 GitHub OAuth 而非跨站 Cookie

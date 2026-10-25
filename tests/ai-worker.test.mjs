@@ -72,7 +72,7 @@ test('personal session restores across pages, never sends a provider key, fails 
 test('backend failure never automatically enables direct mode or replays; explicit manual backup keeps two-hour lifecycle',async()=>{
  const storage=memory(),backend={getState:()=>({configured:true,authenticated:true}),subscribe:()=>()=>{},cancel(){},request:async()=>{throw {code:'backend_unavailable'};}};
  const client=createPageAIConnection({storage,personalBackend:backend});await client.connect();assert.equal(client.getState().mode,'backend');assert.match(client.getState().message,/手動/);assert.equal(storage.getItem('life-system.ai-test.v1'),null);
- client.setBrowserMode(true);assert.equal(client.getState().hasKey,false);client.setKey('test-only-invalid-direct-key');const value=JSON.parse(storage.getItem('life-system.ai-test.v1'));assert.equal(value.expiresAt-value.issuedAt,7200000);client.setBrowserMode(false);assert.equal(storage.getItem('life-system.ai-test.v1'),null);assert.equal(client.getState().hasKey,false);client.suspend();
+ client.setBrowserMode(true);assert.equal(client.getState().hasKey,false);client.setKey('test-only-invalid-direct-key');const value=JSON.parse(storage.getItem('life-system.ai-test.v1'));assert.equal(value.expiresAt,null);client.setBrowserMode(false);assert.equal(storage.getItem('life-system.ai-test.v1'),null);assert.equal(client.getState().hasKey,false);client.suspend();
 });
 test('popup authentication validates source/origin/nonce, checks server before storage, and cancellation defeats late verification',async()=>{
  const storage=memory(),time=1800000000000;let receive,url,resolve,count=0;

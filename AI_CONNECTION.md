@@ -25,8 +25,8 @@ Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Clo
 ### 測試分頁生命週期
 
 - 唯一命名空間 `life-system.ai-test.v1`，欄位固定為 version、enabled、provider、apiKey、model、issuedAt、expiresAt；一次一組，不另保存四家金鑰。與 localStorage 的 life-system.data.v1 完全分離。
-- 只有使用者確認啟用後才可寫入 sessionStorage。原始金鑰首次非空輸入時起算最長 **2 小時**；讀取、模型選取、切頁、bfcache 返回、重新整理都不延長。連續編輯已輸入金鑰亦保留同一期限；清空後重新輸入是一個新的輸入週期。
-- 啟動、pageshow 恢復、回到可見頁面、每次 AI 操作前檢查；另有到期計時器。逾時、未來時間、錯誤 schema、非法延長等資料清除，不影響一般使用者資料。背景分頁計時器可能被瀏覽器節流，因此不可只依賴計時器，送請求前會再檢查。瀏覽器停止執行時，實體暫存可能留到下次啟動才能刪除；過期內容恢復前會清除且拒絕使用，不宣稱離線期間可可靠抹除。
+- 只有使用者確認啟用後才可寫入 sessionStorage。直連金鑰**不自動到期**；使用者手動中斷連線或關閉直連模式時清除。仍使用分頁sessionStorage，關閉分頁／瀏覽器是否保留依瀏覽器行為，不改存localStorage。
+- 啟動、pageshow恢復、回到可見頁面、每次AI操作前仍檢查格式及暫存是否存在，不設直連到期計時器。v2保留原欄位，expiresAt固定null；尚未到期的v1兩小時紀錄可一次遷移為v2，保留金鑰、模型與issuedAt；過期、已刪除或損壞的舊紀錄不復活。錯誤格式／未來issuedAt仍拒絕，不影響一般使用者資料。
 - 同文件站內路由保留同一 runtime、模型清單及輸入，僅取消離開頁面未完成的請求，不重送；真正 pagehide 才取消在途請求、清除該文件的執行記憶體／金鑰輸入框，不刪有效測試 session；同分頁跨本站 HTML 與重載仍可恢復。模型清單不保存，恢復後第一次生成會先動態重新列舉、確認已選模型仍有效，再送出該模型的請求。
 - 切換服務商、關閉模式或「中斷連線並清除金鑰」取消舊請求，清空金鑰、模型及狀態；模式關閉／中斷移除專用 session entry。換商只保留已同意的測試模式及新 provider，金鑰與模型為空。取消單次請求可保留仍有效的同一組測試設定。
 - 不寫 localStorage、IndexedDB、Cookie、一般設定文件、歷史、Undo／Redo、備份、URL、console／日誌；不使用 BroadcastChannel 或其他跨頁籤同步。sessionStorage 被瀏覽器或擴充功能讀取的風險由啟用提示明確說明。
@@ -36,7 +36,7 @@ Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Clo
 ## 共用程式與跨頁入口
 
 - `assets/ai-service.mjs`：原有 createAIConnection，並透過 ai-prompts 組裝共用語言規則；統一 provider/model 狀態、查詢、生成、取消、逾時、安全錯誤與競態；本次增加 transport 注入，沒有另建第二套服務。
-- `assets/ai-client.mjs`：同一控制器切換個人 Worker／舊 Node／明確啟用的瀏覽器 transport；直連兩小時檢查、恢復與取消集中於此。
+- `assets/ai-client.mjs`：同一控制器切換個人 Worker／舊 Node／明確啟用的瀏覽器 transport；直連暫存有效性檢查、手動清除、恢復與取消集中於此。
 - `assets/ai-worker-auth.mjs`：GitHub popup 訊息驗證、本站一小時工作階段、Workers 認證請求／登出；`ai-worker-config.mjs` 只有公開 Worker URL。
 - `assets/ai-session.mjs`：專用 session schema／原始到期時間；只有此模組讀寫測試 entry。
 - `assets/ai-runtime.mjs`：每個文件一個共用實例 `getSharedAIConnection()`；各頁使用同一邏輯，狀態不含可見金鑰或認證標頭。
@@ -112,7 +112,7 @@ Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Clo
 ## 驗證與發布
 
 - npm run lint、npm run build、npm test：既有後端模式及新增直連／session 測試，含原始期限、刷新／恢復、不延長、到期、切換、取消、舊結果、storage 失敗、官方標頭、HTTP／未知網路錯誤、模型能力篩選與分頁。
-- tests/ai-browser-mode.cjs：四家 mock 官方 API；設定 → 首頁 → 我的資料 → 重新整理，確實由共用服務發出生成請求，不只測設定連線；驗證安全文字、同一期限、換商競態、關閉／清除／到期、一般資料及備份無金鑰。沒有真實金鑰、沒有金鑰截圖或 trace。
+- tests/ai-browser-mode.cjs：四家 mock 官方 API；設定 → 首頁 → 我的資料 → 重新整理，確實由共用服務發出生成請求，不只測設定連線；驗證安全文字、同一期限、換商競態、關閉／清除／長期保留及舊資料遷移、一般資料及備份無金鑰。沒有真實金鑰、沒有金鑰截圖或 trace。
 - tests/ai-settings.cjs：原正式模式未設定／mock backend 流程與 32 組尺寸字型、200% 文字。
 - tests/settings-tabs.cjs、tests/settings.cjs、tests/ai-cache.cjs、tests/settings-cache.cjs：既有頁籤定位／鍵盤、資料與備份、Undo／Redo、暖快取回歸。新模式不在狀態更新或資料更新觸發定位。
 - main 保存原始碼，gh-pages 僅 work/build 成果，保留發布歷史／設定；Worker 由使用者在控制台設定免費服務後部署，尚未部署不可宣稱完成。公開 Pages workflow 與網站可讀性須分別確認，推送不代表部署已驗證。

@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=task-density-18';
+import {dataStore} from './data.mjs?v=ai-manual-19';
 // Presentation only: ephemeral local commits + their existing paired mock reply.
 // Nothing is persisted or replayed on route restore, storage sync, Undo or Redo.
 export function createMobileTaskResponse(root,context){

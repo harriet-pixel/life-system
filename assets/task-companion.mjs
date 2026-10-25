@@ -1,5 +1,5 @@
-import {createMobileTaskResponse} from './task-mobile-response.mjs?v=task-density-18';
-import {createSharedCompanionView} from './companion-events.mjs?v=task-density-18';
+import {createMobileTaskResponse} from './task-mobile-response.mjs?v=ai-manual-19';
+import {createSharedCompanionView} from './companion-events.mjs?v=ai-manual-19';
 export function mountTaskCompanion(root,context){
  const floating=createMobileTaskResponse(root,context);
  const sync=()=>{root.querySelector('#portrait-placeholder').firstElementChild.textContent=matchMedia('(min-width:1024px)').matches?'立繪佔位':'頭像佔位';};context.listen(matchMedia('(min-width:1024px)'),'change',sync);sync();

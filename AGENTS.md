@@ -129,7 +129,7 @@
 
 - 沿用同一 AI service 與四家 provider。新增 Cloudflare Workers 個人後端（GitHub OAuth 本人 numeric ID、Worker Secret、SQLite DO 限額），部署指南與免費界線見 `docs/CLOUDFLARE_PERSONAL_AI.md`；原 Node BYOK 後端保留，不是本次部署目標。Cloudflare 建置依使用者要求暫停，待網頁完成後再處理；本次不得建立或部署服務。控制台未部署前如實尚未設定，不購買網域、不搬 DNS、不升級付費。瀏覽器直連保留作手動備用，不自動切換／重送。
 - 「瀏覽器直連測試模式」預設關閉，啟用前明確提示金鑰暴露與測試 key／用量限制並確認。測試模式不因正式 endpoint 空白或未登入而停用輸入；只呼叫官方 HTTPS API，不用公共代理或停用瀏覽器安全性。
-- 明確同意後，一組 provider/key/model/原始期限只存專用 sessionStorage `life-system.ai-test.v1`，最長 2 小時、不因讀取／切頁／重載延長。啟動、恢復、可見與每次請求前檢查；同文件站內切頁不觸發 pagehide、不重建連線；真正 pagehide 只取消執行記憶體，不刪仍有效的測試 entry。關閉模式、中斷或到期清除；換商取消並清空金鑰、模型與狀態，不保留多家 key。
+- 明確同意後，一組 provider/key/model只存專用sessionStorage `life-system.ai-test.v1`，直連不自動到期，手動中斷／關閉模式清除。v2 expiresAt=null，未到期v1可遷移，已過期或刪除者不復活。啟動、恢復、可見與每次請求前檢查；同文件站內切頁不觸發 pagehide、不重建連線；真正 pagehide 只取消執行記憶體，不刪仍有效的測試 entry。關閉模式或中斷清除；換商取消並清空金鑰、模型與狀態，不保留多家 key。
 - sessionStorage 不是加密保管庫，不保證關閉分頁可靠抹除；不寫其他瀏覽器儲存、一般設定／歷史／Undo／Redo／備份／URL／日誌，不跨頁籤廣播，不要求使用者把 key 貼到聊天或 Git。新分頁可能由瀏覽器複製 opener session，不宣稱可靠共用或完全隔離。
 - `ai-runtime`／`ai-client`／`ai-session` 集中恢復與生命週期；`ai-service` 統一狀態、生成、取消與錯誤；`assets/ai-providers`／`ai-capabilities`／`ai-errors` 前後端共用，不另建重複系統。backend/ 的 server/auth/env 永不進 work/build。
 - 個人 Worker 金鑰只放 Cloudflare Secret，不回前端；GitHub access token 只用於 callback／user，不保存。本站 opaque session 最長一小時，專用 sessionStorage `life-system.ai-worker-session.v1`，DO 只存 hash、期限與限額，登出後端撤銷。CORS 不是認證，不混用 Drive／Cloudflare 管理 token。缺設定安全停用後端，直連不受影響。舊 Node BYOK 模式仍僅本頁 key＋JWT/scope，不與 Worker 模式混稱。測試金鑰不走一般 settings.ai；原非敏感 provider/model 偏好及備份白名單保留。
@@ -142,7 +142,7 @@
 - 待辦成功的新增、編輯、安排、刪除、分類、批次及取消完成可發有意義事件；完成另在點擊時發 task.processing，與能力分配並行，不依賴獎勵數字或宣稱入帳，提交後不重複發生成事件；取消／失敗／復原使未顯示回應失效。夥伴協調器同文件共用，跨頁保留進度；示意習慣僅成功打卡。初始化、切頁、捲動、聚焦、日期瀏覽與自動逾期整理不生成對話。
 - 同則回應 dialogue／emotion 成對驗證，連續事件合併，新事件使舊請求失效；舊結果與錯誤不可覆蓋新回應。
 - 等待時保留對話，生成失敗不回滾行動；目前使用中性開發備援，不能宣稱符合未設定角色。
-- 不自訂好感度。個人 Worker AI 金鑰僅 Secret 及官方轉送；舊 Node BYOK 僅本頁記憶體及後端轉送；明確啟用的開發直連可依上述 2 小時 session 規則跨頁測試，GitHub Pages 不執行 AI 後端，Worker 不加入靜態發布，夥伴仍未接入真實生成。
+- 不自訂好感度。個人 Worker AI 金鑰僅 Secret 及官方轉送；舊 Node BYOK 僅本頁記憶體及後端轉送；明確啟用的開發直連可依上述手動清除session規則跨頁測試，GitHub Pages 不執行 AI 後端，Worker 不加入靜態發布，夥伴仍未接入真實生成。
 - neutral／pleased／calm 是開發槽，非正式角色規格。
 
 ## 分支與發布
