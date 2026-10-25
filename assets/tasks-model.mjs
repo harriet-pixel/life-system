@@ -1,6 +1,6 @@
-import {validateViews} from './task-view-model.mjs?v=drive-poll-25';
-import {validHex} from './settings-model.mjs?v=drive-poll-25';
-import {ABILITIES} from './abilities.mjs?v=drive-poll-25';
+import {validateViews} from './task-view-model.mjs?v=cloud-backup-20261026';
+import {validHex} from './settings-model.mjs?v=cloud-backup-20261026';
+import {ABILITIES} from './abilities.mjs?v=cloud-backup-20261026';
 export function categoryColor(color){if(color===null||color===undefined||color==='')return null;if(!validHex(color))throw new Error('分類顏色請使用 #RRGGBB 格式。');return color.toLowerCase();}
 export const ALLOCATION_RULE_VERSION='1';
 export const validBrief=value=>value===undefined||(typeof value==='string'&&!/[\r\n]/.test(value));

@@ -1,4 +1,4 @@
-import {setOperationNotice} from './operation-notice.mjs?v=drive-poll-25';
+import {setOperationNotice} from './operation-notice.mjs?v=cloud-backup-20261026';
 const navigationIcons={home:'<path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"/>',tasks:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="m6 10 2 2 3-4m2 3h5M6 16h12"/>',profile:'<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',settings:'<path d="m9 3 1-2h4l1 2 2 1h2l2 4-1 2v3l1 2-2 4h-2l-2 1-1 2h-4l-1-2-2-1H5l-2-4 1-2v-3L3 8l2-4h2Z"/><circle cx="12" cy="11.5" r="3"/>'};
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
@@ -21,19 +21,14 @@ export function isCurrentRoute(href, locationURL) {
   return target.origin === current.origin && normalize(target.pathname) === normalize(current.pathname);
 }
 
-export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, onRedoSuccess = () => {}, onBusyChange = () => {} }) {
+export function initializeNavigation({ onCloudRestore=()=>{}, undoManager, onUndoSuccess = () => {}, onRedoSuccess = () => {}, onBusyChange = () => {} }) {
   const desktopLinks = document.querySelector('#desktop-links');
   const mobileLinks = document.querySelector('#mobile-links');
   const feedback=()=>document.querySelector('#operation-status');
   const mobileBar = document.querySelector('.mobile-navigation');
   const undoButtons = [...document.querySelectorAll('[data-undo]')];
-  const redoButtons = undoButtons.map(undo => {
-    const redo = undo.cloneNode(true); redo.removeAttribute('data-undo'); redo.setAttribute('data-redo','');
-    redo.classList.replace('undo-button','redo-button');
-    redo.querySelector('path').setAttribute('d','m15 5 6 6-6 6M21 11H11a7 7 0 0 0-7 7');
-    redo.setAttribute('aria-label','目前沒有可恢復的操作'); redo.title='目前沒有可恢復的操作';
-    undo.after(redo); return redo;
-  });
+  const cloudButtons=undoButtons.map(undo=>{const button=undo.cloneNode(true);button.removeAttribute('data-undo');button.setAttribute('data-cloud-restore','');button.classList.replace('undo-button','cloud-restore-button');button.disabled=false;button.setAttribute('aria-label','還原最新雲端備份');button.title='還原最新雲端備份';button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 18H6a4 4 0 0 1-1-8 7 7 0 0 1 13-2 5 5 0 0 1 0 10h-1M12 11v10m-4-4 4 4 4-4"/></svg>';button.onclick=onCloudRestore;undo.after(button);return button;});
+  const redoButtons=()=>[...document.querySelectorAll('[data-redo]')];
   let pending = false;
   const revealCurrent = (nav) => {
     const current = nav.querySelector('[aria-current="page"]');
@@ -85,7 +80,7 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
   const refreshControls = () => {
     const {available,redoAvailable,busy,recoveryNotice} = undoManager.getState();
     if(recoveryNotice&&feedback()?.hidden){setOperationNotice(feedback(),recoveryNotice);}
-    for (const [buttons,enabled,action] of [[undoButtons,available,'撤銷'],[redoButtons,redoAvailable,'恢復']]) {
+    for (const [buttons,enabled,action] of [[undoButtons,available,'撤銷'],[redoButtons(),redoAvailable,'恢復']]) {
       buttons.forEach(button => {
         button.disabled = !enabled || pending || busy;
         const label = enabled ? `${action}最近一筆可${action}的資料操作` : `目前沒有可${action}的操作`;
@@ -96,20 +91,9 @@ export function initializeNavigation({ undoManager, onUndoSuccess = () => {}, on
     onBusyChange(pending || busy);
   };
   undoManager.subscribe(refreshControls);
-  for (const [buttons,method,onSuccess,action] of [[undoButtons,'undo',onUndoSuccess,'撤銷'],[redoButtons,'redo',onRedoSuccess,'恢復']]) {
-    buttons.forEach(button => button.addEventListener('click',async()=>{
-      if (pending || undoManager.getState().busy) return;
-      pending=true;refreshControls();
-      try {
-        const result = await undoManager[method]();
-        if (result.reason === 'unavailable') return;
-        feedback().hidden=false;
-        if (result.ok) { document.dispatchEvent(new CustomEvent('life-system:recovery-succeeded'));onSuccess();setOperationNotice(feedback(),`已${action}「${result.label}」。`); }
-        else setOperationNotice(feedback(),result.error?.message || `${action}失敗，請重試。`);
-      } catch(error) { feedback().hidden=false;setOperationNotice(feedback(),error.message || `${action}失敗，請重試。`); }
-      finally { pending=false;refreshControls(); }
-    }));
-  }
+  async function perform(method,onSuccess,action){if(pending||undoManager.getState().busy)return;pending=true;refreshControls();try{const result=await undoManager[method]();if(result.ok){document.dispatchEvent(new CustomEvent('life-system:recovery-succeeded'));onSuccess();setOperationNotice(feedback(),`已${action}「${result.label}」。`);}else if(result.reason!=='unavailable')setOperationNotice(feedback(),result.error?.message||`${action}失敗，請重試。`);}catch(error){setOperationNotice(feedback(),error.message);}finally{pending=false;refreshControls();}}
+  undoButtons.forEach(button=>button.onclick=()=>perform('undo',onUndoSuccess,'撤銷'));
+  document.addEventListener('click',event=>{if(event.target.closest('[data-redo]'))void perform('redo',onRedoSuccess,'恢復');});
   mobileBar.hidden = false;
   document.body.dataset.navigation = 'ready';
   const updateBarHeight = () => {

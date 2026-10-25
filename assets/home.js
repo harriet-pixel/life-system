@@ -1,15 +1,18 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=drive-poll-25';
-import {taskActions} from './task-actions.mjs?v=drive-poll-25';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=drive-poll-25';
-import { createMobileTabPositioner } from './tab-position.mjs?v=drive-poll-25';
-import { createActivityHeightSync } from './activity-height.mjs?v=drive-poll-25';
-import { undoManager } from './undo.mjs?v=drive-poll-25';
-import {createSharedCompanionView} from './companion-events.mjs?v=drive-poll-25';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=drive-poll-25';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=cloud-backup-20261026';
+import {createTaskEditor} from './task-editor.mjs?v=cloud-backup-20261026';
+import {createCategoryManager} from './task-categories.mjs?v=cloud-backup-20261026';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=cloud-backup-20261026';
+import {taskActions} from './task-actions.mjs?v=cloud-backup-20261026';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=cloud-backup-20261026';
+import { createMobileTabPositioner } from './tab-position.mjs?v=cloud-backup-20261026';
+import { createActivityHeightSync } from './activity-height.mjs?v=cloud-backup-20261026';
+import { undoManager } from './undo.mjs?v=cloud-backup-20261026';
+import {createSharedCompanionView} from './companion-events.mjs?v=cloud-backup-20261026';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=cloud-backup-20261026';
 
 
 export function mountHome(root,context){
-mountHomeCompanionFloat(root,context);
+const floating=mountHomeCompanionFloat(root,context);
 const refreshDate=()=>{globalThis.LifeHomeDate?.render(root);renderToday();};
 context.listen(window,'focus',refreshDate);context.listen(document,'visibilitychange',()=>{if(!document.hidden)refreshDate();});context.onResume(refreshDate);
 let dateTimer;const startDateTimer=()=>{clearInterval(dateTimer);dateTimer=setInterval(refreshDate,60000);};startDateTimer();context.onSuspend(()=>clearInterval(dateTimer));context.onResume(startDateTimer);
@@ -32,7 +35,8 @@ function showPlaceholder(label) {
 }
 const companion = createSharedCompanionView({
   getContext: () => ({ character: null, affinity: null }),
-  render(reply) {
+  render(reply,actions,meta) {
+    if(!meta?.replayed)floating.reply();
     const asset = emotionPortraits[reply.emotion];
     // Both fields are one validated reply, committed synchronously.
     dialogue.textContent = reply.dialogue;
@@ -78,12 +82,18 @@ function emitDemoSuccess(type, input, index, label) {
 // Shared persistent activity state and journal; demo labels and companion remain unchanged.
 const taskInputs = [];
 const tasks=taskActions(root,context);
+const completionBusy=context.hooks.busy;
+const editor=createTaskEditor(root,context,tasks),categories=createCategoryManager(root,context,tasks);
+initializeTaskDialogs(root,context);
+root.querySelector('#home-new-event').onclick=()=>editor.open(null,localDate()).catch(error=>tasks.say(error.message));
+editor.element.querySelector('#task-add-category').onclick=()=>{const trigger=editor.element.querySelector('#task-add-category');editor.pause();categories.create(id=>{editor.updateCategories();if(id)editor.selectCategory(id);editor.resume();trigger.focus({preventScroll:true});});};
+context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>editor.busy()||categories.busy()||Boolean(completionBusy?.())});
 const todayList=root.querySelector('.task-list');
 function renderToday(){
  globalThis.LifeHomeDate?.render(root);
  const rows=rowsForDate(dataStore.get().tasks,localDate());
  todayList.replaceChildren(...rows.map(row=>{const li=document.createElement('li'),label=document.createElement('label');li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;label.className='task-row';const input=document.createElement('input');input.type='checkbox';input.dataset.task='';const pending=tasks.isPending(row.task.id,row.occurrence.date);input.checked=row.occurrence.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));li.classList.toggle('is-processing',pending);li.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${row.name}`:`${input.checked?'取消完成':'完成'} ${row.name}`);input.onchange=()=>{const done=row.occurrence.status==='done';if(tasks.isPending(row.task.id,row.occurrence.date))return;input.checked=true;if(done)tasks.cancel(row.task.id,row.occurrence.date).catch(()=>{});else tasks.complete(row.task.id,row.occurrence.date);};const name=document.createElement('span');name.className='task-content';name.textContent=row.name;const color=dataStore.get().tasks.categories.find(c=>c.id===row.task.categoryId)?.color;if(color)name.style.setProperty('--home-task-color',color);if(row.brief){const brief=document.createElement('span');brief.className='task-occurrence-brief';brief.textContent=row.brief;name.append(brief);}const category=document.createElement('span');category.className='task-time';category.textContent=row.category+(row.occurrence.status==='done'?' · 已完成':'');label.append(input,name,category);li.append(label);return li;}));
- if(!rows.length){const li=document.createElement('li');li.className='small-note';li.textContent='今天尚無待辦，前往待辦事項安排生活。';todayList.append(li);}
+ if(!rows.length){const li=document.createElement('li');li.className='small-note';li.textContent='今天尚無待辦，點選「新增事件」安排生活。';todayList.append(li);}
  root.querySelector('#task-count').textContent=`${rows.filter(r=>r.occurrence.status==='done').length} / ${rows.length} 完成`;
 }
 context.subscribe(tasks.completions,renderToday);

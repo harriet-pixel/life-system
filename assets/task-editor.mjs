@@ -1,8 +1,8 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=drive-poll-25';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=drive-poll-25';
-import {dataStore} from './data.mjs?v=drive-poll-25';
-import {localDate} from './tasks-model.mjs?v=drive-poll-25';
-import {holdDraft} from './coordination.mjs?v=drive-poll-25';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=cloud-backup-20261026';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=cloud-backup-20261026';
+import {dataStore} from './data.mjs?v=cloud-backup-20261026';
+import {localDate} from './tasks-model.mjs?v=cloud-backup-20261026';
+import {holdDraft} from './coordination.mjs?v=cloud-backup-20261026';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){
@@ -34,7 +34,7 @@ export function createTaskEditor(root,context,actions){
  }
  editor.querySelector('[data-editor-cancel]').onclick=()=>{if(!busy)editor.close();};
  editor.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
- editor.addEventListener('close',()=>{if(ignoredCloses){ignoredCloses--;return;}paused=false;fixedEditor.invalidate();release?.();release=null;(returnFocus?.isConnected?returnFocus:(root.querySelector(returnFocus?.classList.contains('task-day-add')?`.task-day[data-date="${returnFocus.closest('.task-day')?.dataset.date}"] .task-day-add`:matchMedia('(min-width:1024px)').matches?'#new-task':'#task-settings')??root.querySelector(matchMedia('(min-width:1024px)').matches?'#new-task':'#task-settings'))).focus({preventScroll:true});context.notify();});
+ editor.addEventListener('close',()=>{if(ignoredCloses){ignoredCloses--;return;}paused=false;fixedEditor.invalidate();release?.();release=null;(returnFocus?.isConnected?returnFocus:(root.querySelector(returnFocus?.classList.contains('task-day-add')?`.task-day[data-date="${returnFocus.closest('.task-day')?.dataset.date}"] .task-day-add`:matchMedia('(min-width:1024px)').matches?'#new-task':'#task-settings')??root.querySelector('#home-new-event')??root.querySelector('#main')))?.focus({preventScroll:true});context.notify();});
  editor.querySelector('#task-date-button').onclick=()=>{
   const completed=editing&&dataStore.get().tasks.occurrences.some(o=>o.taskId===editing.id&&o.status==='done'&&(editing.kind==='once'||o.date===sourceDate));
   picker.querySelector('input').value=draftDate??'';picker.querySelector('[data-date-error]').textContent='';picker.querySelector('[data-date-note]').textContent=completed?'已完成紀錄保留原日期；請先安全取消完成後再調整。':'日期可留白；重複事項的額外安排不影響自動週期。';picker.querySelectorAll('input,button[type=submit],[data-date-clear]').forEach(control=>control.disabled=Boolean(completed));picker.showModal();

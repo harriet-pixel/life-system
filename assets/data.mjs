@@ -1,11 +1,11 @@
-import {setOperationNotice} from './operation-notice.mjs?v=drive-poll-25';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=drive-poll-25';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=drive-poll-25';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=drive-poll-25';
-import { coordinatedWrite } from './coordination.mjs?v=drive-poll-25';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=drive-poll-25';
+import {setOperationNotice} from './operation-notice.mjs?v=cloud-backup-20261026';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=cloud-backup-20261026';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=cloud-backup-20261026';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=cloud-backup-20261026';
+import { coordinatedWrite } from './coordination.mjs?v=cloud-backup-20261026';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=cloud-backup-20261026';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=drive-poll-25';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=cloud-backup-20261026';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -29,7 +29,7 @@ export function migrateStatsRules(storage) {
 }
 export function createDataStore(storage,{now=Date.now}={}) {
   let state, busy=false,recoveryNotice=null;
-  const listeners = new Set();
+  const listeners = new Set(),commitListeners=new Set();
   const load = () => {
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return initial();
@@ -65,12 +65,13 @@ export function createDataStore(storage,{now=Date.now}={}) {
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
     try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);timing?.phase('storage-write',writeAt);}
     catch { throw new Error('無法儲存，可能是瀏覽器儲存空間不足或儲存權限受限。資料尚未變更。'); }
-    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();timing?.phase('subscribers',subscribersAt);
+    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(fn=>{try{fn(copy(state));}catch{}});timing?.phase('subscribers',subscribersAt);
   };
   const api = {
     get: () => copy(currentRecovery().document),
     maintain() {const result=effective();const raw=storage.getItem(STORAGE_KEY);if(raw&&JSON.stringify(result.document)!==raw)persist(result.document);return result;},
     notify,
+    subscribeCommits(fn){commitListeners.add(fn);return()=>commitListeners.delete(fn);},
     setBusy(value) {busy=value;notify({statusOnly:true});},
     replace(value) { const next=copy(value);next.revision=Math.max(value.revision,state.revision+1);persist(next); },
     subscribe(fn,{changesOnly=false}={}) {const entry={fn,changesOnly};listeners.add(entry);fn(copy(currentRecovery().document));return()=>listeners.delete(entry);},
