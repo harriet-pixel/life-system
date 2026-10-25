@@ -1,7 +1,7 @@
-import {dataStore} from './data.mjs?v=task-response-16';
-import {localDate,inResidentLibrary,occurrence} from './tasks-model.mjs?v=task-response-16';
-import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=task-response-16';
-import {observeNameLists} from './task-name-layout.mjs?v=task-response-16';
+import {dataStore} from './data.mjs?v=task-density-18';
+import {localDate,inResidentLibrary,occurrence} from './tasks-model.mjs?v=task-density-18';
+import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=task-density-18';
+import {observeNameLists} from './task-name-layout.mjs?v=task-density-18';
 export function createDateResidents(pane,context,actions,{onSuccess=()=>{},onSelection=()=>{},onBusy=()=>{},beforeConfirm=()=>true,kind='repeat'}={}){
  pane.innerHTML='<div data-resident-list></div><p data-resident-count role="status"></p><p data-resident-error role="alert"></p><div class="task-buttons"><button type="button" data-resident-clear>清除選取</button><button type="button" data-resident-confirm>確認加入</button></div>';
  const $=s=>pane.querySelector(s),selected=new Map(),collapsed=new Set(),limits=new Map(),layout=observeNameLists(pane,context);let date=null,busy=false;

@@ -1,10 +1,10 @@
-import {taskActions} from './task-actions.mjs?v=task-response-16';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=task-response-16';
-import { createMobileTabPositioner } from './tab-position.mjs?v=task-response-16';
-import { createActivityHeightSync } from './activity-height.mjs?v=task-response-16';
-import { undoManager } from './undo.mjs?v=task-response-16';
-import {createSharedCompanionView} from './companion-events.mjs?v=task-response-16';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=task-response-16';
+import {taskActions} from './task-actions.mjs?v=task-density-18';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=task-density-18';
+import { createMobileTabPositioner } from './tab-position.mjs?v=task-density-18';
+import { createActivityHeightSync } from './activity-height.mjs?v=task-density-18';
+import { undoManager } from './undo.mjs?v=task-density-18';
+import {createSharedCompanionView} from './companion-events.mjs?v=task-density-18';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=task-density-18';
 
 
 export function mountHome(root,context){

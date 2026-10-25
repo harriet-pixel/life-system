@@ -1,4 +1,6 @@
-export function validateListSettings(value){if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).length!==3||!['created','name','category','points'].includes(value.sort)||!['asc','desc'].includes(value.direction)||!['compact','standard','relaxed'].includes(value.spacing))throw new Error('清單設定格式不正確。');return structuredClone(value);}
+export const spacingPixels=value=>typeof value==='number'?value:({compact:0,standard:8,relaxed:24}[value]??0);
+const validSpacing=value=>['compact','standard','relaxed'].includes(value)||(Number.isInteger(value)&&value>=0&&value<=24);
+export function validateListSettings(value){if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).length!==3||!['created','name','category','points'].includes(value.sort)||!['asc','desc'].includes(value.direction)||!validSpacing(value.spacing))throw new Error('清單設定格式不正確。');return structuredClone(value);}
 export const DAY_DEFAULTS=Object.freeze({sort:'created',direction:'asc',spacing:'compact'});
 export const listSettings=data=>data.views?.list??DAY_DEFAULTS;
 export const POOL_SORTS=['category','new','old','points'];

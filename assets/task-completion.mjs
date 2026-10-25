@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=task-response-16';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-response-16';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=task-response-16';
-import {dataStore} from './data.mjs?v=task-response-16';
-import {createTaskService} from './tasks-service.mjs?v=task-response-16';
-import {allocation,allocationContext} from './tasks-model.mjs?v=task-response-16';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-response-16';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=task-response-16';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-response-16';
+import {setOperationNotice} from './operation-notice.mjs?v=task-density-18';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-density-18';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=task-density-18';
+import {dataStore} from './data.mjs?v=task-density-18';
+import {createTaskService} from './tasks-service.mjs?v=task-density-18';
+import {allocation,allocationContext} from './tasks-model.mjs?v=task-density-18';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-density-18';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-density-18';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-density-18';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}
