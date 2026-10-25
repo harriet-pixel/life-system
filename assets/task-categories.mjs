@@ -1,6 +1,6 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-density-18';
-import {dataStore} from './data.mjs?v=task-density-18';
-import {holdDraft} from './coordination.mjs?v=task-density-18';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=ai-manual-19';
+import {dataStore} from './data.mjs?v=ai-manual-19';
+import {holdDraft} from './coordination.mjs?v=ai-manual-19';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');
