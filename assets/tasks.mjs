@@ -1,18 +1,18 @@
-import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=ai-manual-19';
-import {createListSettings} from './task-day-settings.mjs?v=ai-manual-19';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=ai-manual-19';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=ai-manual-19';
-import {createDateResidents} from './task-date-residents.mjs?v=ai-manual-19';
-import {createActivityHeightSync} from './activity-height.mjs?v=ai-manual-19';
-import {createMobileTabPositioner} from './tab-position.mjs?v=ai-manual-19';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=ai-manual-19';
-import {createTaskPool} from './task-pool.mjs?v=ai-manual-19';
-import {dataStore} from './data.mjs?v=ai-manual-19';
-import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=ai-manual-19';
-import {taskActions} from './task-actions.mjs?v=ai-manual-19';
-import {mountTaskCompanion} from './task-companion.mjs?v=ai-manual-19';
-import {createTaskEditor} from './task-editor.mjs?v=ai-manual-19';
-import {createCategoryManager} from './task-categories.mjs?v=ai-manual-19';
+import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=mobile-companion-20';
+import {createListSettings} from './task-day-settings.mjs?v=mobile-companion-20';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=mobile-companion-20';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=mobile-companion-20';
+import {createDateResidents} from './task-date-residents.mjs?v=mobile-companion-20';
+import {createActivityHeightSync} from './activity-height.mjs?v=mobile-companion-20';
+import {createMobileTabPositioner} from './tab-position.mjs?v=mobile-companion-20';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=mobile-companion-20';
+import {createTaskPool} from './task-pool.mjs?v=mobile-companion-20';
+import {dataStore} from './data.mjs?v=mobile-companion-20';
+import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=mobile-companion-20';
+import {taskActions} from './task-actions.mjs?v=mobile-companion-20';
+import {mountTaskCompanion} from './task-companion.mjs?v=mobile-companion-20';
+import {createTaskEditor} from './task-editor.mjs?v=mobile-companion-20';
+import {createCategoryManager} from './task-categories.mjs?v=mobile-companion-20';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');
@@ -88,7 +88,7 @@ export function mountTasks(root,context){
  currentSaveTrace()?.phase('render',renderedAt);}
  $('#new-task').onclick=()=>openEditor().catch(e=>actions.say(e.message));$('#manage-categories').onclick=()=>categories.open().catch(e=>actions.say(e.message));$('#today').onclick=()=>choose(localDate(),true);$('#toggle-calendar').onclick=()=>{mobileCalendarOpen=!mobileCalendarOpen;syncCalendar();};
  for(const [id,delta]of [['previous-month',-1],['next-month',1]])$('#'+id).onclick=()=>{const d=new Date(month+'-01T12:00:00');d.setMonth(d.getMonth()+delta);month=localDate(d).slice(0,7);render();};
- const contentTabs=$('.task-content-tabs'),contentButtons=[...contentTabs.querySelectorAll('[role=tab]')],contentPanels=contentButtons.map(b=>$('#'+b.getAttribute('aria-controls'))),heightSync=createActivityHeightSync($('.task-panel-stack'),contentPanels,context),positionTabs=createMobileTabPositioner(contentTabs,heightSync);
+ const contentTabs=$('.task-content-tabs'),contentButtons=[...contentTabs.querySelectorAll('[role=tab]')],contentPanels=contentButtons.map(b=>$('#'+b.getAttribute('aria-controls'))),heightSync=createActivityHeightSync($('.task-panel-stack'),contentPanels,context),positionTabs=createMobileTabPositioner(contentTabs,heightSync,{scrollPage:false});
  const appearanceObserver=new MutationObserver(heightSync),watchAppearance=()=>appearanceObserver.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-font']});watchAppearance();context.onSuspend(()=>appearanceObserver.disconnect());context.onResume(watchAppearance);
  function selectContent(index,event){contentTab=index;contentButtons.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;contentPanels[i].hidden=i!==index;});syncCalendar();if(index===1)pool.refresh();heightSync();if(event)positionTabs(event);}
  contentButtons.forEach((b,i)=>{b.onclick=event=>selectContent(i,event);b.addEventListener('keydown',event=>{const targets={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(!(event.key in targets))return;event.preventDefault();selectContent(targets[event.key]);contentButtons[contentTab].focus({preventScroll:true});});});context.onSuspend(()=>positionTabs.cancel());context.onResume(()=>selectContent(contentTab));

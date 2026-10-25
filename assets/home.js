@@ -1,13 +1,15 @@
-import {taskActions} from './task-actions.mjs?v=ai-manual-19';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=ai-manual-19';
-import { createMobileTabPositioner } from './tab-position.mjs?v=ai-manual-19';
-import { createActivityHeightSync } from './activity-height.mjs?v=ai-manual-19';
-import { undoManager } from './undo.mjs?v=ai-manual-19';
-import {createSharedCompanionView} from './companion-events.mjs?v=ai-manual-19';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=ai-manual-19';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=mobile-companion-20';
+import {taskActions} from './task-actions.mjs?v=mobile-companion-20';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=mobile-companion-20';
+import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-companion-20';
+import { createActivityHeightSync } from './activity-height.mjs?v=mobile-companion-20';
+import { undoManager } from './undo.mjs?v=mobile-companion-20';
+import {createSharedCompanionView} from './companion-events.mjs?v=mobile-companion-20';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=mobile-companion-20';
 
 
 export function mountHome(root,context){
+mountHomeCompanionFloat(root,context);
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {
   neutral: { label: '平靜', src: null },
@@ -61,7 +63,7 @@ const companion = createSharedCompanionView({
 },context);
 
 // Future adapters emit this event only AFTER their data operation succeeds.
-// There are deliberately no pointer, scroll, focus, or menu listeners.
+// Companion content remains managed by the shared coordinator.
 
 function emitDemoSuccess(type, input, index, label) {
   if (!input.checked) return;
@@ -129,7 +131,7 @@ const activityTabs = root.querySelector('.activity-tabs');
 const tabButtons = [...activityTabs.querySelectorAll('button')];
 const activityPanels = tabButtons.map((button) => root.querySelector("#"+CSS.escape(button.dataset.panel)));
 const updateActivityHeight = createActivityHeightSync(root.querySelector('.home-grid'),activityPanels,context);
-const positionActivityTabs = createMobileTabPositioner(activityTabs, updateActivityHeight);
+const positionActivityTabs = createMobileTabPositioner(activityTabs, updateActivityHeight,{scrollPage:false});
 context.onSuspend(()=>positionActivityTabs.cancel());
 context.subscribe(dataStore,updateActivityHeight);
 const desktopLayout = window.matchMedia('(min-width: 1024px)');

@@ -1,5 +1,5 @@
 import {GOOGLE_CLIENT_ID} from './google-config.mjs';
-import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=ai-manual-19';
+import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=mobile-companion-20';
 const SCOPE='https://www.googleapis.com/auth/drive.appdata';
 export const driveConfigured=Boolean(GOOGLE_CLIENT_ID);
 let token=null,expires=0,loading;

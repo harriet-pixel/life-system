@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=ai-manual-19';
-import {getCompletionFlow} from './task-completion.mjs?v=ai-manual-19';
-import {dataStore} from './data.mjs?v=ai-manual-19';
-import {createTaskService} from './tasks-service.mjs?v=ai-manual-19';
-import {allocation,localDate} from './tasks-model.mjs?v=ai-manual-19';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=ai-manual-19';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=ai-manual-19';
+import {setOperationNotice} from './operation-notice.mjs?v=mobile-companion-20';
+import {getCompletionFlow} from './task-completion.mjs?v=mobile-companion-20';
+import {dataStore} from './data.mjs?v=mobile-companion-20';
+import {createTaskService} from './tasks-service.mjs?v=mobile-companion-20';
+import {allocation,localDate} from './tasks-model.mjs?v=mobile-companion-20';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=mobile-companion-20';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=mobile-companion-20';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);

@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=ai-manual-19';
+import {ABILITIES} from './abilities.mjs?v=mobile-companion-20';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;

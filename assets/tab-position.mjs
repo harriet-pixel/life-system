@@ -1,9 +1,9 @@
 // Content tabs only. Call the returned handler after the tab selection changes.
-export function createMobileTabPositioner(tablist, beforeMeasure = () => {}) {
+export function createMobileTabPositioner(tablist, beforeMeasure = () => {}, {scrollPage=true} = {}) {
   // Positioning threshold only; page and navigation layout breakpoints stay unchanged.
   const mobile = matchMedia('(max-width: 450px)');
   const region = tablist.parentElement;
-  region.classList.add('mobile-tab-scroll-region');
+  if(scrollPage)region.classList.add('mobile-tab-scroll-region');
   let pendingFrame = 0;
   function positionAfterClick(event) {
     if (!event.isTrusted || document.querySelector('dialog[open]')) return;
@@ -16,7 +16,7 @@ export function createMobileTabPositioner(tablist, beforeMeasure = () => {}) {
       if (delta) tablist.scrollTo({left: tablist.scrollLeft + delta, behavior: 'instant'});
     }
     // Arrow/Home/End changes keep focus visible without vertically repositioning.
-    if (event.type !== 'click' || !mobile.matches) return;
+    if (!scrollPage || event.type !== 'click' || !mobile.matches) return;
     pendingFrame = requestAnimationFrame(() => {
       pendingFrame = 0;
       if (!tablist.isConnected || !mobile.matches || document.querySelector('dialog[open]')) return;

@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=ai-manual-19';
+import {integerValue} from './validation.mjs?v=mobile-companion-20';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([
