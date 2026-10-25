@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=local-clock-23';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=local-clock-23';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=local-clock-23';
-import {dataStore} from './data.mjs?v=local-clock-23';
-import {createTaskService} from './tasks-service.mjs?v=local-clock-23';
-import {allocation,allocationContext} from './tasks-model.mjs?v=local-clock-23';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=local-clock-23';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=local-clock-23';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=local-clock-23';
+import {setOperationNotice} from './operation-notice.mjs?v=sync-retain-24';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=sync-retain-24';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=sync-retain-24';
+import {dataStore} from './data.mjs?v=sync-retain-24';
+import {createTaskService} from './tasks-service.mjs?v=sync-retain-24';
+import {allocation,allocationContext} from './tasks-model.mjs?v=sync-retain-24';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=sync-retain-24';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=sync-retain-24';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=sync-retain-24';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}

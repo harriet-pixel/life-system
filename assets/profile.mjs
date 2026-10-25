@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=local-clock-23';
-import { holdDraft } from './coordination.mjs?v=local-clock-23';
-import { createProfileImages } from './profile-images.mjs?v=local-clock-23';
+import {bindProfileValidation} from './validation.mjs?v=sync-retain-24';
+import { holdDraft } from './coordination.mjs?v=sync-retain-24';
+import { createProfileImages } from './profile-images.mjs?v=sync-retain-24';
 import { imageURL, prepareImageReferences } from './image-store.mjs';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=local-clock-23';
-import { undoManager } from './undo.mjs?v=local-clock-23';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=local-clock-23';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=sync-retain-24';
+import { undoManager } from './undo.mjs?v=sync-retain-24';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=sync-retain-24';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);
