@@ -81,3 +81,20 @@ input[type=checkbox],input[type=radio] { accent-color:var(--color-primary); }
 .settings-disclosure > section {padding:12px 0 24px;}
 .settings-disclosure > summary:focus-visible {outline-offset:-2px;}
 .settings-content.mobile-tab-scroll-region:not(:has(#history-section[open])) {min-height:0;}
+
+/* Backup sections keep the existing theme, shared controls and spacing scale. */
+.backup-block,.backup-operation,.backup-versions {display:grid;gap:16px;min-width:0;align-content:start;}
+.backup-block + .backup-block {border-top:1px solid var(--color-border);padding-top:24px;}
+.backup-operation + .backup-operation {margin-top:8px;}
+.backup-operation h4,.backup-versions h4 {margin:0;font:inherit;color:var(--color-primary);}
+.backup-entry-row {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;min-width:0;}
+.settings-section .backup-password-label,.settings-section .backup-version-label {display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;min-width:0;}
+.backup-password-label input,.backup-version-label select {width:100%;min-width:0;}
+.backup-entry-row > button {min-width:112px;}
+.backup-password-label input::placeholder {font-size:.875rem;}
+.sync-mode-row {display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.settings-section .sync-mode-row label {gap:8px;min-height:44px;cursor:pointer;}
+.settings-section .sync-mode-row input[type=radio] {width:20px;height:20px;min-height:20px;padding:0;accent-color:var(--color-primary);}
+.backup-sync-scope > summary,.backup-cloud-management > summary {min-height:44px;cursor:pointer;color:var(--color-primary);}
+.backup-cloud-management > .backup-operation {padding-top:12px;}
+@media(max-width:639px){.backup-entry-row {grid-template-columns:minmax(0,1fr);gap:12px;}.backup-entry-row > button {justify-self:end;}.settings-section .backup-password-label {grid-template-columns:minmax(0,1fr);gap:8px;}}
