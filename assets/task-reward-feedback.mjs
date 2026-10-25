@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=sync-retain-24';
+import {ABILITIES} from './abilities.mjs?v=drive-poll-25';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;

@@ -1,7 +1,10 @@
-import {deleteSyncSnapshot,listSyncFiles,readAppDataFile,createAppDataFile,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=sync-retain-24';
-import {hash,readBackup} from './backup.mjs?v=sync-retain-24';
-import {validateManifest,versionGraph,retentionCandidates} from './drive-sync-model.mjs?v=sync-retain-24';
-export function createDriveSyncRemote(){const cache=new Map();const remote={
+import {startDriveChanges,readDriveChanges,deleteSyncSnapshot,listSyncFiles,readAppDataFile,createAppDataFile,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=drive-poll-25';
+import {hash,readBackup} from './backup.mjs?v=drive-poll-25';
+import {validateManifest,versionGraph,retentionCandidates} from './drive-sync-model.mjs?v=drive-poll-25';
+export function createDriveSyncRemote(){let cursor=null,needsRead=false;const cache=new Map();const remote={
+ async prime(signal){if(!cursor)cursor=await startDriveChanges(signal);},
+ ack(){needsRead=false;},
+ async hasChanges(signal){if(needsRead)return true;if(!cursor){await remote.prime(signal);return true;}let token=cursor,changed=false;do{let data;try{data=await readDriveChanges(token,signal);}catch(error){if(error.status===410){cursor=null;needsRead=true;return true;}throw error;}changed ||= data.changes.some(c=>c.removed?cache.has(c.fileId):c.file?.appProperties?.lifeSystemSync==='manifest-v1'&&!cache.has(c.file.id));token=data.nextPageToken??null;if(!token)cursor=data.newStartPageToken;}while(token);needsRead=changed;return changed;},
  async graph(signal){const [files,snapshots]=await Promise.all([listSyncFiles(signal),listSyncFiles(signal,'snapshot-v1')]),available=new Set(snapshots.map(f=>f.id)),nodes=[];const load=async f=>{if(Number(f.size)>65536)throw new Error('雲端版本索引過大。');let v=cache.get(f.id);if(!v){v=validateManifest(JSON.parse(await(await readAppDataFile(f.id,65536,signal)).text()));cache.set(f.id,v);}return v;};for(let i=0;i<files.length;i+=8)nodes.push(...await Promise.all(files.slice(i,i+8).map(load)));const graph=versionGraph(nodes);graph.retained=nodes.filter(v=>available.has(v.fileId));return graph;},
  async prune(signal){const graph=await remote.graph(signal);for(const entry of retentionCandidates(graph)){if(signal?.aborted)throw new Error('版本清理已取消。');await deleteSyncSnapshot(entry.fileId,signal);}return remote.graph(signal);},
  legacy:listDriveBackups,

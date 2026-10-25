@@ -1,6 +1,6 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=sync-retain-24';
-import {dataStore} from './data.mjs?v=sync-retain-24';
-import {holdDraft} from './coordination.mjs?v=sync-retain-24';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=drive-poll-25';
+import {dataStore} from './data.mjs?v=drive-poll-25';
+import {holdDraft} from './coordination.mjs?v=drive-poll-25';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

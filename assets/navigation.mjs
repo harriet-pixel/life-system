@@ -1,4 +1,4 @@
-import {setOperationNotice} from './operation-notice.mjs?v=sync-retain-24';
+import {setOperationNotice} from './operation-notice.mjs?v=drive-poll-25';
 const navigationIcons={home:'<path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"/>',tasks:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="m6 10 2 2 3-4m2 3h5M6 16h12"/>',profile:'<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',settings:'<path d="m9 3 1-2h4l1 2 2 1h2l2 4-1 2v3l1 2-2 4h-2l-2 1-1 2h-4l-1-2-2-1H5l-2-4 1-2v-3L3 8l2-4h2Z"/><circle cx="12" cy="11.5" r="3"/>'};
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([

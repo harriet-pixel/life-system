@@ -1,8 +1,8 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=sync-retain-24';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=sync-retain-24';
-import {dataStore} from './data.mjs?v=sync-retain-24';
-import {localDate} from './tasks-model.mjs?v=sync-retain-24';
-import {holdDraft} from './coordination.mjs?v=sync-retain-24';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=drive-poll-25';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=drive-poll-25';
+import {dataStore} from './data.mjs?v=drive-poll-25';
+import {localDate} from './tasks-model.mjs?v=drive-poll-25';
+import {holdDraft} from './coordination.mjs?v=drive-poll-25';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){

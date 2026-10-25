@@ -1,6 +1,6 @@
-import {validateViews} from './task-view-model.mjs?v=sync-retain-24';
-import {validHex} from './settings-model.mjs?v=sync-retain-24';
-import {ABILITIES} from './abilities.mjs?v=sync-retain-24';
+import {validateViews} from './task-view-model.mjs?v=drive-poll-25';
+import {validHex} from './settings-model.mjs?v=drive-poll-25';
+import {ABILITIES} from './abilities.mjs?v=drive-poll-25';
 export function categoryColor(color){if(color===null||color===undefined||color==='')return null;if(!validHex(color))throw new Error('分類顏色請使用 #RRGGBB 格式。');return color.toLowerCase();}
 export const ALLOCATION_RULE_VERSION='1';
 export const validBrief=value=>value===undefined||(typeof value==='string'&&!/[\r\n]/.test(value));

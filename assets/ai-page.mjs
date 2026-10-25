@@ -1,5 +1,5 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=sync-retain-24';
-import {mountAITestPanel} from './ai-test-panel.mjs?v=sync-retain-24';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=drive-poll-25';
+import {mountAITestPanel} from './ai-test-panel.mjs?v=drive-poll-25';
 export function mountAIPage(root,context){
 const connection=getSharedAIConnection(),panel=document.createElement('details');panel.className='ai-developer-test settings-section';panel.hidden=true;
 const title=document.createElement('summary');title.textContent='開發用 AI 跨頁測試';panel.append(title);

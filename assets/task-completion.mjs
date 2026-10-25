@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=sync-retain-24';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=sync-retain-24';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=sync-retain-24';
-import {dataStore} from './data.mjs?v=sync-retain-24';
-import {createTaskService} from './tasks-service.mjs?v=sync-retain-24';
-import {allocation,allocationContext} from './tasks-model.mjs?v=sync-retain-24';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=sync-retain-24';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=sync-retain-24';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=sync-retain-24';
+import {setOperationNotice} from './operation-notice.mjs?v=drive-poll-25';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=drive-poll-25';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=drive-poll-25';
+import {dataStore} from './data.mjs?v=drive-poll-25';
+import {createTaskService} from './tasks-service.mjs?v=drive-poll-25';
+import {allocation,allocationContext} from './tasks-model.mjs?v=drive-poll-25';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=drive-poll-25';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=drive-poll-25';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=drive-poll-25';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}

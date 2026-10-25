@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=sync-retain-24';
-import {getCompletionFlow} from './task-completion.mjs?v=sync-retain-24';
-import {dataStore} from './data.mjs?v=sync-retain-24';
-import {createTaskService} from './tasks-service.mjs?v=sync-retain-24';
-import {allocation,localDate} from './tasks-model.mjs?v=sync-retain-24';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=sync-retain-24';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=sync-retain-24';
+import {setOperationNotice} from './operation-notice.mjs?v=drive-poll-25';
+import {getCompletionFlow} from './task-completion.mjs?v=drive-poll-25';
+import {dataStore} from './data.mjs?v=drive-poll-25';
+import {createTaskService} from './tasks-service.mjs?v=drive-poll-25';
+import {allocation,localDate} from './tasks-model.mjs?v=drive-poll-25';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=drive-poll-25';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=drive-poll-25';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);

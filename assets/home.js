@@ -1,11 +1,11 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=sync-retain-24';
-import {taskActions} from './task-actions.mjs?v=sync-retain-24';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=sync-retain-24';
-import { createMobileTabPositioner } from './tab-position.mjs?v=sync-retain-24';
-import { createActivityHeightSync } from './activity-height.mjs?v=sync-retain-24';
-import { undoManager } from './undo.mjs?v=sync-retain-24';
-import {createSharedCompanionView} from './companion-events.mjs?v=sync-retain-24';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=sync-retain-24';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=drive-poll-25';
+import {taskActions} from './task-actions.mjs?v=drive-poll-25';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=drive-poll-25';
+import { createMobileTabPositioner } from './tab-position.mjs?v=drive-poll-25';
+import { createActivityHeightSync } from './activity-height.mjs?v=drive-poll-25';
+import { undoManager } from './undo.mjs?v=drive-poll-25';
+import {createSharedCompanionView} from './companion-events.mjs?v=drive-poll-25';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=drive-poll-25';
 
 
 export function mountHome(root,context){
