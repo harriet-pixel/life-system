@@ -1,11 +1,11 @@
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=task-mobile-15';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=task-mobile-15';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=task-mobile-15';
-import {ABILITIES} from './abilities.mjs?v=task-mobile-15';
-import {maintenance} from './coordination.mjs?v=task-mobile-15';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=task-mobile-15';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=task-response-16';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=task-response-16';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=task-response-16';
+import {ABILITIES} from './abilities.mjs?v=task-response-16';
+import {maintenance} from './coordination.mjs?v=task-response-16';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=task-response-16';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=task-mobile-15';
+import {normalizeSettings} from './settings-model.mjs?v=task-response-16';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;

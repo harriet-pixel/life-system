@@ -121,7 +121,7 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 #task-settings-list [data-list-error]:empty,#task-settings-list [data-list-status]:empty{display:none}
 @media(width < 1024px){.task-mobile-heading .task-notifications:empty{display:none}}
 
-#task-item-menu>.task-menu-close,.task-pool-complete{display:none}
+.task-pool-complete{display:none}
 @media(width < 1024px){
  .task-mobile-heading #toggle-calendar{grid-column:2;grid-row:1}
  .task-mobile-heading #task-settings{grid-column:3;grid-row:1}
@@ -130,11 +130,29 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
  .task-workspace .task-content-tabs button{font-size:20px}
  .task-content-tabs .task-tab-english{display:none}
  .task-date-title-prefix{display:none}
- #task-item-menu.task-pool-menu{position:fixed;padding-top:56px}
+ #task-item-menu.task-pool-menu{position:fixed;padding-top:24px}
  .task-pool-menu #task-item-menu-title{color:var(--menu-task-color,var(--color-text));overflow-wrap:anywhere}
  .task-pool-menu .task-menu-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
  .task-pool-menu .task-menu-actions button{min-width:0;overflow-wrap:anywhere}
- #task-item-menu.task-pool-menu>.task-menu-close{display:inline-grid;position:absolute;right:8px;top:8px;place-items:center}
+
  .task-pool-menu .task-pool-complete{display:block}
  .task-pool-menu .task-menu-close-text{display:none}
 }
+
+/* Only the tasks view replaces its mobile in-flow companion with one response. */
+.task-response-close{display:none}
+@media(width < 1024px){
+ [data-page-view=tasks] .tasks-dashboard>.companion{display:none}
+ [data-page-view=tasks] .tasks-dashboard>.companion.is-floating-response{display:block;position:fixed;z-index:900;left:var(--response-left,12px);top:var(--response-top,12px);width:var(--response-width,calc(100% - 24px));max-height:var(--response-max-height,50dvh);margin:0;padding:0;border:0;pointer-events:none;animation:task-response-in 160ms ease-out}
+ [data-page-view=tasks] .is-floating-response .companion-banner{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;align-items:end}
+ [data-page-view=tasks] .is-floating-response .companion-portrait{width:56px;height:56px;min-height:0;aspect-ratio:1;border-radius:50%;background:var(--color-background,#fff)}
+ [data-page-view=tasks] .is-floating-response .dialogue-bubble{position:relative;padding:12px 44px 12px 12px;max-height:var(--response-max-height,50dvh);overflow:auto;pointer-events:auto;background:var(--color-background,#fff);font-size:var(--text-secondary,1rem);overflow-wrap:anywhere}
+ [data-page-view=tasks] .is-floating-response .dialogue-bubble:before{display:none}
+ [data-page-view=tasks] .is-floating-response .companion-note{display:none}
+ [data-page-view=tasks] .is-floating-response .task-response-close{display:inline-grid;place-items:center;position:absolute;right:0;top:0;width:44px;height:44px;min-height:44px;padding:10px;border:0;background:transparent;color:var(--color-primary);cursor:pointer}
+ [data-page-view=tasks] .is-floating-response #portrait-placeholder{min-height:0;height:100%;padding:2px}
+ .task-response-close svg{width:22px;height:22px}
+ .task-pool-menu #task-item-menu-title{font-size:1rem}
+}
+@keyframes task-response-in{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){[data-page-view=tasks] .tasks-dashboard>.companion.is-floating-response{animation:none}}

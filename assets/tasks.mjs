@@ -1,18 +1,18 @@
-import {boardTasks,listSettings,sortDay} from './task-view-model.mjs?v=task-mobile-15';
-import {createListSettings} from './task-day-settings.mjs?v=task-mobile-15';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=task-mobile-15';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-mobile-15';
-import {createDateResidents} from './task-date-residents.mjs?v=task-mobile-15';
-import {createActivityHeightSync} from './activity-height.mjs?v=task-mobile-15';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-mobile-15';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-mobile-15';
-import {createTaskPool} from './task-pool.mjs?v=task-mobile-15';
-import {dataStore} from './data.mjs?v=task-mobile-15';
-import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-mobile-15';
-import {taskActions} from './task-actions.mjs?v=task-mobile-15';
-import {mountTaskCompanion} from './task-companion.mjs?v=task-mobile-15';
-import {createTaskEditor} from './task-editor.mjs?v=task-mobile-15';
-import {createCategoryManager} from './task-categories.mjs?v=task-mobile-15';
+import {boardTasks,listSettings,sortDay} from './task-view-model.mjs?v=task-response-16';
+import {createListSettings} from './task-day-settings.mjs?v=task-response-16';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=task-response-16';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-response-16';
+import {createDateResidents} from './task-date-residents.mjs?v=task-response-16';
+import {createActivityHeightSync} from './activity-height.mjs?v=task-response-16';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-response-16';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-response-16';
+import {createTaskPool} from './task-pool.mjs?v=task-response-16';
+import {dataStore} from './data.mjs?v=task-response-16';
+import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-response-16';
+import {taskActions} from './task-actions.mjs?v=task-response-16';
+import {mountTaskCompanion} from './task-companion.mjs?v=task-response-16';
+import {createTaskEditor} from './task-editor.mjs?v=task-response-16';
+import {createCategoryManager} from './task-categories.mjs?v=task-response-16';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');
@@ -50,9 +50,11 @@ export function mountTasks(root,context){
  dateDialog.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=dateDialog.querySelector('[type=submit]');b.disabled=true;try{await scheduleWork(dateDialog.querySelector('input').value);dateDialog.close();actions.say('日期安排已儲存。');}catch(error){dateDialog.querySelector('p').textContent=error.message;}finally{b.disabled=false;}};
  const multiSchedule=createMultiSchedule(root,actions,context);
  const confirm=message=>window.confirm(message);
- const menu=el('dialog');menu.className='task-dialog';menu.id='task-item-menu';menu.setAttribute('aria-labelledby','task-item-menu-title');let menuFocus;
+ const menu=el('dialog');menu.className='task-dialog';menu.id='task-item-menu';menu.setAttribute('aria-labelledby','task-item-menu-title');let menuFocus,outsidePress=false;
+ const outsideMenu=event=>{const r=menu.getBoundingClientRect();return event.target===menu&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom);};
+ menu.addEventListener('pointerdown',event=>{outsidePress=outsideMenu(event);});menu.addEventListener('click',event=>{if(!desktop.matches&&menu.classList.contains('task-pool-menu')&&outsidePress&&outsideMenu(event))menu.close();outsidePress=false;});
  menu.addEventListener('close',()=>{if(menuFocus?.isConnected)menuFocus.focus({preventScroll:true});else $(desktop.matches?'#new-task':'#task-settings').focus({preventScroll:true});});root.append(menu);
- function openMenu(task,o=null,pool=false){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const color=dataStore.get().tasks.categories.find(c=>c.id===task.categoryId)?.color;if(color)menu.style.setProperty('--menu-task-color',color);else menu.style.removeProperty('--menu-task-color');menu.classList.toggle('task-pool-menu',pool);const closeIcon=button('',()=>menu.close());closeIcon.className='task-menu-close task-panel-close';closeIcon.setAttribute('aria-label','關閉');closeIcon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m6 6 12 12M18 6 6 18"/></svg>';menu.append(closeIcon);const controls=el('div',undefined,'task-menu-actions');
+ function openMenu(task,o=null,pool=false){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const color=dataStore.get().tasks.categories.find(c=>c.id===task.categoryId)?.color;if(color)menu.style.setProperty('--menu-task-color',color);else menu.style.removeProperty('--menu-task-color');menu.classList.toggle('task-pool-menu',pool);const controls=el('div',undefined,'task-menu-actions');
   if(pool)controls.append(button('安排日期',()=>{menu.close();if(task.kind==='repeat'&&!o)multiSchedule.open(task);else askDate(date=>actions.service.arrange(task.id,date,o?.date??null));}));
   controls.append(button('編輯事件',()=>{menu.close();return openEditor(task,o?.date??null);}));
   const remove=button(task.kind==='repeat'&&o?'刪除此日安排':'刪除事件',async()=>{
