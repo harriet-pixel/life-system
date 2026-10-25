@@ -1,6 +1,6 @@
-import {createDriveAuthSession} from './drive-auth-session.mjs?v=drive-sync-22';
-import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=drive-sync-22';
-import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=drive-sync-22';
+import {createDriveAuthSession} from './drive-auth-session.mjs?v=local-clock-23';
+import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=local-clock-23';
+import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=local-clock-23';
 const SCOPE='https://www.googleapis.com/auth/drive.appdata';
 export const driveConfigured=Boolean(GOOGLE_CLIENT_ID);
 let token=null,expires=0,loading;const listeners=new Set();const session=createDriveAuthSession({getItem:k=>globalThis.sessionStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.sessionStorage.setItem(k,v),removeItem:k=>globalThis.sessionStorage?.removeItem(k)},GOOGLE_CLIENT_ID);

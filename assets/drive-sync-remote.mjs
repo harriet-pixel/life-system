@@ -1,6 +1,6 @@
-import {listSyncFiles,readAppDataFile,createAppDataFile,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=drive-sync-22';
-import {hash,readBackup} from './backup.mjs?v=drive-sync-22';
-import {validateManifest,versionGraph} from './drive-sync-model.mjs?v=drive-sync-22';
+import {listSyncFiles,readAppDataFile,createAppDataFile,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=local-clock-23';
+import {hash,readBackup} from './backup.mjs?v=local-clock-23';
+import {validateManifest,versionGraph} from './drive-sync-model.mjs?v=local-clock-23';
 export function createDriveSyncRemote(){const cache=new Map();return {
  async graph(signal){const files=await listSyncFiles(signal),nodes=[];const load=async f=>{if(Number(f.size)>65536)throw new Error('雲端版本索引過大。');let v=cache.get(f.id);if(!v){v=validateManifest(JSON.parse(await(await readAppDataFile(f.id,65536,signal)).text()));cache.set(f.id,v);}return v;};for(let i=0;i<files.length;i+=8)nodes.push(...await Promise.all(files.slice(i,i+8).map(load)));return versionGraph(nodes);},
  legacy:listDriveBackups,

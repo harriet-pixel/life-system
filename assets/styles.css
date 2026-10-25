@@ -274,3 +274,7 @@ body[data-navigation="ready"] .page-shell {padding-bottom:calc(var(--bottom-nav-
  [data-page-view=home] .home-companion-float.is-dismissed{display:none}
  html[data-keyboard=open] [data-page-view=home] .home-companion-float,body:has(dialog[open]) [data-page-view=home] .home-companion-float{visibility:hidden}
 }
+
+/* Initial HTML has the same mobile scope as the mounted view. The floating
+   companion alone waits for its controls; never show its obsolete inline slot. */
+@media(width < 1024px){[data-page-view=home] .companion:not(.home-companion-float){display:none}}
