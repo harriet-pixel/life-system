@@ -1,13 +1,13 @@
-import {initializeAISettings} from './ai-settings.mjs?v=task-compact-14';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=task-compact-14';
-import {dataStore,persistentUndo} from './data.mjs?v=task-compact-14';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-compact-14';
-import {createHistoryView} from './history-view.mjs?v=task-compact-14';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=task-compact-14';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=task-compact-14';
-import {holdDraft} from './coordination.mjs?v=task-compact-14';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=task-compact-14';
-import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=task-compact-14';
+import {initializeAISettings} from './ai-settings.mjs?v=task-mobile-15';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=task-mobile-15';
+import {dataStore,persistentUndo} from './data.mjs?v=task-mobile-15';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-mobile-15';
+import {createHistoryView} from './history-view.mjs?v=task-mobile-15';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=task-mobile-15';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=task-mobile-15';
+import {holdDraft} from './coordination.mjs?v=task-mobile-15';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=task-mobile-15';
+import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=task-mobile-15';
 
 export function mountSettings(root,context){
 const $=selector=>root.querySelector(selector);

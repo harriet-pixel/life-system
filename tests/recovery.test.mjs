@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
 import {DAY,maintainRecovery,recoveryLifetime} from '../assets/recovery.mjs';
-import {documentImageReferences} from '../assets/image-references.mjs?v=task-compact-14';
+import {documentImageReferences} from '../assets/image-references.mjs?v=task-mobile-15';
 import {encodeBackup,readBackup,dataCount} from '../assets/backup.mjs';
 const memory=()=>{let raw=null;return {getItem:()=>raw,setItem:(_,v)=>raw=v};};
 const fixture=()=>{let time=Date.now()-10*DAY;const storage=memory(),store=createDataStore(storage,{now:()=>time});return {store,storage,get time(){return time;},advance:n=>time+=n};};

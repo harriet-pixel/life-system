@@ -1,5 +1,5 @@
-import {dataStore} from './data.mjs?v=task-compact-14';
-import {listSettings} from './task-view-model.mjs?v=task-compact-14';
+import {dataStore} from './data.mjs?v=task-mobile-15';
+import {listSettings} from './task-view-model.mjs?v=task-mobile-15';
 export function createListSettings(pane,context,actions,{onSave=()=>{}}={}){
  pane.innerHTML='<form data-list-settings><label>事件排序<select name="sort"><option value="created">建立時間</option><option value="name">事件名稱</option><option value="category">分類</option><option value="points">點數</option></select></label><label>方向<select name="direction"><option value="asc">升冪（舊至新／低至高）</option><option value="desc">降冪（新至舊／高至低）</option></select></label><label>行距<select name="spacing"><option value="compact">緊密</option><option value="standard">標準</option><option value="relaxed">寬鬆</option></select></label><p data-list-error role="alert"></p><p data-list-status role="status"></p><button type="submit">儲存設定</button></form>';
  const form=pane.querySelector('form');let busy=false;form.addEventListener('change',()=>{pane.querySelector('[data-list-status]').textContent='';});

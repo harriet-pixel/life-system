@@ -10,7 +10,7 @@ const assert = require('node:assert/strict');
    await page.goto(base);
    await page.waitForFunction(()=>document.querySelector('#home-stats')?.textContent==='Lv 1 ｜ Exp —｜ $ —');
    await page.evaluate(async()=>{
-    const {dataStore,STORAGE_KEY}=await import('./assets/data.mjs?v=task-compact-14');
+    const {dataStore,STORAGE_KEY}=await import('./assets/data.mjs?v=task-mobile-15');
     const state=dataStore.get();state.stats.level=7;state.stats.experience=1234;state.stats.currency=89;
     localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
    });

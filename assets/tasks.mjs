@@ -1,18 +1,18 @@
-import {boardTasks,listSettings,sortDay} from './task-view-model.mjs?v=task-compact-14';
-import {createListSettings} from './task-day-settings.mjs?v=task-compact-14';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=task-compact-14';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-compact-14';
-import {createDateResidents} from './task-date-residents.mjs?v=task-compact-14';
-import {createActivityHeightSync} from './activity-height.mjs?v=task-compact-14';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-compact-14';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-compact-14';
-import {createTaskPool} from './task-pool.mjs?v=task-compact-14';
-import {dataStore} from './data.mjs?v=task-compact-14';
-import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-compact-14';
-import {taskActions} from './task-actions.mjs?v=task-compact-14';
-import {mountTaskCompanion} from './task-companion.mjs?v=task-compact-14';
-import {createTaskEditor} from './task-editor.mjs?v=task-compact-14';
-import {createCategoryManager} from './task-categories.mjs?v=task-compact-14';
+import {boardTasks,listSettings,sortDay} from './task-view-model.mjs?v=task-mobile-15';
+import {createListSettings} from './task-day-settings.mjs?v=task-mobile-15';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=task-mobile-15';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-mobile-15';
+import {createDateResidents} from './task-date-residents.mjs?v=task-mobile-15';
+import {createActivityHeightSync} from './activity-height.mjs?v=task-mobile-15';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-mobile-15';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-mobile-15';
+import {createTaskPool} from './task-pool.mjs?v=task-mobile-15';
+import {dataStore} from './data.mjs?v=task-mobile-15';
+import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=task-mobile-15';
+import {taskActions} from './task-actions.mjs?v=task-mobile-15';
+import {mountTaskCompanion} from './task-companion.mjs?v=task-mobile-15';
+import {createTaskEditor} from './task-editor.mjs?v=task-mobile-15';
+import {createCategoryManager} from './task-categories.mjs?v=task-mobile-15';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');
@@ -26,7 +26,7 @@ export function mountTasks(root,context){
  const completionBusy=context.hooks.busy;
  const editor=createTaskEditor(root,context,actions),categories=createCategoryManager(root,context,actions);
  const panel=editor.element,tabs=el('div',undefined,'task-settings-tabs'),eventPane=editor.form,categoryPane=el('section');
- tabs.hidden=true;tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','待辦事項設定');categoryPane.hidden=true;categoryPane.id='task-settings-categories';panel.append(categoryPane);const residentPane=el('section'),boardPane=el('section');residentPane.id='task-settings-residents';boardPane.id='task-settings-board';residentPane.hidden=true;boardPane.hidden=true;const listPane=el('section');listPane.id='task-settings-list';listPane.hidden=true;panel.append(residentPane,boardPane,listPane);const listEditor=createListSettings(listPane,context,actions);let residents,board;const choicesBusy=value=>{panel.setAttribute('aria-busy',String(value));for(const tab of [eventTab,categoryTab,boardTab])tab.disabled=value;};const selectedWarning=()=>window.confirm('另一頁籤仍有未提交選取；成功後將關閉視窗並捨棄那些選取，是否繼續？');residents=createDateResidents(residentPane,context,actions,{onSuccess:()=>panel.close(),onBusy:choicesBusy,beforeConfirm:()=>!board.count()||selectedWarning()});board=createDateResidents(boardPane,context,actions,{kind:'board',onSuccess:()=>panel.close(),onBusy:choicesBusy,beforeConfirm:()=>!residents.count()||selectedWarning()});
+ tabs.hidden=true;tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','待辦事項設定');categoryPane.hidden=true;categoryPane.id='task-settings-categories';panel.append(categoryPane);const residentPane=el('section'),boardPane=el('section');residentPane.id='task-settings-residents';boardPane.id='task-settings-board';residentPane.hidden=true;boardPane.hidden=true;const listPane=el('section');listPane.id='task-settings-list';listPane.hidden=true;panel.append(residentPane,boardPane,listPane);const listEditor=createListSettings(listPane,context,actions,{onSave:()=>{if(!desktop.matches)panel.close();}});let residents,board;const choicesBusy=value=>{panel.setAttribute('aria-busy',String(value));for(const tab of [eventTab,categoryTab,boardTab])tab.disabled=value;};const selectedWarning=()=>window.confirm('另一頁籤仍有未提交選取；成功後將關閉視窗並捨棄那些選取，是否繼續？');residents=createDateResidents(residentPane,context,actions,{onSuccess:()=>panel.close(),onBusy:choicesBusy,beforeConfirm:()=>!board.count()||selectedWarning()});board=createDateResidents(boardPane,context,actions,{kind:'board',onSuccess:()=>panel.close(),onBusy:choicesBusy,beforeConfirm:()=>!residents.count()||selectedWarning()});
  const eventTab=button('新增事件',()=>selectTab('event')),categoryTab=button('管理分類',()=>selectTab('categories')),boardTab=button('任務看板',()=>selectTab('board')),listTab=button('清單設定',()=>selectTab('list'));listTab.id='task-settings-list-tab';listTab.hidden=true;listTab.setAttribute('role','tab');listTab.setAttribute('aria-controls',listPane.id);boardTab.id='task-settings-board-tab';boardTab.setAttribute('role','tab');boardTab.setAttribute('aria-controls',boardPane.id);boardTab.hidden=true;
  eventPane.id='task-settings-event';eventTab.id='task-settings-event-tab';categoryTab.id='task-settings-categories-tab';
  for(const [tab,pane] of [[eventTab,eventPane],[categoryTab,categoryPane]]){tab.setAttribute('role','tab');tab.setAttribute('aria-controls',pane.id);}
@@ -37,7 +37,7 @@ export function mountTasks(root,context){
  const warnDraft=()=>!dateEntry||!(residents.count()+board.count())||window.confirm('仍有未提交的事件選取，關閉將捨棄選取，是否繼續？');editor.beforeSave(warnDraft);
  panel.addEventListener('click',event=>{if(residents.busy()||board.busy()||listEditor.busy()){event.preventDefault();event.stopImmediatePropagation();return;}if(event.target.closest('.task-settings-header button,[data-editor-cancel]')&&!warnDraft()){event.preventDefault();event.stopImmediatePropagation();}},true);
 
- const configureSettings=(date=null)=>{dateEntry=Boolean(date);settingsOpen=true;panelTitle.textContent=dateEntry?`新增事件至 ${date}`:'待辦事項設定';tabs.setAttribute('aria-label',dateEntry?'新增方式':'待辦事項設定');boardTab.hidden=!dateEntry;listTab.hidden=dateEntry;categoryTab.textContent=dateEntry?'重複性事件':'管理分類';panelHeader.hidden=false;panel.classList.add('task-settings-panel');panel.classList.toggle('task-global-settings',!dateEntry);panel.classList.toggle('task-date-entry',dateEntry);sizePanel();tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);const other=dateEntry?residentPane:categoryPane;other.setAttribute('role','tabpanel');other.setAttribute('aria-labelledby',categoryTab.id);if(dateEntry){residents.open(date);board.open(date);boardPane.setAttribute('role','tabpanel');boardPane.setAttribute('aria-labelledby',boardTab.id);}else{listEditor.load();listPane.setAttribute('role','tabpanel');listPane.setAttribute('aria-labelledby',listTab.id);categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});}selectTab('event');};
+ const configureSettings=(date=null)=>{dateEntry=Boolean(date);settingsOpen=true;panelTitle.replaceChildren(...(dateEntry?[el('span','新增事件至 ','task-date-title-prefix'),document.createTextNode(date)]:[document.createTextNode('待辦事項設定')]));tabs.setAttribute('aria-label',dateEntry?'新增方式':'待辦事項設定');boardTab.hidden=!dateEntry;listTab.hidden=dateEntry;categoryTab.textContent=dateEntry?'重複性事件':'管理分類';panelHeader.hidden=false;panel.classList.add('task-settings-panel');panel.classList.toggle('task-global-settings',!dateEntry);panel.classList.toggle('task-date-entry',dateEntry);sizePanel();tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);const other=dateEntry?residentPane:categoryPane;other.setAttribute('role','tabpanel');other.setAttribute('aria-labelledby',categoryTab.id);if(dateEntry){residents.open(date);board.open(date);boardPane.setAttribute('role','tabpanel');boardPane.setAttribute('aria-labelledby',boardTab.id);}else{listEditor.load();listPane.setAttribute('role','tabpanel');listPane.setAttribute('aria-labelledby',listTab.id);categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});}selectTab('event');};
  panel.addEventListener('cancel',event=>{if(categories.busy()||residents.busy()||board.busy()||listEditor.busy()||!warnDraft())event.preventDefault();});
  panel.addEventListener('close',()=>{if(editor.hasDraft())return;if(settingsOpen&&!dateEntry)categories.detach();settingsOpen=false;dateEntry=false;tabs.hidden=true;panelHeader.hidden=true;panel.classList.remove('task-settings-panel','task-global-settings','task-date-entry');eventPane.hidden=false;categoryPane.hidden=true;residentPane.hidden=true;boardPane.hidden=true;listPane.hidden=true;boardTab.hidden=true;listTab.hidden=true;eventPane.removeAttribute('role');eventPane.removeAttribute('aria-labelledby');panel.setAttribute('aria-labelledby','task-editor-title');});
  async function openEditor(task=null,date=null,dateButton=false){await editor.open(task,date);if(dateButton)configureSettings(date);else if(!task&&!desktop.matches)configureSettings();}
@@ -52,7 +52,7 @@ export function mountTasks(root,context){
  const confirm=message=>window.confirm(message);
  const menu=el('dialog');menu.className='task-dialog';menu.id='task-item-menu';menu.setAttribute('aria-labelledby','task-item-menu-title');let menuFocus;
  menu.addEventListener('close',()=>{if(menuFocus?.isConnected)menuFocus.focus({preventScroll:true});else $(desktop.matches?'#new-task':'#task-settings').focus({preventScroll:true});});root.append(menu);
- function openMenu(task,o=null,pool=false){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const controls=el('div',undefined,'task-menu-actions');
+ function openMenu(task,o=null,pool=false){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const color=dataStore.get().tasks.categories.find(c=>c.id===task.categoryId)?.color;if(color)menu.style.setProperty('--menu-task-color',color);else menu.style.removeProperty('--menu-task-color');menu.classList.toggle('task-pool-menu',pool);const closeIcon=button('',()=>menu.close());closeIcon.className='task-menu-close task-panel-close';closeIcon.setAttribute('aria-label','關閉');closeIcon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m6 6 12 12M18 6 6 18"/></svg>';menu.append(closeIcon);const controls=el('div',undefined,'task-menu-actions');
   if(pool)controls.append(button('安排日期',()=>{menu.close();if(task.kind==='repeat'&&!o)multiSchedule.open(task);else askDate(date=>actions.service.arrange(task.id,date,o?.date??null));}));
   controls.append(button('編輯事件',()=>{menu.close();return openEditor(task,o?.date??null);}));
   const remove=button(task.kind==='repeat'&&o?'刪除此日安排':'刪除事件',async()=>{
@@ -61,8 +61,9 @@ export function mountTasks(root,context){
    await actions.attempt(()=>actions.service.remove(task.id,o?.date??null));menu.close();
   });controls.append(remove);
   if(task.kind==='repeat'&&o)controls.append(button('刪除整個重複事項',async()=>{if(!confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留；如需撤回某次完成，請刪除此日安排。'))return;await actions.attempt(()=>actions.service.remove(task.id));menu.close();}));
+  if(pool){const complete=button('完成事件',()=>{menu.close();return actions.complete(task.id,o?.date??null);});complete.className='task-pool-complete';complete.disabled=Boolean(o&&o.status!=='pending')||actions.isPending(task.id,o?.date??localDate());controls.append(complete);}
   if(o?.status==='done')menu.append(el('p','刪除此完成安排會以當次保存的獎勵資料完整撤回；不影響其他次數。','small-note'));
-  controls.append(button('關閉',()=>menu.close()));menu.append(controls);menu.showModal();
+  const closeButton=button('關閉',()=>menu.close());closeButton.className='task-menu-close-text';controls.append(closeButton);menu.append(controls);menu.showModal();
  }
  const pool=createTaskPool(root,context,actions,{openMenu,askDate});
  function dailyRow(r){const {task,occurrence:o}=r,node=el('article',undefined,'task-daily-row');node.dataset.taskId=task.id;node.dataset.date=o.date;

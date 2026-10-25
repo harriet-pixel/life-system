@@ -237,3 +237,11 @@ body[data-navigation="ready"] .page-shell {padding-bottom:calc(var(--bottom-nav-
 
 /* Programmatic landmark focus announces a route without framing the whole page. */
 #main:focus {outline:none;}
+
+/* Mobile home: date and formal task names without supplementary labels. */
+@media(width < 1024px){
+ [data-page-view="home"] .welcome-copy,[data-page-view="home"] .date-caption,[data-page-view="home"] .demo-notice,[data-page-view="home"] #tasks-panel .section-bottom>.small-note{display:none}
+ [data-page-view="home"] .activity-tabs button{font-size:20px}
+ [data-page-view="home"] #tasks-panel .task-content{color:var(--home-task-color,var(--color-text))}
+ [data-page-view="home"] #tasks-panel .task-time{display:none}
+}

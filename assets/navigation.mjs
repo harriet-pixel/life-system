@@ -1,4 +1,4 @@
-import {setOperationNotice} from './operation-notice.mjs?v=task-compact-14';
+import {setOperationNotice} from './operation-notice.mjs?v=task-mobile-15';
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
   { id: 'home', label: '首頁', englishLabel: 'Home', href: new URL('../', import.meta.url).href, available: true },

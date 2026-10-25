@@ -1,8 +1,8 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-compact-14';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=task-compact-14';
-import {dataStore} from './data.mjs?v=task-compact-14';
-import {localDate} from './tasks-model.mjs?v=task-compact-14';
-import {holdDraft} from './coordination.mjs?v=task-compact-14';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-mobile-15';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=task-mobile-15';
+import {dataStore} from './data.mjs?v=task-mobile-15';
+import {localDate} from './tasks-model.mjs?v=task-mobile-15';
+import {holdDraft} from './coordination.mjs?v=task-mobile-15';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){
