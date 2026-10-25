@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=ai-manual-19';
-import { holdDraft } from './coordination.mjs?v=ai-manual-19';
-import { createProfileImages } from './profile-images.mjs?v=ai-manual-19';
+import {bindProfileValidation} from './validation.mjs?v=mobile-companion-20';
+import { holdDraft } from './coordination.mjs?v=mobile-companion-20';
+import { createProfileImages } from './profile-images.mjs?v=mobile-companion-20';
 import { imageURL, prepareImageReferences } from './image-store.mjs';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=ai-manual-19';
-import { undoManager } from './undo.mjs?v=ai-manual-19';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=ai-manual-19';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=mobile-companion-20';
+import { undoManager } from './undo.mjs?v=mobile-companion-20';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=mobile-companion-20';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

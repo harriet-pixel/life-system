@@ -238,12 +238,13 @@ textarea { resize: vertical; }
 
 /* Mobile identity: one responsive portrait beside name and shared statistics. */
 @media(width < 1024px){
- .profile-dashboard{position:relative;grid-template-columns:minmax(64px,28%) minmax(0,1fr);column-gap:16px;row-gap:4px;padding-top:52px;align-items:center}
+ .profile-dashboard{position:relative;grid-template-columns:minmax(64px,28%) minmax(0,1fr);column-gap:16px;row-gap:4px;padding-top:0;align-items:center}
  .profile-page .avatar-section{grid-column:1;grid-row:1 / 3;padding-top:0;align-self:center}
  .profile-page .user-avatar-frame{width:100%;max-width:160px;min-width:0}
- .profile-page .personal-heading{grid-column:2;grid-row:1;display:block;text-align:left;margin:0;padding:0;align-self:end;min-width:0}
+ .profile-page .personal-heading{grid-column:2;grid-row:1;display:flex;align-items:center;gap:8px;text-align:left;margin:0;padding:0;align-self:end;min-width:0}
  .profile-page #profile-name{font-size:22px;font-weight:700;line-height:1.4;margin:0}
- .profile-page .personal-heading #edit-profile{position:absolute;grid-area:auto;top:0;right:0;margin:0;width:44px;height:44px}
+ .profile-page .personal-heading #edit-profile{position:static;grid-area:auto;margin:0;width:44px;height:44px;flex:none}
+ .profile-page .personal-heading .profile-identity{flex:1;min-width:0}
  .profile-dashboard>.profile-summary-area{grid-column:2;grid-row:2;align-items:start;align-self:start;gap:4px}
  .profile-summary-area #profile-stats{justify-content:flex-start;text-align:left;font-size:1rem;padding:0}
  .profile-summary-area #profile-motto{text-align:left}

@@ -245,3 +245,27 @@ body[data-navigation="ready"] .page-shell {padding-bottom:calc(var(--bottom-nav-
  [data-page-view="home"] #tasks-panel .task-content{color:var(--home-task-color,var(--color-text))}
  [data-page-view="home"] #tasks-panel .task-time{display:none}
 }
+
+/* Shared real destinations use labelled SVG links; unavailable destinations stay text. */
+.navigation-icon-item{position:relative}
+.navigation-icon-item svg{width:22px;height:22px;flex:none}
+#mobile-links .navigation-icon-item{width:44px;min-width:44px;padding:8px;justify-content:center}
+/* Home companion is persistent, movable and collapsible only on mobile. */
+@media(width < 1024px){
+ [data-page-view=home] .home-companion-float{position:fixed;z-index:900;left:var(--home-float-left,12px);top:var(--home-float-top,50%);width:var(--home-float-width,calc(100% - 24px));max-height:var(--home-float-max-height,60dvh);margin:0;padding:0;border:0;background:transparent;pointer-events:none}
+ [data-page-view=home] .home-companion-float .companion-banner{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:12px;align-items:end}
+ [data-page-view=home] .home-companion-toggle{grid-column:2;grid-row:1;width:56px;height:56px;min-width:56px;min-height:56px;padding:0;border:0;background:transparent;pointer-events:auto;touch-action:none;cursor:grab;border-radius:50%}
+ [data-page-view=home] .home-companion-toggle:active{cursor:grabbing}
+ [data-page-view=home] .home-companion-float .companion-portrait{width:56px;height:56px;min-height:0;aspect-ratio:1;border-radius:50%;background:var(--color-background,#fff)}
+ [data-page-view=home] .home-companion-float #portrait-placeholder{height:100%;min-height:0;padding:2px}
+ [data-page-view=home] .home-companion-float .dialogue-column{grid-column:1;grid-row:1;min-width:0}
+ [data-page-view=home] .home-companion-float .dialogue-bubble{max-height:var(--home-float-max-height,60dvh);overflow:auto;overscroll-behavior:contain;pointer-events:auto;background:var(--color-background,#fff)}
+ [data-page-view=home] .home-companion-float .dialogue-bubble:before{display:none}
+ [data-page-view=home] .home-companion-float .companion-note{display:none}
+ [data-page-view=home] .home-companion-float.is-bubble-right .companion-banner{grid-template-columns:56px minmax(0,1fr)}
+ [data-page-view=home] .home-companion-float.is-bubble-right .home-companion-toggle{grid-column:1}
+ [data-page-view=home] .home-companion-float.is-bubble-right .dialogue-column{grid-column:2}
+ [data-page-view=home] .home-companion-float.is-collapsed .companion-banner{grid-template-columns:56px;gap:0}
+ [data-page-view=home] .home-companion-float.is-collapsed .home-companion-toggle{grid-column:1}
+ html[data-keyboard=open] [data-page-view=home] .home-companion-float,body:has(dialog[open]) [data-page-view=home] .home-companion-float{visibility:hidden}
+}

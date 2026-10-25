@@ -1,13 +1,13 @@
-import {initializeAISettings} from './ai-settings.mjs?v=ai-manual-19';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=ai-manual-19';
-import {dataStore,persistentUndo} from './data.mjs?v=ai-manual-19';
-import {createMobileTabPositioner} from './tab-position.mjs?v=ai-manual-19';
-import {createHistoryView} from './history-view.mjs?v=ai-manual-19';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=ai-manual-19';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=ai-manual-19';
-import {holdDraft} from './coordination.mjs?v=ai-manual-19';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=ai-manual-19';
-import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=ai-manual-19';
+import {initializeAISettings} from './ai-settings.mjs?v=mobile-companion-20';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=mobile-companion-20';
+import {dataStore,persistentUndo} from './data.mjs?v=mobile-companion-20';
+import {createMobileTabPositioner} from './tab-position.mjs?v=mobile-companion-20';
+import {createHistoryView} from './history-view.mjs?v=mobile-companion-20';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=mobile-companion-20';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=mobile-companion-20';
+import {holdDraft} from './coordination.mjs?v=mobile-companion-20';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=mobile-companion-20';
+import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=mobile-companion-20';
 
 export function mountSettings(root,context){
 const $=selector=>root.querySelector(selector);

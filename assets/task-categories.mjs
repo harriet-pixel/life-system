@@ -1,6 +1,6 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=ai-manual-19';
-import {dataStore} from './data.mjs?v=ai-manual-19';
-import {holdDraft} from './coordination.mjs?v=ai-manual-19';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=mobile-companion-20';
+import {dataStore} from './data.mjs?v=mobile-companion-20';
+import {holdDraft} from './coordination.mjs?v=mobile-companion-20';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');
