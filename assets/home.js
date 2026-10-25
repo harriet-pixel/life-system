@@ -1,3 +1,4 @@
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=cloud-backup-20261026';
 import {createTaskEditor} from './task-editor.mjs?v=cloud-backup-20261026';
 import {createCategoryManager} from './task-categories.mjs?v=cloud-backup-20261026';
 import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=cloud-backup-20261026';
@@ -83,6 +84,7 @@ const taskInputs = [];
 const tasks=taskActions(root,context);
 const completionBusy=context.hooks.busy;
 const editor=createTaskEditor(root,context,tasks),categories=createCategoryManager(root,context,tasks);
+initializeTaskDialogs(root,context);
 root.querySelector('#home-new-event').onclick=()=>editor.open(null,localDate()).catch(error=>tasks.say(error.message));
 editor.element.querySelector('#task-add-category').onclick=()=>{const trigger=editor.element.querySelector('#task-add-category');editor.pause();categories.create(id=>{editor.updateCategories();if(id)editor.selectCategory(id);editor.resume();trigger.focus({preventScroll:true});});};
 context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>editor.busy()||categories.busy()||Boolean(completionBusy?.())});

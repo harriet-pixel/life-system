@@ -12,6 +12,7 @@ import {getSharedAIConnection} from './ai-runtime.mjs?v=cloud-backup-20261026';
 const routes={tasks:{mount:()=>import('./tasks.mjs?v=cloud-backup-20261026'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=cloud-backup-20261026'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=cloud-backup-20261026'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=cloud-backup-20261026'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map();
 async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v=cloud-backup-20261026&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
 const host=document.createElement('div');host.id='app-view';const announcement=document.createElement('p');announcement.id='route-status';announcement.className='small-note';announcement.setAttribute('role','status');announcement.hidden=true;
@@ -72,7 +73,7 @@ async function go(url,{pop=false,state=null,initial=false}={}){
   history.replaceState({...history.state,lifeShell:{index}},'',target.href);
   document.dispatchEvent(new CustomEvent('life-system:route-ready',{detail:{page:id}}));return true;
  }catch(error){if(ticket===sequence&&error.name!=='AbortError'){
-   if(error.code==='version'||error.code==='module'){if(![...views.values()].some(v=>v.context.hooks.hasDraft?.())){location.assign(target.href);return false;}announce('網站版本或模組已更新，請先儲存或取消草稿，再切換頁面；資料未清除。');return false;}
+   if(error.code==='version'||error.code==='module'){if(![...views.values()].some(v=>v.context.hooks.hasDraft?.())){const fresh=new URL(target.href);fresh.searchParams.set('__life_reload',String(Date.now()));location.assign(fresh.href);return false;}announce('網站版本或模組已更新，請先儲存或取消草稿，再切換頁面；資料未清除。');return false;}
    if(view&&previous&&view!==previous){view.context.dispose();views.delete(view.id);active=previous;await activate(previous);}
    if(pop&&previousURL!==location.href)history.replaceState({lifeShell:{index}},'',previousURL);
    navigation?.refreshRoutes();announce('頁面載入失敗，原頁面與草稿已保留，請稍後重試。');
