@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=mobile-companion-20';
+import {dataStore} from './data.mjs?v=key-private-21';
 // Presentation only: ephemeral local commits + their existing paired mock reply.
 // Nothing is persisted or replayed on route restore, storage sync, Undo or Redo.
 export function createMobileTaskResponse(root,context){

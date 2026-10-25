@@ -24,6 +24,8 @@ Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Clo
 
 ### 測試分頁生命週期
 
+- 金鑰只可輸入／替換，介面不提供再次查看。固定password，移除顯示切換；失焦、發送請求、切頁及pagehide清空DOM輸入值，不觸發空字串setKey，不中斷既有連線；重載／恢復不從session回填。這是UI行為，瀏覽器直連仍須在sessionStorage／記憶體持有金鑰以認證，不聲稱對DevTools或擴充功能不可讀。
+
 - 唯一命名空間 `life-system.ai-test.v1`，欄位固定為 version、enabled、provider、apiKey、model、issuedAt、expiresAt；一次一組，不另保存四家金鑰。與 localStorage 的 life-system.data.v1 完全分離。
 - 只有使用者確認啟用後才可寫入 sessionStorage。直連金鑰**不自動到期**；使用者手動中斷連線或關閉直連模式時清除。仍使用分頁sessionStorage，關閉分頁／瀏覽器是否保留依瀏覽器行為，不改存localStorage。
 - 啟動、pageshow恢復、回到可見頁面、每次AI操作前仍檢查格式及暫存是否存在，不設直連到期計時器。v2保留原欄位，expiresAt固定null；尚未到期的v1兩小時紀錄可一次遷移為v2，保留金鑰、模型與issuedAt；過期、已刪除或損壞的舊紀錄不復活。錯誤格式／未來issuedAt仍拒絕，不影響一般使用者資料。

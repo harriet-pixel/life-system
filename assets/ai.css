@@ -13,3 +13,5 @@
 #ai-mode-confirm button {min-height:44px;padding:8px 12px;font:inherit;background:var(--color-background);color:var(--color-primary);border:1px solid var(--color-primary);}
 
 #ai-model-excluded {max-height:20em;overflow:auto;overflow-wrap:anywhere;padding-inline-start:1.5em;}
+
+#ai-key::-ms-reveal{display:none}

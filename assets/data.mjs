@@ -1,11 +1,11 @@
-import {setOperationNotice} from './operation-notice.mjs?v=mobile-companion-20';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=mobile-companion-20';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=mobile-companion-20';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=mobile-companion-20';
-import { coordinatedWrite } from './coordination.mjs?v=mobile-companion-20';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=mobile-companion-20';
+import {setOperationNotice} from './operation-notice.mjs?v=key-private-21';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=key-private-21';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=key-private-21';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=key-private-21';
+import { coordinatedWrite } from './coordination.mjs?v=key-private-21';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=key-private-21';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=mobile-companion-20';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=key-private-21';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;

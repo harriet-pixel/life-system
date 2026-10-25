@@ -1,11 +1,11 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=mobile-companion-20';
-import {taskActions} from './task-actions.mjs?v=mobile-companion-20';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=mobile-companion-20';
-import { createMobileTabPositioner } from './tab-position.mjs?v=mobile-companion-20';
-import { createActivityHeightSync } from './activity-height.mjs?v=mobile-companion-20';
-import { undoManager } from './undo.mjs?v=mobile-companion-20';
-import {createSharedCompanionView} from './companion-events.mjs?v=mobile-companion-20';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=mobile-companion-20';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=key-private-21';
+import {taskActions} from './task-actions.mjs?v=key-private-21';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=key-private-21';
+import { createMobileTabPositioner } from './tab-position.mjs?v=key-private-21';
+import { createActivityHeightSync } from './activity-height.mjs?v=key-private-21';
+import { undoManager } from './undo.mjs?v=key-private-21';
+import {createSharedCompanionView} from './companion-events.mjs?v=key-private-21';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=key-private-21';
 
 
 export function mountHome(root,context){

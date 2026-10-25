@@ -1,6 +1,6 @@
 import {AI_TEST_TEXT} from './ai-prompts.mjs?v=personal-worker-5';
 import {createAIConnection} from './ai-service.mjs?v=personal-worker-5';
-import {createAISession} from './ai-session.mjs?v=mobile-companion-20';
+import {createAISession} from './ai-session.mjs?v=key-private-21';
 import {createProviderAdapter} from './ai-providers.mjs?v=personal-worker-5';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null}={}){
