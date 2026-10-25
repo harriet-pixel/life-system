@@ -1,11 +1,11 @@
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=mobile-companion-20';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=mobile-companion-20';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=mobile-companion-20';
-import {ABILITIES} from './abilities.mjs?v=mobile-companion-20';
-import {maintenance} from './coordination.mjs?v=mobile-companion-20';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=mobile-companion-20';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=key-private-21';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=key-private-21';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=key-private-21';
+import {ABILITIES} from './abilities.mjs?v=key-private-21';
+import {maintenance} from './coordination.mjs?v=key-private-21';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=key-private-21';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=mobile-companion-20';
+import {normalizeSettings} from './settings-model.mjs?v=key-private-21';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
