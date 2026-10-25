@@ -1,11 +1,11 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=local-clock-23';
-import {taskActions} from './task-actions.mjs?v=local-clock-23';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=local-clock-23';
-import { createMobileTabPositioner } from './tab-position.mjs?v=local-clock-23';
-import { createActivityHeightSync } from './activity-height.mjs?v=local-clock-23';
-import { undoManager } from './undo.mjs?v=local-clock-23';
-import {createSharedCompanionView} from './companion-events.mjs?v=local-clock-23';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=local-clock-23';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=sync-retain-24';
+import {taskActions} from './task-actions.mjs?v=sync-retain-24';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=sync-retain-24';
+import { createMobileTabPositioner } from './tab-position.mjs?v=sync-retain-24';
+import { createActivityHeightSync } from './activity-height.mjs?v=sync-retain-24';
+import { undoManager } from './undo.mjs?v=sync-retain-24';
+import {createSharedCompanionView} from './companion-events.mjs?v=sync-retain-24';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=sync-retain-24';
 
 
 export function mountHome(root,context){

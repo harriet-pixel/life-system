@@ -1,9 +1,10 @@
-import {listSyncFiles,readAppDataFile,createAppDataFile,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=local-clock-23';
-import {hash,readBackup} from './backup.mjs?v=local-clock-23';
-import {validateManifest,versionGraph} from './drive-sync-model.mjs?v=local-clock-23';
-export function createDriveSyncRemote(){const cache=new Map();return {
- async graph(signal){const files=await listSyncFiles(signal),nodes=[];const load=async f=>{if(Number(f.size)>65536)throw new Error('雲端版本索引過大。');let v=cache.get(f.id);if(!v){v=validateManifest(JSON.parse(await(await readAppDataFile(f.id,65536,signal)).text()));cache.set(f.id,v);}return v;};for(let i=0;i<files.length;i+=8)nodes.push(...await Promise.all(files.slice(i,i+8).map(load)));return versionGraph(nodes);},
+import {deleteSyncSnapshot,listSyncFiles,readAppDataFile,createAppDataFile,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=sync-retain-24';
+import {hash,readBackup} from './backup.mjs?v=sync-retain-24';
+import {validateManifest,versionGraph,retentionCandidates} from './drive-sync-model.mjs?v=sync-retain-24';
+export function createDriveSyncRemote(){const cache=new Map();const remote={
+ async graph(signal){const [files,snapshots]=await Promise.all([listSyncFiles(signal),listSyncFiles(signal,'snapshot-v1')]),available=new Set(snapshots.map(f=>f.id)),nodes=[];const load=async f=>{if(Number(f.size)>65536)throw new Error('雲端版本索引過大。');let v=cache.get(f.id);if(!v){v=validateManifest(JSON.parse(await(await readAppDataFile(f.id,65536,signal)).text()));cache.set(f.id,v);}return v;};for(let i=0;i<files.length;i+=8)nodes.push(...await Promise.all(files.slice(i,i+8).map(load)));const graph=versionGraph(nodes);graph.retained=nodes.filter(v=>available.has(v.fileId));return graph;},
+ async prune(signal){const graph=await remote.graph(signal);for(const entry of retentionCandidates(graph)){if(signal?.aborted)throw new Error('版本清理已取消。');await deleteSyncSnapshot(entry.fileId,signal);}return remote.graph(signal);},
  legacy:listDriveBackups,
  async load(entry,password,signal){const blob=entry.legacy?await downloadDriveBackup(entry.legacy):await readAppDataFile(entry.fileId,undefined,signal);const envelope=JSON.parse(await blob.text());if(envelope.encrypted!==true)throw new Error('同步版本必須加密；未採用未加密雲端資料。');if(!entry.legacy&&await hash(await blob.arrayBuffer())!==entry.sha256)throw new Error('雲端快照完整性不符，已停止同步。');return readBackup(blob,password);},
  async append(blob,parents,kind,signal){if(JSON.parse(await blob.text()).encrypted!==true)throw new Error('同步資料必須先加密。');const id=crypto.randomUUID(),createdAt=new Date().toISOString(),fileId=await createAppDataFile(blob,{name:'Life system sync data '+id,appProperties:{lifeSystemSync:'snapshot-v1'}},signal);if(signal?.aborted)throw new Error('同步已取消。');const node=validateManifest({format:'Life system sync',version:1,id,parents,kind,fileId,sha256:await hash(await blob.arrayBuffer()),createdAt});await createAppDataFile(new Blob([JSON.stringify(node)],{type:'application/json'}),{name:'Life system sync version '+id,appProperties:{lifeSystemSync:'manifest-v1'}},signal);return node;},
- };}
+ };return remote;}

@@ -20,7 +20,7 @@ export function validateNewPassword(value,{required=false}={}){
  return value;
 }
 export function validateRestorePassword(value){if(typeof value!=='string'||value.length>1024)fail('還原密碼上限為 1,024 個 UTF-16 碼元；不改寫密碼。','password');return value;}
-export {validHex} from './settings-model.mjs?v=local-clock-23';
+export {validHex} from './settings-model.mjs?v=sync-retain-24';
 export function integerValue(value,field){const text=String(value??'').trim();if(!/^\d+$/.test(text)||!Number.isSafeInteger(Number(text)))fail('請填寫非負安全整數，不可留白、填負數或小數。',field);return Number(text);}
 export function validateHistoryPage(value,total){const n=integerValue(value,'history');if(n<1||n>total)fail(`請輸入 1 至 ${total} 的整數頁碼。`,'history');return n;}
 export function bindProfileValidation(form,getPrevious){

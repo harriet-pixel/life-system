@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=local-clock-23';
-import {getCompletionFlow} from './task-completion.mjs?v=local-clock-23';
-import {dataStore} from './data.mjs?v=local-clock-23';
-import {createTaskService} from './tasks-service.mjs?v=local-clock-23';
-import {allocation,localDate} from './tasks-model.mjs?v=local-clock-23';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=local-clock-23';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=local-clock-23';
+import {setOperationNotice} from './operation-notice.mjs?v=sync-retain-24';
+import {getCompletionFlow} from './task-completion.mjs?v=sync-retain-24';
+import {dataStore} from './data.mjs?v=sync-retain-24';
+import {createTaskService} from './tasks-service.mjs?v=sync-retain-24';
+import {allocation,localDate} from './tasks-model.mjs?v=sync-retain-24';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=sync-retain-24';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=sync-retain-24';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);

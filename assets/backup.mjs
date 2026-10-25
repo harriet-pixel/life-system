@@ -1,11 +1,11 @@
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=local-clock-23';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=local-clock-23';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=local-clock-23';
-import {ABILITIES} from './abilities.mjs?v=local-clock-23';
-import {maintenance} from './coordination.mjs?v=local-clock-23';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=local-clock-23';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=sync-retain-24';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=sync-retain-24';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=sync-retain-24';
+import {ABILITIES} from './abilities.mjs?v=sync-retain-24';
+import {maintenance} from './coordination.mjs?v=sync-retain-24';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=sync-retain-24';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=local-clock-23';
+import {normalizeSettings} from './settings-model.mjs?v=sync-retain-24';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
