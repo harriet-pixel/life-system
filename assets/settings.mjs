@@ -1,4 +1,4 @@
-import {mountDriveSync} from './drive-sync-view.mjs?v=drive-poll-25';
+import {mountDriveSync} from './drive-sync-view.mjs?v=backup-layout-20261026';
 import {initializeAISettings} from './ai-settings.mjs?v=drive-poll-25';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=drive-poll-25';
 import {dataStore,persistentUndo} from './data.mjs?v=drive-poll-25';
