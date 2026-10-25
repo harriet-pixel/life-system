@@ -1,9 +1,9 @@
 import {createPersonalBackend} from './ai-worker-auth.mjs?v=personal-worker-5';
 import {AI_WORKER_URL} from './ai-worker-config.mjs?v=personal-worker-5';
 import {createPageAIConnection} from './ai-client.mjs?v=personal-worker-5';
-import {AI_BACKEND_URL} from './ai-config.mjs?v=task-response-16';
-import {getAIAccessToken} from './ai-auth.mjs?v=task-response-16';
-import {dataStore} from './data.mjs?v=task-response-16';
+import {AI_BACKEND_URL} from './ai-config.mjs?v=task-density-18';
+import {getAIAccessToken} from './ai-auth.mjs?v=task-density-18';
+import {dataStore} from './data.mjs?v=task-density-18';
 let shared;
 export function getSharedAIConnection(){
  if(!shared){
