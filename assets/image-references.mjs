@@ -1,10 +1,10 @@
-import {maintainRecovery} from './recovery.mjs?v=drive-poll-25';
+import {maintainRecovery} from './recovery.mjs?v=cloud-backup-20261026';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs';
-import {maintenance} from './coordination.mjs?v=drive-poll-25';
+import {maintenance} from './coordination.mjs?v=cloud-backup-20261026';
 const providers=new Map();
-export function registerImageReferenceSource(name,read) {
+export function registerImageReferenceSource(name,read,{transient=true}={}) {
   if(providers.has(name)) throw new Error('重複的圖片引用來源');
-  providers.set(name,read);return ()=>providers.delete(name);
+  providers.set(name,{read,transient});return ()=>providers.delete(name);
 }
 export function collectReferences(value,refs=new Set()) {
   if(isImageReference(value)) refs.add(value);
@@ -30,8 +30,8 @@ export function documentImageReferences(state,{legacy=false,raw=false}={}) {
 export async function inspectImages(state) {
   if(!state?.profile||!Array.isArray(state.history)||!Array.isArray(state.portraits)) throw new Error('資料尚未完整載入，無法安全檢查圖片。');
   const refs=documentImageReferences(state),persistedRefs=new Set(refs),transientSources=[];
-  for(const [name,read] of providers) {
-    const value=await read();if(value===undefined)throw new Error('圖片引用來源尚未就緒：'+name);const found=collectReferences(value);if([...found].some(id=>!persistedRefs.has(id)))transientSources.push(name);found.forEach(id=>refs.add(id));
+  for(const [name,{read,transient}] of providers) {
+    const value=await read();if(value===undefined)throw new Error('圖片引用來源尚未就緒：'+name);const found=collectReferences(value);if(transient&&[...found].some(id=>!persistedRefs.has(id)))transientSources.push(name);found.forEach(id=>refs.add(id));
   }
   const assets=await listImageAssets();
   if([...refs].some(id=>!assets.some(a=>a.id===id&&a.blob instanceof Blob)))throw new Error('有圖片引用缺少原始檔案，已停止清理。');
@@ -41,7 +41,8 @@ export async function inspectImages(state) {
 }
 export function auditImages(store) {return maintenance(()=>{store.refresh();store.maintain();return inspectImages(store.get());});}
 export function deleteUnusedImages(store,selected) {
-  return maintenance(async()=>{
+  if(!globalThis.navigator?.locks)return Promise.reject(new Error('無法安全協調其他分頁，已停止刪除圖片。'));
+  return navigator.locks.request('life-system.cloud-backup-pending.v1',{ifAvailable:true},lock=>{if(!lock)throw new Error('雲端備份尚有待處理圖片，請先完成備份或中斷Google連接再清理。');return maintenance(async()=>{
     store.refresh();store.maintain();const {unused}=await inspectImages(store.get());
     const selectedIDs=new Set(selected),safe=unused.filter(a=>selectedIDs.has(a.id));
     // The write lock is held from fresh reference discovery through IDB commit.
@@ -51,5 +52,5 @@ export function deleteUnusedImages(store,selected) {
     });
     safe.forEach(a=>revokeImageURL(a.id));
     return {deleted:safe.length,bytes:safe.reduce((sum,a)=>sum+a.blob.size,0),skipped:selectedIDs.size-safe.length};
-  });
+  });});
 }

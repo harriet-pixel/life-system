@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {newestBackups,obsoleteBackups,comparableDocument} from '../assets/cloud-backup.mjs';
+test('newest cloud backup uses real timestamps rather than server listing order or ID',()=>{const files=[{id:'z',createdTime:'2026-01-01Z'},{id:'a',createdTime:'2026-01-03Z'},{id:'m',createdTime:'2026-01-02Z'}];assert.deepEqual(newestBackups(files).map(f=>f.id),['a','m','z']);});
+test('20 backup cap removes only oldest excess records, including old manual backups',()=>{const files=Array.from({length:23},(_,i)=>({id:String(i),createdTime:new Date(Date.UTC(2026,0,i+1)).toISOString()}));assert.deepEqual(obsoleteBackups(files).map(f=>f.id),['2','1','0']);assert.equal(files.length,23);assert.deepEqual(obsoleteBackups(files.slice(0,20)),[]);});
+test('unknown cloud time cannot authorize destructive cleanup',()=>{assert.throws(()=>obsoleteBackups([{id:'bad',createdTime:'unknown'}]),/停止清理/);});
+test('revision and recovery housekeeping do not enqueue another backup; real data edits do',()=>{const doc={revision:1,profile:{name:'A'},history:[],undoHistory:[]};assert.equal(comparableDocument(doc),comparableDocument({...doc,revision:2,history:[{label:'cleanup'}],undoHistory:[{id:'expiry'}]}));assert.notEqual(comparableDocument(doc),comparableDocument({...doc,profile:{name:'B'}}));});

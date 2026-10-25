@@ -1,11 +1,11 @@
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=drive-poll-25';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=drive-poll-25';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=drive-poll-25';
-import {ABILITIES} from './abilities.mjs?v=drive-poll-25';
-import {maintenance} from './coordination.mjs?v=drive-poll-25';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=drive-poll-25';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=cloud-backup-20261026';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=cloud-backup-20261026';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=cloud-backup-20261026';
+import {ABILITIES} from './abilities.mjs?v=cloud-backup-20261026';
+import {maintenance} from './coordination.mjs?v=cloud-backup-20261026';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=cloud-backup-20261026';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=drive-poll-25';
+import {normalizeSettings} from './settings-model.mjs?v=cloud-backup-20261026';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -83,14 +83,14 @@ export async function encodeBackup(payload,password='') {
   }else{envelope.payload=payload;envelope.sha256=await hash(raw);}
   const blob=new Blob([JSON.stringify(envelope)],{type:'application/json'});check(blob.size<=MAX_FILE_BYTES,'備份超過 150 MiB 檔案上限。');return blob;
 }
-export async function withBackup(store,password,consume) {
+export async function withBackup(store,password,consume,{snapshot}={}) {
   validateNewPassword(password);
   return maintenance(async()=>{
-    store.refresh();store.maintain();const document=validateDocument(store.get());check(encoder.encode(JSON.stringify(document)).length<=10*1024*1024,'資料文件超過 10 MiB 備份上限；目前資料與行動紀錄均保留。');const {assets,refs,transientSources}=await inspectImages(document);
+    store.refresh();store.maintain();const document=validateDocument(snapshot?maintainRecovery(snapshot).document:store.get());check(encoder.encode(JSON.stringify(document)).length<=10*1024*1024,'資料文件超過 10 MiB 備份上限；目前資料與行動紀錄均保留。');const {assets,refs,transientSources}=await inspectImages(document);
     check(!transientSources.length,'請先儲存或取消以下圖片操作再備份：'+transientSources.join('、'));
-    check(refs.size<=MAX_IMAGES);let size=0;
+    const ownRefs=documentImageReferences(document);check(ownRefs.size<=MAX_IMAGES);let size=0;
     const images=[];
-    for(const asset of assets.filter(a=>refs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
+    for(const asset of assets.filter(a=>ownRefs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
     const payload={formatVersion:VERSION,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
     return consume(await encodeBackup(payload,password),payload);
   });

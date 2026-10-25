@@ -253,7 +253,7 @@ body[data-navigation="ready"] .page-shell {padding-bottom:calc(var(--bottom-nav-
 /* Home companion is persistent, movable and collapsible only on mobile. */
 .home-companion-dismiss{display:none}
 @media(width < 1024px){
- [data-page-view=home] .home-companion-float{--home-mini-size:clamp(44px,14vw,72px);position:fixed;z-index:900;left:var(--home-float-left,12px);top:var(--home-float-top,50%);width:var(--home-float-width,calc(100% - 24px));max-height:var(--home-float-max-height,60dvh);margin:0;padding:0;border:0;background:transparent;pointer-events:none}
+ [data-page-view=home] .home-companion-float{--home-mini-size:clamp(44px,14vw,72px);position:fixed;z-index:900;left:var(--home-float-left,12px);top:var(--home-float-top,12px);width:var(--home-float-width,calc(100% - 24px));max-height:var(--home-float-max-height,60dvh);margin:0;padding:0;border:0;background:transparent;pointer-events:none}
  [data-page-view=home] .home-companion-float .companion-banner{display:grid;grid-template-columns:minmax(0,1fr) var(--home-mini-size);gap:12px;align-items:end}
  [data-page-view=home] .home-companion-toggle{grid-column:2;grid-row:1;width:var(--home-mini-size);height:var(--home-mini-size);min-width:var(--home-mini-size);min-height:var(--home-mini-size);padding:0;border:0;background:transparent;pointer-events:auto;touch-action:none;cursor:grab;border-radius:50%}
  [data-page-view=home] .home-companion-toggle:active{cursor:grabbing}
@@ -278,3 +278,5 @@ body[data-navigation="ready"] .page-shell {padding-bottom:calc(var(--bottom-nav-
 /* Initial HTML has the same mobile scope as the mounted view. The floating
    companion alone waits for its controls; never show its obsolete inline slot. */
 @media(width < 1024px){[data-page-view=home] .companion:not(.home-companion-float){display:none}}
+
+@media(max-width:1023px){[data-page-view=home] .section-bottom {justify-content:flex-end;}[data-page-view=home] #home-new-event {margin-left:auto;}}

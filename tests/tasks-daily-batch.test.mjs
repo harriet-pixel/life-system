@@ -1,8 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=drive-poll-25';
-import {rowsForDate,validateTasks,deletionEvidence} from '../assets/tasks-model.mjs?v=drive-poll-25';
-import {boardTasks,categoryOrder,sortDay,stableCreated,DAY_DEFAULTS} from '../assets/task-view-model.mjs?v=drive-poll-25';
+import {createTaskService} from '../assets/tasks-service.mjs?v=cloud-backup-20261026';
+import {rowsForDate,validateTasks,deletionEvidence} from '../assets/tasks-model.mjs?v=cloud-backup-20261026';
+import {boardTasks,categoryOrder,sortDay,stableCreated,DAY_DEFAULTS} from '../assets/task-view-model.mjs?v=cloud-backup-20261026';
 import {validateDocument,encodeBackup,readBackup,dataCount} from '../assets/backup.mjs';
 const abilities={physique:0,wisdom:1,charisma:0,resilience:0,perception:0},date='2026-12-31';
 function setup(){let raw=null,n=0,time=new Date('2026-12-31T04:00:00Z');const storage={getItem:()=>raw,setItem:(_,v)=>raw=v},store=createDataStore(storage,{now:()=>+time}),service=createTaskService(store,{now:()=>time,id:()=>`item${++n}`}),values=(name,extra={})=>({name,categoryId:null,points:1,kind:'once',date,start:date,end:null,days:[],overdue:'keep',...extra});return{store,service,values,raw:()=>raw,setTime:v=>time=new Date(v)};}
