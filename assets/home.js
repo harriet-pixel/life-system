@@ -1,15 +1,18 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=drive-sync-22';
-import {taskActions} from './task-actions.mjs?v=drive-sync-22';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=drive-sync-22';
-import { createMobileTabPositioner } from './tab-position.mjs?v=drive-sync-22';
-import { createActivityHeightSync } from './activity-height.mjs?v=drive-sync-22';
-import { undoManager } from './undo.mjs?v=drive-sync-22';
-import {createSharedCompanionView} from './companion-events.mjs?v=drive-sync-22';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=drive-sync-22';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=local-clock-23';
+import {taskActions} from './task-actions.mjs?v=local-clock-23';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=local-clock-23';
+import { createMobileTabPositioner } from './tab-position.mjs?v=local-clock-23';
+import { createActivityHeightSync } from './activity-height.mjs?v=local-clock-23';
+import { undoManager } from './undo.mjs?v=local-clock-23';
+import {createSharedCompanionView} from './companion-events.mjs?v=local-clock-23';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=local-clock-23';
 
 
 export function mountHome(root,context){
 mountHomeCompanionFloat(root,context);
+const refreshDate=()=>{globalThis.LifeHomeDate?.render(root);renderToday();};
+context.listen(window,'focus',refreshDate);context.listen(document,'visibilitychange',()=>{if(!document.hidden)refreshDate();});context.onResume(refreshDate);
+let dateTimer;const startDateTimer=()=>{clearInterval(dateTimer);dateTimer=setInterval(refreshDate,60000);};startDateTimer();context.onSuspend(()=>clearInterval(dateTimer));context.onResume(startDateTimer);
 // Development slots, not approved character emotions. Only use licensed assets.
 const emotionPortraits = {
   neutral: { label: '平靜', src: null },
@@ -77,6 +80,7 @@ const taskInputs = [];
 const tasks=taskActions(root,context);
 const todayList=root.querySelector('.task-list');
 function renderToday(){
+ globalThis.LifeHomeDate?.render(root);
  const rows=rowsForDate(dataStore.get().tasks,localDate());
  todayList.replaceChildren(...rows.map(row=>{const li=document.createElement('li'),label=document.createElement('label');li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;label.className='task-row';const input=document.createElement('input');input.type='checkbox';input.dataset.task='';const pending=tasks.isPending(row.task.id,row.occurrence.date);input.checked=row.occurrence.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));li.classList.toggle('is-processing',pending);li.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${row.name}`:`${input.checked?'取消完成':'完成'} ${row.name}`);input.onchange=()=>{const done=row.occurrence.status==='done';if(tasks.isPending(row.task.id,row.occurrence.date))return;input.checked=true;if(done)tasks.cancel(row.task.id,row.occurrence.date).catch(()=>{});else tasks.complete(row.task.id,row.occurrence.date);};const name=document.createElement('span');name.className='task-content';name.textContent=row.name;const color=dataStore.get().tasks.categories.find(c=>c.id===row.task.categoryId)?.color;if(color)name.style.setProperty('--home-task-color',color);if(row.brief){const brief=document.createElement('span');brief.className='task-occurrence-brief';brief.textContent=row.brief;name.append(brief);}const category=document.createElement('span');category.className='task-time';category.textContent=row.category+(row.occurrence.status==='done'?' · 已完成':'');label.append(input,name,category);li.append(label);return li;}));
  if(!rows.length){const li=document.createElement('li');li.className='small-note';li.textContent='今天尚無待辦，前往待辦事項安排生活。';todayList.append(li);}

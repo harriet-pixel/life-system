@@ -1,6 +1,6 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=drive-sync-22';
-import {dataStore} from './data.mjs?v=drive-sync-22';
-import {holdDraft} from './coordination.mjs?v=drive-sync-22';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=local-clock-23';
+import {dataStore} from './data.mjs?v=local-clock-23';
+import {holdDraft} from './coordination.mjs?v=local-clock-23';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

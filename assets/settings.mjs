@@ -1,14 +1,14 @@
-import {mountDriveSync} from './drive-sync-view.mjs?v=drive-sync-22';
-import {initializeAISettings} from './ai-settings.mjs?v=drive-sync-22';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=drive-sync-22';
-import {dataStore,persistentUndo} from './data.mjs?v=drive-sync-22';
-import {createMobileTabPositioner} from './tab-position.mjs?v=drive-sync-22';
-import {createHistoryView} from './history-view.mjs?v=drive-sync-22';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=drive-sync-22';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=drive-sync-22';
-import {holdDraft} from './coordination.mjs?v=drive-sync-22';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=drive-sync-22';
-import {driveConfigured,getDriveState,connectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=drive-sync-22';
+import {mountDriveSync} from './drive-sync-view.mjs?v=local-clock-23';
+import {initializeAISettings} from './ai-settings.mjs?v=local-clock-23';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=local-clock-23';
+import {dataStore,persistentUndo} from './data.mjs?v=local-clock-23';
+import {createMobileTabPositioner} from './tab-position.mjs?v=local-clock-23';
+import {createHistoryView} from './history-view.mjs?v=local-clock-23';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=local-clock-23';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=local-clock-23';
+import {holdDraft} from './coordination.mjs?v=local-clock-23';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=local-clock-23';
+import {driveConfigured,getDriveState,connectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=local-clock-23';
 
 export function mountSettings(root,context){
 const $=selector=>root.querySelector(selector);

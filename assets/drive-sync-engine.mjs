@@ -1,4 +1,4 @@
-import {documentFingerprint} from './drive-sync-model.mjs?v=drive-sync-22';
+import {documentFingerprint} from './drive-sync-model.mjs?v=local-clock-23';
 // Immutable cloud snapshots form a DAG. Timestamps are display-only, never a winner rule.
 export function createSyncEngine({local,remote,readMeta,writeMeta,authorized,secret,lock=fn=>fn(),online=()=>true,now=()=>new Date().toISOString(),delay=3000}){
  const listeners=new Set();let state={status:'disabled',message:'尚未啟用自動同步。',heads:[],versions:[],pending:false,lastSuccess:null},busy=false,epoch=0,timer,controller,localWake=false;

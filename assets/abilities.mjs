@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=drive-sync-22';
+import {integerValue} from './validation.mjs?v=local-clock-23';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

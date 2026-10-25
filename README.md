@@ -4,11 +4,11 @@
 
 ## 現有頁面
 
-- [首頁](https://harriet-pixel.github.io/life-system/)：固定示意日期、夥伴本機模擬對話、共用數值列與示意待辦／打卡頁籤。勾選本機保存；正式任務、習慣及AI服務尚未接入。
+- [首頁](https://harriet-pixel.github.io/life-system/)：裝置當地日期、夥伴本機模擬對話、共用數值列、正式今日待辦與示意打卡頁籤；跨日與回前景更新。
 - [我的資料](https://harriet-pixel.github.io/life-system/profile.html)：基本資料、能力雷達圖、立繪／頭像裁切、手動最愛及獨立數值重新開始。
 - [設定](https://harriet-pixel.github.io/life-system/settings.html)：手動圖片清理、行動紀錄、備份還原及外觀預覽／保存。
 
-三頁使用同一份localStorage文件與IndexedDB圖片，保存後同來源分頁同步。Undo／Redo為24小時／7天、最多最近15次；長期行動紀錄不受復原上限裁切。不自動上傳、同步或刪圖。Google OAuth目前未設定，本機功能不受影響。
+三頁使用同一份localStorage文件與IndexedDB圖片，保存後同來源分頁同步。Undo／Redo為24小時／7天、最多最近15次；長期行動紀錄不受復原上限裁切。Google Drive需主動連接／解鎖才自動同步，未啟用時仍僅本機；不自動刪圖。Google OAuth已設定公開Client ID，真實授權需實機驗收。
 
 手機與桌面共用資料及DOM，1024px切換主要版面與導覽；兩種版面均使用待辦／打卡頁籤。主題色及四種字型由共用外觀服務套用，非系統字型自託管並保留授權。
 
