@@ -53,3 +53,9 @@ BASE_URL=http://127.0.0.1:3000/ node tests/restore-actions.cjs
 設定頁可明確啟用預設關閉的瀏覽器直連測試，一組金鑰在專用 sessionStorage 不自動到期，由使用者手動中斷／關閉模式清除，同分頁切換首頁／我的資料與重新整理後可從共用開發入口生成短文字。這是有風險的自用測試，不是加密金鑰保管方案；使用者自行在網站輸入測試 key，勿提交或貼到聊天。
 
 正式受驗證後端模式仍未部署，backend/ 不進靜態成果，登入與 endpoint 空白不阻擋已同意的直連測試。夥伴 mock、資料／數值規則不變；不新增登入或雲端資源。詳見 [AI_CONNECTION.md](AI_CONNECTION.md)。
+
+Google Drive跨裝置同步：設定→資料管理→備份與還原，連接後使用相同同步密碼啟用各裝置。首次或衝突需明確選擇版本；詳見[設定與實機驗收](SETTINGS.md#跨裝置自動同步)。本機先保存、授權失效保留工作；Cloudflare維持暫停。
+
+```sh
+node tests/drive-sync-browser.cjs # Google OAuth／Drive mock，非實機驗收
+```

@@ -1,8 +1,8 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=key-private-21';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=key-private-21';
-import {dataStore} from './data.mjs?v=key-private-21';
-import {localDate} from './tasks-model.mjs?v=key-private-21';
-import {holdDraft} from './coordination.mjs?v=key-private-21';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=drive-sync-22';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=drive-sync-22';
+import {dataStore} from './data.mjs?v=drive-sync-22';
+import {localDate} from './tasks-model.mjs?v=drive-sync-22';
+import {holdDraft} from './coordination.mjs?v=drive-sync-22';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){
@@ -10,7 +10,7 @@ export function createTaskEditor(root,context,actions){
  editor.innerHTML=`<form>
  <h2 id="task-editor-title">新增事件</h2>
  <div class="task-form-field"><div class="task-name-label task-field-label"><label for="task-name-input">名稱（必填）</label><span id="task-chosen-date" class="small-note"></span><button type="button" id="task-date-button" aria-label="設定事項日期" title="設定事項日期"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 11h18"/></svg></button></div>
- <input name="name" id="task-name-input" required></div>
+ <input name="name" id="task-name-input" autocomplete="off" required></div>
  <div class="task-form-field"><div class="task-field-label"><label for="task-category-input">分類</label><button type="button" class="task-inline-icon" id="task-add-category" aria-label="新增分類"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 4v16M4 12h16"/></svg></button></div><select name="categoryId" id="task-category-input"></select></div>
  <div class="task-form-field" data-brief-field hidden><label for="task-brief-input">簡述（選填，僅此日）</label><input id="task-brief-input" name="brief"></div>
  <fieldset><legend>點數</legend><div class="task-radio-options"><label><input type="radio" name="points" value="1" aria-label="1點" checked><span>1<span class="task-point-unit" aria-hidden="true">點</span></span></label><label><input type="radio" name="points" value="2" aria-label="2點"><span>2<span class="task-point-unit" aria-hidden="true">點</span></span></label><label><input type="radio" name="points" value="3" aria-label="3點"><span>3<span class="task-point-unit" aria-hidden="true">點</span></span></label></div></fieldset>

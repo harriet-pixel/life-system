@@ -1,5 +1,5 @@
-import {validateHistoryPage} from './validation.mjs?v=key-private-21';
-import {ABILITIES} from './abilities.mjs?v=key-private-21';
+import {validateHistoryPage} from './validation.mjs?v=drive-sync-22';
+import {ABILITIES} from './abilities.mjs?v=drive-sync-22';
 const fields = { name: '稱呼', age: '年齡', gender: '性別', bio: '個人簡介', boundaries: '禁忌', motto: '一句話已變更', experience: '總經驗值', currency: '貨幣', photo: '使用者立繪', avatar: '使用者頭像', portraits:'立繪收藏', photoEdit:'立繪裁切', avatarEdit:'頭像裁切', currentPortraitId:'選用立繪', level: '等級', restart:'重新開始', ...Object.fromEntries(ABILITIES.map(a => [a.id, a.name])) };
 const element=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;return el;};
 export function historyRow(record,state) {

@@ -1,11 +1,11 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=key-private-21';
-import {taskActions} from './task-actions.mjs?v=key-private-21';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=key-private-21';
-import { createMobileTabPositioner } from './tab-position.mjs?v=key-private-21';
-import { createActivityHeightSync } from './activity-height.mjs?v=key-private-21';
-import { undoManager } from './undo.mjs?v=key-private-21';
-import {createSharedCompanionView} from './companion-events.mjs?v=key-private-21';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=key-private-21';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=drive-sync-22';
+import {taskActions} from './task-actions.mjs?v=drive-sync-22';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=drive-sync-22';
+import { createMobileTabPositioner } from './tab-position.mjs?v=drive-sync-22';
+import { createActivityHeightSync } from './activity-height.mjs?v=drive-sync-22';
+import { undoManager } from './undo.mjs?v=drive-sync-22';
+import {createSharedCompanionView} from './companion-events.mjs?v=drive-sync-22';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=drive-sync-22';
 
 
 export function mountHome(root,context){

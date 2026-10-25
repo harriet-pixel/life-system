@@ -1,11 +1,11 @@
-import {setOperationNotice} from './operation-notice.mjs?v=key-private-21';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=key-private-21';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=key-private-21';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=key-private-21';
-import { coordinatedWrite } from './coordination.mjs?v=key-private-21';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=key-private-21';
+import {setOperationNotice} from './operation-notice.mjs?v=drive-sync-22';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=drive-sync-22';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=drive-sync-22';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=drive-sync-22';
+import { coordinatedWrite } from './coordination.mjs?v=drive-sync-22';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=drive-sync-22';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=key-private-21';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=drive-sync-22';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;

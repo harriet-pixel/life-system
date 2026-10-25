@@ -90,7 +90,7 @@
 
 ## Google Cloud Console（需管理者手動完成）
 
-目前 `assets/google-config.mjs` 的 client ID 留空；本機功能不受影響，雲端按鈕顯示未設定。未建立任何付費資源。
+`assets/google-config.mjs` 已設定使用者提供的公開 OAuth Client ID。本機功能不等待 Google 或網路；未建立任何 Cloudflare 或付費資源。
 
 1. 選用／建立 Google Cloud 專案，啟用 Google Drive API；開發與正式環境分開設定。
 2. 設定 Google Auth Platform Branding、Audience、Data Access：名稱、支援聯絡資訊、網站首頁與隱私權政策。Testing 狀態加入實際測試帳號。
@@ -98,7 +98,7 @@
 4. 僅選 `https://www.googleapis.com/auth/drive.appdata`，不選整個 Drive 的 scope。GIS token popup 模式不需要本站後端 callback、client secret、refresh token 或服務帳戶金鑰。
 5. 建置時提供公開環境變數 `GOOGLE_OAUTH_CLIENT_ID=...apps.googleusercontent.com npm run build`，發布 `work/build/`；若直接發布原始靜態檔，僅填入 `assets/google-config.mjs` 的公開 client ID。不要提交任何 client secret。
 6. 這個 scope 官方列為 non-sensitive，通常不因 scope 本身要求敏感／限制範圍驗證；公開 External／Published 的品牌資訊、名稱或 logo 仍須依 Google 當時規範完成品牌／網域驗證。個人、Internal、Testing 的例外依 Console 實際資格處理，不保證公開發布免驗證；確認有權驗證網站所用網域，並提供正式隱私權政策。
-7. 只有點擊連接才載入 GIS／要求授權（初次載入後可能需再點一次以符合 popup user gesture）；token 僅在模組記憶體，過期須手動重新連接。直連 Google API，不經開發者伺服器；每次上傳建立新檔案，沒有自動刪除。
+7. 只有點擊連接才載入 GIS／要求授權（初次載入後可能需再點一次以符合 popup user gesture）；短期 token 存專用 sessionStorage（最長一小時並提前一分鐘失效），重整可恢復，過期須手動重新連接；同步密碼同樣僅在該分頁暫存至授權到期。直連 Google API，不經開發者伺服器；每次上傳建立新檔案，沒有自動刪除。
 8. `appDataFolder` 是專用隱藏空間，非使用者 Drive UI 可直接瀏覽的備份資料夾；隱藏不等於加密。中斷本頁連接／撤銷授權不會刪除備份。
 
 實作前查閱的 Google 官方文件（2026-10-22）：
@@ -122,3 +122,18 @@ lint、build、單元與瀏覽器命令見README.md。瀏覽器腳本涵蓋三�
 站內切換由共用外框保留最多三份頁面 DOM，非目前頁面離開 document 並暫停事件／訂閱／量測；草稿與其原鎖保留。尚未儲存的資料／外觀仍可能阻擋維護，需要先返回該頁儲存或取消；不偷偷丟棄。真正重載／外部離開才依未保存輸入提示。
 
 AI runtime 同文件常駐，分類、收合及切頁不重建連線、不延長 key 期限或重送生成；離開處理中的頁面取消並失效舊結果。瀏覽器直連保留，Cloudflare 部署暫停。
+
+
+## 跨裝置自動同步
+
+設定的儲存空間區：先「連接 Google Drive」，再輸入8～64字同步密碼並啟用／解鎖；每台裝置使用相同密碼。保留既有手動加密備份。開啟／前景／恢復連線會檢查，健康狀態每60秒補查；本機正式交易先保存，修改合併3秒後背景同步。授權失效或網路失敗不無限重試，保留本機與待同步狀態；中斷不刪本機或雲端版本。沒有 refresh token，授權失效需重新連接並解鎖。
+
+同步範圍為現有完整加密備份：個人資料、數值、待辦定義與單次簡述／獎勵、分類、活動、外觀與非敏感AI模型偏好、圖片、長期歷史及有效Undo／Redo。AI金鑰、Google權杖、同步密碼、同步基準、裝置位置及專用暫存不進一般資料或雲端。
+
+Drive appDataFolder 中每次建立加密快照，再建立不可變版本索引；索引保存父版本與密文SHA-256。版本時間只供顯示，不決定勝負。兩端基準不同且皆有修改、並行上傳產生多個版本頭，均暫停並要求選擇；不做欄位猜測合併。首次已有雲端或舊手動備份也先確認。本機採用雲端前必須完成加密封存，再經既有驗證、圖片及維護鎖原子還原。網路期間不持有資料寫入鎖；套用前重新核對本機版本／指紋。草稿或其他維護操作阻擋時稍後再試。
+
+「保留版本與還原」可選同步版本／本機封存，還原會建立新版本，保留既有歷史。檔案不自動刪除，會使用Drive配額；只有快照成功而索引未成功的中斷上傳不會被當成正式版本。此設計保留並行版本，不能保證裝置離線時立即看到其他裝置修改。
+
+測試界線：單元及隔離Chromium使用mock Google OAuth／Drive API，實際執行既有加密、圖片還原與資料交易；不代表真實Google或實體雙裝置驗收。管理者需確認Drive API、Web application client、正式origin與測試帳號。實機用兩台裝置同帳號／同密碼：首次選擇、A修改後B回前景、離線補傳、兩端離線各自修改後衝突選擇、版本還原及撤銷授權後本機保留。切勿同時在兩端操作正式資料前略過首次選擇；可先用本機下載備份保存資料。
+
+事件新增／編輯名稱設autocomplete="off"，沒有datalist；瀏覽器仍可能依自身政策忽略設定，中文輸入法候選字不受本站控制。

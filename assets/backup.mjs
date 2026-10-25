@@ -1,11 +1,11 @@
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=key-private-21';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=key-private-21';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=key-private-21';
-import {ABILITIES} from './abilities.mjs?v=key-private-21';
-import {maintenance} from './coordination.mjs?v=key-private-21';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=key-private-21';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=drive-sync-22';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=drive-sync-22';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=drive-sync-22';
+import {ABILITIES} from './abilities.mjs?v=drive-sync-22';
+import {maintenance} from './coordination.mjs?v=drive-sync-22';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=drive-sync-22';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=key-private-21';
+import {normalizeSettings} from './settings-model.mjs?v=drive-sync-22';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -146,7 +146,7 @@ export async function readBackup(file,password='') {
   const liveRefs=documentImageReferences(normalized);
   return {payload:{...payload,dataVersion:3,document:normalized,dataCount:dataCount(normalized)},assets:assets.filter(a=>liveRefs.has(a.id))};
 }
-export async function restoreBackup(store,prepared,expectedRevision) {
+export async function restoreBackup(store,prepared,expectedRevision,{afterReplace}={}) {
   return maintenance(async()=>{
     store.refresh();check(store.get().revision===expectedRevision,'確認期間資料已改變，請重新選取備份。');
     validateDocument(prepared.payload.document);
@@ -155,7 +155,7 @@ export async function restoreBackup(store,prepared,expectedRevision) {
     const existing=await listImageAssets();
     for(const asset of prepared.assets){const prior=existing.find(a=>a.id===asset.id);if(prior&&(!(prior.blob instanceof Blob)||'asset:'+await hash(await prior.blob.arrayBuffer())!==asset.id))throw new Error('本機同 ID 圖片的完整性異常，已停止還原並保留原資料。');}
     await stageImageAssets(prepared.assets);
-    store.replace(maintainRecovery(prepared.payload.document).document);
+    store.replace(maintainRecovery(prepared.payload.document).document);await afterReplace?.();
   });
 }
 export function backupFilename(){return 'Life system '+new Date().toISOString().replace(/[:.]/g,'-')+'.life-backup.json';}

@@ -1,13 +1,14 @@
-import {initializeAISettings} from './ai-settings.mjs?v=key-private-21';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=key-private-21';
-import {dataStore,persistentUndo} from './data.mjs?v=key-private-21';
-import {createMobileTabPositioner} from './tab-position.mjs?v=key-private-21';
-import {createHistoryView} from './history-view.mjs?v=key-private-21';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=key-private-21';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=key-private-21';
-import {holdDraft} from './coordination.mjs?v=key-private-21';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=key-private-21';
-import {driveConfigured,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=key-private-21';
+import {mountDriveSync} from './drive-sync-view.mjs?v=drive-sync-22';
+import {initializeAISettings} from './ai-settings.mjs?v=drive-sync-22';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=drive-sync-22';
+import {dataStore,persistentUndo} from './data.mjs?v=drive-sync-22';
+import {createMobileTabPositioner} from './tab-position.mjs?v=drive-sync-22';
+import {createHistoryView} from './history-view.mjs?v=drive-sync-22';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=drive-sync-22';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=drive-sync-22';
+import {holdDraft} from './coordination.mjs?v=drive-sync-22';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=drive-sync-22';
+import {driveConfigured,getDriveState,connectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=drive-sync-22';
 
 export function mountSettings(root,context){
 const $=selector=>root.querySelector(selector);
@@ -173,9 +174,10 @@ $('#confirm-restore').addEventListener('click',()=>run(async()=>{
   await restoreBackup(dataStore,prepared,restoreRevision);$('#restore-confirm').close();$('#restore-file').value='';cancelAppearance();
   notice('完整還原已完成，資料、設定、圖片與歷史已重新載入；不包含還原前的歷史。');if(selectedTab===0)await refreshStorage();
 }));
-function syncDrive(){for(const id of ['connect-drive','upload-drive','list-drive','disconnect-drive','revoke-drive'])$('#'+id).disabled=!driveConfigured||busy;}
-$('#drive-state').textContent=driveConfigured?'已設定 Google OAuth；尚未連接。只在你主動操作時授權、上傳或讀取。':'Google 雲端備份尚未設定 OAuth client ID；本機備份與還原可正常使用。';
-$('#connect-drive').addEventListener('click',()=>run(async()=>{const result=await connectDrive();$('#drive-state').textContent=result.needsClick?'Google 授權程式已載入，請再次點擊「連接 Google Drive」以開啟授權視窗。':'Google Drive 已連接；短期授權僅存於本頁記憶體。';}));
+const driveSync=mountDriveSync(root,context);
+function syncDrive(){for(const id of ['connect-drive','upload-drive','list-drive','disconnect-drive','revoke-drive'])$('#'+id).disabled=!driveConfigured||busy||(['upload-drive','list-drive','revoke-drive'].includes(id)&&!getDriveState().connected);driveSync.refresh();}
+if(!driveConfigured)$('#drive-state').textContent='Google OAuth尚未設定；本機備份仍可使用。';
+$('#connect-drive').addEventListener('click',()=>run(async()=>{const result=await connectDrive();$('#drive-state').textContent=result.needsClick?'Google 授權程式已載入，請再次點擊「連接 Google Drive」以開啟授權視窗。':'Google Drive 已連接；授權有效時可解鎖自動同步。';}));
 $('#upload-drive').addEventListener('click',()=>{$('#cloud-password').value='';$('#cloud-password-dialog [data-dialog-error]').textContent='';$('#cloud-password-dialog').showModal();});
 $('#cancel-cloud-password').addEventListener('click',()=>$('#cloud-password-dialog').close());
 $('#cloud-password-dialog').addEventListener('close',()=>{$('#cloud-password').value='';$('#upload-drive').focus();});
@@ -191,8 +193,8 @@ $('#list-drive').addEventListener('click',()=>run(async()=>{
     button.addEventListener('click',()=>run(async()=>previewRestore(await downloadDriveBackup(file))));$('#drive-list').append(row);
   }
 }));
-$('#disconnect-drive').addEventListener('click',()=>{disconnectDrive();$('#drive-list').replaceChildren();$('#drive-state').textContent='已中斷本頁連接；既有雲端備份沒有刪除。';});
-$('#revoke-drive').addEventListener('click',()=>run(async()=>{await revokeDrive();$('#drive-list').replaceChildren();$('#drive-state').textContent='已撤銷授權；既有雲端備份沒有刪除。';}));
+$('#disconnect-drive').addEventListener('click',()=>{driveSync.disconnect();$('#drive-list').replaceChildren();$('#drive-state').textContent='已中斷本頁連接；既有雲端備份沒有刪除。';});
+$('#revoke-drive').addEventListener('click',()=>run(async()=>{await revokeDrive();driveSync.disconnect();$('#drive-list').replaceChildren();$('#drive-state').textContent='已撤銷授權；既有雲端備份沒有刪除。';}));
 let storageRevision=dataStore.get().revision;
 context.subscribe(dataStore,state=>{if(state.revision!==storageRevision){storageRevision=state.revision;storageLoaded=false;}history.render(state);if(!appearanceDirty&&!appearanceInput){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}});
 context.listen(window,'pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();clearRestore();for(const id of ['backup-password','cloud-password'])$('#'+id).value='';});
