@@ -1,11 +1,11 @@
 import {createRewardFeedback} from './task-reward-feedback.mjs?v=habits-20261026';
-import {mountTaskCompanion} from './task-companion.mjs?v=quick-settings-20261026';
+import {mountTaskCompanion} from './task-companion.mjs?v=drive-versions-20261026';
 import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs';
 import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
 import {dataStore} from './data.mjs?v=habits-20261026';
 import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS} from './habits-model.mjs';
-import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=quick-settings-20261026';
-import {statusButtons} from './habit-quick.mjs?v=quick-settings-20261026';
+import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=drive-versions-20261026';
+import {statusButtons} from './habit-quick.mjs?v=drive-versions-20261026';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 export function mountHabits(root,context){

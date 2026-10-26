@@ -1,4 +1,4 @@
-import {createMobileTaskResponse} from './task-mobile-response.mjs?v=quick-settings-20261026';
+import {createMobileTaskResponse} from './task-mobile-response.mjs?v=drive-versions-20261026';
 import {createSharedCompanionView} from './companion-events.mjs?v=habits-20261026';
 export function mountTaskCompanion(root,context,options={}){
  const floating=createMobileTaskResponse(root,context,options);

@@ -1,4 +1,4 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=quick-settings-20261026';
+import {mountHabitQuick} from './habit-quick.mjs?v=drive-versions-20261026';
 import {renderHomeToday} from './home-today.mjs?v=habits-20261026';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
 import {createTaskEditor} from './task-editor.mjs?v=habits-20261026';

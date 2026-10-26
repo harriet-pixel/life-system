@@ -29,10 +29,8 @@ export function initializeAISettings(root=document,context){
   hasKey=state.hasKey;
   if(priorProvider!==state.provider||priorMode!==state.mode||!state.hasKey){clearKeyField();}priorProvider=state.provider;priorMode=state.mode;
   $('ai-browser-mode').checked=state.mode==='browser';$('ai-provider').value=state.provider;
-  $('ai-provider-help').textContent=state.mode==='browser'?providerNotes[state.provider]:'正式後端模式需本站 HTTPS 後端與登入；目前未部署。';
+  $('ai-provider-help').textContent=state.mode==='browser'?providerNotes[state.provider]:'';
   const personal=state.mode==='backend'&&state.personal?.configured;if(personal)$('ai-provider-help').textContent='使用已設定的個人後端服務。';
-  $('ai-worker-login').hidden=state.mode==='browser';$('ai-worker-login').disabled=!state.personal?.configured||state.personal?.busy;
-  $('ai-worker-logout').hidden=state.mode==='browser';$('ai-worker-logout').disabled=!state.personal?.authenticated||state.personal?.busy;$('ai-worker-login').parentElement.hidden=state.mode==='browser';
   $('ai-key-controls').hidden=Boolean(personal);$('ai-key-label').hidden=Boolean(personal);
   if($('ai-collapse-state'))$('ai-collapse-state').textContent=aiStatusSummary(state);
   $('ai-panel').setAttribute('aria-busy',String(state.busy));$('ai-state').textContent=state.status==='unset'&&state.mode==='browser'&&!state.hasKey?'目前使用手動瀏覽器直連備用模式。':state.message;
@@ -46,7 +44,6 @@ export function initializeAISettings(root=document,context){
   $('ai-connect').textContent='連接AI';
   $('ai-disconnect').textContent='中斷連線';$('ai-disconnect').disabled=personal?!state.connected&&!state.busy:!state.hasKey&&!state.busy;
  });
- $('ai-worker-login').addEventListener('click',()=>connection.login());$('ai-worker-logout').addEventListener('click',()=>connection.logout());
  const dialog=$('ai-mode-confirm');
  $('ai-browser-mode').addEventListener('change',()=>{if($('ai-browser-mode').checked){$('ai-browser-mode').checked=false;if(!dialog.open)dialog.showModal();}else connection.setBrowserMode(false);});
  $('ai-enable-browser').addEventListener('click',()=>{connection.setBrowserMode(true);dialog.close();});
