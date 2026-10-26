@@ -1,11 +1,12 @@
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=cloud-backup-20261026';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=cloud-backup-20261026';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=cloud-backup-20261026';
-import {ABILITIES} from './abilities.mjs?v=cloud-backup-20261026';
-import {maintenance} from './coordination.mjs?v=cloud-backup-20261026';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=cloud-backup-20261026';
+import {emptyHabits,validateHabits} from './habits-model.mjs';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=habits-20261026';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=habits-20261026';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=habits-20261026';
+import {ABILITIES} from './abilities.mjs?v=habits-20261026';
+import {maintenance} from './coordination.mjs?v=habits-20261026';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=habits-20261026';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=cloud-backup-20261026';
+import {normalizeSettings} from './settings-model.mjs?v=habits-20261026';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -17,7 +18,7 @@ function unb64(text,max=MAX_FILE_BYTES) {
 }
 function check(condition,message='備份結構驗證失敗。'){if(!condition)throw new Error(message);}
 const topKeys=['revision','statsRulesVersion','profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','stats','history','settings'];
-const legacyKeys=[...topKeys,'tasks'];topKeys.push('historyVersion','undoHistory','tasks');
+const legacyKeys=[...topKeys,'tasks','habits'];topKeys.push('historyVersion','undoHistory','tasks','habits');
 const editKeys=legacyKeys.filter(k=>!['revision','history','statsRulesVersion'].includes(k));
 function safeObject(value,depth=0) {
   check(depth<40,'備份結構過深。');
@@ -29,13 +30,14 @@ function validCrop(crop){return crop&&typeof crop==='object'&&['left','top','wid
 function validateFields(value,full=false,legacy=false) {
   check(value&&typeof value==='object'&&!Array.isArray(value));
   check(Object.keys(value).every(k=>(full?(legacy?legacyKeys:topKeys):editKeys).includes(k)),'備份含未知資料欄位，請使用相符版本。');
-  if(full){check((legacy?legacyKeys:topKeys).filter(k=>k!=='tasks').every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
+  if(full){check((legacy?legacyKeys:topKeys).filter(k=>!['tasks','habits'].includes(k)).every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
   if(Object.hasOwn(value,'profile')){validateProfileFields(value.profile,undefined,{reading:true});check(value.profile&&['name','age','gender','bio','boundaries','motto'].every(k=>typeof value.profile[k]==='string'));check(value.profile.age===''||(/^\d+$/.test(value.profile.age)&&Number.isSafeInteger(Number(value.profile.age))));}
   if(Object.hasOwn(value,'stats')){
     const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5);
     check(s.abilities.every((a,i)=>a.id===ABILITIES[i].id&&a.name===ABILITIES[i].name&&Number.isSafeInteger(a.value)&&a.value>=0));
     check(new Set(s.abilities.map(a=>a.id)).size===5);
   }
+  if(Object.hasOwn(value,'habits'))validateHabits(value.habits);
   if(Object.hasOwn(value,'tasks'))validateTasks(value.tasks);
   if(Object.hasOwn(value,'activities'))check(value.activities&&typeof value.activities==='object'&&!Array.isArray(value.activities)&&Object.values(value.activities).every(v=>typeof v==='boolean'));
   if(Object.hasOwn(value,'portraits'))check(Array.isArray(value.portraits)&&value.portraits.length<=6&&new Set(value.portraits.map(p=>p.id)).size===value.portraits.length&&value.portraits.every(p=>typeof p.id==='string'&&isImageReference(p.image)&&(p.source===undefined||p.source===null||isImageReference(p.source))&&(p.crop===undefined||p.crop===null||validCrop(p.crop))));
@@ -69,7 +71,7 @@ export function validateDocument(doc,{legacy=false}={}){
 
  return doc;
 }
-export const dataCount=doc=>3+doc.portraits.length+Object.keys(doc.activities).length+doc.history.length+(doc.tasks?doc.tasks.definitions.length+doc.tasks.occurrences.length+doc.tasks.completions.length+doc.tasks.categories.length:0);
+export const dataCount=doc=>(doc.habits?doc.habits.periods.length+doc.habits.records.length+doc.habits.bonusItems.length+doc.habits.bonusRecords.length:0)+3+doc.portraits.length+Object.keys(doc.activities).length+doc.history.length+(doc.tasks?doc.tasks.definitions.length+doc.tasks.occurrences.length+doc.tasks.completions.length+doc.tasks.categories.length:0);
 async function passwordKey(password,salt,usage) {
   check(typeof password==='string'&&password.length>0&&password.length<=1024,'請輸入備份密碼。');
   const key=await crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveKey']);
@@ -142,6 +144,7 @@ export async function readBackup(file,password='') {
   const document=maintainRecovery(payload.document).document;document.settings=normalizeSettings(document.settings);
   for(const r of document.undoHistory)for(const snapshot of [r.before,r.after])if(snapshot.settings)snapshot.settings=normalizeSettings(snapshot.settings);
   document.tasks ??= emptyTasks();
+  document.habits ??= emptyHabits();
   const normalized=maintainRecovery(document).document;validateDocument(normalized);
   const liveRefs=documentImageReferences(normalized);
   return {payload:{...payload,dataVersion:3,document:normalized,dataCount:dataCount(normalized)},assets:assets.filter(a=>liveRefs.has(a.id))};

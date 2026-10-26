@@ -1,6 +1,6 @@
 import {MODEL_REASONS} from './ai-capabilities.mjs?v=provider-audit-3';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=cloud-backup-20261026';
-import {mountAITestPanel} from './ai-test-panel.mjs?v=cloud-backup-20261026';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=habits-20261026';
+import {mountAITestPanel} from './ai-test-panel.mjs?v=habits-20261026';
 const providerNotes={
  gemini:'Gemini 官方 SDK 支援瀏覽器；實際可用性仍依金鑰、地區與官方跨來源政策。',
  openai:'OpenAI／GPT：官方 SDK 要求明確啟用危險瀏覽器模式；本測試採官方 REST 直連，僅在你啟用後送出金鑰。',

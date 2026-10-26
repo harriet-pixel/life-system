@@ -1,14 +1,14 @@
-import {getCloudBackup} from './cloud-backup.mjs?v=cloud-backup-20261026';
-import {initializeAISettings} from './ai-settings.mjs?v=cloud-backup-20261026';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=cloud-backup-20261026';
-import {dataStore,persistentUndo} from './data.mjs?v=cloud-backup-20261026';
-import {createMobileTabPositioner} from './tab-position.mjs?v=cloud-backup-20261026';
-import {createHistoryView} from './history-view.mjs?v=cloud-backup-20261026';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=cloud-backup-20261026';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=cloud-backup-20261026';
-import {holdDraft} from './coordination.mjs?v=cloud-backup-20261026';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=cloud-backup-20261026';
-import {driveConfigured,driveAuth,getDriveState,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=cloud-backup-20261026';
+import {getCloudBackup} from './cloud-backup.mjs?v=habits-20261026';
+import {initializeAISettings} from './ai-settings.mjs?v=habits-20261026';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=habits-20261026';
+import {dataStore,persistentUndo} from './data.mjs?v=habits-20261026';
+import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
+import {createHistoryView} from './history-view.mjs?v=habits-20261026';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=habits-20261026';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=habits-20261026';
+import {holdDraft} from './coordination.mjs?v=habits-20261026';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=habits-20261026';
+import {driveConfigured,driveAuth,getDriveState,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=habits-20261026';
 
 export function mountSettings(root,context){
 const $=selector=>root.querySelector(selector);

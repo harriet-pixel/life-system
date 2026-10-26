@@ -1,6 +1,6 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=cloud-backup-20261026';
-import {dataStore} from './data.mjs?v=cloud-backup-20261026';
-import {holdDraft} from './coordination.mjs?v=cloud-backup-20261026';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=habits-20261026';
+import {dataStore} from './data.mjs?v=habits-20261026';
+import {holdDraft} from './coordination.mjs?v=habits-20261026';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

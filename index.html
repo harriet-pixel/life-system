@@ -7,11 +7,11 @@
     <meta name="description" content="Life System 首頁視覺提案，以清楚而平靜的方式整理日常。">
     <title>今日生活 · Life System</title>
     <link rel="icon" href="data:,">
-    <script src="assets/appearance-core.js?v=cloud-backup-20261026" data-appearance-core></script>
+    <script src="assets/appearance-core.js?v=habits-20261026" data-appearance-core></script>
 
 
 
-  <link rel="stylesheet" href="assets/styles.css?v=cloud-backup-20261026"><link rel="stylesheet" href="assets/profile.css?v=cloud-backup-20261026"><link rel="stylesheet" href="assets/appearance.css?v=cloud-backup-20261026"><link rel="stylesheet" href="assets/ai.css?v=cloud-backup-20261026"><meta name="life-system-shell" content="home-today-20261026"><link rel="modulepreload" href="assets/data.mjs?v=cloud-backup-20261026"><link rel="modulepreload" href="assets/home-today.mjs?v=home-today-20261026"><script type="module" src="assets/home-first-paint.mjs?v=home-today-20261026"></script><script type="module" src="assets/app-shell.mjs?v=home-today-20261026"></script><link rel="stylesheet" href="assets/tasks.css?v=cloud-backup-20261026"><link rel="stylesheet" href="assets/ui-feedback.css?v=cloud-backup-20261026"></head>
+  <link rel="stylesheet" href="assets/styles.css?v=habits-20261026"><link rel="stylesheet" href="assets/profile.css?v=habits-20261026"><link rel="stylesheet" href="assets/appearance.css?v=habits-20261026"><link rel="stylesheet" href="assets/ai.css?v=habits-20261026"><meta name="life-system-shell" content="habits-20261026"><link rel="modulepreload" href="assets/data.mjs?v=habits-20261026"><link rel="modulepreload" href="assets/home-today.mjs?v=habits-20261026"><script type="module" src="assets/home-first-paint.mjs?v=habits-20261026"></script><script type="module" src="assets/app-shell.mjs?v=habits-20261026"></script><link rel="stylesheet" href="assets/tasks.css?v=habits-20261026"><link rel="stylesheet" href="assets/ui-feedback.css?v=habits-20261026"><link rel="stylesheet" href="assets/habits.css?v=habits-20261026"></head>
   <body data-page="home">
     <a class="skip-link" href="#main">跳至主要內容</a>
     <div class="page-shell">
@@ -22,7 +22,7 @@
         </div>
 
         <div class="intro">
-          <div class="date-block"><time><span class="date-numbers"><span class="date-month"></span><span class="date-divider">/</span><span class="date-day"></span></span><span class="date-detail"></span></time></div><script src="assets/home-date.js?v=cloud-backup-20261026"></script>
+          <div class="date-block"><time><span class="date-numbers"><span class="date-month"></span><span class="date-divider">/</span><span class="date-day"></span></span><span class="date-detail"></span></time></div><script src="assets/home-date.js?v=habits-20261026"></script>
           <div class="welcome-copy"><span id="current-page-name" class="current-page-name desktop-page-name"></span><h1>慢慢成長，慢慢變好</h1><p class="eyebrow" lang="en">A little space for everyday life</p></div>
         </div>
 
@@ -35,11 +35,11 @@
               <div id="portrait-placeholder"><span>頭像佔位</span><span id="portrait-emotion">平靜</span></div>
             </div>
             <div class="dialogue-column">
-              <div class="dialogue-bubble" aria-live="polite" aria-atomic="true"><p id="companion-dialogue">完成待辦或習慣打卡後，這裡會顯示模擬回應。</p></div>
+              <div class="dialogue-bubble" aria-live="polite" aria-atomic="true"><p id="companion-dialogue">完成日常行動後，這裡會顯示夥伴回應。</p></div>
               <p class="sr-only" id="companion-status" role="status">尚未產生新回應。</p>
             </div>
           </div>
-          <p class="small-note companion-note">目前為模擬回應，尚未串接 AI</p>
+          <p class="small-note companion-note">待辦回應為模擬，習慣使用共用 AI</p>
         </section>
 
 
@@ -48,7 +48,7 @@
 
         <div id="home-stats" class="profile-summary" role="group" aria-label="個人資料摘要">Lv 1 ｜ Exp —｜ $ —</div>
 
-        <p class="demo-notice"><span class="demo-mark">今日生活</span><span>今日待辦與待辦事項頁同步；彈性打卡及夥伴仍為示意。</span></p>
+        <p class="demo-notice"><span class="demo-mark">今日生活</span><span>今日待辦與習慣打卡皆使用共用資料。</span></p>
 
         <div class="activity-region">
         <div class="activity-tabs" aria-label="今日行動切換" role="tablist">
@@ -63,13 +63,7 @@
           </section>
 
           <section hidden id="habits-panel" class="habits" aria-labelledby="habits-title">
-            <div class="section-heading"><div><h2 id="habits-title">今日彈性習慣</h2><p class="section-kicker" lang="en">Small steps, your own pace</p></div><span class="section-label">示意打卡</span></div>
-            <ul class="habit-list">
-              <li><label class="habit-row"><span class="habit-index" aria-hidden="true">01</span><span class="habit-content"><span class="habit-name">喝一杯水</span></span><input type="checkbox" data-habit><span class="habit-state" aria-hidden="true">未打卡</span></label></li>
-              <li><label class="habit-row"><span class="habit-index" aria-hidden="true">02</span><span class="habit-content"><span class="habit-name">起身舒展</span></span><input type="checkbox" data-habit checked><span class="habit-state" aria-hidden="true">已打卡</span></label></li>
-              <li><label class="habit-row"><span class="habit-index" aria-hidden="true">03</span><span class="habit-content"><span class="habit-name">留一點安靜</span></span><input type="checkbox" data-habit><span class="habit-state" aria-hidden="true">未打卡</span></label></li>
-            </ul>
-            <p class="small-note habit-note">以上皆為示意習慣，尚未設定打卡規則。</p>
+            <h2 id="habits-title">今日彈性習慣</h2><p class="small-note">正在讀取習慣設定…</p>
           </section>
 
 

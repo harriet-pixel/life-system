@@ -1,17 +1,17 @@
-import {createCloudRestore} from './cloud-restore.mjs?v=cloud-backup-20261026';
-import {getCloudBackup} from './cloud-backup.mjs?v=cloud-backup-20261026';
-import {setOperationNotice} from './operation-notice.mjs?v=cloud-backup-20261026';
-import {initializeUIFeedback} from './ui-feedback.mjs?v=cloud-backup-20261026';
-import {ownsCompletionAI} from './task-completion.mjs?v=cloud-backup-20261026';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=cloud-backup-20261026';
-import {persistentUndo,dataStore} from './data.mjs?v=cloud-backup-20261026';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=cloud-backup-20261026';
-import {initializeNavigationSize} from './navigation-size.mjs?v=cloud-backup-20261026';
-import {mountAIPage} from './ai-page.mjs?v=cloud-backup-20261026';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=cloud-backup-20261026';
-const routes={tasks:{mount:()=>import('./tasks.mjs?v=cloud-backup-20261026'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=home-today-20261026'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=cloud-backup-20261026'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=cloud-backup-20261026'),export:'mountSettings'}};
+import {createCloudRestore} from './cloud-restore.mjs?v=habits-20261026';
+import {getCloudBackup} from './cloud-backup.mjs?v=habits-20261026';
+import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
+import {initializeUIFeedback} from './ui-feedback.mjs?v=habits-20261026';
+import {ownsCompletionAI} from './task-completion.mjs?v=habits-20261026';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=habits-20261026';
+import {persistentUndo,dataStore} from './data.mjs?v=habits-20261026';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=habits-20261026';
+import {initializeNavigationSize} from './navigation-size.mjs?v=habits-20261026';
+import {mountAIPage} from './ai-page.mjs?v=habits-20261026';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=habits-20261026';
+const routes={habits:{mount:()=>import('./habits.mjs'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=habits-20261026'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=habits-20261026'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=habits-20261026'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=habits-20261026'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map();
-async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='home'?'home-today-20261026':'cloud-backup-20261026')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='home'?'habits-20261026':'habits-20261026')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
