@@ -142,20 +142,20 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 /* Only the tasks view replaces its mobile in-flow companion with one response. */
 .task-response-close{display:none}
 @media(width < 1024px){
- [data-page-view=tasks] .tasks-dashboard>.companion{display:none}
- [data-page-view=tasks] .tasks-dashboard>.companion.is-floating-response{display:block;position:fixed;z-index:900;left:var(--response-left,12px);top:var(--response-top,12px);width:var(--response-width,calc(100% - 24px));max-height:var(--response-max-height,50dvh);margin:0;padding:0;border:0;pointer-events:none;animation:task-response-in 160ms ease-out}
- [data-page-view=tasks] .is-floating-response .companion-banner{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;align-items:end}
- [data-page-view=tasks] .is-floating-response .companion-portrait{width:56px;height:56px;min-height:0;aspect-ratio:1;border-radius:50%;background:var(--color-background,#fff)}
- [data-page-view=tasks] .is-floating-response .dialogue-bubble{position:relative;padding:12px 44px 12px 12px;max-height:var(--response-max-height,50dvh);overflow:auto;pointer-events:auto;background:var(--color-background,#fff);font-size:var(--text-secondary,1rem);overflow-wrap:anywhere}
- [data-page-view=tasks] .is-floating-response .dialogue-bubble:before{display:none}
- [data-page-view=tasks] .is-floating-response .companion-note{display:none}
- [data-page-view=tasks] .is-floating-response .task-response-close{display:inline-grid;place-items:center;position:absolute;right:0;top:0;width:44px;height:44px;min-height:44px;padding:10px;border:0;background:transparent;color:var(--color-primary);cursor:pointer}
- [data-page-view=tasks] .is-floating-response #portrait-placeholder{min-height:0;height:100%;padding:2px}
+ :is([data-page-view=tasks],[data-page-view=habits]) .tasks-dashboard>.companion{display:none}
+ :is([data-page-view=tasks],[data-page-view=habits]) .tasks-dashboard>.companion.is-floating-response{display:block;position:fixed;z-index:900;left:var(--response-left,12px);top:var(--response-top,12px);width:var(--response-width,calc(100% - 24px));max-height:var(--response-max-height,50dvh);margin:0;padding:0;border:0;pointer-events:none;animation:task-response-in 160ms ease-out}
+ :is([data-page-view=tasks],[data-page-view=habits]) .is-floating-response .companion-banner{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;align-items:end}
+ :is([data-page-view=tasks],[data-page-view=habits]) .is-floating-response .companion-portrait{width:56px;height:56px;min-height:0;aspect-ratio:1;border-radius:50%;background:var(--color-background,#fff)}
+ :is([data-page-view=tasks],[data-page-view=habits]) .is-floating-response .dialogue-bubble{position:relative;padding:12px 44px 12px 12px;max-height:var(--response-max-height,50dvh);overflow:auto;pointer-events:auto;background:var(--color-background,#fff);font-size:var(--text-secondary,1rem);overflow-wrap:anywhere}
+ :is([data-page-view=tasks],[data-page-view=habits]) .is-floating-response .dialogue-bubble:before{display:none}
+ :is([data-page-view=tasks],[data-page-view=habits]) .is-floating-response .companion-note{display:none}
+ :is([data-page-view=tasks],[data-page-view=habits]) .is-floating-response .task-response-close{display:inline-grid;place-items:center;position:absolute;right:0;top:0;width:44px;height:44px;min-height:44px;padding:10px;border:0;background:transparent;color:var(--color-primary);cursor:pointer}
+ :is([data-page-view=tasks],[data-page-view=habits]) .is-floating-response #portrait-placeholder{min-height:0;height:100%;padding:2px}
  .task-response-close svg{width:22px;height:22px}
  .task-pool-menu #task-item-menu-title{font-size:1rem}
 }
 @keyframes task-response-in{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){[data-page-view=tasks] .tasks-dashboard>.companion.is-floating-response{animation:none}}
+@media(prefers-reduced-motion:reduce){:is([data-page-view=tasks],[data-page-view=habits]) .tasks-dashboard>.companion.is-floating-response{animation:none}}
 
 /* Mobile density: retain two stable notice rows and 44px event controls. */
 @media(width < 1024px){
