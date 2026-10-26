@@ -1,6 +1,6 @@
-import {getCloudBackup} from './cloud-backup.mjs?v=cloud-backup-20261026';
-import {dataStore} from './data.mjs?v=cloud-backup-20261026';
-import {readBackup} from './backup.mjs?v=cloud-backup-20261026';
+import {getCloudBackup} from './cloud-backup.mjs?v=habits-20261026';
+import {dataStore} from './data.mjs?v=habits-20261026';
+import {readBackup} from './backup.mjs?v=habits-20261026';
 const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
 const full=d=>{const x=structuredClone(d);delete x.revision;return JSON.stringify(canonical(x));};
 export function createCloudRestore(){const service=getCloudBackup(),dialog=document.createElement('dialog');dialog.className='task-dialog cloud-restore-dialog';dialog.dataset.shellDialog='true';dialog.setAttribute('aria-labelledby','latest-cloud-title');dialog.innerHTML='<h2 id="latest-cloud-title">還原最新雲端備份</h2><p data-cloud-summary role="status"></p><p data-cloud-error role="alert"></p><div class="task-buttons"><button type="button" data-cloud-cancel>取消</button><button type="button" data-cloud-confirm disabled>確認還原</button></div>';document.body.append(dialog);let busy=false,prepared=null,revision=null,selectedId=null,focus=null;

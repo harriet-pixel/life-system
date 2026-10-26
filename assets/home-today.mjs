@@ -1,5 +1,5 @@
-import {dataStore} from './data.mjs?v=cloud-backup-20261026';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=cloud-backup-20261026';
+import {dataStore} from './data.mjs?v=habits-20261026';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=habits-20261026';
 
 // One renderer and one validated store for early reading and interactive mounting.
 export function renderHomeToday(root,actions=null){

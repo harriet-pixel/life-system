@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=cloud-backup-20261026';
-import { holdDraft } from './coordination.mjs?v=cloud-backup-20261026';
-import { createProfileImages } from './profile-images.mjs?v=cloud-backup-20261026';
+import {bindProfileValidation} from './validation.mjs?v=habits-20261026';
+import { holdDraft } from './coordination.mjs?v=habits-20261026';
+import { createProfileImages } from './profile-images.mjs?v=habits-20261026';
 import { imageURL, prepareImageReferences } from './image-store.mjs';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=cloud-backup-20261026';
-import { undoManager } from './undo.mjs?v=cloud-backup-20261026';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=cloud-backup-20261026';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=habits-20261026';
+import { undoManager } from './undo.mjs?v=habits-20261026';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=habits-20261026';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

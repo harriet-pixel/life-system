@@ -1,15 +1,16 @@
-import {renderHomeToday} from './home-today.mjs?v=home-today-20261026';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=cloud-backup-20261026';
-import {createTaskEditor} from './task-editor.mjs?v=cloud-backup-20261026';
-import {createCategoryManager} from './task-categories.mjs?v=cloud-backup-20261026';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=cloud-backup-20261026';
-import {taskActions} from './task-actions.mjs?v=cloud-backup-20261026';
-import {localDate} from './tasks-model.mjs?v=cloud-backup-20261026';
-import { createMobileTabPositioner } from './tab-position.mjs?v=cloud-backup-20261026';
-import { createActivityHeightSync } from './activity-height.mjs?v=cloud-backup-20261026';
-import { undoManager } from './undo.mjs?v=cloud-backup-20261026';
-import {createSharedCompanionView} from './companion-events.mjs?v=cloud-backup-20261026';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=cloud-backup-20261026';
+import {mountHabitQuick} from './habit-quick.mjs';
+import {renderHomeToday} from './home-today.mjs?v=habits-20261026';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
+import {createTaskEditor} from './task-editor.mjs?v=habits-20261026';
+import {createCategoryManager} from './task-categories.mjs?v=habits-20261026';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=habits-20261026';
+import {taskActions} from './task-actions.mjs?v=habits-20261026';
+import {localDate} from './tasks-model.mjs?v=habits-20261026';
+import { createMobileTabPositioner } from './tab-position.mjs?v=habits-20261026';
+import { createActivityHeightSync } from './activity-height.mjs?v=habits-20261026';
+import { undoManager } from './undo.mjs?v=habits-20261026';
+import {createSharedCompanionView} from './companion-events.mjs?v=habits-20261026';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=habits-20261026';
 
 
 export function mountHome(root,context){
@@ -63,7 +64,7 @@ const companion = createSharedCompanionView({
       cancelled: '已撤銷操作，保留原對話。',
       queued: '正在合併示意完成事件；保留上一則對話。',
       generating: '正在產生模擬回應；保留上一則對話。',
-      ready: '模擬回應已更新・情緒為開發佔位，未串接 AI。',
+      ready: '夥伴回應已更新，正式角色情緒素材尚未設定。',
       fallback: '模擬回應失敗，已顯示開發備援短句；示意操作不受影響。',
     };
     status.textContent = messages[state];
@@ -92,40 +93,9 @@ editor.element.querySelector('#task-add-category').onclick=()=>{const trigger=ed
 context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>editor.busy()||categories.busy()||Boolean(completionBusy?.())});
 function renderToday(){renderHomeToday(root,tasks);}
 context.subscribe(tasks.completions,renderToday);
-const habitInputs = [...root.querySelectorAll('[data-habit]')];
-const entries = [
-  ...taskInputs.map((input, index) => ({ input, index, id: `task-${index}`, type: 'task', label: input.closest('label').querySelector('.task-name').textContent })),
-  ...habitInputs.map((input, index) => ({ input, index, id: `habit-${index}`, type: 'habit', label: input.closest('label').querySelector('.habit-name').textContent })),
-];
-const defaults = Object.fromEntries(entries.map(({ input, id }) => [id, input.defaultChecked]));
-const activityStore = { get: id => ({ checked: dataStore.get().activities[id] ?? defaults[id] }) };
-const taskCount = root.querySelector('#task-count');
-function renderActivities() {
-  if(undoManager.getState().busy)return;
-  entries.forEach(({ input, id, type }) => {
-    input.checked = activityStore.get(id).checked;
-    if (type === 'habit') input.nextElementSibling.textContent = input.checked ? '已打卡' : '未打卡';
-  });
-  const completed = entries.filter(({ id, type }) => type === 'task' && activityStore.get(id).checked).length;
-  renderToday();
-}
-entries.forEach((entry) => entry.input.addEventListener('change', async () => {
-  if (undoManager.getState().busy) { renderActivities(); return; }
-  try {
-    await dataStore.transact({ type: `${entry.type}.set-completed`, target: entry.id,
-      label: `${entry.type === 'task' ? (entry.input.checked ? '完成待辦' : '取消完成待辦') : (entry.input.checked ? '習慣打卡' : '取消習慣打卡')}：${entry.label}`,
-      changes: { activities: { ...defaults, ...dataStore.get().activities, [entry.id]: entry.input.checked } } });
-  } catch (error) {
-    const notice = root.querySelector('#operation-status'); notice.hidden = false; notice.textContent = error.message;
-    renderActivities(); return;
-  }
-  renderActivities();
-  emitDemoSuccess(entry.type === 'task' ? 'task.completed' : 'habit.checked-in', entry.input, entry.index, entry.label);
-}));
-context.setHooks({onUndoSuccess:()=>companion.cancelPending(),onRedoSuccess:()=>companion.cancelPending(),onBusyChange:busy=>entries.forEach(({input})=>input.disabled=busy)});
-
+mountHabitQuick(root,context);
 context.subscribe(dataStore,() => {
-  renderActivities();
+  renderToday();
   const stats = dataStore.get().stats;
   const summary = root.querySelector('#home-stats');
   const [experience, level, currency] = profileSummary(stats).split(' ｜ ');

@@ -1,11 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=cloud-backup-20261026';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=cloud-backup-20261026';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=cloud-backup-20261026';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=cloud-backup-20261026';
-import { coordinatedWrite } from './coordination.mjs?v=cloud-backup-20261026';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=cloud-backup-20261026';
+import {emptyHabits,validateHabits} from './habits-model.mjs';
+import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=habits-20261026';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=habits-20261026';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=habits-20261026';
+import { coordinatedWrite } from './coordination.mjs?v=habits-20261026';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=habits-20261026';
 import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=cloud-backup-20261026';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=habits-20261026';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -14,7 +15,7 @@ export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
 const undoRecord = undoCandidate;
 const redoRecord = redoCandidate;
-const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, tasks: emptyTasks(), stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
+const initial = () => ({ revision: 0, statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, tasks: emptyTasks(), habits: emptyHabits(), stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
 // Preserve the published one-time legacy restart, but perform the write only
 // under the shared write lock; existing v2 progress and settings are untouched.
 export function migrateStatsRules(storage) {
@@ -35,6 +36,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     if (!raw) return initial();
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
+    value.habits = validateHabits(value.habits ?? emptyHabits());
     value.tasks = validateTasks(value.tasks ?? emptyTasks());
     value.settings = normalizeSettings(value.settings);
     value.statsRulesVersion ??= STATS_RULES_VERSION;
@@ -83,12 +85,13 @@ export function createDataStore(storage,{now=Date.now}={}) {
       for (const [key, rawValue] of Object.entries(changes)) {
         let value = key==='settings'?normalizeSettings(rawValue):rawValue;
         if(key==='profile')value=validateProfileFields(rawValue,state.profile);
+        if(key==='habits')value=validateHabits(rawValue);
         if(key==='tasks')value=validateTasks(rawValue);
         if(key==='activities')value=validateActivities(rawValue);
         if (key === 'stats') {
           value = validateStats(rawValue, state.stats);
         }
-        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'tasks', 'stats', 'settings'].includes(key)) throw new Error('不支援的資料類型');
+        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'tasks', 'habits', 'stats', 'settings'].includes(key)) throw new Error('不支援的資料類型');
         if (key === 'portraits' && (!Array.isArray(value) || value.length>6 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 6 個立繪，請先刪除或更換既有項目。');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
