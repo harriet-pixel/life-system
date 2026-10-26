@@ -9,3 +9,4 @@
  :is([data-page-view=tasks],[data-page-view=habits]) .tasks-dashboard{border-top:1px solid var(--color-border);padding-top:var(--space-5);column-gap:var(--space-6)}
 }
 @supports not (scrollbar-gutter:stable){@media(width>=1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits])){overflow-y:scroll}}}
+@media(width>=1024px){[data-page-view=home] .welcome-copy{padding-inline-start:1em;min-width:0}}
