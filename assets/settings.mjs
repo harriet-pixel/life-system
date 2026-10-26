@@ -1,7 +1,8 @@
+import {documentTime} from './cloud-backup-policy.mjs';
 import {cloudBackupLabel} from './cloud-backup-display.mjs';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {getCloudBackup} from './cloud-backup.mjs?v=cloud-shortcuts-20261026';
-import {initializeAISettings} from './ai-settings.mjs?v=cloud-shortcuts-20261026';
+import {getCloudBackup} from './cloud-backup.mjs?v=backup-delay-20261026';
+import {initializeAISettings} from './ai-settings.mjs?v=backup-delay-20261026';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=habits-20261026';
 import {dataStore,persistentUndo} from './data.mjs?v=habits-20261026';
 import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
@@ -10,7 +11,7 @@ import {auditImages,deleteUnusedImages} from './image-references.mjs?v=habits-20
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=habits-20261026';
 import {holdDraft} from './coordination.mjs?v=habits-20261026';
 import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=habits-20261026';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=cloud-shortcuts-20261026';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=backup-delay-20261026';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);
@@ -174,14 +175,14 @@ $('#cancel-restore').addEventListener('click',()=>$('#restore-confirm').close())
 $('#restore-confirm').addEventListener('close',()=>{if(!$('#restore-confirm').open)clearRestore();});
 $('#confirm-restore').addEventListener('click',()=>run(async()=>{
   if(!prepared)throw new Error('請先解密並完成備份驗證。');
-  await restoreBackup(dataStore,prepared,restoreRevision);$('#restore-confirm').close();$('#restore-file').value='';cancelAppearance();
+  await restoreBackup(dataStore,prepared,restoreRevision);cloudBackup.setLocalDataTime(documentTime(prepared.payload.document)??prepared.payload.createdAt);$('#restore-confirm').close();$('#restore-file').value='';cancelAppearance();
   notice('完整還原已完成，資料、設定、圖片與歷史已重新載入；不包含還原前的歷史。');if(selectedTab===0)await refreshStorage();
 }));
 const cloudBackup=getCloudBackup();let versionsLoading=false,versionsGeneration=0,listedAt=0,connectedBefore=false;
 function driveNotice(message){$('#cloud-backup-status').textContent=String(message??'');}
 function syncDrive(){const auth=getDriveState();$('#connect-drive').disabled=!driveConfigured||busy||!auth.sdkReady;$('#disconnect-drive').disabled=busy||!auth.connected;$('#upload-drive').disabled=!driveConfigured||busy||!auth.connected;$('#drive-version').disabled=busy||!auth.connected||versionsLoading;$('#restore-cloud-latest').disabled=busy||!auth.connected;}
 async function refreshDriveVersions({quiet=false}={}){if(!getDriveState().connected||versionsLoading)return;versionsLoading=true;const generation=++versionsGeneration,selected=$('#drive-version').value,oldLabel=$('#drive-version').selectedOptions[0]?.textContent;syncDrive();try{const files=await cloudBackup.list();if(generation!==versionsGeneration||!getDriveState().connected)return;const select=$('#drive-version');select.replaceChildren(new Option(files.length?'雲端版本':'尚無雲端版本',''));for(const file of files)select.append(new Option(cloudBackupLabel(file),file.id));if(selected&&!files.some(file=>file.id===selected)){const option=new Option((oldLabel??'所選版本')+'（已不存在）',selected);option.disabled=true;select.append(option);}select.value=selected;listedAt=Date.now();if(!quiet&&!files.length)driveNotice('尚無可還原的雲端備份。');}catch(error){if(generation===versionsGeneration)driveNotice(error.message);}finally{if(generation===versionsGeneration){versionsLoading=false;syncDrive();}}}
-context.subscribe(cloudBackup,state=>{if(state.busy||state.pending||/失敗|未完成|已更新|錯誤/.test(state.message))driveNotice(state.message+(state.pending?'（待備份 '+state.pending+' 筆）':''));if(!state.busy&&!state.pending&&/已更新/.test(state.message)&&context.active)void refreshDriveVersions({quiet:true});});
+context.subscribe(cloudBackup,state=>{if(state.busy||state.pending||/失敗|未完成|已更新|錯誤|暫停|較舊|比最新/.test(state.message))driveNotice(state.message+(state.pending?'（待備份 '+state.pending+' 筆）':''));if(!state.busy&&!state.pending&&/已更新/.test(state.message)&&context.active)void refreshDriveVersions({quiet:true});});
 context.subscribe(driveAuth,auth=>{const connected=auth.connected;$('#drive-state').textContent='連接狀態：'+(connected?'Google Drive 已連接。':'尚未連接 Google Drive。');if(auth.sdkState==='loading')driveNotice('正在準備 Google 登入…');else if(auth.sdkError)driveNotice(auth.sdkError);if(connected&&!connectedBefore)void refreshDriveVersions();if(!connected&&connectedBefore){versionsGeneration++;versionsLoading=false;$('#drive-version').replaceChildren(new Option('雲端版本',''));}connectedBefore=connected;syncDrive();});
 $('#connect-drive').addEventListener('click',()=>run(async()=>{await connectDrive();driveNotice('Google Drive 已連接。');await refreshDriveVersions();},'drive'));
 $('#upload-drive').addEventListener('click',()=>run(async()=>{await cloudBackup.backupNow();driveNotice('雲端備份已更新。');await refreshDriveVersions({quiet:true});},'drive'));
