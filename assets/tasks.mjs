@@ -10,7 +10,7 @@ import {createTaskPool} from './task-pool.mjs?v=habits-20261026';
 import {dataStore} from './data.mjs?v=habits-20261026';
 import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=habits-20261026';
 import {taskActions} from './task-actions.mjs?v=habits-20261026';
-import {mountTaskCompanion} from './task-companion.mjs?v=habit-actions-20261027';
+import {mountTaskCompanion} from './task-companion.mjs?v=habit-chart-labels-20261027';
 import {createTaskEditor} from './task-editor.mjs?v=habits-20261026';
 import {createCategoryManager} from './task-categories.mjs?v=habits-20261026';
 export function mountTasks(root,context){
