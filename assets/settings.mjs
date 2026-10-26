@@ -1,6 +1,7 @@
+import {cloudBackupLabel} from './cloud-backup-display.mjs';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {getCloudBackup} from './cloud-backup.mjs?v=habits-20261026';
-import {initializeAISettings} from './ai-settings.mjs?v=quick-settings-20261026';
+import {getCloudBackup} from './cloud-backup.mjs?v=drive-versions-20261026';
+import {initializeAISettings} from './ai-settings.mjs?v=drive-versions-20261026';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=habits-20261026';
 import {dataStore,persistentUndo} from './data.mjs?v=habits-20261026';
 import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
@@ -9,7 +10,7 @@ import {auditImages,deleteUnusedImages} from './image-references.mjs?v=habits-20
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=habits-20261026';
 import {holdDraft} from './coordination.mjs?v=habits-20261026';
 import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=habits-20261026';
-import {driveConfigured,driveAuth,getDriveState,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=habits-20261026';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=drive-versions-20261026';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);
@@ -19,10 +20,10 @@ const notice=message=>{$('#operation-status').hidden=false;$('#operation-status'
 const bytes=value=>value<1024?value+' B':value<1024**2?(value/1024).toFixed(1)+' KiB':(value/1024**2).toFixed(2)+' MiB';
 const time=value=>value&&Number.isFinite(Date.parse(value))?new Date(value).toLocaleString('zh-TW'):'建立時間未記錄';
 let busy=false,aiConnection;
-async function run(work){
+async function run(work,scope='page'){
   if(busy)return;const priorError=root.querySelector('dialog[open] [data-dialog-error]');if(priorError)priorError.textContent='';busy=true;root.setAttribute('aria-busy','true');document.body.setAttribute('aria-busy','true');context.notify();
   const buttons=[...root.querySelectorAll('button,input,select')].map(e=>[e,e.disabled]);buttons.forEach(([e])=>e.disabled=true);syncRestoreControls();
-  try{return await work();}catch(error){const message=error.message||'操作失敗；原資料未清除。';notice(message);const target=root.querySelector('dialog[open] [data-dialog-error]');if(target)target.textContent=message;}
+  try{return await work();}catch(error){const message=error.message||'操作失敗；原資料未清除。';if(scope==='drive')driveNotice(message);else notice(message);const target=root.querySelector('dialog[open] [data-dialog-error]');if(target)target.textContent=message;}
   finally{busy=false;root.removeAttribute('aria-busy');document.body.removeAttribute('aria-busy');context.notify();buttons.forEach(([e,disabled])=>{if(root.contains(e)&&!e.matches('[data-undo],[data-redo],#restore-confirm button,#restore-password'))e.disabled=disabled;});syncSelection();syncDrive();syncRestoreControls();if($('#restore-confirm').open)(prepared?$('#confirm-restore'):restoreEncrypted?$('#restore-password'):$('#cancel-restore')).focus({preventScroll:true});dataStore.notify();aiConnection?.notify();}
 }
 context.setHooks({busy:()=>busy});
@@ -176,21 +177,19 @@ $('#confirm-restore').addEventListener('click',()=>run(async()=>{
   await restoreBackup(dataStore,prepared,restoreRevision);$('#restore-confirm').close();$('#restore-file').value='';cancelAppearance();
   notice('完整還原已完成，資料、設定、圖片與歷史已重新載入；不包含還原前的歷史。');if(selectedTab===0)await refreshStorage();
 }));
-const cloudBackup=getCloudBackup();context.subscribe(cloudBackup,state=>{$('#cloud-backup-status').textContent=state.message+(state.pending?'（待備份 '+state.pending+' 筆）':'');});
-function syncDrive(){for(const id of ['connect-drive','upload-drive','list-drive','disconnect-drive','revoke-drive'])$('#'+id).disabled=!driveConfigured||busy||(['upload-drive','list-drive','revoke-drive'].includes(id)&&!getDriveState().connected);}
-context.subscribe(driveAuth,auth=>{$('#drive-state').textContent=!driveConfigured?'Google OAuth尚未設定；本機備份仍可使用。':auth.connected?'Google Drive 已連接；每次資料操作自動上傳備份。':'尚未連接 Google Drive，或授權已失效；本機資料保留。';syncDrive();});
-$('#connect-drive').addEventListener('click',()=>run(async()=>{const result=await connectDrive();$('#drive-state').textContent=result.needsClick?'Google 授權程式已載入，請再次點擊「連接 Google Drive」以開啟授權視窗。':'Google Drive 已連接；之後每次資料操作自動上傳備份，不會從其他裝置自動還原。';}));
-$('#upload-drive').addEventListener('click',()=>run(async()=>{await cloudBackup.backupNow();notice('雲端備份已上傳（不加密），保留最近20筆。');}));
-$('#restore-cloud-latest').addEventListener('click',()=>document.dispatchEvent(new Event('life-system:restore-cloud-latest')));
-$('#list-drive').addEventListener('click',()=>run(async()=>{
-  const files=await listDriveBackups();$('#drive-list').replaceChildren();if(!files.length)$('#drive-list').append(element('li','尚無此應用程式建立的雲端備份。'));
-  for(const file of files){const row=element('li'),button=element('button','下載備份檔');button.type='button';
-    row.append(element('p',file.name),element('p',`${time(file.createdTime??file.appProperties?.backupTime)} · ${bytes(Number(file.size)||0)} · 格式 v${file.appProperties?.lifeSystemFormat??'未知'}`),button);
-    button.addEventListener('click',()=>run(async()=>downloadBlob(await downloadDriveBackup(file),file.name)));$('#drive-list').append(row);
-  }
-}));
-$('#disconnect-drive').addEventListener('click',()=>{disconnectDrive();$('#drive-list').replaceChildren();$('#drive-state').textContent='已中斷本頁連接；既有雲端備份沒有刪除。';});
-$('#revoke-drive').addEventListener('click',()=>run(async()=>{await revokeDrive();disconnectDrive();$('#drive-list').replaceChildren();$('#drive-state').textContent='已撤銷授權；既有雲端備份沒有刪除。';}));
+const cloudBackup=getCloudBackup();let versionsLoading=false,versionsGeneration=0,listedAt=0,connectedBefore=false;
+function driveNotice(message){$('#cloud-backup-status').textContent=String(message??'');}
+function syncDrive(){const auth=getDriveState();$('#connect-drive').disabled=!driveConfigured||busy||!auth.sdkReady;$('#disconnect-drive').disabled=busy||!auth.connected;$('#upload-drive').disabled=!driveConfigured||busy||!auth.connected;$('#drive-version').disabled=busy||!auth.connected||versionsLoading;$('#restore-cloud-latest').disabled=busy||!auth.connected;}
+async function refreshDriveVersions({quiet=false}={}){if(!getDriveState().connected||versionsLoading)return;versionsLoading=true;const generation=++versionsGeneration,selected=$('#drive-version').value,oldLabel=$('#drive-version').selectedOptions[0]?.textContent;syncDrive();try{const files=await cloudBackup.list();if(generation!==versionsGeneration||!getDriveState().connected)return;const select=$('#drive-version');select.replaceChildren(new Option(files.length?'雲端版本':'尚無雲端版本',''));for(const file of files)select.append(new Option(cloudBackupLabel(file),file.id));if(selected&&!files.some(file=>file.id===selected)){const option=new Option((oldLabel??'所選版本')+'（已不存在）',selected);option.disabled=true;select.append(option);}select.value=selected;listedAt=Date.now();if(!quiet&&!files.length)driveNotice('尚無可還原的雲端備份。');}catch(error){if(generation===versionsGeneration)driveNotice(error.message);}finally{if(generation===versionsGeneration){versionsLoading=false;syncDrive();}}}
+context.subscribe(cloudBackup,state=>{if(state.busy||state.pending||/失敗|未完成|已更新|錯誤/.test(state.message))driveNotice(state.message+(state.pending?'（待備份 '+state.pending+' 筆）':''));if(!state.busy&&!state.pending&&/已更新/.test(state.message)&&context.active)void refreshDriveVersions({quiet:true});});
+context.subscribe(driveAuth,auth=>{const connected=auth.connected;$('#drive-state').textContent='連接狀態：'+(connected?'Google Drive 已連接。':'尚未連接 Google Drive。');if(auth.sdkState==='loading')driveNotice('正在準備 Google 登入…');else if(auth.sdkError)driveNotice(auth.sdkError);if(connected&&!connectedBefore)void refreshDriveVersions();if(!connected&&connectedBefore){versionsGeneration++;versionsLoading=false;$('#drive-version').replaceChildren(new Option('雲端版本',''));}connectedBefore=connected;syncDrive();});
+$('#connect-drive').addEventListener('click',()=>run(async()=>{await connectDrive();driveNotice('Google Drive 已連接。');await refreshDriveVersions();},'drive'));
+$('#upload-drive').addEventListener('click',()=>run(async()=>{await cloudBackup.backupNow();driveNotice('雲端備份已更新。');await refreshDriveVersions({quiet:true});},'drive'));
+$('#restore-cloud-latest').addEventListener('click',()=>document.dispatchEvent(new CustomEvent('life-system:restore-cloud-latest',{detail:{versionId:$('#drive-version').value||null}})));
+$('#drive-version').addEventListener('focus',()=>{if(Date.now()-listedAt>30000)void refreshDriveVersions({quiet:true});});
+$('#disconnect-drive').addEventListener('click',()=>{disconnectDrive();driveNotice('已中斷連接，既有雲端備份保留。');});
+context.listen(document,'life-system:cloud-restore-status',event=>driveNotice(event.detail.message));
+if(driveConfigured)void prepareDriveAuth().then(()=>{if(!getDriveState().connected)driveNotice('Google 登入已準備好，請點選連接Google。');syncDrive();}).catch(error=>{driveNotice(error.message);syncDrive();});else driveNotice('Google 連接尚未設定；本機備份仍可使用。');
 let storageRevision=dataStore.get().revision;
 context.subscribe(dataStore,state=>{if(state.revision!==storageRevision){storageRevision=state.revision;storageLoaded=false;}history.render(state);if(!appearanceDirty&&!appearanceInput){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}});
 context.listen(window,'pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();clearRestore();for(const id of ['backup-password'])$('#'+id).value='';});
