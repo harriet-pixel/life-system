@@ -1,9 +1,10 @@
+import {renderHomeToday} from './home-today.mjs?v=home-today-20261026';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=cloud-backup-20261026';
 import {createTaskEditor} from './task-editor.mjs?v=cloud-backup-20261026';
 import {createCategoryManager} from './task-categories.mjs?v=cloud-backup-20261026';
 import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=cloud-backup-20261026';
 import {taskActions} from './task-actions.mjs?v=cloud-backup-20261026';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=cloud-backup-20261026';
+import {localDate} from './tasks-model.mjs?v=cloud-backup-20261026';
 import { createMobileTabPositioner } from './tab-position.mjs?v=cloud-backup-20261026';
 import { createActivityHeightSync } from './activity-height.mjs?v=cloud-backup-20261026';
 import { undoManager } from './undo.mjs?v=cloud-backup-20261026';
@@ -85,17 +86,11 @@ const tasks=taskActions(root,context);
 const completionBusy=context.hooks.busy;
 const editor=createTaskEditor(root,context,tasks),categories=createCategoryManager(root,context,tasks);
 initializeTaskDialogs(root,context);
+root.querySelector('#home-new-event').disabled=false;
 root.querySelector('#home-new-event').onclick=()=>editor.open(null,localDate()).catch(error=>tasks.say(error.message));
 editor.element.querySelector('#task-add-category').onclick=()=>{const trigger=editor.element.querySelector('#task-add-category');editor.pause();categories.create(id=>{editor.updateCategories();if(id)editor.selectCategory(id);editor.resume();trigger.focus({preventScroll:true});});};
 context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>editor.busy()||categories.busy()||Boolean(completionBusy?.())});
-const todayList=root.querySelector('.task-list');
-function renderToday(){
- globalThis.LifeHomeDate?.render(root);
- const rows=rowsForDate(dataStore.get().tasks,localDate());
- todayList.replaceChildren(...rows.map(row=>{const li=document.createElement('li'),label=document.createElement('label');li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;label.className='task-row';const input=document.createElement('input');input.type='checkbox';input.dataset.task='';const pending=tasks.isPending(row.task.id,row.occurrence.date);input.checked=row.occurrence.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));li.classList.toggle('is-processing',pending);li.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${row.name}`:`${input.checked?'取消完成':'完成'} ${row.name}`);input.onchange=()=>{const done=row.occurrence.status==='done';if(tasks.isPending(row.task.id,row.occurrence.date))return;input.checked=true;if(done)tasks.cancel(row.task.id,row.occurrence.date).catch(()=>{});else tasks.complete(row.task.id,row.occurrence.date);};const name=document.createElement('span');name.className='task-content';name.textContent=row.name;const color=dataStore.get().tasks.categories.find(c=>c.id===row.task.categoryId)?.color;if(color)name.style.setProperty('--home-task-color',color);if(row.brief){const brief=document.createElement('span');brief.className='task-occurrence-brief';brief.textContent=row.brief;name.append(brief);}const category=document.createElement('span');category.className='task-time';category.textContent=row.category+(row.occurrence.status==='done'?' · 已完成':'');label.append(input,name,category);li.append(label);return li;}));
- if(!rows.length){const li=document.createElement('li');li.className='small-note';li.textContent='今天尚無待辦，點選「新增事件」安排生活。';todayList.append(li);}
- root.querySelector('#task-count').textContent=`${rows.filter(r=>r.occurrence.status==='done').length} / ${rows.length} 完成`;
-}
+function renderToday(){renderHomeToday(root,tasks);}
 context.subscribe(tasks.completions,renderToday);
 const habitInputs = [...root.querySelectorAll('[data-habit]')];
 const entries = [
