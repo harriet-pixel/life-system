@@ -1,4 +1,4 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=habit-chart-labels-20261027';
+import {mountHabitQuick} from './habit-quick.mjs?v=home-bonus-summary-20261027';
 import {renderHomeToday} from './home-today.mjs?v=habits-20261026';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
 import {createTaskEditor} from './task-editor.mjs?v=habits-20261026';
