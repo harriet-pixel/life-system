@@ -30,26 +30,21 @@ export function initializeAISettings(root=document,context){
   if(priorProvider!==state.provider||priorMode!==state.mode||!state.hasKey){clearKeyField();}priorProvider=state.provider;priorMode=state.mode;
   $('ai-browser-mode').checked=state.mode==='browser';$('ai-provider').value=state.provider;
   $('ai-provider-help').textContent=state.mode==='browser'?providerNotes[state.provider]:'正式後端模式需本站 HTTPS 後端與登入；目前未部署。';
-  $('ai-lifecycle').textContent=state.mode==='browser'?'測試金鑰以明文 sessionStorage 暫存於此分頁，不自動到期；請手動中斷或關閉直連模式清除。分頁暫存不是加密保管庫，關閉分頁仍依瀏覽器行為。':'正式模式金鑰僅本頁記憶體；離頁或重新整理後需重輸，會經本站後端轉送至官方 AI 服務。';
-  const personal=state.mode==='backend'&&state.personal?.configured;
+  const personal=state.mode==='backend'&&state.personal?.configured;if(personal)$('ai-provider-help').textContent='使用已設定的個人後端服務。';
   $('ai-worker-login').hidden=state.mode==='browser';$('ai-worker-login').disabled=!state.personal?.configured||state.personal?.busy;
-  $('ai-worker-logout').hidden=state.mode==='browser';$('ai-worker-logout').disabled=!state.personal?.authenticated||state.personal?.busy;
-  $('ai-worker-summary').textContent=state.mode==='browser'?'目前使用手動瀏覽器直連備用模式。':!state.personal?.configured?'個人 Workers 後端尚未設定；瀏覽器直連仍可使用。':state.personal.authenticated?'本人已登入個人後端；AI 金鑰保留在 Cloudflare Secret。':'個人後端已設定，請先以 GitHub 本人帳號登入。';
+  $('ai-worker-logout').hidden=state.mode==='browser';$('ai-worker-logout').disabled=!state.personal?.authenticated||state.personal?.busy;$('ai-worker-login').parentElement.hidden=state.mode==='browser';
   $('ai-key-controls').hidden=Boolean(personal);$('ai-key-label').hidden=Boolean(personal);
-  if(personal){$('ai-lifecycle').textContent='AI 金鑰只由 Cloudflare Worker Secret 送往所選官方服務，不會傳回瀏覽器；本站登入工作階段最多一小時，以本分頁暫存支援跨頁。';$('ai-provider-help').textContent='僅已於後端設定 Secret 的服務商可用。後端失敗時請手動切換直連；不自動重送生成。';}
   if($('ai-collapse-state'))$('ai-collapse-state').textContent=aiStatusSummary(state);
-  $('ai-panel').setAttribute('aria-busy',String(state.busy));$('ai-state').textContent=state.message;
-  const diagnostic=state.diagnostics;$('ai-model-diagnostics').hidden=!diagnostic;
-  $('ai-model-counts').textContent=diagnostic?`官方取得 ${diagnostic.received} 筆，本站保留 ${diagnostic.retained} 筆，排除 ${diagnostic.excluded.length} 筆。`:'';
+  $('ai-panel').setAttribute('aria-busy',String(state.busy));$('ai-state').textContent=state.status==='unset'&&state.mode==='browser'&&!state.hasKey?'目前使用手動瀏覽器直連備用模式。':state.message;
+  const diagnostic=state.diagnostics;$('ai-model-diagnostics').hidden=false;
+  $('ai-model-counts').textContent=diagnostic?`官方取得 ${diagnostic.received} 筆，本站保留 ${diagnostic.retained} 筆，排除 ${diagnostic.excluded.length} 筆。`:'官方取得 0 筆，本站保留 0 筆，排除 0 筆。';
   $('ai-model-excluded').replaceChildren();for(const item of diagnostic?.excluded??[]){const row=document.createElement('li');row.textContent=item.id+'：'+MODEL_REASONS[item.reason];$('ai-model-excluded').append(row);}
-  $('ai-fetched').textContent=state.fetchedAt?'清單取得時間：'+new Date(state.fetchedAt).toLocaleString('zh-TW')+'；清單僅限記憶體。':'';
-  $('ai-expiry').textContent=state.mode==='browser'&&state.hasKey?'直連不自動到期；可使用「中斷連線並清除金鑰」手動停止。':'';
   const selected=$('ai-model');selected.replaceChildren(new Option(state.busy?'正在取得模型…':state.sessionModel?'已暫存 '+state.sessionModel+'（待重新驗證）':'請選擇模型',''));state.models.forEach(model=>selected.append(new Option(model.name+'（'+model.id+'）',model.id)));selected.value=state.model;selected.disabled=state.busy||!state.models.length;
   key.disabled=!state.configured||Boolean(personal);key.placeholder=state.hasKey&&!key.value?'金鑰已設定，無法檢視；輸入新金鑰可替換':'';
   $('ai-connect').disabled=!state.configured||!(personal?state.backendReady:state.hasKey)||state.busy;$('ai-refresh').disabled=$('ai-connect').disabled;
   $('ai-test').disabled=state.busy||Boolean(personal&&!state.backendReady)||!(state.connected&&state.model||state.restorableModel||state.restorableBackendModel);
-  $('ai-connect').textContent=personal?'取得模型':'連接並取得模型';
-  $('ai-disconnect').textContent=personal?'中斷模型連線':'中斷連線並清除金鑰';$('ai-disconnect').disabled=personal?!state.connected&&!state.busy:!state.hasKey&&!state.busy;
+  $('ai-connect').textContent='連接AI';
+  $('ai-disconnect').textContent='中斷連線';$('ai-disconnect').disabled=personal?!state.connected&&!state.busy:!state.hasKey&&!state.busy;
  });
  $('ai-worker-login').addEventListener('click',()=>connection.login());$('ai-worker-logout').addEventListener('click',()=>connection.logout());
  const dialog=$('ai-mode-confirm');
@@ -62,5 +57,5 @@ export function initializeAISettings(root=document,context){
  $('ai-connect').addEventListener('click',()=>{clearKeyField();connection.connect();});$('ai-refresh').addEventListener('click',()=>{clearKeyField();connection.refresh();});$('ai-model').addEventListener('change',()=>connection.selectModel($('ai-model').value));$('ai-test').addEventListener('click',()=>{clearKeyField();connection.test();});
  $('ai-disconnect').addEventListener('click',()=>connection.disconnect());
  if(context){context.listen(window,'pagehide',()=>{clearKeyField();});context.onSuspend(clearKeyField);}else window.addEventListener('pagehide',()=>{clearKeyField();});
- mountAITestPanel($('ai-text-test'),connection,{statusElement:$('ai-state'),context});return connection;
+ const testDialog=$('ai-text-dialog');$('ai-open-text-test').onclick=()=>testDialog.showModal();$('ai-close-text-test').onclick=()=>testDialog.close();testDialog.addEventListener('close',()=>$('ai-open-text-test').focus({preventScroll:true}));testDialog.addEventListener('click',event=>{if(event.target!==testDialog)return;const r=testDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)testDialog.close();});mountAITestPanel($('ai-text-test'),connection,{statusElement:$('ai-state'),context});return connection;
 }
