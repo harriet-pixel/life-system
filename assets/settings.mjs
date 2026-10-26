@@ -1,5 +1,6 @@
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
 import {getCloudBackup} from './cloud-backup.mjs?v=habits-20261026';
-import {initializeAISettings} from './ai-settings.mjs?v=habits-20261026';
+import {initializeAISettings} from './ai-settings.mjs?v=quick-settings-20261026';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=habits-20261026';
 import {dataStore,persistentUndo} from './data.mjs?v=habits-20261026';
 import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
@@ -11,6 +12,7 @@ import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from
 import {driveConfigured,driveAuth,getDriveState,connectDrive,disconnectDrive,revokeDrive,uploadDriveBackup,listDriveBackups,downloadDriveBackup} from './google-drive.mjs?v=habits-20261026';
 
 export function mountSettings(root,context){
+initializeTaskDialogs(root,context);
 const $=selector=>root.querySelector(selector);
 const element=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
 const notice=message=>{$('#operation-status').hidden=false;$('#operation-status').textContent=message;};
@@ -39,7 +41,7 @@ tabs.forEach((tab,index)=>{tab.addEventListener('click',event=>selectTab(index,e
 $('#storage-section').addEventListener('toggle',()=>{if(storageVisible()&&!storageLoaded)refreshStorage({preserveSelection:true});});
 function reveal(url){
   const target=new URL(url,location.href),raw=(target.searchParams.get('tab')||target.searchParams.get('section')||target.hash.slice(1)).replace(/-(?:tab|panel|section)$/,'');
-  const aliases={appearance:'appearance',ai:'ai',backup:'backup',storage:'storage',history:'history',general:'general',management:'management'};
+  const aliases={appearance:'appearance',ai:'ai',drive:'drive','drive-backup-title':'drive',backup:'backup',storage:'storage',history:'history',general:'general',management:'management'};
   const key=aliases[raw];if(!key)return null;
   selectTab(['backup','storage','history','management'].includes(key)?1:0);
   const section=$('#'+key+'-section');if(section){section.open=true;if(key==='storage'&&!storageLoaded)refreshStorage();return $('#'+key+'-tab');}
