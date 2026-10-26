@@ -1,7 +1,7 @@
 import {cloudBackupLabel} from './cloud-backup-display.mjs';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {getCloudBackup} from './cloud-backup.mjs?v=habit-colors-20261026';
-import {initializeAISettings} from './ai-settings.mjs?v=habit-colors-20261026';
+import {getCloudBackup} from './cloud-backup.mjs?v=habit-notices-20261026';
+import {initializeAISettings} from './ai-settings.mjs?v=habit-notices-20261026';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=habits-20261026';
 import {dataStore,persistentUndo} from './data.mjs?v=habits-20261026';
 import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
@@ -10,7 +10,7 @@ import {auditImages,deleteUnusedImages} from './image-references.mjs?v=habits-20
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=habits-20261026';
 import {holdDraft} from './coordination.mjs?v=habits-20261026';
 import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=habits-20261026';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=habit-colors-20261026';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=habit-notices-20261026';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

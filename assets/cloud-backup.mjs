@@ -1,7 +1,7 @@
 import {dataStore} from './data.mjs?v=habits-20261026';
 import {withBackup,readBackup,restoreBackup} from './backup.mjs?v=habits-20261026';
 import {registerImageReferenceSource,documentImageReferences} from './image-references.mjs?v=habits-20261026';
-import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=habit-colors-20261026';
+import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=habit-notices-20261026';
 export const BACKUP_LIMIT=20;
 export const newestBackups=files=>[...files].sort((a,b)=>(Date.parse(b.createdTime??b.appProperties?.backupTime)||0)-(Date.parse(a.createdTime??a.appProperties?.backupTime)||0)||b.id.localeCompare(a.id));
 export function obsoleteBackups(files){if(files.some(f=>!Number.isFinite(Date.parse(f.createdTime??f.appProperties?.backupTime))))throw new Error('無法確認雲端備份時間，已停止清理較舊版本。');return newestBackups(files).slice(BACKUP_LIMIT);}

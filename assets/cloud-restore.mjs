@@ -1,4 +1,4 @@
-import {getCloudBackup} from './cloud-backup.mjs?v=habit-colors-20261026';
+import {getCloudBackup} from './cloud-backup.mjs?v=habit-notices-20261026';
 import {dataStore} from './data.mjs?v=habits-20261026';
 import {readBackup} from './backup.mjs?v=habits-20261026';
 import {cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs';
