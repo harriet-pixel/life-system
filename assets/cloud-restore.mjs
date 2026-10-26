@@ -1,5 +1,5 @@
-import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=habit-actions-20261027';
-import {getCloudBackup} from './cloud-backup.mjs?v=habit-actions-20261027';
+import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=habit-chart-labels-20261027';
+import {getCloudBackup} from './cloud-backup.mjs?v=habit-chart-labels-20261027';
 import {dataStore} from './data.mjs?v=habits-20261026';
 import {readBackup} from './backup.mjs?v=habits-20261026';
 import {cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs';

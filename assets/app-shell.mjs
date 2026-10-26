@@ -1,5 +1,5 @@
-import {createCloudRestore} from './cloud-restore.mjs?v=habit-actions-20261027';
-import {getCloudBackup} from './cloud-backup.mjs?v=habit-actions-20261027';
+import {createCloudRestore} from './cloud-restore.mjs?v=habit-chart-labels-20261027';
+import {getCloudBackup} from './cloud-backup.mjs?v=habit-chart-labels-20261027';
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
 import {initializeUIFeedback} from './ui-feedback.mjs?v=habits-20261026';
 import {ownsCompletionAI} from './task-completion.mjs?v=habits-20261026';
@@ -9,7 +9,7 @@ import {createPageLifecycle} from './page-lifecycle.mjs?v=habits-20261026';
 import {initializeNavigationSize} from './navigation-size.mjs?v=habits-20261026';
 import {mountAIPage} from './ai-page.mjs?v=habits-20261026';
 import {getSharedAIConnection} from './ai-runtime.mjs?v=habits-20261026';
-const routes={habits:{mount:()=>import('./habits.mjs?v=habit-actions-20261027'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=habit-actions-20261027'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=habit-actions-20261027'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=habits-20261026'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=habit-actions-20261027'),export:'mountSettings'}};
+const routes={habits:{mount:()=>import('./habits.mjs?v=habit-chart-labels-20261027'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=habit-chart-labels-20261027'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=habit-chart-labels-20261027'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=habits-20261026'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=habit-chart-labels-20261027'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map();
 async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='home'?'habits-20261026':'habits-20261026')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
