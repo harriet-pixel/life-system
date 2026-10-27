@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=companion-images-20261027';
+import {dataStore} from './data.mjs?v=chat-20261027';
 import {localDate,inResidentLibrary,occurrence} from './tasks-model.mjs?v=companion-images-20261027';
 import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=task-home-polish-20261027';
 import {observeNameLists} from './task-name-layout.mjs?v=habits-20261026';

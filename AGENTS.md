@@ -185,7 +185,7 @@
 
 `companion.html`、`characters-page.mjs`、`characters.css` 使用共用角色選擇與兩個主頁籤。七階段只建立一組8欄，其他階段是目前角色的記憶體草稿，完整儲存仍交原角色服務。全站扣分草稿獨立，切角色不清除；外部刪除保留可複製草稿並阻擋復活。核心角色／affinity／data／recovery／backup演算法不因介面改動。
 
-角色頁CSS與模組按路由載入，首頁不預載；字型／viewport事件沿page lifecycle暫停恢復，不加輪詢。聊天室為明示未開放的版面，輸入／送出停用，無持久聊天或AI；圖片已由第四階段接入。頂部neutral與每訊息情緒頭像的DOM用途分開，見COMPANION.md第三階段。相關驗收用 tests/companion-ui.cjs、companion-layout.cjs、companion-cache.cjs；效能診斷 companion-performance.cjs 不設不穩定的毫秒門檻。
+角色頁CSS與模組按路由載入，首頁不預載；字型／viewport事件沿page lifecycle暫停恢復，不加輪詢。聊天室由第五階段啟用共用AI與24小時短期訊息；圖片沿第四階段。頂部neutral與每訊息情緒頭像的DOM用途分開，見COMPANION.md第三階段。相關驗收用 tests/companion-ui.cjs、companion-layout.cjs、companion-cache.cjs；效能診斷 companion-performance.cjs 不設不穩定的毫秒門檻。
 
 ## 夥伴第四階段圖片
 
@@ -194,3 +194,11 @@
 首頁不載入圖片管理／顯示／處理模組，不讀取夥伴Blob；角色圖片區按需使用120×160縮圖，完整圖只於桌面聊天室或管理視窗需要時讀取。頭部固定neutral，每訊息各自emotionId，缺圖退neutral／占位。全站direct／fade選擇即存settings.companionImages，reduced-motion強制direct。雲端仍只手動上傳。完整規格、限制、驗收與第五階段界線見docs/COMPANION_STAGE4_VERIFICATION.md。
 
 首頁今日待辦依共用listSettings排序；名稱獨立開編輯／刪除選單，不觸發方框。首頁桌面操作通知集中立繪下方。待辦桌面新增事件／設定與當前頁名同列靠右，管理分類入口集中設定；分類上下移動以原categories順序保存，納入共用交易／Undo。待辦池完成一律歸入當日，舊日期先檢查安排衝突。習慣設定儲存成功自動關窗。
+
+## 夥伴第五階段聊天
+
+正式聊天只在夥伴聊天室首次開啟時動態載入chat-page／controller／store／model／affinity；首頁不載入聊天模組或DB。沿getSharedAIConnection與現有手動直連，不新增後端或改金鑰規則。每次生成一次文字／emotion／assessment，輸入800 UTF-16字元、總prompt4000、output256 tokens，僅當前階段與最近24小時最多24則同角色已完成上下文。
+
+短期全文在life-system.chat.v1/turns，獨立於圖片DB；每訊息自己的expiresAt，顯示DOM最多120則，按索引讀取、每次最多清理256個到期回合，只有最近到期單次timer，無高頻輪詢。主文件affinity僅選填chatEpoch／chatAssessments與正式chat交易；零分亦去重，不進一般history或Undo。先保存ready回覆、再官方計分、最後發布訊息；失敗使用原chatTurnId本機恢復，不能因此重新呼叫AI。restore透過replace更新chatEpoch，舊本機聊天不延續，備份只留text-free正式證據，從不掃描聊天DB。
+
+生成只允許正式未封存角色；預覽不改active。切角色／人格／連線／離開使請求失效，舊結果不能修改新角色。所有取消／timeout沿共用AI，跨分頁角色鎖僅保護聊天回合，網路期間不持全站write lock。生活來源獎勵、返還及復原不變。全文不得寫console／長期診斷／backup。詳見docs/COMPANION_STAGE5_VERIFICATION.md；第六階段不能把私人聊天灌入日常回覆庫或重播計分。

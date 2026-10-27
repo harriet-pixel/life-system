@@ -1,13 +1,13 @@
-import {mountCharacterImages} from './character-images-ui.mjs?v=companion-images-20261027';
-import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=companion-images-20261027';
-import {dataStore} from './data.mjs?v=companion-images-20261027';
+import {mountCharacterImages} from './character-images-ui.mjs?v=chat-20261027';
+import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=chat-20261027';
+import {dataStore} from './data.mjs?v=chat-20261027';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
 import {createCharacterService} from './characters-service.mjs?v=companion-images-20261027';
 import {CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter} from './characters-model.mjs?v=companion-images-20261027';
 
 // The shared shell keeps this module lazy. Its CSS is loaded only on this route.
 if(typeof document!=='undefined'){
- const url=new URL('./characters.css?v=companion-images-20261027',import.meta.url).href;
+ const url=new URL('./characters.css?v=chat-20261027',import.meta.url).href;
  const existing=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===url);
  if(!existing?.sheet){
   existing?.remove();
@@ -23,7 +23,8 @@ export function mountCharacters(root,context){
  const settingInputs=new Map(),stageInputs=new Map(),stageButtons=[];
  let snapshot,selected=null,base=null,draft=null,stage=1,current=null,readError=false;
  let roleDirty=false,policyDirty=false,policyBase=null,busy=false,release=null,held=null,draftToken=0,optionSignature='';
- let images;
+ let images,chat=null,chatImport=null;
+ const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=chat-20261027').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;$('#chat-status').textContent='聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。';throw error;});};
  const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft());
  const notify=message=>{$('#operation-status').textContent=message;};
  const policySignature=settings=>JSON.stringify(['enabled','chat','tasks','habits','limit'].map(k=>settings[k]));
@@ -173,7 +174,7 @@ export function mountCharacters(root,context){
    $('#affinity-policy-status').textContent=state.affinity?.diagnostics.at(-1)?.code==='clock-unreliable'?'裝置時間異常，未完成扣分已暫停；請校正日期後重試。':'';
    if(missing)notify('角色已刪除，尚未儲存的內容保留於此頁；不會重新建立角色。');
   }catch(error){readError=true;notify(error.message);if(!base){form.hidden=true;$('#character-future-settings').hidden=true;$('#character-empty').hidden=false;$('#character-empty-title').textContent='無法讀取角色';$('#character-empty-help').textContent='原資料已保留，請確認資料後再重試。';}}
-  controls();sizeChat();images?.update();
+  controls();sizeChat();images?.update();chat?.update();
  }
  async function run(work){
   if(busy)return;busy=true;controls();context.notify();
@@ -212,11 +213,11 @@ export function mountCharacters(root,context){
  const tabs=[$('#chat-tab'),$('#character-tab')];
  function tab(index){
   tabs.forEach((button,i)=>{button.setAttribute('aria-selected',String(i===index));button.tabIndex=i===index?0:-1;$('#'+button.getAttribute('aria-controls')).hidden=i!==index;});
-  if(index===1)fitVisible();else sizeChat();
+  if(index===1)fitVisible();else{sizeChat();void loadChat().catch(()=>{});}chat?.activate();
  }
  tabs.forEach((button,index)=>{button.onclick=()=>tab(index);button.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?1:1-index;tab(next);tabs[next].focus({preventScroll:true});};});
  images=mountCharacterImages(root,context,{getCharacter:()=>readError?null:current,getSettings:()=>snapshot?.settings,store:dataStore,notify,onState:()=>{draftNotice();}});
- context.setHooks({hasDraft:dirty,busy:()=>busy||images.busy()});
+ context.setHooks({hasDraft:()=>dirty()||Boolean(chat?.hasDraft()),busy:()=>busy||images.busy()});
  context.subscribe(dataStore,render,{changesOnly:true});
  context.listen(window,'resize',()=>{fitVisible();sizeChat();},{passive:true});
  if(window.visualViewport)context.listen(window.visualViewport,'resize',sizeChat,{passive:true});

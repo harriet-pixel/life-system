@@ -1,6 +1,6 @@
 import {validateRoleImageAssets} from './character-image-integrity.mjs?v=companion-images-20261027';
 import {validateCharacterImages} from './character-images-model.mjs?v=companion-images-20261027';
-import {maintainRecovery} from './recovery.mjs?v=companion-images-20261027';
+import {maintainRecovery} from './recovery.mjs?v=chat-20261027';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=companion-images-20261027';
 import {maintenance} from './coordination.mjs?v=characters-20261027';
 const providers=new Map();
