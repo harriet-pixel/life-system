@@ -180,3 +180,9 @@
 ## 夥伴第二階段
 
 `affinity-model.mjs` 負責來源與交易證據，`affinity-integration.mjs` 由 dataStore 正式交易推導生活差異，`affinity-settlement.mjs` 負責兩套日期語意及七日補算，`affinity-runtime.mjs` 在首屏後初始化／前景檢查。原數值唯一來源為 companion 角色；同一文件新增 affinity version:1，無第二份餘額。恢復用小型 affinityPlan，不快照整份人格或帳本。永久刪除不復活；角色管理仍不進Undo。已消耗獎勵取消後僅重發確實扣回部分，無負債；詳見COMPANION.md。新來源須同時驗證正常、返還、取消、Redo及跨角色去重，不從畫面事件入帳。
+
+## 夥伴第三階段介面
+
+`companion.html`、`characters-page.mjs`、`characters.css` 使用共用角色選擇與兩個主頁籤。七階段只建立一組8欄，其他階段是目前角色的記憶體草稿，完整儲存仍交原角色服務。全站扣分草稿獨立，切角色不清除；外部刪除保留可複製草稿並阻擋復活。核心角色／affinity／data／recovery／backup演算法不因介面改動。
+
+角色頁CSS與模組按路由載入，首頁不預載；字型／viewport事件沿page lifecycle暫停恢復，不加輪詢。聊天室為明示未開放的版面，輸入／送出停用，無持久聊天、圖片或AI。頂部neutral與每訊息情緒頭像的DOM用途分開，見COMPANION.md第三階段。相關驗收用 tests/companion-ui.cjs、companion-layout.cjs、companion-cache.cjs；效能診斷 companion-performance.cjs 不設不穩定的毫秒門檻。
