@@ -1,8 +1,8 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=habits-20261026';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=characters-20261027';
 import {createCompanionController,generateMockReply} from './companion.mjs?v=habits-20261026';
 import {recordTaskTiming} from './task-diagnostics.mjs?v=habits-20261026';
 import {occurrence} from './tasks-model.mjs?v=habits-20261026';
-import {dataStore} from './data.mjs?v=habits-20261026';
+import {dataStore} from './data.mjs?v=characters-20261027';
 let singleton;const operations=new Map();
 function validAction(action){if(action.type==='habit.checked-in'){const h=dataStore.get().habits;return h.records.some(r=>r.id===action.actionId&&r.state!=='-')||h.bonusRecords.some(r=>r.id===action.actionId&&!r.cancelledAt);}if(action.type!=='task.processing')return true;const operation=operations.get(action.actionId);if(!operation)return false;const tasks=dataStore.get().tasks;if(operation.completionId)return tasks.completions.some(c=>c.id===operation.completionId&&!c.cancelledAt);const task=tasks.definitions.find(t=>t.id===operation.taskId);const o=task&&occurrence(tasks,task,operation.date);return Boolean(task&&!task.deleted&&task.version===operation.taskVersion&&(!o||o.status==='pending'));}
 function shared(){
