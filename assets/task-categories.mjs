@@ -40,7 +40,7 @@ export function createCategoryManager(root,context,actions){
     catch(e){listError.textContent=e.message;listError.hidden=false;}
     finally{busy=false;context.notify();}
    };
-   row.append(name,edit,remove);list.append(row);
+   const moves=[-1,1].map(direction=>{const b=document.createElement('button');b.type='button';b.className='category-icon-button';b.textContent=direction<0?'↑':'↓';b.setAttribute('aria-label',`${direction<0?'上移':'下移'}分類 ${category.name}`);const all=dataStore.get().tasks.categories,index=all.findIndex(c=>c.id===category.id);b.disabled=direction<0?index===0:index===all.length-1;b.onclick=async()=>{if(busy)return;busy=true;context.notify();try{await actions.service.moveCategory(category.id,direction);actions.say('分類順序已更新。');}catch(e){listError.textContent=e.message;listError.hidden=false;}finally{busy=false;context.notify();}};return b;});row.append(name,...moves,edit,remove);list.append(row);
   }
   if(!list.childElementCount){const note=document.createElement('p');note.className='small-note';note.textContent='尚無分類。';list.append(note);}
   if(mode==='list'&&(dialog.open||embedded)&&focusId&&!focused.isConnected){const target=[...listRoot.querySelectorAll(focusKind==='edit'?'[data-category-edit]':'[data-category-remove]')].find(b=>(b.dataset.categoryEdit??b.dataset.categoryRemove)===focusId);(target??listRoot.querySelector('[data-category-new]')).focus({preventScroll:true});}

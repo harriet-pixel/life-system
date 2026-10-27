@@ -1,5 +1,5 @@
 import {observeNameLists} from './task-name-layout.mjs?v=habits-20261026';
-import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=habits-20261026';
+import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=task-home-polish-20261027';
 import {isOverdue,inResidentLibrary} from './tasks-model.mjs?v=companion-images-20261027';
 export function createTaskPool(root,context,actions,{openMenu,askDate}){
  const $=s=>root.querySelector(s),selection=new Map();let current=[],limits={},lastData,lastToday;

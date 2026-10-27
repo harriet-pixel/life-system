@@ -168,3 +168,17 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 /* Month navigation keeps its touch target and keyboard focus without a frame. */
 .task-calendar #previous-month,.task-calendar #next-month{border:0;background:transparent;box-shadow:none;min-width:44px;min-height:44px}
 .task-calendar #today{border:0;box-shadow:none;background:transparent}
+/* Shared event menus: a single close icon and backdrop dismissal. */
+#task-item-menu,.task-item-menu{position:fixed;padding-top:28px}
+.task-dialog .task-item-close{position:absolute;right:8px;top:8px;width:44px;height:44px;padding:0;border:0;background:transparent;font-size:26px;line-height:1}
+#task-item-menu h2,.task-item-menu h2{padding-right:40px}
+.task-pool-menu .task-pool-complete{display:block}
+.category-management-row{grid-template-columns:minmax(0,1fr) repeat(4,44px)}
+.task-page-heading #manage-categories{display:none}
+@media(width < 1024px){.task-page-heading{display:none}}
+@media(width >= 1024px){
+ .task-page-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px}
+ .task-page-heading>.task-toolbar{display:flex;gap:8px}
+ .task-page-heading button{min-height:44px;padding:8px 12px;border:0;background:transparent;color:var(--color-primary);font:inherit;cursor:pointer}
+}
+[data-page-view=home] .task-row .task-content{border:0;background:transparent;padding:0;text-align:start;font:inherit;color:var(--home-task-color,inherit);cursor:pointer;min-width:0}
