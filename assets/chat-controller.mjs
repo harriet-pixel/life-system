@@ -1,6 +1,6 @@
-import {CHAT_TTL,CHAT_INPUT_LIMIT,chatHash,parseChatResponse,chatPrompt,liveMessage} from './chat-model.mjs?v=chat-20261027';
-import {chatRoleSnapshot,validChatRole} from './chat-affinity.mjs?v=chat-20261027';
-import {getTurn,saveTurn,newUserMessage,roleTurns,turnMessages,pruneChats,subscribeChats,withChatLock} from './chat-store.mjs?v=chat-20261027';
+import {CHAT_TTL,CHAT_INPUT_LIMIT,chatHash,parseChatResponse,chatPrompt,liveMessage} from './chat-model.mjs?v=replies-20261027';
+import {chatRoleSnapshot,validChatRole} from './chat-affinity.mjs?v=replies-20261027';
+import {getTurn,saveTurn,newUserMessage,roleTurns,turnMessages,pruneChats,subscribeChats,withChatLock} from './chat-store.mjs?v=replies-20261027';
 export const connectionIdentity=s=>JSON.stringify([s.mode,s.provider,s.model||s.sessionModel,s.hasKey,s.backendReady]);
 export const chatConnected=s=>Boolean(s.configured&&(s.model||s.sessionModel)&&(s.hasKey||s.backendReady));
 export function createChatController({store,connection,getCharacter,isVisible,onChange,onError,onUserSaved=()=>{},now=Date.now}){

@@ -1,6 +1,6 @@
 // Durable, text-free chat receipts. Existing life reward/reversal rules are untouched.
-import {initializeAffinity,affinityTransaction,validateAffinity} from './affinity-model.mjs?v=chat-20261027';
-import {relationshipStage} from './characters-model.mjs?v=companion-images-20261027';
+import {initializeAffinity,affinityTransaction,validateAffinity} from './affinity-model.mjs?v=replies-20261027';
+import {relationshipStage} from './characters-model.mjs?v=replies-20261027';
 export function chatRoleSnapshot(doc,characterId){const c=doc.companion?.characters.find(c=>c.characterId===characterId);if(!c||c.archived||doc.companion.activeCharacterId!==characterId)throw new Error('請先將未封存的角色設為夥伴。');return {characterId,characterCreatedAt:c.createdAt,configVersion:c.configVersion,stage:relationshipStage(c.affinity).stage,switchCount:doc.companion.switchHistory.length,epoch:doc.affinity.chatEpoch};}
 export function validChatRole(doc,snapshot){try{const current=chatRoleSnapshot(doc,snapshot.characterId);return ['characterId','characterCreatedAt','configVersion','switchCount','epoch'].every(k=>current[k]===snapshot[k]);}catch{return false;}}
 export function commitChat(doc,turn,time){

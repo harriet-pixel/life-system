@@ -1,16 +1,16 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=mobile-polish-20261027';
-import {renderHomeToday} from './home-today.mjs?v=chat-20261027';
+import {mountHabitQuick} from './habit-quick.mjs?v=replies-20261027';
+import {renderHomeToday} from './home-today.mjs?v=replies-20261027';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {createTaskEditor} from './task-editor.mjs?v=chat-20261027';
-import {createCategoryManager} from './task-categories.mjs?v=chat-20261027';
+import {createTaskEditor} from './task-editor.mjs?v=replies-20261027';
+import {createCategoryManager} from './task-categories.mjs?v=replies-20261027';
 import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=mobile-polish-20261027';
-import {taskActions} from './task-actions.mjs?v=chat-20261027';
+import {taskActions} from './task-actions.mjs?v=replies-20261027';
 import {localDate} from './tasks-model.mjs?v=companion-images-20261027';
 import { createMobileTabPositioner } from './tab-position.mjs?v=habits-20261026';
 import { createActivityHeightSync } from './activity-height.mjs?v=habits-20261026';
-import { undoManager } from './undo.mjs?v=chat-20261027';
-import {createSharedCompanionView} from './companion-events.mjs?v=chat-20261027';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=chat-20261027';
+import { undoManager } from './undo.mjs?v=replies-20261027';
+import {createSharedCompanionView} from './companion-events.mjs?v=replies-20261027';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=replies-20261027';
 
 
 export function mountHome(root,context){
@@ -35,10 +35,12 @@ function showPlaceholder(label) {
   placeholder.hidden = false;
   portrait.setAttribute('aria-label', `夥伴頭像佔位：${label}，尚未提供情緒立繪`);
 }
+let dailyVisual=null;
 const companion = createSharedCompanionView({
   getContext: () => ({ character: null, affinity: null }),
   render(reply,actions,meta) {
     if(!meta?.replayed)floating.reply();
+    if(reply.daily){portrait.dataset.emotion=reply.emotion;dialogue.textContent=reply.dialogue;void import('./daily-visuals.mjs?v=replies-20261027').then(m=>{dailyVisual??=m.mountDailyVisuals(root,context,dataStore);if(context.active)dailyVisual.show(reply);}).catch(()=>{});return;}
     const asset = emotionPortraits[reply.emotion];
     // Both fields are one validated reply, committed synchronously.
     dialogue.textContent = reply.dialogue;
@@ -62,27 +64,16 @@ const companion = createSharedCompanionView({
   onStateChange(state) {
     const messages = {
       cancelled: '已撤銷操作，保留原對話。',
-      queued: '正在合併示意完成事件；保留上一則對話。',
-      generating: '正在產生模擬回應；保留上一則對話。',
-      ready: '夥伴回應已更新，正式角色情緒素材尚未設定。',
-      fallback: '模擬回應失敗，已顯示開發備援短句；示意操作不受影響。',
+      queued: '正在合併正式生活事件；保留上一則對話。',
+      generating: '正在準備夥伴回應；保留上一則對話。',
+      ready: '夥伴回應已更新。',
+      fallback: '已顯示安全備援短句；正式生活操作已完成。',
     };
     status.textContent = messages[state];
   },
 },context);
 
-// Future adapters emit this event only AFTER their data operation succeeds.
-// Companion content remains managed by the shared coordinator.
-
-function emitDemoSuccess(type, input, index, label) {
-  if (!input.checked) return;
-  document.dispatchEvent(new CustomEvent('life-system:action-succeeded', {
-    detail: { type, actionId: `${type}-${index}`, label, source: 'demo' },
-  }));
-}
-
-// Shared persistent activity state and journal; demo labels and companion remain unchanged.
-const taskInputs = [];
+// Daily responses are driven by committed data, never by UI success events.
 const tasks=taskActions(root,context);
 const completionBusy=context.hooks.busy;
 const editor=createTaskEditor(root,context,tasks),categories=createCategoryManager(root,context,tasks);
