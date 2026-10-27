@@ -1,3 +1,4 @@
+import {mountColorField} from './color-field.mjs?v=sync-ui-20261028';
 import {documentTime} from './cloud-backup-policy.mjs';
 import {cloudBackupLabel} from './cloud-backup-display.mjs';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
@@ -96,7 +97,7 @@ for(const [id,trigger] of [['delete-confirm','delete-assets'],['restore-confirm'
 
 let appearanceDraft={...dataStore.get().settings.appearance},appearanceDirty=false,appearanceInput=false,appearanceRevision,releaseAppearance,draftPromise,previewVersion=0;
 function renderAppearanceControls(){
-  $('#theme-color').value=appearanceDraft.color;$('#theme-hex').value=appearanceDraft.color;$('#theme-font').value=appearanceDraft.font;
+  $('#theme-color').value=appearanceDraft.color;$('#theme-hex').value=appearanceDraft.color;mountColorField($('#theme-hex'))();$('#theme-font').value=appearanceDraft.font;
   applyAppearance(appearanceDraft,$('#appearance-preview'));
   const selected=appearanceDraft.font;$('#font-load-state').textContent='字型載入中；可繼續操作。';
   const family=getComputedStyle($('#appearance-preview')).fontFamily.split(',')[0];

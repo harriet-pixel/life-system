@@ -1,3 +1,4 @@
+import {mountColorField} from './color-field.mjs?v=sync-ui-20261028';
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=habits-20261026';
 import {dataStore} from './data.mjs?v=chat-20261027';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
@@ -15,7 +16,8 @@ export function createCategoryManager(root,context,actions){
  let editing=null,release,focus,busy=false,opening=false,mode='closed',ignoredListCloses=0,editorTrigger=null,externalReturn=null,savedId=null,embedded=null;
  const icons={edit:'<path d="m15 4 5 5M4 20l4-1L20 7a2 2 0 0 0-5-5L3 14l-1 7Z"/>',remove:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>'};
  function iconButton(kind,label){const button=document.createElement('button');button.type='button';button.className='category-icon-button';button.setAttribute('aria-label',label);button.title=label;button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icons[kind]+'</svg>';return button;}
- function preview(){const color=field('categoryColor').value;editor.querySelector('[data-category-preview]').style.color=/^#[0-9a-f]{6}$/i.test(color)?color:'';if(/^#[0-9a-f]{6}$/i.test(color))field('colorPicker').value=color;}
+ const updateColorPreview=mountColorField(field('categoryColor'));
+ function preview(){updateColorPreview();const color=field('categoryColor').value;editor.querySelector('[data-category-preview]').style.color=/^#[0-9a-f]{6}$/i.test(color)?color:'';if(/^#[0-9a-f]{6}$/i.test(color))field('colorPicker').value=color;}
  field('colorPicker').oninput=()=>{field('categoryColor').value=field('colorPicker').value;preview();};field('categoryColor').oninput=preview;
  function restoreListFocus(){const target=editorTrigger?.kind==='edit'?[...listRoot.querySelectorAll('[data-category-edit]')].find(b=>b.dataset.categoryEdit===editorTrigger.id):null;(target??listRoot.querySelector('[data-category-new]')).focus({preventScroll:true});}
  function openEditor(category=null){

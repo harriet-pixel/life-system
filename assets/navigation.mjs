@@ -5,12 +5,11 @@ export const navigationItems = Object.freeze([
   { id: 'home', label: '首頁', englishLabel: 'Home', href: new URL('../', import.meta.url).href, available: true },
   { id: 'tasks', label: '待辦事項', englishLabel:'Tasks', href: new URL('../tasks.html',import.meta.url).href, available: true },
   { id: 'habits', label: '習慣打卡', englishLabel:'Habits', href: new URL('../habits.html',import.meta.url).href, available: true },
-  { id: 'reading', label: '陪讀系統', href: null, available: false },
-  { id: 'wallet', label: '錢包帳本', href: null, available: false },
   { id: 'companion', label: '夥伴', englishLabel:'Companion', href: new URL('../companion.html',import.meta.url).href, available: true },
   { id: 'profile', label: '我的資料', englishLabel: 'My Profile', href: new URL('../profile.html', import.meta.url).href, available: true },
-  { id: 'chat', label: '聊天室', href: null, available: false },
   { id: 'settings', label: '設定', englishLabel:'Settings', href: new URL('../settings.html', import.meta.url).href, available: true },
+  { id: 'wallet', label: '錢包帳本', href: null, available: false },
+  { id: 'reading', label: '陪讀系統', href: null, available: false },
 ].map(Object.freeze));
 
 export function isCurrentRoute(href, locationURL) {
