@@ -1,7 +1,7 @@
 import {backupDeviceName} from './cloud-backup-display.mjs';
 import {createDriveAuthSession} from './drive-auth-session.mjs?v=habits-20261026';
 import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=habits-20261026';
-import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=companion-images-20261027';
+import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=chat-20261027';
 const SCOPE='https://www.googleapis.com/auth/drive.appdata';
 export const driveConfigured=Boolean(GOOGLE_CLIENT_ID);
 let token=null,expires=0,loading,sdkState='idle',sdkError='';const listeners=new Set();const session=createDriveAuthSession({getItem:k=>globalThis.sessionStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.sessionStorage.setItem(k,v),removeItem:k=>globalThis.sessionStorage?.removeItem(k)},GOOGLE_CLIENT_ID);

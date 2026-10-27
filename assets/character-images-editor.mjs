@@ -1,6 +1,6 @@
 import {EMOTIONS,defaultAvatarCrop,validateAvatarCrop,imageSignature,imageLimitText} from './character-images-model.mjs?v=companion-images-20261027';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
-import {registerImageReferenceSource} from './image-references.mjs?v=companion-images-20261027';
+import {registerImageReferenceSource} from './image-references.mjs?v=chat-20261027';
 import {acquireImageURL,storeImageBlob} from './image-store.mjs?v=companion-images-20261027';
 import {saveCharacterImage} from './character-images-service.mjs?v=companion-images-20261027';
 export function createCharacterImageEditor({root,store,getCharacter,notify,onState}){

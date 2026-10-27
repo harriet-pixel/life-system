@@ -1,11 +1,11 @@
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=companion-images-20261027';
-import {integrateAffinity} from './affinity-integration.mjs?v=companion-images-20261027';
-import {settleAffinity} from './affinity-settlement.mjs?v=companion-images-20261027';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=chat-20261027';
+import {integrateAffinity} from './affinity-integration.mjs?v=chat-20261027';
+import {settleAffinity} from './affinity-settlement.mjs?v=chat-20261027';
 import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=companion-images-20261027';
 import {emptyHabits,validateHabits} from './habits-model.mjs?v=companion-images-20261027';
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
 import {emptyTasks,validateTasks} from './tasks-model.mjs?v=companion-images-20261027';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=companion-images-20261027';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=chat-20261027';
 import {validateProfileFields,validateActivities} from './validation.mjs?v=companion-images-20261027';
 import { coordinatedWrite } from './coordination.mjs?v=characters-20261027';
 import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=companion-images-20261027';
@@ -81,7 +81,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     notify,
     subscribeCommits(fn){commitListeners.add(fn);return()=>commitListeners.delete(fn);},
     setBusy(value) {busy=value;notify({statusOnly:true});},
-    replace(value) { const next=copy(value);next.revision=Math.max(value.revision,state.revision+1);persist(next); },
+    replace(value) { const next=copy(value);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}next.revision=Math.max(value.revision,state.revision+1);persist(next); },
     subscribe(fn,{changesOnly=false}={}) {const entry={fn,changesOnly};listeners.add(entry);fn(copy(currentRecovery().document));return()=>listeners.delete(entry);},
     refresh() { state = load(); notify(); },
     transact({ type, label, target, changes, fields = [], expectedRevision, id, timing, reversible = true }) {const validateAt=performance.now();
@@ -130,6 +130,8 @@ export function createDataStore(storage,{now=Date.now}={}) {
       if(!setPenaltyPolicy(next,settings,time,crypto.randomUUID())&&!settled&&state.affinity?.startedAt!=null)return false;
       persist(next);return true;
     },
+    prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=chat-20261027');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;
@@ -209,7 +211,7 @@ if (dataStore) {
   try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,'復原資料整理失敗，原資料已保留。'+error.message);}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
   let expiryTimer;
   let appliedAppearance;dataStore.subscribe(state=>{const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true});
-  for(const method of ['transact','undo','redo','setAIPreferences','settleAffinities','setAffinityPolicy']) {
+  for(const method of ['transact','undo','redo','setAIPreferences','settleAffinities','setAffinityPolicy','prepareChat','commitChatAssessment']) {
     const original=dataStore[method];
     dataStore[method]=async(...args)=>{
       if(dataStore.getState().busy)throw new Error('資料操作進行中，請稍候再試。');

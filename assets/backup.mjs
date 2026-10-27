@@ -1,13 +1,13 @@
 import {validateRoleImageAssets} from './character-image-integrity.mjs?v=companion-images-20261027';
-import {validateAffinity} from './affinity-model.mjs?v=companion-images-20261027';
-import {validateCharacters} from './characters-model.mjs?v=companion-images-20261027';
+import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=chat-20261027';
+import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=companion-images-20261027';
 import {emptyHabits,validateHabits} from './habits-model.mjs?v=companion-images-20261027';
 import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=companion-images-20261027';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=companion-images-20261027';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=chat-20261027';
 import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=companion-images-20261027';
 import {ABILITIES} from './abilities.mjs?v=companion-images-20261027';
 import {maintenance} from './coordination.mjs?v=characters-20261027';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=companion-images-20261027';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=chat-20261027';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=companion-images-20261027';
 import {normalizeSettings} from './settings-model.mjs?v=companion-images-20261027';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
@@ -150,6 +150,7 @@ export async function readBackup(file,password='') {
   // Never renew timestamps. Import only images still required at restore time.
   const document=maintainRecovery(payload.document).document;document.settings=normalizeSettings(document.settings);
   for(const r of document.undoHistory)for(const snapshot of [r.before,r.after])if(snapshot.settings)snapshot.settings=normalizeSettings(snapshot.settings);
+  document.companion ??= emptyCharacters();document.affinity ??= emptyAffinity();
   document.tasks ??= emptyTasks();
   document.habits ??= emptyHabits();
   const normalized=maintainRecovery(document).document;validateDocument(normalized);

@@ -1,7 +1,7 @@
-import {dataStore} from './data.mjs?v=companion-images-20261027';
-import {withBackup,restoreBackup} from './backup.mjs?v=companion-images-20261027';
-import {registerImageReferenceSource,documentImageReferences} from './image-references.mjs?v=companion-images-20261027';
-import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=companion-images-20261027';
+import {dataStore} from './data.mjs?v=chat-20261027';
+import {withBackup,restoreBackup} from './backup.mjs?v=chat-20261027';
+import {registerImageReferenceSource,documentImageReferences} from './image-references.mjs?v=chat-20261027';
+import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=chat-20261027';
 import {documentTime,backupWarning,confirmOlderBackup,validTime} from './cloud-backup-policy.mjs';
 import {cloudBackupIdentity} from './cloud-backup-display.mjs';
 export const BACKUP_LIMIT=20;

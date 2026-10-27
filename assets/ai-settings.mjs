@@ -1,5 +1,5 @@
 import {MODEL_REASONS} from './ai-capabilities.mjs?v=provider-audit-3';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-images-20261027';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-20261027';
 import {mountAITestPanel} from './ai-test-panel.mjs?v=habits-20261026';
 const providerNotes={
  gemini:'Gemini 官方 SDK 支援瀏覽器；實際可用性仍依金鑰、地區與官方跨來源政策。',

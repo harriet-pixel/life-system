@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=companion-images-20261027';
+import {dataStore} from './data.mjs?v=chat-20261027';
 import {rowsForDate,localDate} from './tasks-model.mjs?v=companion-images-20261027';
 
 import {sortDay,listSettings} from './task-view-model.mjs?v=task-home-polish-20261027';
