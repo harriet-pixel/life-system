@@ -1,4 +1,4 @@
-import {affinityTransaction,diagnostic,initializeAffinity} from './affinity-model.mjs?v=chat-20261027';
+import {affinityTransaction,diagnostic,initializeAffinity} from './affinity-model.mjs?v=replies-20261027';
 import {occurrenceId,automatic,localDate,addDays} from './tasks-model.mjs?v=companion-images-20261027';
 import {taipeiDate,periodInfo,validDay} from './habits-model.mjs?v=companion-images-20261027';
 const DAY=86400000;

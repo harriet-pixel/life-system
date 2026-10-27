@@ -1,6 +1,6 @@
 import {validateRoleImageAssets} from './character-image-integrity.mjs?v=companion-images-20261027';
 import {validateCharacterImages} from './character-images-model.mjs?v=companion-images-20261027';
-import {maintainRecovery} from './recovery.mjs?v=chat-20261027';
+import {maintainRecovery} from './recovery.mjs?v=replies-20261027';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=companion-images-20261027';
 import {maintenance} from './coordination.mjs?v=characters-20261027';
 const providers=new Map();
@@ -18,7 +18,7 @@ export function collectReferences(value,refs=new Set()) {
 export function documentImageReferences(state,{legacy=false,raw=false}={}) {
   if(!legacy&&!raw)state=maintainRecovery(state).document;
   const refs=new Set(),imageFields=['photo','avatar','photoEdit','avatarEdit','portraits'];
-  const nonImageFields=['revision','statsRulesVersion','profile','activities','stats','history','undoHistory','historyVersion','settings','currentPortraitId','companion','affinity'];
+  const nonImageFields=['revision','statsRulesVersion','profile','activities','stats','history','undoHistory','historyVersion','settings','currentPortraitId','companion','affinity','replyLibrary'];
   const roots=[state,...(legacy?state.history:state.undoHistory??[]).flatMap(record=>[record.before,record.after])];
   for(const root of roots){
     if(!root||typeof root!=='object')throw new Error('圖片快照尚未完整載入。');

@@ -3,8 +3,8 @@ import { holdDraft } from './coordination.mjs?v=characters-20261027';
 import { createProfileImages } from './profile-images.mjs?v=companion-images-20261027';
 import { imageURL, prepareImageReferences } from './image-store.mjs?v=companion-images-20261027';
 import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=companion-images-20261027';
-import { undoManager } from './undo.mjs?v=chat-20261027';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=chat-20261027';
+import { undoManager } from './undo.mjs?v=replies-20261027';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=replies-20261027';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);
