@@ -1,3 +1,4 @@
+import {applyAffinityPlan} from './affinity-model.mjs?v=affinity-20261027';
 // One policy for startup, replay, mutations, image references and backups.
 export const RECOVERY_LIMIT=15, DAY=86400000, HISTORY_VERSION=1;
 const shortKeys=new Set(['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','settings']);
@@ -17,7 +18,8 @@ export function expectedMatches(state,record,redo=false){
  const expected=redo?record.before:record.after;
  return Object.keys(expected??{}).every(k=>k==='settings'&&record.type==='appearance.update'?equal(state.settings.appearance,expected.settings.appearance):equal(state[k],expected[k]));
 }
-export function applySnapshot(state,record,redo=false){
+export function applySnapshot(state,record,redo=false,options={}){
+ if(record.affinityPlan)applyAffinityPlan(state,record.affinityPlan,{redo,time:options.time??record.time,operationId:options.operationId??record.id+(redo?':redo':':undo')});
  for(const [key,value]of Object.entries(redo?record.after:record.before)){
   if(key==='settings'&&record.type==='appearance.update')state.settings={...state.settings,appearance:structuredClone(value.appearance)};
   else state[key]=structuredClone(value);
@@ -53,7 +55,8 @@ export function maintainRecovery(document,now=Date.now()){
   const probe=structuredClone(doc),remaining=[...records];
   while(true){const r=redo?redoCandidate(remaining):undoCandidate(remaining);if(!r)break;
    if(!expectedMatches(probe,r,redo)){blocked=true;break;}
-   retained.add(r.id);applySnapshot(probe,r,redo);remaining.splice(remaining.indexOf(r),1);
+   try{applySnapshot(probe,r,redo);}catch{blocked=true;break;}
+   retained.add(r.id);remaining.splice(remaining.indexOf(r),1);
   }
  }
  doc.undoHistory=records.filter(r=>retained.has(r.id));

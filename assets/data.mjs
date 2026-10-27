@@ -1,8 +1,11 @@
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=affinity-20261027';
+import {integrateAffinity} from './affinity-integration.mjs?v=affinity-20261027';
+import {settleAffinity} from './affinity-settlement.mjs?v=affinity-20261027';
 import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=characters-20261027';
 import {emptyHabits,validateHabits} from './habits-model.mjs';
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
 import {emptyTasks,validateTasks} from './tasks-model.mjs?v=habits-20261026';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=habits-20261026';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=affinity-20261027';
 import {validateProfileFields,validateActivities} from './validation.mjs?v=habits-20261026';
 import { coordinatedWrite } from './coordination.mjs?v=characters-20261027';
 import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=habits-20261026';
@@ -16,7 +19,7 @@ export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
 const undoRecord = undoCandidate;
 const redoRecord = redoCandidate;
-const initial = () => ({ revision: 0, companion: emptyCharacters(), statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, tasks: emptyTasks(), habits: emptyHabits(), stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
+const initial = () => ({ revision: 0, companion: emptyCharacters(), affinity: emptyAffinity(), statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, tasks: emptyTasks(), habits: emptyHabits(), stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
 // Preserve the published one-time legacy restart, but perform the write only
 // under the shared write lock; existing v2 progress and settings are untouched.
 export function migrateStatsRules(storage) {
@@ -38,6 +41,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
     value.companion ??= emptyCharacters();
+    value.affinity ??= emptyAffinity();
     value.habits = validateHabits(value.habits ?? emptyHabits());
     value.tasks = validateTasks(value.tasks ?? emptyTasks());
     value.settings = normalizeSettings(value.settings);
@@ -87,6 +91,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
       for (const [key, rawValue] of Object.entries(changes)) {
         let value = key==='settings'?normalizeSettings(rawValue):rawValue;
         if(key==='profile')value=validateProfileFields(rawValue,state.profile);
+        if(key==='affinity')value=validateAffinity(rawValue,state.companion);
         if(key==='companion')value=validateCharacters(rawValue);
         if(key==='habits')value=validateHabits(rawValue);
         if(key==='tasks')value=validateTasks(rawValue);
@@ -94,7 +99,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
         if (key === 'stats') {
           value = validateStats(rawValue, state.stats);
         }
-        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'tasks', 'habits', 'stats', 'settings', 'companion'].includes(key)) throw new Error('不支援的資料類型');
+        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'tasks', 'habits', 'stats', 'settings', 'companion', 'affinity'].includes(key)) throw new Error('不支援的資料類型');
         if (key === 'portraits' && (!Array.isArray(value) || value.length>6 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 6 個立繪，請先刪除或更換既有項目。');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
@@ -105,10 +110,25 @@ export function createDataStore(storage,{now=Date.now}={}) {
       for (const key of ['experience', 'level', 'currency']) delta[key] = typeof next.stats[key] === 'number' && typeof state.stats[key] === 'number' ? next.stats[key] - state.stats[key] : 0;
       delta.abilities = next.stats.abilities.map(a => ({ id: a.id, value: a.value - (state.stats.abilities.find(x => x.id === a.id)?.value ?? 0) }));
       {
-        const record={id:id??crypto.randomUUID(),time:new Date(now()).toISOString(),type:type??'data.update',label:label??'已更新資料',target:target??'user',fields,before,after,delta,undone:false,undoneAt:null};
+        const transactionId=id??crypto.randomUUID(),time=new Date(now()).toISOString();
+        const affinityPlan=integrateAffinity(state,next,{type:type??'data.update',operationId:transactionId,time});
+        const record={id:transactionId,time,...(affinityPlan.length?{affinityPlan}:{}),type:type??'data.update',label:label??'已更新資料',target:target??'user',fields,before,after,delta,undone:false,undoneAt:null};
         next.history.push(actionMetadata(record));if(reversible)next.undoHistory.push(record);
       }
       timing?.phase('transaction-validate',validateAt);persist(next,timing);return true;
+    },
+    settleAffinities() {
+      const next=effective().document,time=now();next.affinity=validateAffinity(next.affinity,next.companion,{clone:false});
+      const prior=JSON.stringify(next.affinity),changed=settleAffinity(next,{now:time,operationId:'settlement:'+next.revision});
+      // A check with no new day/diagnostic has no durable write or revision churn.
+      if(!changed&&state.affinity?.startedAt!=null&&JSON.stringify(next.affinity.diagnostics)===JSON.stringify(state.affinity?.diagnostics))return false;
+      if(JSON.stringify(next.affinity)!==prior){persist(next);return true;}return false;
+    },
+    setAffinityPolicy(settings) {
+      const next=effective().document,time=new Date(now()).toISOString();next.affinity=validateAffinity(next.affinity,next.companion,{clone:false});
+      const settled=settleAffinity(next,{now:now(),operationId:'settlement:'+next.revision});
+      if(!setPenaltyPolicy(next,settings,time,crypto.randomUUID())&&!settled&&state.affinity?.startedAt!=null)return false;
+      persist(next);return true;
     },
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
@@ -131,7 +151,8 @@ export function createDataStore(storage,{now=Date.now}={}) {
     if (!record) return { ok: false, reason: 'unavailable' };
     try {
       if(!expectedMatches(state,record,redo))throw new Error('資料已改變，無法安全延續復原鏈。');
-      applySnapshot(next,record,redo);
+      applySnapshot(next,record,redo,{time:new Date(now()).toISOString()});
+      if(next.affinity?.startedAt&&(record.before.tasks||record.before.habits))observeEligibility(next,state,new Date(now()).toISOString());
       // Replay snapshots directly; never validate as a new edit or award rewards.
       next.stats = normalizeStats(next.stats);
       record.undone = !redo;
@@ -188,7 +209,7 @@ if (dataStore) {
   try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,'復原資料整理失敗，原資料已保留。'+error.message);}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
   let expiryTimer;
   let appliedAppearance;dataStore.subscribe(state=>{const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true});
-  for(const method of ['transact','undo','redo','setAIPreferences']) {
+  for(const method of ['transact','undo','redo','setAIPreferences','settleAffinities','setAffinityPolicy']) {
     const original=dataStore[method];
     dataStore[method]=async(...args)=>{
       if(dataStore.getState().busy)throw new Error('資料操作進行中，請稍候再試。');
