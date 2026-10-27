@@ -1,14 +1,15 @@
-import {validateAffinity} from './affinity-model.mjs?v=affinity-20261027';
-import {validateCharacters} from './characters-model.mjs?v=characters-20261027';
-import {emptyHabits,validateHabits} from './habits-model.mjs';
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=habits-20261026';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=affinity-20261027';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=habits-20261026';
-import {ABILITIES} from './abilities.mjs?v=habits-20261026';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=companion-images-20261027';
+import {validateAffinity} from './affinity-model.mjs?v=companion-images-20261027';
+import {validateCharacters} from './characters-model.mjs?v=companion-images-20261027';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=companion-images-20261027';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=companion-images-20261027';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=companion-images-20261027';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=companion-images-20261027';
+import {ABILITIES} from './abilities.mjs?v=companion-images-20261027';
 import {maintenance} from './coordination.mjs?v=characters-20261027';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=affinity-20261027';
-import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
-import {normalizeSettings} from './settings-model.mjs?v=habits-20261026';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=companion-images-20261027';
+import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=companion-images-20261027';
+import {normalizeSettings} from './settings-model.mjs?v=companion-images-20261027';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -143,6 +144,7 @@ export async function readBackup(file,password='') {
     const blob=new Blob([bytes],{type:item.mime});if(globalThis.createImageBitmap){let image;try{image=await createImageBitmap(blob);}catch{throw new Error('圖片內容無法解碼，原資料未更動。');}finally{image?.close();}}
     assets.push({id:item.id,blob,name:item.name,createdAt:item.createdAt,protectedUntil:0});
   }
+  await validateRoleImageAssets(payload.document,assets);
   const refs=documentImageReferences(payload.document,{legacy:payload.dataVersion===2,raw:true});check([...refs].every(id=>ids.has(id)),'備份缺少必要圖片。');check(ids.size===refs.size,'備份含不在範圍內的圖片。');
   // Verify the original inventory before discarding expired legacy snapshots.
   // Never renew timestamps. Import only images still required at restore time.
@@ -162,6 +164,10 @@ export async function restoreBackup(store,prepared,expectedRevision,{afterReplac
     // retained until a single atomic localStorage write publishes the new state.
     const existing=await listImageAssets();
     for(const asset of prepared.assets){const prior=existing.find(a=>a.id===asset.id);if(prior&&(!(prior.blob instanceof Blob)||'asset:'+await hash(await prior.blob.arrayBuffer())!==asset.id))throw new Error('本機同 ID 圖片的完整性異常，已停止還原並保留原資料。');}
+    const required=documentImageReferences(prepared.payload.document),available=new Set([...existing,...prepared.assets].map(a=>a.id));
+    check([...required].every(id=>available.has(id)),'還原缺少必要圖片，原資料已保留。');
+    for(const asset of prepared.assets)check(asset.blob instanceof Blob&&'asset:'+await hash(await asset.blob.arrayBuffer())===asset.id,'還原圖片完整性不正確，原資料已保留。');
+    await validateRoleImageAssets(prepared.payload.document,[...existing,...prepared.assets]);
     await stageImageAssets(prepared.assets);
     store.replace(maintainRecovery(prepared.payload.document).document);await afterReplace?.();
   });

@@ -1,7 +1,7 @@
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=habits-20261026';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=affinity-20261027';
-import {dataStore} from './data.mjs?v=affinity-20261027';
-import {localDate} from './tasks-model.mjs?v=habits-20261026';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=companion-images-20261027';
+import {dataStore} from './data.mjs?v=companion-images-20261027';
+import {localDate} from './tasks-model.mjs?v=companion-images-20261027';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.

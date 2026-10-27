@@ -185,4 +185,10 @@
 
 `companion.html`、`characters-page.mjs`、`characters.css` 使用共用角色選擇與兩個主頁籤。七階段只建立一組8欄，其他階段是目前角色的記憶體草稿，完整儲存仍交原角色服務。全站扣分草稿獨立，切角色不清除；外部刪除保留可複製草稿並阻擋復活。核心角色／affinity／data／recovery／backup演算法不因介面改動。
 
-角色頁CSS與模組按路由載入，首頁不預載；字型／viewport事件沿page lifecycle暫停恢復，不加輪詢。聊天室為明示未開放的版面，輸入／送出停用，無持久聊天、圖片或AI。頂部neutral與每訊息情緒頭像的DOM用途分開，見COMPANION.md第三階段。相關驗收用 tests/companion-ui.cjs、companion-layout.cjs、companion-cache.cjs；效能診斷 companion-performance.cjs 不設不穩定的毫秒門檻。
+角色頁CSS與模組按路由載入，首頁不預載；字型／viewport事件沿page lifecycle暫停恢復，不加輪詢。聊天室為明示未開放的版面，輸入／送出停用，無持久聊天或AI；圖片已由第四階段接入。頂部neutral與每訊息情緒頭像的DOM用途分開，見COMPANION.md第三階段。相關驗收用 tests/companion-ui.cjs、companion-layout.cjs、companion-cache.cjs；效能診斷 companion-performance.cjs 不設不穩定的毫秒門檻。
+
+## 夥伴第四階段圖片
+
+固定情緒與輕量schema在character-images-model.mjs；每角色選填imageSettings（image／thumbnail／獨立相對crop，圖片revision與人格configVersion分開）。圖片沿唯一image-store／IndexedDB，禁止在共用文件存base64；只掃明確圖片欄位，不能掃人格文字。先入庫、再驗證角色／圖片版本與資產後經共用交易提交。服務及視窗沿companion草稿鎖、引用來源與24小時暫存保護；失敗保留舊圖，無背景垃圾回收。圖片與全站切換方式不進Undo，其他Undo不變。
+
+首頁不載入圖片管理／顯示／處理模組，不讀取夥伴Blob；角色圖片區按需使用120×160縮圖，完整圖只於桌面聊天室或管理視窗需要時讀取。頭部固定neutral，每訊息各自emotionId，缺圖退neutral／占位。全站direct／fade選擇即存settings.companionImages，reduced-motion強制direct。雲端仍只手動上傳。完整規格、限制、驗收與第五階段界線見docs/COMPANION_STAGE4_VERIFICATION.md。

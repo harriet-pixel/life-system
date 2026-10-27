@@ -1,5 +1,5 @@
-import {dataStore} from './data.mjs?v=affinity-20261027';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=habits-20261026';
+import {dataStore} from './data.mjs?v=companion-images-20261027';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=companion-images-20261027';
 
 // One renderer and one validated store for early reading and interactive mounting.
 export function renderHomeToday(root,actions=null){

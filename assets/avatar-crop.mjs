@@ -1,4 +1,4 @@
-import {validateZoom} from './validation.mjs?v=habits-20261026';
+import {validateZoom} from './validation.mjs?v=companion-images-20261027';
 export const RAW_IMAGE_LIMIT = 20 * 1024 * 1024;
 export const IMAGE_LIMIT = 1024 * 1024;
 export const AVATAR_LIMIT = 200 * 1024;
@@ -7,20 +7,20 @@ export async function decodeImage(url) {
   try{await image.decode();}catch{throw new Error('圖片損壞或格式不受支援。');}return image;
 }
 const asDataURL=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('圖片讀取失敗。'));reader.readAsDataURL(blob);});
-export async function encodeCanvas(source,{limit=IMAGE_LIMIT,maxEdge=1600}={}) {
+export async function encodeCanvas(source,{limit=IMAGE_LIMIT,maxEdge=1600,ratioUnit=null}={}) {
   let canvas=document.createElement('canvas');
   const scale=Math.min(1,maxEdge/Math.max(source.width,source.height));
-  canvas.width=Math.max(1,Math.round(source.width*scale));canvas.height=Math.max(1,Math.round(source.height*scale));canvas.getContext('2d').drawImage(source,0,0,canvas.width,canvas.height);
+  canvas.width=Math.max(1,Math.round(source.width*scale));canvas.height=Math.max(1,Math.round(source.height*scale));if(ratioUnit){const unit=Math.max(1,Math.floor(Math.min(canvas.width/ratioUnit[0],canvas.height/ratioUnit[1])));canvas.width=unit*ratioUnit[0];canvas.height=unit*ratioUnit[1];}canvas.getContext('2d').drawImage(source,0,0,canvas.width,canvas.height);
   for(let step=0;step<6;step++){
     // Both formats retain alpha. No opaque JPEG or background fill is used.
     const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
-    if(png?.size<=limit)return asDataURL(png);
+    if(png?.size<=limit){canvas.width=canvas.height=0;return asDataURL(png);}
     for(const quality of [.9,.8,.65,.5]){
       const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',quality));
-      if(blob?.size<=limit)return asDataURL(blob);
+      if(blob?.size<=limit){canvas.width=canvas.height=0;return asDataURL(blob);}
     }
     if(Math.min(canvas.width,canvas.height)<64)break;
-    const smaller=document.createElement('canvas');smaller.width=Math.max(1,Math.round(canvas.width*.8));smaller.height=Math.max(1,Math.round(canvas.height*.8));smaller.getContext('2d').drawImage(canvas,0,0,smaller.width,smaller.height);canvas=smaller;
+    const smaller=document.createElement('canvas');smaller.width=Math.max(1,Math.round(canvas.width*.8));smaller.height=Math.max(1,Math.round(canvas.height*.8));if(ratioUnit){const unit=Math.max(1,Math.floor(Math.min(smaller.width/ratioUnit[0],smaller.height/ratioUnit[1])));smaller.width=unit*ratioUnit[0];smaller.height=unit*ratioUnit[1];}smaller.getContext('2d').drawImage(canvas,0,0,smaller.width,smaller.height);canvas.width=canvas.height=0;canvas=smaller;
   }
   throw new Error(`處理後圖片仍超過 ${Math.round(limit/1024)} KB；請調整裁切範圍或換一張圖片，草稿與原圖均已保留。`);
 }

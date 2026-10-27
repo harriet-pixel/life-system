@@ -1,6 +1,6 @@
 # 夥伴回應開發介面
 
-目前是瀏覽器內模擬，無 AI 請求。已新增下列第一階段角色資料核心；既有頁面回應仍為 mock，尚未讀取角色人格或正式好感度，不新增生成或數值交易。
+目前正式角色資料、好感度交易、角色介面及情緒圖片已完成前四階段；正式聊天室仍未開放。既有首頁／待辦回應維持瀏覽器mock，沒有正式角色AI請求。下列分階段內容保留各次建置範圍，現行圖片規則見第四階段。
 
 ## 成功事件
 
@@ -139,3 +139,13 @@ GitHub Pages 只能發布靜態前端，正式夥伴仍未接 AI；不能把金�
 characters-page 仍由 app-shell 動態載入；characters.css 也只在該路由載入，首頁不再請求此專用CSS。直接網址保留CSS入口，SPA由同一模組確認樣式就緒；失敗沿既有外框回到原頁與草稿，不阻塞首頁／待辦。角色管理只建立一份目前角色表單，主頁籤切換保留DOM；資料訂閱快照重用，選擇／切換階段不反覆get帳本或複製全部角色人格。文字框高度採批次讀寫，避免逐欄重排。
 
 沒有新增持續計時器或全域狀態管理器。必要的視窗／字型／visualViewport監聽由現有page lifecycle在離頁時暫停、返回恢復。資料格式或數值錯誤只提示並停止不安全操作，不清空或修補正式帳本。UI選擇、頁籤、階段與草稿不加入正式備份；既有角色與好感度備份完全沿用。
+
+## 第四階段：情緒立繪、獨立頭像與圖片備份
+
+集中定義八個固定ID：neutral、happy、calm、thinking、surprised、concerned、determined、playful；未知情緒安全回neutral，mock邊界提供pleased→happy。角色選填imageSettings version:1，含revision及emotions；每類有asset:雜湊image、120×160 thumbnail、crop、updatedAt。crop的x／y／size全以立繪寬度為單位，y+size≤4/3，x+size≤1。圖片revision與configVersion分開。舊角色無此欄位不自動寫入或清空。
+
+角色設定既有圖片details啟用八卡片與單一dialog。PNG／JPEG／WebP內容與可解碼性驗證，原檔12MiB／2400萬像素／單邊12000px；拒絕SVG、GIF與動畫。可拖曳、縮放／方向鍵裁3:4，再預覽實際結果；正式最長1600px、1MiB，保留透明。每張獨立正方形拖曳／角落縮放、細部控制與圓形預覽，不另存頭像Blob。保存／取消、✕／遮罩／Escape草稿確認、焦點返回、站內草稿DOM與原busy保護。
+
+缺情緒圖片退neutral，再退占位；neutral仍被其他缺圖情緒依賴時需替換而不能刪。封存保留圖片，永久刪除只丟正式引用，Blob待既有手動清理。桌面3:4框固定，手機頂部頭像固定neutral，訊息各自情緒。頭像與卡片按需讀縮圖，完整編輯圖不預載。全站settings.companionImages.transition選direct或fade（缺省250ms淡入淡出）；reduced-motion直接切換，過期載入序號失效，URL有界且釋放。
+
+仍用既有IDB與共用資料交易；先安全存Blob，再驗證完整性及角色／圖片簽章後提交，失敗保留舊圖和草稿。服務與視窗持companion草稿鎖，註冊圖片來源與沿24小時暫存保護。圖片操作不加入Undo以免回溯整個companion，其他復原不變。image-references只掃圖片設定，不將人格文字當引用；明文／加密／手動雲端備份完整收錄圖片／縮圖／裁切／版本，還原缺圖／損壞整筆停止。無新資料庫、後端、AI、聊天持久資料或自動雲端上傳。完整驗收與效能見docs/COMPANION_STAGE4_VERIFICATION.md。
