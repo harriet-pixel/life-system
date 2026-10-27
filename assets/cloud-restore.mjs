@@ -1,7 +1,7 @@
-import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=habit-chart-labels-20261027';
-import {getCloudBackup} from './cloud-backup.mjs?v=habit-chart-labels-20261027';
-import {dataStore} from './data.mjs?v=habits-20261026';
-import {readBackup} from './backup.mjs?v=habits-20261026';
+import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=characters-20261027';
+import {getCloudBackup} from './cloud-backup.mjs?v=characters-20261027';
+import {dataStore} from './data.mjs?v=characters-20261027';
+import {readBackup} from './backup.mjs?v=characters-20261027';
 import {cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs';
 const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
 const full=d=>{const x=structuredClone(d);delete x.revision;return JSON.stringify(canonical(x));};

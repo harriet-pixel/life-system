@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=habits-20261026';
+import {dataStore} from './data.mjs?v=characters-20261027';
 // Presentation only: ephemeral local commits + their existing paired mock reply.
 // Nothing is persisted or replayed on route restore, storage sync, Undo or Redo.
 export function createMobileTaskResponse(root,context,{kind='tasks',selector='.tasks-dashboard>.companion'}={}){

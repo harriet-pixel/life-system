@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=habits-20261026';
+import {dataStore} from './data.mjs?v=characters-20261027';
 import {rowsForDate,localDate} from './tasks-model.mjs?v=habits-20261026';
 
 // One renderer and one validated store for early reading and interactive mounting.

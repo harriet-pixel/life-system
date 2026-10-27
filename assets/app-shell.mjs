@@ -1,17 +1,17 @@
-import {createCloudRestore} from './cloud-restore.mjs?v=habit-chart-labels-20261027';
-import {getCloudBackup} from './cloud-backup.mjs?v=habit-chart-labels-20261027';
+import {createCloudRestore} from './cloud-restore.mjs?v=characters-20261027';
+import {getCloudBackup} from './cloud-backup.mjs?v=characters-20261027';
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
 import {initializeUIFeedback} from './ui-feedback.mjs?v=habits-20261026';
-import {ownsCompletionAI} from './task-completion.mjs?v=habits-20261026';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=habits-20261026';
-import {persistentUndo,dataStore} from './data.mjs?v=habits-20261026';
+import {ownsCompletionAI} from './task-completion.mjs?v=characters-20261027';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=characters-20261027';
+import {persistentUndo,dataStore} from './data.mjs?v=characters-20261027';
 import {createPageLifecycle} from './page-lifecycle.mjs?v=habits-20261026';
 import {initializeNavigationSize} from './navigation-size.mjs?v=habits-20261026';
-import {mountAIPage} from './ai-page.mjs?v=habits-20261026';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=habits-20261026';
-const routes={habits:{mount:()=>import('./habits.mjs?v=habit-chart-labels-20261027'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=habit-chart-labels-20261027'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=home-bonus-divider-20261027'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=habits-20261026'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=habit-chart-labels-20261027'),export:'mountSettings'}};
+import {mountAIPage} from './ai-page.mjs?v=characters-20261027';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=characters-20261027';
+const routes={companion:{mount:()=>import('./characters-page.mjs?v=characters-20261027'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=characters-20261027'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=characters-20261027'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=characters-20261027'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=characters-20261027'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=characters-20261027'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map();
-async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='home'?'habits-20261026':'habits-20261026')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='home'?'habits-20261026':'habits-20261026')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
@@ -37,7 +37,7 @@ function suspend(view){
 }
 async function activate(view){
  document.body.className=view.classes;host.replaceChildren(view.root);document.title=view.title;document.body.dataset.page=view.id;
- if(!view.mounted){const module=await importPage(view.id);module[routes[view.id].export](view.root,view.context);if(view.id!=='settings')mountAIPage(view.root,view.context);view.mounted=true;}
+ if(!view.mounted){const module=await importPage(view.id);module[routes[view.id].export](view.root,view.context);if(!['settings','companion'].includes(view.id))mountAIPage(view.root,view.context);view.mounted=true;}
  else view.context.resume();
  for(const dialog of view.dialogs)if(!dialog.open)dialog.showModal();view.dialogs=[];
 }

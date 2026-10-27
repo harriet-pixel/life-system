@@ -1,5 +1,5 @@
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
-const navigationIcons={habits:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v4m10-4v4M3 9h18m-14 6 3 3 7-6"/>',home:'<path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"/>',tasks:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="m6 10 2 2 3-4m2 3h5M6 16h12"/>',profile:'<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',settings:'<path d="m9 3 1-2h4l1 2 2 1h2l2 4-1 2v3l1 2-2 4h-2l-2 1-1 2h-4l-1-2-2-1H5l-2-4 1-2v-3L3 8l2-4h2Z"/><circle cx="12" cy="11.5" r="3"/>'};
+const navigationIcons={companion:'<circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M17 4a3 3 0 0 1 0 6m2 4a6 6 0 0 1 3 5v2"/>',habits:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v4m10-4v4M3 9h18m-14 6 3 3 7-6"/>',home:'<path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"/>',tasks:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="m6 10 2 2 3-4m2 3h5M6 16h12"/>',profile:'<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',settings:'<path d="m9 3 1-2h4l1 2 2 1h2l2 4-1 2v3l1 2-2 4h-2l-2 1-1 2h-4l-1-2-2-1H5l-2-4 1-2v-3L3 8l2-4h2Z"/><circle cx="12" cy="11.5" r="3"/>'};
 // Enable a navigation item only after its destination page is implemented.
 export const navigationItems = Object.freeze([
   { id: 'home', label: '首頁', englishLabel: 'Home', href: new URL('../', import.meta.url).href, available: true },
@@ -7,7 +7,7 @@ export const navigationItems = Object.freeze([
   { id: 'habits', label: '習慣打卡', englishLabel:'Habits', href: new URL('../habits.html',import.meta.url).href, available: true },
   { id: 'reading', label: '陪讀系統', href: null, available: false },
   { id: 'wallet', label: '錢包帳本', href: null, available: false },
-  { id: 'companion', label: '我的夥伴', href: null, available: false },
+  { id: 'companion', label: '夥伴', englishLabel:'Companion', href: new URL('../companion.html',import.meta.url).href, available: true },
   { id: 'profile', label: '我的資料', englishLabel: 'My Profile', href: new URL('../profile.html', import.meta.url).href, available: true },
   { id: 'chat', label: '聊天室', href: null, available: false },
   { id: 'settings', label: '設定', englishLabel:'Settings', href: new URL('../settings.html', import.meta.url).href, available: true },

@@ -1,7 +1,7 @@
 // All durable writes share one origin-wide Web Lock. Drafts use a separate
 // shared lock, so maintenance can fail closed rather than discard open edits.
 export const WRITE_LOCK = 'life-system.write.v2';
-const DRAFTS = {tasks:'「待辦事項 → 編輯事項」',profile:'「我的資料 → 使用者設定」（含立繪、頭像與我的最愛裁切）',appearance:'「設定 → 外觀設定」'};
+const DRAFTS = {companion:'「夥伴 → 角色設定」',tasks:'「待辦事項 → 編輯事項」',profile:'「我的資料 → 使用者設定」（含立繪、頭像與我的最愛裁切）',appearance:'「設定 → 外觀設定」'};
 const draftName=kind=>'life-system.drafts.v2.'+kind;
 export function coordinatedWrite(work) {
   if (!globalThis.navigator?.locks) return Promise.reject(new Error('此瀏覽器缺少安全協調功能；請使用支援 Web Locks 的 HTTPS 瀏覽器。'));

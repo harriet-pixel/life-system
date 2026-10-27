@@ -1,6 +1,6 @@
 import {maintainRecovery} from './recovery.mjs?v=habits-20261026';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs';
-import {maintenance} from './coordination.mjs?v=habits-20261026';
+import {maintenance} from './coordination.mjs?v=characters-20261027';
 const providers=new Map();
 export function registerImageReferenceSource(name,read,{transient=true}={}) {
   if(providers.has(name)) throw new Error('重複的圖片引用來源');
@@ -16,7 +16,7 @@ export function collectReferences(value,refs=new Set()) {
 export function documentImageReferences(state,{legacy=false,raw=false}={}) {
   if(!legacy&&!raw)state=maintainRecovery(state).document;
   const refs=new Set(),imageFields=['photo','avatar','photoEdit','avatarEdit','portraits'];
-  const nonImageFields=['revision','statsRulesVersion','profile','activities','stats','history','undoHistory','historyVersion','settings','currentPortraitId'];
+  const nonImageFields=['revision','statsRulesVersion','profile','activities','stats','history','undoHistory','historyVersion','settings','currentPortraitId','companion'];
   const roots=[state,...(legacy?state.history:state.undoHistory??[]).flatMap(record=>[record.before,record.after])];
   for(const root of roots){
     if(!root||typeof root!=='object')throw new Error('圖片快照尚未完整載入。');

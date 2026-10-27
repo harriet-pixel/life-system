@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="light">
+    <meta name="description" content="Life System 我的資料與能力值。">
+    <title>夥伴 · Life System</title>
+    <link rel="icon" href="data:,">
+    <script src="assets/home-date.js?v=habits-20261026"></script><script src="assets/appearance-core.js?v=habits-20261026" data-appearance-core></script>
+
+
+
+
+  <link rel="stylesheet" href="assets/styles.css?v=habits-20261026"><link rel="stylesheet" href="assets/profile.css?v=habits-20261026"><link rel="stylesheet" href="assets/appearance.css?v=habits-20261026"><link rel="stylesheet" href="assets/ai.css?v=page-alignment-20261027"><meta name="life-system-shell" content="characters-20261027"><script type="module" src="assets/app-shell.mjs?v=characters-20261027"></script><link rel="stylesheet" href="assets/tasks.css?v=control-polish-20261027"><link rel="stylesheet" href="assets/ui-feedback.css?v=habits-20261026"><link rel="stylesheet" href="assets/habits.css?v=characters-20261027"><link rel="stylesheet" href="assets/page-layout.css?v=control-polish-20261027"><link rel="stylesheet" href="assets/characters.css?v=characters-20261027"></head>
+  <body data-page="companion" class="companion-page"><a class="skip-link" href="#main">跳至主要內容</a><div class="page-shell"><main id="main" data-page-view="companion" tabindex="-1"><div class="desktop-navigation" aria-label="電腦版導覽工具列">
+          <nav id="desktop-links" class="navigation-options" aria-label="主要導覽"></nav>
+          <button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button>
+        </div>
+<div class="character-workspace"><header class="page-title-row"><span id="current-page-name" class="current-page-name"></span><h1 class="sr-only">夥伴</h1></header>
+<div class="activity-tabs" role="tablist" aria-label="夥伴頁籤"><button id="chat-tab" type="button" role="tab" aria-controls="chat-panel" aria-selected="false" tabindex="-1">聊天室</button><button id="character-tab" type="button" role="tab" aria-controls="character-panel" aria-selected="true">角色設定</button></div>
+<section id="chat-panel" role="tabpanel" aria-labelledby="chat-tab" hidden><p>聊天室尚未開放。</p><p class="small-note">目前可先手動設定角色；尚未串接 AI。</p></section>
+<section id="character-panel" role="tabpanel" aria-labelledby="character-tab"><div class="character-toolbar"><label for="character-select">角色選擇器</label><select id="character-select"></select><button id="character-create" type="button">新增角色</button></div>
+<p id="character-active" class="small-note"></p><p id="character-summary"></p><p id="character-draft" class="small-note" role="status"></p>
+<form id="character-form"><div id="character-fields"></div><div class="character-actions"><button id="character-save" type="submit" class="primary-button">儲存角色設定</button><button id="character-cancel" type="button">取消草稿</button></div></form>
+<div class="character-actions"><button id="character-activate" type="button">設為夥伴</button><button id="character-archive" type="button">封存角色</button><button id="character-delete" type="button">永久刪除角色</button></div><p class="small-note">角色資料獨立保存；預覽及編輯不會切換出場角色。好感度僅顯示，本階段不會加減分。</p></section>
+<p id="operation-status" class="small-note" role="status"></p></div></main></div><div class="mobile-navigation" hidden><nav id="mobile-links" class="navigation-options" aria-label="主要導覽"></nav><div class="mobile-undo"><button class="toolbar-button undo-button" type="button" data-undo disabled aria-label="撤銷上一個資料操作" title="撤銷上一個資料操作"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 5-6 6 6 6M3 11h10a7 7 0 0 1 7 7"/></svg></button></div></div>
+</body></html>

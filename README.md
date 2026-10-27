@@ -8,7 +8,7 @@
 - [我的資料](https://harriet-pixel.github.io/life-system/profile.html)：基本資料、能力雷達圖、立繪／頭像裁切、手動最愛及獨立數值重新開始。
 - [設定](https://harriet-pixel.github.io/life-system/settings.html)：手動圖片清理、行動紀錄、備份還原及外觀預覽／保存。
 
-三頁使用同一份localStorage文件與IndexedDB圖片，保存後同來源分頁同步。Undo／Redo為24小時／7天、最多最近15次；長期行動紀錄不受復原上限裁切。Google Drive連接後每次資料操作自動上傳未加密備份，共保留20筆；不做跨裝置同步；不自動刪圖。Google OAuth已設定公開Client ID，真實授權需實機驗收。
+三頁使用同一份localStorage文件與IndexedDB圖片，保存後同來源分頁同步。Undo／Redo為24小時／7天、最多最近15次；長期行動紀錄不受復原上限裁切。Google Drive僅於手動按下「上傳雲端」時上傳未加密備份，共保留20筆；不做跨裝置同步；不自動刪圖。Google OAuth已設定公開Client ID，真實授權需實機驗收。
 
 手機與桌面共用資料及DOM，1024px切換主要版面與導覽；兩種版面均使用待辦／打卡頁籤。主題色及四種字型由共用外觀服務套用，非系統字型自託管並保留授權。
 
@@ -55,3 +55,5 @@ BASE_URL=http://127.0.0.1:3000/ node tests/restore-actions.cjs
 正式受驗證後端模式仍未部署，backend/ 不進靜態成果，登入與 endpoint 空白不阻擋已同意的直連測試。夥伴 mock、資料／數值規則不變；不新增登入或雲端資源。詳見 [AI_CONNECTION.md](AI_CONNECTION.md)。
 
 Google備份、最新還原及安全界線見[雲端備份](docs/CLOUD_BACKUP.md)。Cloudflare維持暫停。
+
+夥伴第一階段入口為 `companion.html`，提供多角色設定、固定七階段與出場歷史；詳見 [COMPANION.md](COMPANION.md)。尚未串接 AI、圖片或好感度交易。

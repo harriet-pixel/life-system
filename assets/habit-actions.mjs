@@ -1,8 +1,8 @@
 import {parseHabitAllocation} from './habit-allocation.mjs?v=habit-chart-labels-20261027';
-import {createSharedCompanionView,cancelSharedCompanion} from './companion-events.mjs?v=habits-20261026';
-import {dataStore} from './data.mjs?v=habits-20261026';
+import {createSharedCompanionView,cancelSharedCompanion} from './companion-events.mjs?v=characters-20261027';
+import {dataStore} from './data.mjs?v=characters-20261027';
 import {createHabitService} from './habits-service.mjs?v=habit-chart-labels-20261027';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=habits-20261026';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=characters-20261027';
 import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=habits-20261026';
 import {distribution} from './habits-model.mjs';
 export const habitService=createHabitService(dataStore);
