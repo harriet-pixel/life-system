@@ -1,4 +1,4 @@
-import {createCloudRestore} from './cloud-restore.mjs?v=chat-20261027';
+import {createCloudRestore} from './cloud-restore.mjs?v=mobile-polish-20261027';
 import {getCloudBackup} from './cloud-backup.mjs?v=chat-20261027';
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
 import {initializeUIFeedback} from './ui-feedback.mjs?v=habits-20261026';
@@ -9,7 +9,7 @@ import {createPageLifecycle} from './page-lifecycle.mjs?v=habits-20261026';
 import {initializeNavigationSize} from './navigation-size.mjs?v=habits-20261026';
 import {mountAIPage} from './ai-page.mjs?v=chat-20261027';
 import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-20261027';
-const routes={companion:{mount:()=>import('./characters-page.mjs?v=chat-20261027'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=chat-20261027'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=chat-20261027'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=chat-20261027'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=chat-20261027'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=chat-20261027'),export:'mountSettings'}};
+const routes={companion:{mount:()=>import('./characters-page.mjs?v=chat-20261027'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=mobile-polish-20261027'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=mobile-polish-20261027'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=mobile-polish-20261027'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=chat-20261027'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=chat-20261027'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map();
 async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='home'?'habits-20261026':'habits-20261026')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
@@ -20,7 +20,9 @@ let queuedNavigation=null,active=null,navigation,sequence=0,loading=null,navigat
 history.scrollRestoration='manual';
 const connection=getSharedAIConnection(),cloudRestore=createCloudRestore();
 document.addEventListener('life-system:restore-cloud-latest',event=>cloudRestore.open({versionId:event.detail?.versionId??null}));
-function announce(message){const target=active?.id==='tasks'?active.root.querySelector('#operation-status'):announcement;setOperationNotice(target,message);if(target!==announcement)announcement.hidden=true;}
+function announce(message){const target=['home','tasks','habits'].includes(active?.id)?active.root.querySelector('#operation-status')??announcement:announcement;setOperationNotice(target,message);if(target!==announcement)announcement.hidden=true;}
+
+document.addEventListener('life-system:cloud-restore-status',event=>{if(['home','tasks','habits'].includes(active?.id))announce(event.detail.message);});
 
 document.addEventListener('life-system:cloud-backup-warning',event=>{if(active?.id!=='settings')announce(event.detail.message);});
 function collect(doc,id){

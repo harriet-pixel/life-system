@@ -1,9 +1,9 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=chat-20261027';
+import {mountHabitQuick} from './habit-quick.mjs?v=mobile-polish-20261027';
 import {renderHomeToday} from './home-today.mjs?v=chat-20261027';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
 import {createTaskEditor} from './task-editor.mjs?v=chat-20261027';
 import {createCategoryManager} from './task-categories.mjs?v=chat-20261027';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=habits-20261026';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=mobile-polish-20261027';
 import {taskActions} from './task-actions.mjs?v=chat-20261027';
 import {localDate} from './tasks-model.mjs?v=companion-images-20261027';
 import { createMobileTabPositioner } from './tab-position.mjs?v=habits-20261026';
@@ -92,7 +92,9 @@ const menuButton=(label,work)=>{const b=document.createElement('button');b.type=
 itemMenu.addEventListener('click',e=>{const r=itemMenu.getBoundingClientRect();if(e.target===itemMenu&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))itemMenu.close();});
 itemMenu.addEventListener('close',()=>{(menuTrigger?.isConnected?menuTrigger:root.querySelector('#home-new-event'))?.focus({preventScroll:true});});
 tasks.openMenu=(task,o)=>{menuTrigger=document.activeElement;const title=document.createElement('h2');title.id='home-task-menu-title';title.textContent=task.name;const close=menuButton('×',()=>itemMenu.close());close.className='task-item-close';close.setAttribute('aria-label','關閉');const controls=document.createElement('div');controls.className='task-menu-actions';controls.append(menuButton('編輯事件',()=>{itemMenu.close();return editor.open(task,o.date);}),menuButton(task.kind==='repeat'?'刪除此日安排':'刪除事件',async()=>{if(o.status==='done'){itemMenu.close();return tasks.deleteCompleted(task.id,o.date);}if(!window.confirm('刪除此日安排？其他日期與完成歷史保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id,o.date));itemMenu.close();}));if(task.kind==='repeat')controls.append(menuButton('刪除整個重複事項',async()=>{if(!window.confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id));itemMenu.close();}));itemMenu.replaceChildren(title,close,controls);itemMenu.showModal();};
-const homeNotice=root.querySelector('#operation-status'),noticeAnchor=document.createComment('home notice');homeNotice.before(noticeAnchor);const noticeMedia=matchMedia('(min-width:1024px)');const syncHomeNotice=()=>{if(noticeMedia.matches)homeNotice.hidden=false;if(noticeMedia.matches)root.querySelector('.companion').append(homeNotice);else noticeAnchor.after(homeNotice);};syncHomeNotice();context.listen(noticeMedia,'change',syncHomeNotice);context.onResume(syncHomeNotice);
+let selectedPanel=0;
+const homeNotice=root.querySelector('#operation-status'),noticeAnchor=document.createComment('home notice');homeNotice.before(noticeAnchor);const noticeMedia=matchMedia('(min-width:1024px)');const syncHomeNotice=()=>{homeNotice.hidden=false;if(noticeMedia.matches)root.querySelector('.companion').append(homeNotice);else root.querySelector(selectedPanel===1?'#habits-panel .habit-manage-footer':'#tasks-panel .section-bottom')?.prepend(homeNotice);};context.listen(noticeMedia,'change',syncHomeNotice);context.onResume(syncHomeNotice);
+
 
 root.querySelector('#home-new-event').disabled=false;
 root.querySelector('#home-new-event').onclick=()=>editor.open(null,localDate()).catch(error=>tasks.say(error.message));
@@ -100,7 +102,7 @@ editor.element.querySelector('#task-add-category').onclick=()=>{const trigger=ed
 context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>editor.busy()||categories.busy()||Boolean(completionBusy?.())});
 function renderToday(){renderHomeToday(root,tasks);}
 context.subscribe(tasks.completions,renderToday);
-mountHabitQuick(root,context);
+mountHabitQuick(root,context,{beforeRender:()=>noticeAnchor.after(homeNotice),afterRender:syncHomeNotice});
 context.subscribe(dataStore,() => {
   renderToday();
   const stats = dataStore.get().stats;
@@ -121,7 +123,7 @@ const positionActivityTabs = createMobileTabPositioner(activityTabs, updateActiv
 context.onSuspend(()=>positionActivityTabs.cancel());
 context.subscribe(dataStore,updateActivityHeight);
 const desktopLayout = window.matchMedia('(min-width: 1024px)');
-let selectedPanel = 0;
+
 function syncActivityTabs() {
   root.querySelector('#main').dataset.activityTabs = 'true';
   activityTabs.hidden = false;
@@ -137,6 +139,7 @@ function syncActivityTabs() {
     panel.setAttribute('role', 'tabpanel');
     panel.setAttribute('aria-labelledby', button.id);
   });
+  syncHomeNotice();
   updateActivityHeight();
 }
 function selectActivity(index) {
