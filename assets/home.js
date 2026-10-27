@@ -1,10 +1,10 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=companion-images-20261027';
-import {renderHomeToday} from './home-today.mjs?v=companion-images-20261027';
+import {mountHabitQuick} from './habit-quick.mjs?v=task-home-polish-20261027';
+import {renderHomeToday} from './home-today.mjs?v=task-home-polish-20261027';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
 import {createTaskEditor} from './task-editor.mjs?v=companion-images-20261027';
-import {createCategoryManager} from './task-categories.mjs?v=companion-images-20261027';
+import {createCategoryManager} from './task-categories.mjs?v=task-home-polish-20261027';
 import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=habits-20261026';
-import {taskActions} from './task-actions.mjs?v=companion-images-20261027';
+import {taskActions} from './task-actions.mjs?v=task-home-polish-20261027';
 import {localDate} from './tasks-model.mjs?v=companion-images-20261027';
 import { createMobileTabPositioner } from './tab-position.mjs?v=habits-20261026';
 import { createActivityHeightSync } from './activity-height.mjs?v=habits-20261026';
@@ -87,6 +87,13 @@ const tasks=taskActions(root,context);
 const completionBusy=context.hooks.busy;
 const editor=createTaskEditor(root,context,tasks),categories=createCategoryManager(root,context,tasks);
 initializeTaskDialogs(root,context);
+const itemMenu=document.createElement('dialog');itemMenu.id='home-task-item-menu';itemMenu.className='task-dialog task-item-menu';itemMenu.setAttribute('aria-labelledby','home-task-menu-title');root.append(itemMenu);let menuTrigger;
+const menuButton=(label,work)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>Promise.resolve().then(work).catch(e=>tasks.say(e.message));return b;};
+itemMenu.addEventListener('click',e=>{const r=itemMenu.getBoundingClientRect();if(e.target===itemMenu&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))itemMenu.close();});
+itemMenu.addEventListener('close',()=>{(menuTrigger?.isConnected?menuTrigger:root.querySelector('#home-new-event'))?.focus({preventScroll:true});});
+tasks.openMenu=(task,o)=>{menuTrigger=document.activeElement;const title=document.createElement('h2');title.id='home-task-menu-title';title.textContent=task.name;const close=menuButton('×',()=>itemMenu.close());close.className='task-item-close';close.setAttribute('aria-label','關閉');const controls=document.createElement('div');controls.className='task-menu-actions';controls.append(menuButton('編輯事件',()=>{itemMenu.close();return editor.open(task,o.date);}),menuButton(task.kind==='repeat'?'刪除此日安排':'刪除事件',async()=>{if(o.status==='done'){itemMenu.close();return tasks.deleteCompleted(task.id,o.date);}if(!window.confirm('刪除此日安排？其他日期與完成歷史保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id,o.date));itemMenu.close();}));if(task.kind==='repeat')controls.append(menuButton('刪除整個重複事項',async()=>{if(!window.confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id));itemMenu.close();}));itemMenu.replaceChildren(title,close,controls);itemMenu.showModal();};
+const homeNotice=root.querySelector('#operation-status'),noticeAnchor=document.createComment('home notice');homeNotice.before(noticeAnchor);const noticeMedia=matchMedia('(min-width:1024px)');const syncHomeNotice=()=>{if(noticeMedia.matches)homeNotice.hidden=false;if(noticeMedia.matches)root.querySelector('.companion').append(homeNotice);else noticeAnchor.after(homeNotice);};syncHomeNotice();context.listen(noticeMedia,'change',syncHomeNotice);context.onResume(syncHomeNotice);
+
 root.querySelector('#home-new-event').disabled=false;
 root.querySelector('#home-new-event').onclick=()=>editor.open(null,localDate()).catch(error=>tasks.say(error.message));
 editor.element.querySelector('#task-add-category').onclick=()=>{const trigger=editor.element.querySelector('#task-add-category');editor.pause();categories.create(id=>{editor.updateCategories();if(id)editor.selectCategory(id);editor.resume();trigger.focus({preventScroll:true});});};

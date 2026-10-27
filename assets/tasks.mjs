@@ -1,18 +1,18 @@
-import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=habits-20261026';
-import {createListSettings} from './task-day-settings.mjs?v=companion-images-20261027';
+import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=task-home-polish-20261027';
+import {createListSettings} from './task-day-settings.mjs?v=task-home-polish-20261027';
 import {currentSaveTrace} from './save-diagnostics.mjs?v=habits-20261026';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {createDateResidents} from './task-date-residents.mjs?v=companion-images-20261027';
+import {createDateResidents} from './task-date-residents.mjs?v=task-home-polish-20261027';
 import {createActivityHeightSync} from './activity-height.mjs?v=habits-20261026';
 import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
 import {createMultiSchedule} from './task-multi-schedule.mjs?v=companion-images-20261027';
-import {createTaskPool} from './task-pool.mjs?v=companion-images-20261027';
+import {createTaskPool} from './task-pool.mjs?v=task-home-polish-20261027';
 import {dataStore} from './data.mjs?v=companion-images-20261027';
 import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=companion-images-20261027';
-import {taskActions} from './task-actions.mjs?v=companion-images-20261027';
+import {taskActions} from './task-actions.mjs?v=task-home-polish-20261027';
 import {mountTaskCompanion} from './task-companion.mjs?v=companion-images-20261027';
 import {createTaskEditor} from './task-editor.mjs?v=companion-images-20261027';
-import {createCategoryManager} from './task-categories.mjs?v=companion-images-20261027';
+import {createCategoryManager} from './task-categories.mjs?v=task-home-polish-20261027';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');
@@ -52,7 +52,7 @@ export function mountTasks(root,context){
  const confirm=message=>window.confirm(message);
  const menu=el('dialog');menu.className='task-dialog';menu.id='task-item-menu';menu.setAttribute('aria-labelledby','task-item-menu-title');let menuFocus,outsidePress=false;
  const outsideMenu=event=>{const r=menu.getBoundingClientRect();return event.target===menu&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom);};
- menu.addEventListener('pointerdown',event=>{outsidePress=outsideMenu(event);});menu.addEventListener('click',event=>{if(!desktop.matches&&menu.classList.contains('task-pool-menu')&&outsidePress&&outsideMenu(event))menu.close();outsidePress=false;});
+ menu.addEventListener('pointerdown',event=>{outsidePress=outsideMenu(event);});menu.addEventListener('click',event=>{if(outsidePress&&outsideMenu(event))menu.close();outsidePress=false;});
  menu.addEventListener('close',()=>{if(menuFocus?.isConnected)menuFocus.focus({preventScroll:true});else $(desktop.matches?'#new-task':'#task-settings').focus({preventScroll:true});});root.append(menu);
  function openMenu(task,o=null,pool=false){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const color=dataStore.get().tasks.categories.find(c=>c.id===task.categoryId)?.color;if(color)menu.style.setProperty('--menu-task-color',color);else menu.style.removeProperty('--menu-task-color');menu.classList.toggle('task-pool-menu',pool);const controls=el('div',undefined,'task-menu-actions');
   if(pool)controls.append(button('安排日期',()=>{menu.close();if(task.kind==='repeat'&&!o)multiSchedule.open(task);else askDate(date=>actions.service.arrange(task.id,date,o?.date??null));}));
@@ -63,9 +63,9 @@ export function mountTasks(root,context){
    await actions.attempt(()=>actions.service.remove(task.id,o?.date??null));menu.close();
   });controls.append(remove);
   if(task.kind==='repeat'&&o)controls.append(button('刪除整個重複事項',async()=>{if(!confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留；如需撤回某次完成，請刪除此日安排。'))return;await actions.attempt(()=>actions.service.remove(task.id));menu.close();}));
-  if(pool){const complete=button('完成事件',()=>{menu.close();return actions.complete(task.id,o?.date??null);});complete.className='task-pool-complete';complete.disabled=Boolean(o&&o.status!=='pending')||actions.isPending(task.id,o?.date??localDate());controls.append(complete);}
+  if(pool){const complete=button('完成事件',async()=>{const today=localDate();if(o&&o.date!==today)await actions.service.arrange(task.id,today,o.date);menu.close();return actions.complete(task.id,today);});complete.className='task-pool-complete';complete.disabled=Boolean(o&&o.status!=='pending')||actions.isPending(task.id,o?.date??localDate());controls.append(complete);}
   if(o?.status==='done')menu.append(el('p','刪除此完成安排會以當次保存的獎勵資料完整撤回；不影響其他次數。','small-note'));
-  const closeButton=button('關閉',()=>menu.close());closeButton.className='task-menu-close-text';controls.append(closeButton);menu.append(controls);menu.showModal();
+  const closeButton=button('關閉',()=>menu.close());closeButton.className='task-item-close';closeButton.textContent='×';closeButton.setAttribute('aria-label','關閉');menu.append(closeButton,controls);menu.showModal();
  }
  const pool=createTaskPool(root,context,actions,{openMenu,askDate});
  function dailyRow(r){const {task,occurrence:o}=r,node=el('article',undefined,'task-daily-row');node.dataset.taskId=task.id;node.dataset.date=o.date;
@@ -86,7 +86,7 @@ export function mountTasks(root,context){
  $('#month-label').textContent=month;const first=month+'-01',next=new Date(first+'T12:00:00');next.setMonth(next.getMonth()+1);const count=Number(addDays(localDate(next),-1).slice(-2));const cells=[];for(const name of ['一','二','三','四','五','六','日'])cells.push(el('span',name));for(let i=0;i<(weekday(first)+6)%7;i++)cells.push(el('span',''));for(let i=1;i<=count;i++){const date=month+'-'+String(i).padStart(2,'0');const b=button(String(i),()=>choose(date));b.setAttribute('aria-label',`${date}${date===today?' 今天':''}${date===selected?' 已選取':''}`);if(date===today)b.setAttribute('aria-current','date');b.setAttribute('aria-pressed',String(date===selected));cells.push(b);}$('#month-grid').replaceChildren(...cells);
  if(!focused?.isConnected&&!root.querySelector('dialog[open]')){const replacement=focusedDate?[...$('#month-grid').querySelectorAll('button')].find(b=>b.getAttribute('aria-label').startsWith(focusedDate)):focusedTask?[...$('#schedule').querySelectorAll('.task-daily-row')].find(n=>n.dataset.taskId===focusedTask&&n.dataset.date===focusedRowDate)?.querySelector(focusedCheckbox?'input':'.task-daily-name'):null;const target=replacement?.disabled?replacement.closest('.task-daily-row')?.querySelector('.task-daily-name'):replacement;target?.focus({preventScroll:true});}
  currentSaveTrace()?.phase('render',renderedAt);}
- $('#new-task').onclick=()=>openEditor().catch(e=>actions.say(e.message));$('#manage-categories').onclick=()=>categories.open().catch(e=>actions.say(e.message));$('#today').onclick=()=>choose(localDate(),true);$('#toggle-calendar').onclick=()=>{mobileCalendarOpen=!mobileCalendarOpen;syncCalendar();};
+ $('#new-task').onclick=()=>openEditor(null,localDate(),true).catch(e=>actions.say(e.message));$('#manage-categories').onclick=()=>categories.open().catch(e=>actions.say(e.message));$('#today').onclick=()=>choose(localDate(),true);$('#toggle-calendar').onclick=()=>{mobileCalendarOpen=!mobileCalendarOpen;syncCalendar();};
  for(const [id,delta]of [['previous-month',-1],['next-month',1]])$('#'+id).onclick=()=>{const d=new Date(month+'-01T12:00:00');d.setMonth(d.getMonth()+delta);month=localDate(d).slice(0,7);render();};
  const contentTabs=$('.task-content-tabs'),contentButtons=[...contentTabs.querySelectorAll('[role=tab]')],contentPanels=contentButtons.map(b=>$('#'+b.getAttribute('aria-controls'))),heightSync=createActivityHeightSync($('.task-panel-stack'),contentPanels,context),positionTabs=createMobileTabPositioner(contentTabs,heightSync,{scrollPage:false});
  const appearanceObserver=new MutationObserver(heightSync),watchAppearance=()=>appearanceObserver.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-font']});watchAppearance();context.onSuspend(()=>appearanceObserver.disconnect());context.onResume(watchAppearance);

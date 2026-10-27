@@ -1,6 +1,6 @@
 // The local list does not wait for the shell's editor, AI or backup dependency graph.
 // Import errors are handled so unavailable/corrupt storage never stays 'loading'.
-import('./home-today.mjs?v=companion-images-20261027').then(async({renderHomeToday})=>{
+import('./home-today.mjs?v=task-home-polish-20261027').then(async({renderHomeToday})=>{
  const root=document.querySelector('main[data-page-view=home]'),list=root?.querySelector('.task-list');
  if(!list||list.dataset.todayInteractive)return;
  const {dataStore}=await import('./data.mjs?v=companion-images-20261027');

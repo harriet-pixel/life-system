@@ -1,6 +1,8 @@
 import {dataStore} from './data.mjs?v=companion-images-20261027';
 import {rowsForDate,localDate} from './tasks-model.mjs?v=companion-images-20261027';
 
+import {sortDay,listSettings} from './task-view-model.mjs?v=task-home-polish-20261027';
+
 // One renderer and one validated store for early reading and interactive mounting.
 export function renderHomeToday(root,actions=null){
  const todayList=root.querySelector('.task-list');
@@ -9,9 +11,9 @@ export function renderHomeToday(root,actions=null){
   todayList.dispatchEvent(new Event('life-system:home-tasks-ready'));
  }
  globalThis.LifeHomeDate?.render(root);
- const snapshot=dataStore.get(),rows=rowsForDate(snapshot.tasks,localDate());
+ const snapshot=dataStore.get(),rows=sortDay(snapshot.tasks,rowsForDate(snapshot.tasks,localDate()),listSettings(snapshot.tasks));
  todayList.replaceChildren(...rows.map(row=>{
-  const li=document.createElement('li'),label=document.createElement('label');
+  const li=document.createElement('li'),label=document.createElement('div');
   li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;
   label.className='task-row';
   const input=document.createElement('input');input.type='checkbox';input.dataset.task='';
@@ -27,7 +29,7 @@ export function renderHomeToday(root,actions=null){
    if(done)actions.cancel(row.task.id,row.occurrence.date).catch(()=>{});
    else actions.complete(row.task.id,row.occurrence.date);
   };
-  const name=document.createElement('span');name.className='task-content';name.textContent=row.name;
+  const name=document.createElement('button');name.type='button';name.disabled=!actions;name.onclick=()=>actions?.openMenu(row.task,row.occurrence);name.className='task-content';name.textContent=row.name;
   const color=snapshot.tasks.categories.find(c=>c.id===row.task.categoryId)?.color;
   if(color)name.style.setProperty('--home-task-color',color);
   if(row.brief){

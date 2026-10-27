@@ -43,3 +43,9 @@
 .habit-record-controls{--habit-control-height:max(44px,2.875em)}.habit-record-controls :is(input,select,#special-check){height:var(--habit-control-height);box-sizing:border-box}
 @media(width>=1024px){.habit-record-controls{max-width:44rem;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) auto}.habits-workspace .habit-record-controls>label{flex-direction:row;align-items:center;gap:.5em;white-space:nowrap}.habit-record-controls input,.habit-record-controls select{flex:1;width:0}.habit-record-controls:has(#special-check[hidden]){grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}}
 [data-page-view=home] #habits-panel .habit-home-bonus-row{border-top:1px solid var(--color-border);margin-top:8px}[data-page-view=home] #habits-panel .home-bonus-summary{padding-inline-start:calc(1rem + 1em)}
+[data-page-view=home] #habits-panel .habit-home-bonus-row{display:flex;align-items:baseline;gap:1em;flex-wrap:nowrap}
+[data-page-view=home] #habits-panel .habit-home-bonus-row h3{flex:none}
+[data-page-view=home] #habits-panel .home-bonus-summary{padding-inline-start:0;margin:0;min-width:0;overflow-wrap:anywhere}
+@media(width >= 1024px){
+ [data-page-view=home] .companion>#operation-status{display:block;min-height:1.7em;max-height:3.4em;overflow:auto;margin:4px 0 0}
+}
