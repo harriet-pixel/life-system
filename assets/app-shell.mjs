@@ -1,5 +1,7 @@
-import {createCloudRestore} from './cloud-restore.mjs?v=mobile-polish-20261027';
-import {getCloudBackup} from './cloud-backup.mjs?v=chat-20261027';
+import {cloudStatus} from './cloud-sync-status.mjs';
+import {getDriveState,driveAuth} from './google-drive.mjs?v=sync-window-20261028';
+import {createCloudRestore} from './cloud-restore.mjs?v=sync-window-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=sync-window-20261028';
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
 import {initializeUIFeedback} from './ui-feedback.mjs?v=habits-20261026';
 import {ownsCompletionAI} from './task-completion.mjs?v=chat-20261027';
@@ -9,7 +11,7 @@ import {createPageLifecycle} from './page-lifecycle.mjs?v=habits-20261026';
 import {initializeNavigationSize} from './navigation-size.mjs?v=habits-20261026';
 import {mountAIPage} from './ai-page.mjs?v=chat-20261027';
 import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-20261027';
-const routes={companion:{mount:()=>import('./characters-page.mjs?v=chat-20261027'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=sync-ui-20261028'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=sync-ui-20261028'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=sync-ui-20261028'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=chat-20261027'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=sync-ui-20261028'),export:'mountSettings'}};
+const routes={companion:{mount:()=>import('./characters-page.mjs?v=chat-20261027'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=sync-ui-20261028'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=sync-ui-20261028'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=sync-ui-20261028'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=chat-20261027'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=sync-window-20261028'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map();
 async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='home'?'habits-20261026':'habits-20261026')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
@@ -102,3 +104,7 @@ getCloudBackup();
 // Do not put settlement on the first-paint dependency path.
 const startAffinity=()=>import('./affinity-runtime.mjs?v=chat-20261027').catch(()=>{});
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
+
+// Manual backups do not masquerade as an acknowledged cross-device sync baseline.
+const iconCloud=getCloudBackup();const updateCloudIcons=()=>{const state=iconCloud.getState(),status=cloudStatus({connected:getDriveState().connected,online:navigator.onLine,busy:state.busy,pending:state.pending,error:/未完成/.test(state.message)});for(const button of document.querySelectorAll('[data-cloud-restore]')){button.dataset.syncState=status;button.title='雲端同步與備份：'+status;button.setAttribute('aria-label',button.title);}};
+iconCloud.subscribe(updateCloudIcons);driveAuth.subscribe(updateCloudIcons);window.addEventListener('online',updateCloudIcons);window.addEventListener('offline',updateCloudIcons);

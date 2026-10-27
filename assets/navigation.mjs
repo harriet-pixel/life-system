@@ -26,7 +26,7 @@ export function initializeNavigation({ onCloudRestore=()=>{}, undoManager, onUnd
   const feedback=()=>document.querySelector('#operation-status');
   const mobileBar = document.querySelector('.mobile-navigation');
   const undoButtons = [...document.querySelectorAll('[data-undo]')];
-  const cloudButtons=undoButtons.map(undo=>{const button=undo.cloneNode(true);button.removeAttribute('data-undo');button.setAttribute('data-cloud-restore','');button.classList.replace('undo-button','cloud-restore-button');button.disabled=false;button.setAttribute('aria-label','還原最新雲端備份');button.title='還原最新雲端備份';button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 18H6a4 4 0 0 1-1-8 7 7 0 0 1 13-2 5 5 0 0 1 0 10h-1M12 11v10m-4-4 4 4 4-4"/></svg>';button.onclick=onCloudRestore;undo.after(button);return button;});
+  const cloudButtons=undoButtons.map(undo=>{const button=undo.cloneNode(true);button.removeAttribute('data-undo');button.setAttribute('data-cloud-restore','');button.classList.replace('undo-button','cloud-restore-button');button.disabled=false;button.setAttribute('aria-label','雲端同步與備份');button.title='雲端同步與備份';button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 18H6a4 4 0 0 1-1-8 7 7 0 0 1 13-2 5 5 0 0 1 0 10h-1M12 11v10m-4-4 4 4 4-4"/></svg>';button.onclick=onCloudRestore;undo.after(button);return button;});
   const redoButtons=()=>[...document.querySelectorAll('[data-redo]')];
   let pending = false;
   const revealCurrent = (nav) => {

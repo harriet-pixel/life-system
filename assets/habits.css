@@ -100,3 +100,15 @@
  #main[data-page-view=home] .home-notice-top{display:block;height:3.4em;margin-bottom:8px;font-size:var(--text-small);min-width:0}
  #main[data-page-view=home] .home-notice-top #operation-status{display:block;height:100%;max-height:100%;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;margin:0;line-height:1.7}
 }
+.cloud-window-heading{display:flex;align-items:center;gap:1em;justify-content:space-between}
+.task-dialog .cloud-window-close{border:0;background:transparent;padding:0;width:44px;height:44px;font-size:28px;flex:none}
+.cloud-source-times{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:8px 1em;font-size:var(--text-small)}
+.cloud-source-times :is(dt,dd){margin:0;overflow-wrap:anywhere}
+.cloud-version-row{display:flex!important;flex-direction:row!important;align-items:center;gap:1em;min-width:0}
+.cloud-version-row select{width:0;flex:1;min-width:0}
+.cloud-window-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+.cloud-window-actions button{min-width:0;overflow-wrap:anywhere}
+[data-cloud-restore]{position:relative}
+[data-cloud-restore][data-sync-state]::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;border-radius:50%;background:var(--color-primary)}
+[data-cloud-restore]:is([data-sync-state="離線"],[data-sync-state="需要登入"])::after{background:var(--color-muted)}
+[data-cloud-restore]:is([data-sync-state="同步失敗"],[data-sync-state="資料衝突"])::after{background:var(--color-danger,#9b3030)}
