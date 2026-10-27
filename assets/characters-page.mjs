@@ -1,12 +1,13 @@
-import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=affinity-20261027';
-import {dataStore} from './data.mjs?v=affinity-20261027';
+import {mountCharacterImages} from './character-images-ui.mjs?v=companion-images-20261027';
+import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=companion-images-20261027';
+import {dataStore} from './data.mjs?v=companion-images-20261027';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
-import {createCharacterService} from './characters-service.mjs?v=characters-20261027';
-import {CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter} from './characters-model.mjs?v=characters-20261027';
+import {createCharacterService} from './characters-service.mjs?v=companion-images-20261027';
+import {CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter} from './characters-model.mjs?v=companion-images-20261027';
 
 // The shared shell keeps this module lazy. Its CSS is loaded only on this route.
 if(typeof document!=='undefined'){
- const url=new URL('./characters.css?v=companion-ui-20261027',import.meta.url).href;
+ const url=new URL('./characters.css?v=companion-images-20261027',import.meta.url).href;
  const existing=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===url);
  if(!existing?.sheet){
   existing?.remove();
@@ -22,7 +23,8 @@ export function mountCharacters(root,context){
  const settingInputs=new Map(),stageInputs=new Map(),stageButtons=[];
  let snapshot,selected=null,base=null,draft=null,stage=1,current=null,readError=false;
  let roleDirty=false,policyDirty=false,policyBase=null,busy=false,release=null,held=null,draftToken=0,optionSignature='';
- const dirty=()=>roleDirty||policyDirty;
+ let images;
+ const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft());
  const notify=message=>{$('#operation-status').textContent=message;};
  const policySignature=settings=>JSON.stringify(['enabled','chat','tasks','habits','limit'].map(k=>settings[k]));
  function draftNotice(){
@@ -31,7 +33,7 @@ export function mountCharacters(root,context){
  }
  function free(scope){
   if(scope==='role')roleDirty=false;else if(scope==='policy')policyDirty=false;
-  if(!dirty()){draftToken++;release?.();release=null;}
+  if(!roleDirty&&!policyDirty){draftToken++;release?.();release=null;}
   draftNotice();
  }
  async function protect(kind){
@@ -171,7 +173,7 @@ export function mountCharacters(root,context){
    $('#affinity-policy-status').textContent=state.affinity?.diagnostics.at(-1)?.code==='clock-unreliable'?'裝置時間異常，未完成扣分已暫停；請校正日期後重試。':'';
    if(missing)notify('角色已刪除，尚未儲存的內容保留於此頁；不會重新建立角色。');
   }catch(error){readError=true;notify(error.message);if(!base){form.hidden=true;$('#character-future-settings').hidden=true;$('#character-empty').hidden=false;$('#character-empty-title').textContent='無法讀取角色';$('#character-empty-help').textContent='原資料已保留，請確認資料後再重試。';}}
-  controls();sizeChat();
+  controls();sizeChat();images?.update();
  }
  async function run(work){
   if(busy)return;busy=true;controls();context.notify();
@@ -182,9 +184,9 @@ export function mountCharacters(root,context){
  function discardRole(){if(roleDirty&&!confirm('捨棄目前角色尚未儲存的草稿？全站扣分草稿會保留。'))return false;free('role');return true;}
  form.addEventListener('input',event=>{capture();if(event.target.tagName==='TEXTAREA')fitMany([event.target]);void protect('role');controls();});
  form.addEventListener('toggle',fitVisible,true);
- select.addEventListener('change',()=>{const next=select.value;if(next===selected)return;if(!discardRole()){select.value=selected??'';return;}selected=next;base=null;draft=null;render(snapshot);});
+ select.addEventListener('change',()=>{const next=select.value;if(next===selected)return;if(!images.beforeSelection()){select.value=selected??'';return;}if(!discardRole()){select.value=selected??'';return;}selected=next;base=null;draft=null;render(snapshot);});
  $('#character-create').onclick=()=>{
-  if(!discardRole())return;
+  if(!images.beforeSelection()||!discardRole())return;
   void run(async()=>{const before=new Set(snapshot.companion.characters.map(c=>c.characterId));await service.act({type:'create'});selected=snapshot.companion.characters.find(c=>!before.has(c.characterId))?.characterId??selected;base=null;draft=null;tab(1);$('#character-basic-section').open=true;notify('已新增角色。');});
  };
  form.onsubmit=event=>{
@@ -213,7 +215,8 @@ export function mountCharacters(root,context){
   if(index===1)fitVisible();else sizeChat();
  }
  tabs.forEach((button,index)=>{button.onclick=()=>tab(index);button.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?1:1-index;tab(next);tabs[next].focus({preventScroll:true});};});
- context.setHooks({hasDraft:dirty,busy:()=>busy});
+ images=mountCharacterImages(root,context,{getCharacter:()=>readError?null:current,getSettings:()=>snapshot?.settings,store:dataStore,notify,onState:()=>{draftNotice();}});
+ context.setHooks({hasDraft:dirty,busy:()=>busy||images.busy()});
  context.subscribe(dataStore,render,{changesOnly:true});
  context.listen(window,'resize',()=>{fitVisible();sizeChat();},{passive:true});
  if(window.visualViewport)context.listen(window.visualViewport,'resize',sizeChat,{passive:true});

@@ -1,16 +1,16 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=affinity-20261027';
-import {renderHomeToday} from './home-today.mjs?v=affinity-20261027';
+import {mountHabitQuick} from './habit-quick.mjs?v=companion-images-20261027';
+import {renderHomeToday} from './home-today.mjs?v=companion-images-20261027';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {createTaskEditor} from './task-editor.mjs?v=affinity-20261027';
-import {createCategoryManager} from './task-categories.mjs?v=affinity-20261027';
+import {createTaskEditor} from './task-editor.mjs?v=companion-images-20261027';
+import {createCategoryManager} from './task-categories.mjs?v=companion-images-20261027';
 import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=habits-20261026';
-import {taskActions} from './task-actions.mjs?v=affinity-20261027';
-import {localDate} from './tasks-model.mjs?v=habits-20261026';
+import {taskActions} from './task-actions.mjs?v=companion-images-20261027';
+import {localDate} from './tasks-model.mjs?v=companion-images-20261027';
 import { createMobileTabPositioner } from './tab-position.mjs?v=habits-20261026';
 import { createActivityHeightSync } from './activity-height.mjs?v=habits-20261026';
-import { undoManager } from './undo.mjs?v=affinity-20261027';
-import {createSharedCompanionView} from './companion-events.mjs?v=affinity-20261027';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=affinity-20261027';
+import { undoManager } from './undo.mjs?v=companion-images-20261027';
+import {createSharedCompanionView} from './companion-events.mjs?v=companion-images-20261027';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=companion-images-20261027';
 
 
 export function mountHome(root,context){

@@ -8,6 +8,7 @@ function normalizeSettings(value={}) {
   if(!validHex(appearance.color)||!Object.hasOwn(FONT_NAMES,appearance.font)) throw new Error('外觀設定格式不正確。');
   const {history,ai,...other}=value;
   const preference=ai??DEFAULT_SETTINGS.ai;
+  if(value.companionImages!==undefined&&(!value.companionImages||typeof value.companionImages!=='object'||Object.keys(value.companionImages).length!==1||!['direct','fade'].includes(value.companionImages.transition)))throw new Error('夥伴圖片切換設定不正確。');
   if(!preference||typeof preference!=='object'||Array.isArray(preference)||Object.keys(preference).some(key=>!['provider','model'].includes(key))||!['gemini','deepseek','openai','claude'].includes(preference.provider)||typeof preference.model!=='string'||preference.model.length>207)throw new Error('AI 偏好格式不正確；不接受金鑰或連線狀態。');
   return {...other,ai:{provider:preference.provider,model:preference.model},appearance:{color:appearance.color.toLowerCase(),font:appearance.font}};
 }

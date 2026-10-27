@@ -1,5 +1,7 @@
-import {maintainRecovery} from './recovery.mjs?v=affinity-20261027';
-import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=companion-images-20261027';
+import {validateCharacterImages} from './character-images-model.mjs?v=companion-images-20261027';
+import {maintainRecovery} from './recovery.mjs?v=companion-images-20261027';
+import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=companion-images-20261027';
 import {maintenance} from './coordination.mjs?v=characters-20261027';
 const providers=new Map();
 export function registerImageReferenceSource(name,read,{transient=true}={}) {
@@ -21,6 +23,10 @@ export function documentImageReferences(state,{legacy=false,raw=false}={}) {
   for(const root of roots){
     if(!root||typeof root!=='object')throw new Error('圖片快照尚未完整載入。');
     for(const field of imageFields)collectReferences(root[field],refs);
+    if(root.companion!==undefined){
+      if(!Array.isArray(root.companion?.characters))throw new Error('角色圖片資料無法完整檢查，已停止清理。');
+      for(const c of root.companion.characters)for(const item of Object.values(validateCharacterImages(c.imageSettings).emotions)){refs.add(item.image);refs.add(item.thumbnail);}
+    }
     // Unknown future root fields are protected conservatively. Known personal
     // text and journal labels are not interpreted as image references.
     for(const [field,value] of Object.entries(root))if(!imageFields.includes(field)&&!nonImageFields.includes(field))collectReferences(value,refs);
@@ -36,6 +42,7 @@ export async function inspectImages(state) {
   const assets=await listImageAssets();
   if([...refs].some(id=>!assets.some(a=>a.id===id&&a.blob instanceof Blob)))throw new Error('有圖片引用缺少原始檔案，已停止清理。');
   if(assets.some(a=>!(a.blob instanceof Blob)||!isImageReference(a.id)))throw new Error('有無法辨識的圖片資產，已停止清理。');
+  await validateRoleImageAssets(state,assets);
   const unused=assets.filter(a=>!refs.has(a.id)&&!(a.protectedUntil>Date.now()));
   return {refs,assets,unused,transientSources};
 }

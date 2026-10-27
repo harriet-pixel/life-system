@@ -1,4 +1,5 @@
-// Phase one only. No rewards, AI, images or chat payloads are stored here.
+import {validateCharacterImages} from './character-images-model.mjs?v=companion-images-20261027';
+// Manual character settings; image metadata is validated separately.
 export const RELATIONSHIP_STAGES=Object.freeze([
  ['初識',0],['熟悉',50],['友好',150],['信任',350],['默契',500],['深厚情誼',700],['長久羈絆',1000]
 ].map(([name,min],i)=>Object.freeze({stage:i+1,name,min})));
@@ -16,8 +17,8 @@ export function normalizeCharacter(c){
  const current=relationshipStage(c.affinity);check(Number.isInteger(c.highestStage)&&c.highestStage>=current.stage&&c.highestStage<=7);
  const settings=textFields(c.settings??{},CHARACTER_FIELDS);check(object(c.stages??{}));check(Object.keys(c.stages??{}).every(k=>/^[1-7]$/.test(k)));
  const stages=Object.fromEntries(RELATIONSHIP_STAGES.map(s=>[s.stage,textFields(c.stages?.[s.stage]??{},STYLE_FIELDS)]));
- check(Object.keys(c).every(k=>['characterId','createdAt','updatedAt','archived','configVersion','affinity','highestStage','settings','stages'].includes(k)));
- return {...c,settings,stages};
+ check(Object.keys(c).every(k=>['characterId','createdAt','updatedAt','archived','configVersion','affinity','highestStage','settings','stages','imageSettings'].includes(k)));
+ return {...c,settings,stages,...(c.imageSettings===undefined?{}:{imageSettings:validateCharacterImages(c.imageSettings)})};
 }
 export function validateCharacters(raw){
  if(raw===undefined)return emptyCharacters();check(object(raw)&&raw.version===1&&Array.isArray(raw.characters)&&Array.isArray(raw.switchHistory)&&Array.isArray(raw.deletedCharacterIds));

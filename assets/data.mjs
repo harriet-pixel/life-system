@@ -1,16 +1,16 @@
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=affinity-20261027';
-import {integrateAffinity} from './affinity-integration.mjs?v=affinity-20261027';
-import {settleAffinity} from './affinity-settlement.mjs?v=affinity-20261027';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=characters-20261027';
-import {emptyHabits,validateHabits} from './habits-model.mjs';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=companion-images-20261027';
+import {integrateAffinity} from './affinity-integration.mjs?v=companion-images-20261027';
+import {settleAffinity} from './affinity-settlement.mjs?v=companion-images-20261027';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=companion-images-20261027';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=companion-images-20261027';
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=habits-20261026';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=affinity-20261027';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=habits-20261026';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=companion-images-20261027';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=companion-images-20261027';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=companion-images-20261027';
 import { coordinatedWrite } from './coordination.mjs?v=characters-20261027';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=habits-20261026';
-import { migrateImages } from './image-store.mjs';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=habits-20261026';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=companion-images-20261027';
+import { migrateImages } from './image-store.mjs?v=companion-images-20261027';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=companion-images-20261027';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;

@@ -1,4 +1,4 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=affinity-20261027';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-images-20261027';
 import {mountAITestPanel} from './ai-test-panel.mjs?v=habits-20261026';
 export function mountAIPage(root,context){
 const connection=getSharedAIConnection(),panel=document.createElement('details');panel.className='ai-developer-test settings-section';panel.hidden=true;

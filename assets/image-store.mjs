@@ -82,3 +82,20 @@ export async function imageFingerprint(reference){
  const bytes=await (await (await fetch(reference)).blob()).arrayBuffer();
  return 'asset:'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
 }
+
+// Explicitly owned URLs for companion views. Independent of legacy profile URLs:
+// releasing a companion view can never revoke an image still shown in profile.
+export async function readImageBlob(reference){
+ if(!isImageReference(reference))throw new Error('圖片引用不正確。');
+ const db=await openDatabase();
+ return new Promise((resolve,reject)=>{const r=db.transaction('images').objectStore('images').get(reference);r.onsuccess=()=>r.result?.blob instanceof Blob?resolve(r.result.blob):reject(new Error('找不到已保存圖片。'));r.onerror=()=>reject(new Error('圖片讀取失敗。'));});
+}
+export async function storeImageBlob(blob){
+ if(!(blob instanceof Blob)||!['image/png','image/jpeg','image/webp'].includes(blob.type))throw new Error('圖片格式不正確。');
+ const bytes=await blob.arrayBuffer(),id='asset:'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
+ await stageImageAssets([{id,blob,createdAt:new Date().toISOString(),protectedUntil:Date.now()+86400000}]);return id;
+}
+export async function acquireImageURL(reference){
+ const url=URL.createObjectURL(await readImageBlob(reference));let active=true;
+ return {url,release(){if(active){active=false;URL.revokeObjectURL(url);}}};
+}

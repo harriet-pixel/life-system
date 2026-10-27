@@ -1,5 +1,5 @@
-import {emptyHabits,validateHabits,periodInfo,infoForId,taipeiDate,validDay,LEVELS,POINTS,ACHIEVEMENTS,distribution,reward,zeroReward,sumRewards,effectiveVersion,deriveAchievements,periodReward} from './habits-model.mjs';
-import {ABILITIES} from './abilities.mjs?v=habits-20261026';
+import {emptyHabits,validateHabits,periodInfo,infoForId,taipeiDate,validDay,LEVELS,POINTS,ACHIEVEMENTS,distribution,reward,zeroReward,sumRewards,effectiveVersion,deriveAchievements,periodReward} from './habits-model.mjs?v=companion-images-20261027';
+import {ABILITIES} from './abilities.mjs?v=companion-images-20261027';
 export function createHabitService(store,{now=()=>new Date(),id=()=>crypto.randomUUID()}={}){
  let queue=Promise.resolve();const serial=fn=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;};
  function fresh(){store.refresh();const base=store.get();return {base,h:structuredClone(base.habits??emptyHabits())};}
