@@ -250,3 +250,5 @@ textarea { resize: vertical; }
  .profile-summary-area #profile-motto{text-align:left}
  .profile-page .profile-content{grid-column:1 / -1;grid-row:3;margin-top:20px}
 }
+
+.profile-summary-area #profile-motto{color:var(--color-primary)}

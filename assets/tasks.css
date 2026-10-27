@@ -182,3 +182,6 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
  .task-page-heading button{min-height:44px;padding:8px 12px;border:0;background:transparent;color:var(--color-primary);font:inherit;cursor:pointer}
 }
 [data-page-view=home] .task-row .task-content{border:0;background:transparent;padding:0;text-align:start;font:inherit;color:var(--home-task-color,inherit);cursor:pointer;min-width:0}
+
+.task-dialog .category-management-row{grid-template-columns:minmax(0,1fr) repeat(4,44px);gap:0}
+.task-dialog .category-management-row .category-icon-button{border:0;background:transparent;box-shadow:none;padding:6px;border-radius:0}

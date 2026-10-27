@@ -1,4 +1,4 @@
-import {createMobileTaskResponse} from './task-mobile-response.mjs?v=chat-20261027';
+import {createMobileTaskResponse} from './task-mobile-response.mjs?v=mobile-polish-20261027';
 import {createSharedCompanionView} from './companion-events.mjs?v=chat-20261027';
 export function mountTaskCompanion(root,context,options={}){
  const floating=createMobileTaskResponse(root,context,options);

@@ -49,3 +49,38 @@
 @media(width >= 1024px){
  [data-page-view=home] .companion>#operation-status{display:block;min-height:1.7em;max-height:3.4em;overflow:auto;margin:4px 0 0}
 }
+
+/* Shared mobile portrait controls across daily pages. */
+@media(width < 1024px){
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float{--home-mini-size:clamp(44px,14vw,72px);position:fixed;z-index:900;left:var(--home-float-left,12px);top:var(--home-float-top,12px);width:var(--home-float-width,calc(100% - 24px));max-height:var(--home-float-max-height,60dvh);margin:0;padding:0;border:0;background:transparent;pointer-events:none}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float .companion-banner{display:grid;grid-template-columns:minmax(0,1fr) var(--home-mini-size);gap:12px;align-items:end}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-toggle{grid-column:2;grid-row:1;width:var(--home-mini-size);height:var(--home-mini-size);min-width:var(--home-mini-size);min-height:var(--home-mini-size);padding:0;border:0;background:transparent;pointer-events:auto;touch-action:none;cursor:grab;border-radius:50%}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-toggle:active{cursor:grabbing}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float .companion-portrait{width:var(--home-mini-size);height:var(--home-mini-size);min-height:0;aspect-ratio:1;border-radius:50%;background:var(--color-background,#fff)}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float #portrait-placeholder{height:100%;min-height:0;padding:2px}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float .dialogue-column{grid-column:1;grid-row:1;min-width:0}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float .dialogue-bubble{padding-right:16px;max-height:var(--home-float-max-height,60dvh);overflow:auto;overscroll-behavior:contain;pointer-events:auto;background:var(--color-background,#fff)}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float .dialogue-bubble:before{display:none}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float .companion-note{display:none}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float.is-bubble-right .companion-banner{grid-template-columns:var(--home-mini-size) minmax(0,1fr)}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float.is-bubble-right .home-companion-toggle{grid-column:1}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float.is-bubble-right .dialogue-column{grid-column:2}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float.is-collapsed .companion-banner{grid-template-columns:var(--home-mini-size);gap:0}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float.is-collapsed .home-companion-toggle{grid-column:1}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float.is-dismissed{display:none}
+ html[data-keyboard=open] #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float,body:has(dialog[open]) #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float{visibility:hidden}
+}
+
+@media(width < 1024px){
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float.is-floating-response{left:var(--home-float-left,12px);top:var(--home-float-top,12px);width:var(--home-float-width,calc(100% - 24px));max-height:var(--home-float-max-height,60dvh);animation:none}
+ #main .home-companion-float .home-companion-toggle .companion-portrait{width:100%;height:100%;min-height:0;border-radius:50%}
+ #main .home-companion-float .dialogue-bubble{position:relative;padding:16px;max-height:var(--home-float-max-height,60dvh);overflow:auto}
+ #main .home-companion-float .home-companion-dismiss,#main .home-companion-float .task-response-close{display:none}
+ #main[data-page-view=home] .section-bottom{display:flex;align-items:center;gap:1em;flex-wrap:nowrap}
+ #main[data-page-view=home] .section-bottom #operation-status{display:block;flex:1;min-width:0;max-height:3.4em;overflow:auto;margin:0;font-size:var(--text-small);overflow-wrap:anywhere}
+ #main[data-page-view=home] .section-bottom>.small-note:not(#operation-status){display:none}
+ #main[data-page-view=home] .section-bottom :is(button,a){flex:none}
+}
+[data-page-view=home] #habits-panel .habit-home-bonus-row{padding-block:0;margin-top:4px}
+[data-page-view=home] #habits-panel .habit-manage-footer{padding-block:0;margin-top:0;min-height:44px}
+.habits-workspace #habit-today .habit-statuses button{border:0;box-shadow:none}
