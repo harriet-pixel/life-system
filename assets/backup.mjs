@@ -1,11 +1,12 @@
+import {validateAffinity} from './affinity-model.mjs?v=affinity-20261027';
 import {validateCharacters} from './characters-model.mjs?v=characters-20261027';
 import {emptyHabits,validateHabits} from './habits-model.mjs';
 import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=habits-20261026';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=habits-20261026';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=affinity-20261027';
 import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=habits-20261026';
 import {ABILITIES} from './abilities.mjs?v=habits-20261026';
 import {maintenance} from './coordination.mjs?v=characters-20261027';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=characters-20261027';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=affinity-20261027';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs';
 import {normalizeSettings} from './settings-model.mjs?v=habits-20261026';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
@@ -19,7 +20,7 @@ function unb64(text,max=MAX_FILE_BYTES) {
 }
 function check(condition,message='備份結構驗證失敗。'){if(!condition)throw new Error(message);}
 const topKeys=['revision','statsRulesVersion','profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','stats','history','settings'];
-const legacyKeys=[...topKeys,'tasks','habits','companion'];topKeys.push('historyVersion','undoHistory','tasks','habits','companion');
+const legacyKeys=[...topKeys,'tasks','habits','companion','affinity'];topKeys.push('historyVersion','undoHistory','tasks','habits','companion','affinity');
 const editKeys=legacyKeys.filter(k=>!['revision','history','statsRulesVersion'].includes(k));
 function safeObject(value,depth=0) {
   check(depth<40,'備份結構過深。');
@@ -31,13 +32,14 @@ function validCrop(crop){return crop&&typeof crop==='object'&&['left','top','wid
 function validateFields(value,full=false,legacy=false) {
   check(value&&typeof value==='object'&&!Array.isArray(value));
   check(Object.keys(value).every(k=>(full?(legacy?legacyKeys:topKeys):editKeys).includes(k)),'備份含未知資料欄位，請使用相符版本。');
-  if(full){check((legacy?legacyKeys:topKeys).filter(k=>!['tasks','habits','companion'].includes(k)).every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
+  if(full){check((legacy?legacyKeys:topKeys).filter(k=>!['tasks','habits','companion','affinity'].includes(k)).every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
   if(Object.hasOwn(value,'profile')){validateProfileFields(value.profile,undefined,{reading:true});check(value.profile&&['name','age','gender','bio','boundaries','motto'].every(k=>typeof value.profile[k]==='string'));check(value.profile.age===''||(/^\d+$/.test(value.profile.age)&&Number.isSafeInteger(Number(value.profile.age))));}
   if(Object.hasOwn(value,'stats')){
     const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5);
     check(s.abilities.every((a,i)=>a.id===ABILITIES[i].id&&a.name===ABILITIES[i].name&&Number.isSafeInteger(a.value)&&a.value>=0));
     check(new Set(s.abilities.map(a=>a.id)).size===5);
   }
+  if(Object.hasOwn(value,'affinity'))validateAffinity(value.affinity,value.companion);
   if(Object.hasOwn(value,'companion'))validateCharacters(value.companion);
   if(Object.hasOwn(value,'habits'))validateHabits(value.habits);
   if(Object.hasOwn(value,'tasks'))validateTasks(value.tasks);
@@ -55,6 +57,7 @@ function validateRecord(r,doc,{snapshot=false,legacy=false}={}){
  if(r.undone)check(Number.isFinite(Date.parse(r.undoneAt)));
  if(snapshot){
   if(r.redoable)check(r.undone&&Number.isSafeInteger(r.undoOrder)&&r.undoOrder<=doc.revision);
+  if(r.affinityPlan){check(doc.affinity?.version===1&&Array.isArray(r.affinityPlan));for(const p of r.affinityPlan)check(typeof p.sourceKey==='string'&&typeof p.origin==='string'&&[p.before,p.after].every(s=>s&&Number.isSafeInteger(s.quantity)&&s.quantity>=0&&(s.characterId===null||doc.companion?.characters.some(c=>c.characterId===s.characterId)||doc.companion?.deletedCharacterIds.includes(s.characterId))));}
   validateFields(r.before,false,legacy);validateFields(r.after,false,legacy);check(Object.keys(r.before).length>0&&JSON.stringify(Object.keys(r.before).sort())===JSON.stringify(Object.keys(r.after).sort()));
  }else check(Object.keys(r).every(k=>['id','time','type','label','target','fields','delta','undone','undoneAt'].includes(k)),'行動紀錄不可包含個人資料或圖片快照。');
 }
@@ -73,7 +76,7 @@ export function validateDocument(doc,{legacy=false}={}){
 
  return doc;
 }
-export const dataCount=doc=>(doc.companion?doc.companion.characters.length+doc.companion.switchHistory.length+doc.companion.deletedCharacterIds.length:0)+(doc.habits?doc.habits.periods.length+doc.habits.records.length+doc.habits.bonusItems.length+doc.habits.bonusRecords.length:0)+3+doc.portraits.length+Object.keys(doc.activities).length+doc.history.length+(doc.tasks?doc.tasks.definitions.length+doc.tasks.occurrences.length+doc.tasks.completions.length+doc.tasks.categories.length:0);
+export const dataCount=doc=>(doc.affinity?doc.affinity.transactions.length+Object.keys(doc.affinity.penalties).length:0)+(doc.companion?doc.companion.characters.length+doc.companion.switchHistory.length+doc.companion.deletedCharacterIds.length:0)+(doc.habits?doc.habits.periods.length+doc.habits.records.length+doc.habits.bonusItems.length+doc.habits.bonusRecords.length:0)+3+doc.portraits.length+Object.keys(doc.activities).length+doc.history.length+(doc.tasks?doc.tasks.definitions.length+doc.tasks.occurrences.length+doc.tasks.completions.length+doc.tasks.categories.length:0);
 async function passwordKey(password,salt,usage) {
   check(typeof password==='string'&&password.length>0&&password.length<=1024,'請輸入備份密碼。');
   const key=await crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveKey']);

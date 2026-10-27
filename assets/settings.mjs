@@ -1,17 +1,17 @@
 import {documentTime} from './cloud-backup-policy.mjs';
 import {cloudBackupLabel} from './cloud-backup-display.mjs';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {getCloudBackup} from './cloud-backup.mjs?v=characters-20261027';
-import {initializeAISettings} from './ai-settings.mjs?v=characters-20261027';
+import {getCloudBackup} from './cloud-backup.mjs?v=affinity-20261027';
+import {initializeAISettings} from './ai-settings.mjs?v=affinity-20261027';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=habits-20261026';
-import {dataStore,persistentUndo} from './data.mjs?v=characters-20261027';
+import {dataStore,persistentUndo} from './data.mjs?v=affinity-20261027';
 import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
 import {createHistoryView} from './history-view.mjs?v=habits-20261026';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=characters-20261027';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=affinity-20261027';
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=habits-20261026';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=characters-20261027';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=characters-20261027';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=affinity-20261027';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=affinity-20261027';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

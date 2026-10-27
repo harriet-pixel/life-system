@@ -56,4 +56,4 @@ BASE_URL=http://127.0.0.1:3000/ node tests/restore-actions.cjs
 
 Google備份、最新還原及安全界線見[雲端備份](docs/CLOUD_BACKUP.md)。Cloudflare維持暫停。
 
-夥伴第一階段入口為 `companion.html`，提供多角色設定、固定七階段與出場歷史；詳見 [COMPANION.md](COMPANION.md)。尚未串接 AI、圖片或好感度交易。
+夥伴第一階段入口為 `companion.html`，提供多角色設定、固定七階段與出場歷史；詳見 [COMPANION.md](COMPANION.md)。第二階段已接入正式生活事件好感度交易、七日未完成結算與返還；AI及圖片仍未串接。

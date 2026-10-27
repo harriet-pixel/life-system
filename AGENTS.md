@@ -148,7 +148,7 @@
 - 待辦成功的新增、編輯、安排、刪除、分類、批次及取消完成可發有意義事件；完成另在點擊時發 task.processing，與能力分配並行，不依賴獎勵數字或宣稱入帳，提交後不重複發生成事件；取消／失敗／復原使未顯示回應失效。夥伴協調器同文件共用，跨頁保留進度；示意習慣僅成功打卡。初始化、切頁、捲動、聚焦、日期瀏覽與自動逾期整理不生成對話。
 - 同則回應 dialogue／emotion 成對驗證，連續事件合併，新事件使舊請求失效；舊結果與錯誤不可覆蓋新回應。
 - 等待時保留對話，生成失敗不回滾行動；目前使用中性開發備援，不能宣稱符合未設定角色。
-- 角色好感度初始0，固定七階段門檻詳見 COMPANION.md；本階段不產生交易。個人 Worker AI 金鑰僅 Secret 及官方轉送；舊 Node BYOK 僅本頁記憶體及後端轉送；明確啟用的開發直連可依上述手動清除session規則跨頁測試，GitHub Pages 不執行 AI 後端，Worker 不加入靜態發布，夥伴仍未接入真實生成。
+- 角色好感度初始0，固定七階段、正式交易／結算與防刷規則詳見 COMPANION.md 第二階段；不由AI或mock評分。個人 Worker AI 金鑰僅 Secret 及官方轉送；舊 Node BYOK 僅本頁記憶體及後端轉送；明確啟用的開發直連可依上述手動清除session規則跨頁測試，GitHub Pages 不執行 AI 後端，Worker 不加入靜態發布，夥伴仍未接入真實生成。
 - neutral／pleased／calm 是開發槽，非正式角色規格。
 
 ## 分支與發布
@@ -176,3 +176,7 @@
 ## 夥伴資料核心（第一階段）
 
 沿用 `companion.html` 與共用外框，導覽「夥伴」採 SVG icon。模型、服務、介面分別為 `characters-model.mjs`、`characters-service.mjs`、`characters-page.mjs`；資料存在共用文件 `companion`，不另建儲存。詳細結構、歷史與後續界線見 COMPANION.md。角色操作有長期操作中繼紀錄，但本階段不加入 Undo／Redo，以免回溯正式出場時間或復活永久刪除的人格；既有其他資料的 Undo／Redo 保留。
+
+## 夥伴第二階段
+
+`affinity-model.mjs` 負責來源與交易證據，`affinity-integration.mjs` 由 dataStore 正式交易推導生活差異，`affinity-settlement.mjs` 負責兩套日期語意及七日補算，`affinity-runtime.mjs` 在首屏後初始化／前景檢查。原數值唯一來源為 companion 角色；同一文件新增 affinity version:1，無第二份餘額。恢復用小型 affinityPlan，不快照整份人格或帳本。永久刪除不復活；角色管理仍不進Undo。已消耗獎勵取消後僅重發確實扣回部分，無負債；詳見COMPANION.md。新來源須同時驗證正常、返還、取消、Redo及跨角色去重，不從畫面事件入帳。
