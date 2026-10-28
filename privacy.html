@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Life system 隱私權政策：說明本機資料、Google Drive 手動備份、AI 服務與資料刪除方式。">
+  <title>Life system｜隱私權政策</title>
+  <link rel="icon" href="data:,">
+  <script src="assets/appearance-core.js?v=storage-rescue-20261028" data-appearance-core></script>
+  <link rel="stylesheet" href="assets/styles.css?v=storage-rescue-20261028">
+  <link rel="stylesheet" href="assets/appearance.css?v=storage-rescue-20261028">
+  <link rel="stylesheet" href="assets/privacy.css?v=privacy-20261028">
+</head>
+<body class="privacy-page">
+  <a class="skip-link" href="#main">跳至主要內容</a>
+  <div class="page-shell">
+    <header class="privacy-header"><a href="index.html">Life system｜返回首頁</a></header>
+    <main id="main" tabindex="-1" class="privacy-content">
+      <h1>Life system｜隱私權政策</h1>
+      <p class="privacy-date">更新日期：<time datetime="2026-10-28">2026 年 10 月 28 日</time></p>
+      <p>Life system 是協助整理待辦事項、習慣打卡、個人資料、成長數值及夥伴角色的生活工具。本政策適用於本網站，說明目前公開版本實際存取、使用、傳輸及保存資料的方式。閱讀本頁不需要登入。</p>
+
+      <section aria-labelledby="purpose"><h2 id="purpose">一、資料與使用目的</h2>
+        <p>您輸入的稱呼、個人簡介、禁忌、圖片、待辦名稱與簡述、分類、習慣目標、打卡及獎勵紀錄、外觀偏好，以及角色基本資料、人格、關係階段設定、好感度與日常回覆庫，用於呈現個人介面、管理生活紀錄及提供夥伴互動。一般操作先寫入目前瀏覽器；雲端備份及 AI 請求另依下列方式處理。</p>
+        <p>本網站沒有建立集中管理生活資料的帳號資料庫。目前公開前端未設定 AI 後端網址，Cloudflare 後端維持暫停。Google 授權供 Drive 功能使用，不代表建立本站會員帳號。</p>
+      </section>
+
+      <section aria-labelledby="google"><h2 id="google">二、Google 帳號與 Google Drive 權限</h2>
+        <p>使用 Google Drive 功能時，網站載入 Google Identity Services，透過 Google 授權視窗要求單一權限：</p>
+        <p><code>https://www.googleapis.com/auth/drive.appdata</code></p>
+        <p>此權限允許在您 Google Drive 的應用程式專用資料夾（appDataFolder）中讀取、建立及管理本應用資料，不授予瀏覽您一般 Drive 文件的權限。網站會讀取備份清單、檔案 ID、名稱、大小、建立／修改時間及應用程式中繼資料，並於您要求還原時下載備份。</p>
+        <p>目前程式不要求 openid、email 或 profile 權限，也不呼叫 Google 帳號個人資料 API 取得姓名、電子郵件、頭像或帳號識別碼。網站會接收授權結果、Access Token 及有效期限，用於向 Google Drive 驗證請求；Google 仍會自行處理登入、帳號選擇與授權程序。</p>
+        <p>Access Token 暫存於本分頁的 sessionStorage（<code>life-system.drive-auth.v1</code>）及執行記憶體，依 Google 回傳期限提前一分鐘失效，最長不超過一小時。不保存 Refresh Token，不將憑證放入一般生活資料或備份。sessionStorage 不是加密保管庫；瀏覽器還原分頁或複製分頁可能影響其保存方式。</p>
+      </section>
+
+      <section aria-labelledby="cloud"><h2 id="cloud">三、雲端備份與同步現況</h2>
+        <p>目前自動同步已停用。連接 Google 不會自動上傳生活資料、合併其他裝置的變更或自動還原。只有您手動按下「上傳雲端」或「備份至雲端」才建立備份；開啟備份／還原管理時會讀取雲端版本清單。</p>
+        <p>手動備份包含共用生活資料、角色設定與好感度等正式紀錄、歷史與可復原資料、所需個人／角色圖片，以及日常回覆庫資產。備份另附時間、資料雜湊及一般裝置類型（例如 iPhone、Windows 電腦），用於辨識版本與核對完整性，不上傳原始 User-Agent 作為備份標籤。短期角色聊天全文與 AI 金鑰、Google Token 不納入備份。</p>
+        <p>新雲端備份為未加密 JSON；應用程式專用資料夾不是端對端加密保管庫。上傳流程會建立檔案，再寫入備份內容。目前保留既有雲端版本，不自動執行舊版的 20 筆超額清理，也不主動刪除舊同步圖檔。程式仍有刪除應用備份及同步增量的實作，但目前公開操作不提供逐筆雲端刪除，也不啟動自動同步的讀寫或清理。</p>
+        <p>還原須下載、驗證及由您確認，才取代目前本機資料；還原前會在本機保留保護副本。既有同步日誌也可能移存本機 IndexedDB，以保護待處理資料，不因此上傳雲端。</p>
+      </section>
+
+      <section aria-labelledby="local"><h2 id="local">四、本機儲存與保存期間</h2>
+        <ul>
+          <li><strong>localStorage：</strong><code>life-system.data.v1</code> 保存共用生活資料、角色設定、好感度、操作歷史、復原紀錄及偏好；其他應用鍵保存備份時間、未備份狀態、同步模式、舊同步設定及同步日誌或其保護副本索引。</li>
+          <li><strong>IndexedDB 圖片：</strong><code>life-system.images.v1</code> 保存上傳圖片、頭像、角色情緒圖片及縮圖。未使用圖片不會自動全部刪除，可於設定的儲存空間檢查及手動清理；仍被資料或保護副本引用的圖片會保留。</li>
+          <li><strong>IndexedDB 日常回覆：</strong><code>life-system.replies.v1</code> 保存手動／AI 產生的日常回覆、歷史版本及事件去重紀錄。角色頁可管理、清空回覆及清理歷史／孤立資產；一般回覆不因關閉分頁自動消失。</li>
+          <li><strong>IndexedDB 短期聊天：</strong><code>life-system.chat.v1</code> 保存角色聊天全文及回合狀態。每則訊息以建立後 24 小時為有效期，過期後不再作為對話內容使用；實體清理由網站執行時分批進行，未開啟網站不保證準時抹除。好感度計分證據會另留在共用資料，但不含聊天全文。</li>
+          <li><strong>IndexedDB 復原保護：</strong><code>life-system.recovery-vault.v1</code> 保存同步日誌及還原前的本機資料副本。目前沒有自動到期清除機制，也沒有逐筆刪除保護副本的介面。</li>
+          <li><strong>sessionStorage 與記憶體：</strong>Google 授權、經您啟用的 AI 直連測試金鑰及模型，依各自連線規則保存；未儲存表單、聊天草稿與部分介面狀態保留於記憶體。站內切頁可能延續這些狀態。</li>
+        </ul>
+        <p>一般生活資料及行動歷史沒有統一自動刪除期限。Undo／Redo 合計最多 15 次；基本資料、圖片／外觀的復原期限為 24 小時，待辦、打卡及數值為 7 天。這是復原期限，不代表正式紀錄或復原保護副本同時刪除。本機資料可能因瀏覽器清理、無痕模式或裝置故障而遺失。</p>
+        <p>您可下載本機備份；密碼留白時不加密，設定有效密碼時依既有加密備份流程處理。下載檔由您自行保管，清除網站儲存空間不會刪除已下載檔案。</p>
+      </section>
+
+      <section aria-labelledby="ai"><h2 id="ai">五、AI 服務與第三方資料處理</h2>
+        <p>AI 為選用功能。目前可在您明確啟用「瀏覽器直連測試模式」、提供金鑰並選取模型後，由瀏覽器連至您選擇的 Google Gemini、DeepSeek、OpenAI 或 Anthropic Claude 官方 API。模型查詢會送出驗證所需金鑰；生成另送出相關提示及內容，可能產生服務費用。</p>
+        <ul>
+          <li><strong>短文字測試：</strong>送出您輸入的測試文字及共用語言指示。</li>
+          <li><strong>能力分配：</strong>待辦可能送出事件名稱、分類、簡述及點數；習慣與加分項目的 AI 評估會送出名稱、目標／說明、程度及點數，用於推薦五項能力分配。已有可用 AI 連線時，部分待辦完成流程會呼叫 AI。</li>
+          <li><strong>角色聊天：</strong>送出當次訊息、同角色最近 24 小時最多 24 則已完成上下文的節錄、角色基本設定、人格、禁忌與目前關係階段風格等，用於生成角色文字、情緒及互動評估。總提示有長度限制，並非傳送全部生活資料。</li>
+          <li><strong>日常回覆庫：</strong>已有可用 AI 連線、符合生活事件及回覆庫條件時，可能自動送出角色設定節錄、關係階段、事件類型與情緒，以產生可重複使用的短句；此提示不包含任務專名或私人聊天全文。</li>
+        </ul>
+        <p>目前這些 AI 提示不附帶個人或角色圖片；Google 授權憑證不轉送 AI 服務。若您在文字、人格或聊天中自行填入個人資訊，這些資訊仍可能隨上述內容傳送。從 Drive 還原的資料，在後續符合 AI 使用條件時，也可能依上述功能送出相關欄位。</p>
+        <p>直連金鑰與模型僅存於專用 sessionStorage（<code>life-system.ai-test.v1</code>），不自動到期；請使用「中斷連線」或關閉直連模式清除。它不是加密保管庫，不能防止同來源程式、開發者工具或有權限的擴充功能讀取。金鑰不納入一般設定、歷史或備份。</p>
+        <p>第三方服務依各自條款處理請求、金鑰、用量及必要連線資訊，其伺服器保存期間、訓練使用及跨境處理取決於您使用的服務、方案與帳號設定，本網站無法從前端程式確認。請查閱 <a href="https://policies.google.com/privacy">Google</a>、<a href="https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html">DeepSeek</a>、<a href="https://openai.com/policies/privacy-policy/">OpenAI</a> 與 <a href="https://www.anthropic.com/legal/privacy">Anthropic</a> 的政策及適用 API 條款。</p>
+      </section>
+
+      <section aria-labelledby="third-party"><h2 id="third-party">六、網站託管與其他連線</h2>
+        <p>本網站由 GitHub Pages 提供靜態網頁及自託管字型。您瀏覽網站時，託管服務會接收提供網頁所需的 IP 位址、瀏覽器與請求資訊；Google 登入與 AI 服務也會接收其連線所需資訊。本站前端未加入分析追蹤、廣告追蹤或第三方字型 CDN。供應商的伺服器紀錄與保存期限無法由本站原始碼確認，請參閱 <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub 隱私權聲明</a> 及各服務政策。</p>
+        <p>跨分頁資料通知使用瀏覽器本機機制，不代表傳送到外部伺服器。公開程式中的 Node／Cloudflare 後端程式不會因其存在於儲存庫而在 GitHub Pages 執行；目前未設定其連線端點。</p>
+      </section>
+
+      <section aria-labelledby="delete"><h2 id="delete">七、停止連線、撤銷授權與刪除資料</h2>
+        <ol>
+          <li><strong>停止 Google 備份：</strong>目前沒有自動同步；不再手動上傳即可停止新增備份。在設定的 Google Drive 區按「中斷連接」會清除此分頁的授權暫存，不等同撤銷 Google 帳號授權，也不會刪除雲端備份。其他已開啟分頁可能仍有自己的授權，請一併關閉或中斷。</li>
+          <li><strong>撤銷 Google 授權：</strong>至 <a href="https://myaccount.google.com/connections">Google 帳戶的第三方連線管理</a> 找到本應用並移除連線／存取權。本站目前未提供撤銷按鈕。撤銷後無法繼續使用原授權存取 Drive，不代表既有備份已刪除。</li>
+          <li><strong>刪除 Google 雲端資料：</strong>至 Google Drive 網頁版的「設定 → 管理應用程式」，找到本應用，依 Google 當時提供的選項刪除隱藏的應用程式資料。appDataFolder 不會像一般檔案顯示在「我的雲端硬碟」。刪除前請確認所需備份已下載；刪除後若再次手動上傳，會重新建立資料。</li>
+          <li><strong>刪除本機資料：</strong>先中斷 Google 與 AI 連線並關閉其他本站分頁，再使用瀏覽器的網站資料管理清除此網站來源的儲存空間，涵蓋 localStorage、IndexedDB 及分頁暫存。GitHub Pages 的網站資料依 <code>https://harriet-pixel.github.io</code> 來源共用，清除可能同時影響該來源的其他網站，請先備份。僅刪除畫面上的角色、項目或圖片，不代表歷史、保護副本及雲端版本同時消失。</li>
+          <li><strong>停止 AI 與刪除第三方副本：</strong>在 AI 設定中中斷連線或關閉直連模式；必要時到服務商撤銷金鑰。已送出的內容不會因清除本站資料而從服務商刪除，需依其帳號管理或聯絡管道提出請求。</li>
+        </ol>
+        <p>本機、雲端、下載檔案與第三方服務的資料各自獨立；若要完整移除，須分別處理。分享裝置前也請確認備份檔與分頁暫存已妥善處理。</p>
+      </section>
+
+      <section aria-labelledby="contact"><h2 id="contact">八、政策更新與聯絡方式</h2>
+        <p>功能、資料使用方式或第三方服務有變動時，本政策會隨實際版本更新，並在頁首標示日期。</p>
+        <p>如有隱私、資料處理或刪除方式的問題，可透過 <a href="https://github.com/harriet-pixel/life-system/issues">Life system 儲存庫的 Issues</a> 聯絡維護者。此管道公開，請只描述問題，勿張貼個人資料、聊天紀錄、備份、API Key 或 Access Token；需要非公開處理時，請先提出不含敏感資訊的聯絡需求。</p>
+      </section>
+      <footer class="privacy-footer"><a href="index.html">返回 Life system 首頁</a></footer>
+    </main>
+  </div>
+</body>
+</html>
