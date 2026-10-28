@@ -3,8 +3,8 @@ import { holdDraft } from './coordination.mjs?v=storage-rescue-20261028';
 import { createProfileImages } from './profile-images.mjs?v=storage-rescue-20261028';
 import { imageURL, prepareImageReferences } from './image-store.mjs?v=storage-rescue-20261028';
 import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=storage-rescue-20261028';
-import { undoManager } from './undo.mjs?v=storage-rescue-20261028';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=storage-rescue-20261028';
+import { undoManager } from './undo.mjs?v=mobile-daily-20261028';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=mobile-daily-20261028';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

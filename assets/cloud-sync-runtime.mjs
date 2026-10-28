@@ -8,9 +8,9 @@ const importReplyAssets=async(...args)=>(await replyStore()).importReplyAssets(.
 import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=manual-backup-20261028';
 import {createSyncEngine} from './cloud-sync-engine.mjs?v=storage-rescue-20261028';
 import {createSyncDrive} from './cloud-sync-drive.mjs?v=manual-backup-20261028';
-import {dataStore,isPristineDocument} from './data.mjs?v=storage-rescue-20261028';
+import {dataStore,isPristineDocument} from './data.mjs?v=mobile-daily-20261028';
 import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=manual-backup-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=manual-backup-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=mobile-daily-20261028';
 import {maintenance} from './coordination.mjs?v=storage-rescue-20261028';
 import {validateDocument} from './backup.mjs?v=storage-rescue-20261028';
 import {maintainRecovery} from './recovery.mjs?v=storage-rescue-20261028';

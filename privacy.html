@@ -48,14 +48,14 @@
           <li><strong>IndexedDB 日常回覆：</strong><code>life-system.replies.v1</code> 保存手動／AI 產生的日常回覆、歷史版本及事件去重紀錄。角色頁可管理、清空回覆及清理歷史／孤立資產；一般回覆不因關閉分頁自動消失。</li>
           <li><strong>IndexedDB 短期聊天：</strong><code>life-system.chat.v1</code> 保存角色聊天全文及回合狀態。每則訊息以建立後 24 小時為有效期，過期後不再作為對話內容使用；實體清理由網站執行時分批進行，未開啟網站不保證準時抹除。好感度計分證據會另留在共用資料，但不含聊天全文。</li>
           <li><strong>IndexedDB 復原保護：</strong><code>life-system.recovery-vault.v1</code> 保存同步日誌及還原前的本機資料副本。目前沒有自動到期清除機制，也沒有逐筆刪除保護副本的介面。</li>
-          <li><strong>sessionStorage 與記憶體：</strong>Google 授權、經您啟用的 AI 直連測試金鑰及模型，依各自連線規則保存；未儲存表單、聊天草稿與部分介面狀態保留於記憶體。站內切頁可能延續這些狀態。</li>
+          <li><strong>sessionStorage 與記憶體：</strong>Google 授權與未部署後端的認證，依各自連線規則保存；未儲存表單、聊天草稿與部分介面狀態保留於記憶體。站內切頁可能延續這些狀態。</li>
         </ul>
         <p>一般生活資料及行動歷史沒有統一自動刪除期限。Undo／Redo 合計最多 15 次；基本資料、圖片／外觀的復原期限為 24 小時，待辦、打卡及數值為 7 天。這是復原期限，不代表正式紀錄或復原保護副本同時刪除。本機資料可能因瀏覽器清理、無痕模式或裝置故障而遺失。</p>
         <p>您可下載本機備份；密碼留白時不加密，設定有效密碼時依既有加密備份流程處理。下載檔由您自行保管，清除網站儲存空間不會刪除已下載檔案。</p>
       </section>
 
       <section aria-labelledby="ai"><h2 id="ai">五、AI 服務與第三方資料處理</h2>
-        <p>AI 為選用功能。目前可在您明確啟用「瀏覽器直連測試模式」、提供金鑰並選取模型後，由瀏覽器連至您選擇的 Google Gemini、DeepSeek、OpenAI 或 Anthropic Claude 官方 API。模型查詢會送出驗證所需金鑰；生成另送出相關提示及內容，可能產生服務費用。</p>
+        <p>AI 為選用功能。瀏覽器連接預設開啟，在您提供金鑰並選取模型後，由瀏覽器連至您選擇的 Google Gemini、DeepSeek、OpenAI 或 Anthropic Claude 官方 API。已保存金鑰時，開站／重整會自動重新連接並查詢有效模型，沒有自動生成；模型查詢會送出驗證所需金鑰；生成另送出相關提示及內容，可能產生服務費用。</p>
         <ul>
           <li><strong>短文字測試：</strong>送出您輸入的測試文字及共用語言指示。</li>
           <li><strong>能力分配：</strong>待辦可能送出事件名稱、分類、簡述及點數；習慣與加分項目的 AI 評估會送出名稱、目標／說明、程度及點數，用於推薦五項能力分配。已有可用 AI 連線時，部分待辦完成流程會呼叫 AI。</li>
@@ -63,7 +63,7 @@
           <li><strong>日常回覆庫：</strong>已有可用 AI 連線、符合生活事件及回覆庫條件時，可能自動送出角色設定節錄、關係階段、事件類型與情緒，以產生可重複使用的短句；此提示不包含任務專名或私人聊天全文。</li>
         </ul>
         <p>目前這些 AI 提示不附帶個人或角色圖片；Google 授權憑證不轉送 AI 服務。若您在文字、人格或聊天中自行填入個人資訊，這些資訊仍可能隨上述內容傳送。從 Drive 還原的資料，在後續符合 AI 使用條件時，也可能依上述功能送出相關欄位。</p>
-        <p>直連金鑰與模型僅存於專用 sessionStorage（<code>life-system.ai-test.v1</code>），不自動到期；請使用「中斷連線」或關閉直連模式清除。它不是加密保管庫，不能防止同來源程式、開發者工具或有權限的擴充功能讀取。金鑰不納入一般設定、歷史或備份。</p>
+        <p>直連金鑰與模型保存於專用 localStorage（<code>life-system.ai-test.v1</code>），不自動到期；關閉瀏覽器後仍保留，請使用「中斷連線」清除金鑰與模型；有效舊分頁設定會遷移保存。它不是加密保管庫，不能防止同來源程式、開發者工具或有權限的擴充功能讀取。金鑰不納入一般設定、歷史或備份。</p>
         <p>第三方服務依各自條款處理請求、金鑰、用量及必要連線資訊，其伺服器保存期間、訓練使用及跨境處理取決於您使用的服務、方案與帳號設定，本網站無法從前端程式確認。請查閱 <a href="https://policies.google.com/privacy">Google</a>、<a href="https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html">DeepSeek</a>、<a href="https://openai.com/policies/privacy-policy/">OpenAI</a> 與 <a href="https://www.anthropic.com/legal/privacy">Anthropic</a> 的政策及適用 API 條款。</p>
       </section>
 

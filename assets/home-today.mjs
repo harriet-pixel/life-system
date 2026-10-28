@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=storage-rescue-20261028';
+import {dataStore} from './data.mjs?v=mobile-daily-20261028';
 import {rowsForDate,localDate} from './tasks-model.mjs?v=storage-rescue-20261028';
 
 import {sortDay,listSettings} from './task-view-model.mjs?v=storage-rescue-20261028';

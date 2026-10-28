@@ -1,22 +1,22 @@
 import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=storage-rescue-20261028';
-import {createListSettings} from './task-day-settings.mjs?v=manual-backup-20261028';
+import {createListSettings} from './task-day-settings.mjs?v=mobile-daily-20261028';
 import {currentSaveTrace} from './save-diagnostics.mjs?v=storage-rescue-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
-import {createDateResidents} from './task-date-residents.mjs?v=storage-rescue-20261028';
+import {createDateResidents} from './task-date-residents.mjs?v=mobile-daily-20261028';
 import {createActivityHeightSync} from './activity-height.mjs?v=storage-rescue-20261028';
 import {createMobileTabPositioner} from './tab-position.mjs?v=storage-rescue-20261028';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=storage-rescue-20261028';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=mobile-daily-20261028';
 import {createTaskPool} from './task-pool.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=storage-rescue-20261028';
+import {dataStore} from './data.mjs?v=mobile-daily-20261028';
 import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=storage-rescue-20261028';
-import {taskActions} from './task-actions.mjs?v=storage-rescue-20261028';
-import {mountTaskCompanion} from './task-companion.mjs?v=storage-rescue-20261028';
-import {createTaskEditor} from './task-editor.mjs?v=storage-rescue-20261028';
-import {createCategoryManager} from './task-categories.mjs?v=storage-rescue-20261028';
+import {taskActions} from './task-actions.mjs?v=mobile-daily-20261028';
+import {mountTaskCompanion} from './task-companion.mjs?v=mobile-daily-20261028';
+import {createTaskEditor} from './task-editor.mjs?v=mobile-daily-20261028';
+import {createCategoryManager} from './task-categories.mjs?v=mobile-daily-20261028';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');
- const notices=$('.task-notice-group'),noticeHome=document.createComment('task notices');notices.before(noticeHome);const syncNotices=()=>{if(desktop.matches)noticeHome.after(notices);else $('.task-mobile-heading').prepend(notices);};syncNotices();context.listen(desktop,'change',syncNotices);context.onResume(syncNotices);let mobileCalendarOpen=false,contentTab=0;
+ const notices=$('.task-notice-group'),noticeHome=document.createComment('task notices');notices.before(noticeHome);const syncNotices=()=>{if(desktop.matches)noticeHome.after(notices);else ($('[data-daily-notice]')??$('.task-mobile-heading')).prepend(notices);};syncNotices();context.listen(desktop,'change',syncNotices);context.onResume(syncNotices);let mobileCalendarOpen=false,contentTab=0;
  const syncCalendar=()=>{const expanded=desktop.matches||mobileCalendarOpen,calendar=$('#task-calendar');if(!expanded&&calendar.contains(document.activeElement))$('#toggle-calendar').focus({preventScroll:true});calendar.hidden=!expanded;$('#toggle-calendar').hidden=contentTab!==0;$('#toggle-calendar').setAttribute('aria-expanded',String(expanded));};
  let lastToday=localDate();
  let selected=localDate(),followToday=true,month=selected.slice(0,7),limits={},renderingData;
@@ -55,7 +55,7 @@ export function mountTasks(root,context){
  menu.addEventListener('pointerdown',event=>{outsidePress=outsideMenu(event);});menu.addEventListener('click',event=>{if(outsidePress&&outsideMenu(event))menu.close();outsidePress=false;});
  menu.addEventListener('close',()=>{if(menuFocus?.isConnected)menuFocus.focus({preventScroll:true});else $(desktop.matches?'#new-task':'#task-settings').focus({preventScroll:true});});root.append(menu);
  function openMenu(task,o=null,pool=false){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const color=dataStore.get().tasks.categories.find(c=>c.id===task.categoryId)?.color;if(color)menu.style.setProperty('--menu-task-color',color);else menu.style.removeProperty('--menu-task-color');menu.classList.toggle('task-pool-menu',pool);const controls=el('div',undefined,'task-menu-actions');
-  if(pool)controls.append(button('安排日期',()=>{menu.close();if(task.kind==='repeat'&&!o)multiSchedule.open(task);else askDate(date=>actions.service.arrange(task.id,date,o?.date??null));}));
+  if(pool)controls.append(button('安排日期',()=>{menu.close();if(task.kind==='repeat'&&!o)multiSchedule.open(task);else multiSchedule.open(task,{single:true,from:o?.date??null,date:selected});}));
   controls.append(button('編輯事件',()=>{menu.close();return openEditor(task,o?.date??null);}));
   const remove=button(task.kind==='repeat'&&o?'刪除此日安排':'刪除事件',async()=>{
    if(o?.status==='done'){menu.close();await actions.deleteCompleted(task.id,o.date);return;}

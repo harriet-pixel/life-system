@@ -1,6 +1,6 @@
 import {preserveBeforeRestore,listArchives} from './storage-vault.mjs?v=storage-rescue-20261028';
 import {getSyncRuntime} from './cloud-sync-status.mjs?v=manual-backup-20261028';
-import {dataStore} from './data.mjs?v=storage-rescue-20261028';
+import {dataStore} from './data.mjs?v=mobile-daily-20261028';
 import {withBackup,restoreBackup,downloadBlob} from './backup.mjs?v=storage-rescue-20261028';
 import {registerImageReferenceSource,documentImageReferences} from './image-references.mjs?v=storage-rescue-20261028';
 import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=manual-backup-20261028';

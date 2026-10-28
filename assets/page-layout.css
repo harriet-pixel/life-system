@@ -10,3 +10,34 @@
 }
 @supports not (scrollbar-gutter:stable){@media(width>=1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits])){overflow-y:scroll}}}
 @media(width>=1024px){[data-page-view=home] .welcome-copy{padding-inline-start:1em;min-width:0}}
+
+/* Equal mobile date / two-line information / stats / tabs geometry on daily views. */
+.daily-mobile-header[hidden]{display:none!important}
+@media(width < 1024px){
+ #main.daily-mobile-active{gap:1em}
+ #main.daily-mobile-active>.intro,#main.daily-mobile-active>.task-mobile-heading{display:none}
+ #main.daily-mobile-active .home-notice-top{display:none}
+ #main.daily-mobile-active .habit-page-heading{display:none}
+ .daily-mobile-header{display:grid;gap:1em;min-width:0;font-size:1rem}
+ .daily-mobile-header .date-block,.daily-mobile-header .date-block time{display:flex;flex-direction:row;align-items:baseline;gap:12px;margin:0;padding:0}
+ .daily-header-info{display:flex;align-items:center;min-width:0;height:3.4em;font-size:.875rem;line-height:1.7}
+ .daily-notice-content{flex:1;min-width:0;height:100%}
+ .daily-header-info .task-notice-group{display:grid;grid-template-rows:1.7em 1.7em;gap:0;font-size:inherit;height:100%;min-height:0;margin:0}
+ .daily-header-info :is(.task-board-count,#monthly-mobile){display:block;margin:0;padding:0;min-height:0;height:1.7em;font-size:inherit;line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .daily-header-info .habit-mobile-points{font-size:inherit;line-height:1.7;white-space:nowrap}
+ #main.daily-mobile-active .daily-mobile-header #operation-status{display:block;margin:0;padding:0;min-height:0;height:1.7em;max-height:1.7em;font-size:inherit;line-height:1.7;overflow:hidden;white-space:normal;overflow-wrap:anywhere}
+ #main[data-page-view=home].daily-mobile-active .daily-mobile-header #operation-status{height:3.4em;max-height:3.4em}
+ .daily-header-actions{display:flex;flex:none;align-items:center;gap:0}
+ .daily-header-actions button{width:44px;height:44px;min-width:44px;min-height:44px;padding:10px;border:0;background:transparent;color:var(--color-primary);border-radius:0}
+ .daily-header-actions button[hidden]{display:none}
+ .daily-header-actions svg{width:24px;height:24px}
+ .daily-header-stats .profile-summary{margin:0;padding:8px 4px;white-space:nowrap;flex-wrap:nowrap;font-size:clamp(.75rem,3.5vw,1rem)}
+ .daily-header-tabs .activity-tabs{margin:0;padding:0;min-width:0}
+ .daily-header-tabs .activity-tabs button{font-size:20px}
+ .daily-header-tabs .task-tab-english,.daily-header-tabs .habit-tab-english{display:none}
+ #main.daily-mobile-active .habit-notice-slot{display:none}
+}
+.navigation-icon-item[aria-current=page]{background:var(--color-primary);color:#fff}
+.navigation-icon-item[aria-current=page] svg{color:#fff}
+@media(width < 1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits])){scrollbar-gutter:stable}}
+@supports not (scrollbar-gutter:stable){@media(width < 1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits])){overflow-y:scroll}}}
