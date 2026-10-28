@@ -1,6 +1,6 @@
 import {cloudStatus,autoSyncEnabled,getSyncRuntime} from './cloud-sync-status.mjs?v=sync-live-20261028';
 import {getDriveState,driveAuth} from './google-drive.mjs?v=sync-live-20261028';
-import {createCloudRestore} from './cloud-restore.mjs?v=sync-live-20261028';
+import {createCloudRestore} from './cloud-restore.mjs?v=sync-redo-20261028';
 import {getCloudBackup} from './cloud-backup.mjs?v=sync-live-20261028';
 import {setOperationNotice} from './operation-notice.mjs?v=sync-live-20261028';
 import {initializeUIFeedback} from './ui-feedback.mjs?v=sync-live-20261028';
@@ -109,5 +109,5 @@ if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:200
 const iconCloud=getCloudBackup();const updateCloudIcons=()=>{const state=iconCloud.getState(),status=getSyncRuntime()?.getState().state??cloudStatus({connected:getDriveState().connected,online:navigator.onLine,busy:state.busy,pending:state.pending,error:/未完成/.test(state.message)});for(const button of document.querySelectorAll('[data-cloud-restore]')){button.dataset.syncState=status;button.title='雲端同步與備份：'+status;button.setAttribute('aria-label',button.title);}};
 iconCloud.subscribe(updateCloudIcons);driveAuth.subscribe(updateCloudIcons);window.addEventListener('online',updateCloudIcons);window.addEventListener('offline',updateCloudIcons);
 
-if(autoSyncEnabled())void import('./cloud-sync-runtime.mjs?v=sync-live-20261028').then(module=>module.startCloudSync()).catch(error=>announce(error.message));
+if(autoSyncEnabled())void import('./cloud-sync-runtime.mjs?v=sync-redo-20261028').then(module=>module.startCloudSync()).catch(error=>announce(error.message));
 document.addEventListener('life-system:sync-state',updateCloudIcons);

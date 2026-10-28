@@ -1,3 +1,15 @@
+# Undo／Redo 同步修正（2026-10-28）
+
+實際回報「備份結構驗證失敗」可由首次同步前執行Undo重現。舊同步把快照revision歸零，但保留redoable紀錄的undoOrder；既有完整備份驗證要求undoOrder不超過revision，因而拒絕合法快照。這是協定版本計數處理錯誤，不需清除資料。
+
+修正：新同步快照保留合法版本計數；已驗證hash的舊零版本快照及套用增量，僅在記憶體將revision提高到既有Redo排序所需的最低值，再進行原有完整schema／復原鏈驗證。未更動紀錄ID、順序、金額、獎勵、欄位guard或資料hash比較規則，不重寫／刪除舊雲端快照。dataStore原有max(local+1,incoming)持久計數維持下一次Undo排序單調。成功後清除過時錯誤訊息。
+
+新增：首次同步前Undo、既有同步後Undo／跨裝置Redo、舊失敗零版本快照重載恢復，完整299項單元與33項同步專項通過，lint／build與雙瀏覽器、runtime離線／授權、手動備份還原回歸通過。正式runtime＋Drive HTTP mock流程涵蓋帶Redo資料的首次自動同步、手動完整上傳與新手機載入。仍未直接存取使用者Google帳號；真實重試由使用者刷新後核對。
+
+快取只更新同步model／engine／runtime、雲端視窗及六頁shell入口為sync-redo-20261028；dataStore／status／資產引用等有狀態共用模組維持原URL，避免第二份singleton。
+
+---
+
 # 2026-10-28 現有網站啟用驗收
 
 使用者後續明確授權：現有網站尚無重要正式資料，直接在現有GitHub Pages啟用並由Windows與Android實測；不建立獨立測試站。此決定取代下方歷史報告的停用／專用測試站前提，Cloudflare繼續暫停，無新增後端。
