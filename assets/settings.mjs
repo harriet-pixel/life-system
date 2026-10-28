@@ -189,7 +189,7 @@ $('#connect-drive').addEventListener('click',()=>run(async()=>{await connectDriv
 $('#upload-drive').addEventListener('click',()=>run(async()=>{await cloudBackup.backupNow();driveNotice('雲端備份已更新。');await refreshDriveVersions({quiet:true});},'drive'));
 $('#restore-cloud-latest').addEventListener('click',()=>document.dispatchEvent(new CustomEvent('life-system:restore-cloud-latest',{detail:{versionId:$('#drive-version').value||null}})));
 $('#drive-version').addEventListener('focus',()=>{if(Date.now()-listedAt>30000)void refreshDriveVersions({quiet:true});});
-$('#disconnect-drive').addEventListener('click',()=>{if(cloudBackup.hasPendingChanges()&&!window.confirm('本地尚有未備份變更，仍要中斷 Google 連線？本地資料將保留。'))return;disconnectDrive();driveNotice('已中斷連接，既有雲端備份保留。');});
+$('#disconnect-drive').addEventListener('click',()=>{if(cloudBackup.hasPendingChanges()&&!window.confirm('本地尚有未備份變更，仍要中斷 Google 連線？本地資料將保留。'))return;document.dispatchEvent(new Event('life-system:drive-disconnected-manually'));disconnectDrive();driveNotice('已中斷連接，既有雲端備份保留。');});
 context.listen(document,'life-system:cloud-restore-status',event=>driveNotice(event.detail.message));
 if(driveConfigured)void prepareDriveAuth().then(()=>{if(!getDriveState().connected)driveNotice('Google 登入已準備好，請點選連接Google。');syncDrive();}).catch(error=>{driveNotice(error.message);syncDrive();});else driveNotice('Google 連接尚未設定；本機備份仍可使用。');
 let storageRevision=dataStore.get().revision;

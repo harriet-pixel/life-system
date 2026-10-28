@@ -1,4 +1,4 @@
-import {cloudStatus} from './cloud-sync-status.mjs';
+import {cloudStatus,AUTO_SYNC_ENABLED,getSyncRuntime} from './cloud-sync-status.mjs';
 import {getDriveState,driveAuth} from './google-drive.mjs?v=sync-window-20261028';
 import {createCloudRestore} from './cloud-restore.mjs?v=sync-window-20261028';
 import {getCloudBackup} from './cloud-backup.mjs?v=sync-window-20261028';
@@ -106,5 +106,8 @@ const startAffinity=()=>import('./affinity-runtime.mjs?v=replies-20261027').catc
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
 
 // Manual backups do not masquerade as an acknowledged cross-device sync baseline.
-const iconCloud=getCloudBackup();const updateCloudIcons=()=>{const state=iconCloud.getState(),status=cloudStatus({connected:getDriveState().connected,online:navigator.onLine,busy:state.busy,pending:state.pending,error:/未完成/.test(state.message)});for(const button of document.querySelectorAll('[data-cloud-restore]')){button.dataset.syncState=status;button.title='雲端同步與備份：'+status;button.setAttribute('aria-label',button.title);}};
+const iconCloud=getCloudBackup();const updateCloudIcons=()=>{const state=iconCloud.getState(),status=getSyncRuntime()?.getState().state??cloudStatus({connected:getDriveState().connected,online:navigator.onLine,busy:state.busy,pending:state.pending,error:/未完成/.test(state.message)});for(const button of document.querySelectorAll('[data-cloud-restore]')){button.dataset.syncState=status;button.title='雲端同步與備份：'+status;button.setAttribute('aria-label',button.title);}};
 iconCloud.subscribe(updateCloudIcons);driveAuth.subscribe(updateCloudIcons);window.addEventListener('online',updateCloudIcons);window.addEventListener('offline',updateCloudIcons);
+
+if(AUTO_SYNC_ENABLED)void import('./cloud-sync-runtime.mjs?v=sync-engine-20261028').then(module=>module.startCloudSync()).catch(error=>announce(error.message));
+document.addEventListener('life-system:sync-state',updateCloudIcons);

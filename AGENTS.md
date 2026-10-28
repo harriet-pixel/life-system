@@ -208,3 +208,11 @@
 ## 第六階段日常回覆庫維護
 
 正式規格見COMPANION.md第六階段與docs/COMPANION_STAGE6_VERIFICATION.md。replyLibrary為選填的稀疏metadata／內容雜湊引用，文字在獨立life-system.replies.v1；不可把文字加入每次生活交易。只以成功交易subscribeCommits快照識別正式事件，不信任UI派發、不在processing或歷史補算生成。回覆庫不計分，聊天室busy直接備援；分類有效20、含歷史60，正式事件最多一次生成且禁止自動重試。管理頁與生成器均延遲載入，首頁不預讀分類。備份包含replyAssets並原子發布引用，短期chat仍排除；雲端仍只手動上傳，Cloudflare維持暫停。
+
+## 介面／雲端整合（2026-10-28）
+
+現行首頁手機通知為頁首固定兩行高度、長文內捲，取代先前與底部按鈕同排的規則；桌面仍立繪下單一通知。移除管理習慣，名稱按穩定識別碼進原設定。設定用saveLivePeriod明確保存目前半月週期即生效，舊草稿不自動啟用；分配預設收合與共用HEX同排／色塊。導覽按首頁、待辦、習慣、夥伴、資料、設定、錢包、陪讀，僅移除獨立聊天室入口。
+
+雲端視窗現為同步與備份、版本 metadata／分開時間／一般裝置、三等寬操作及右上／外點／Escape關閉。未備份變更阻擋手動還原，上傳中關窗不取消提交。
+
+AUTO_SYNC_ENABLED必須維持false，直到docs/SYNC_ACCEPTANCE.md的真實Drive／雙裝置／容量驗收完成。cloud-sync-*目前是停用的協定、待送sidecar及測試實作；不得改為LWW、直接覆蓋本地、刪除舊備份，或把mock描述成真實驗收。正式資料仍沿唯一dataStore；reply庫資產與圖片可同步、聊天DB不納入。
