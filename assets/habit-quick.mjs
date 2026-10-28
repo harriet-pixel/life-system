@@ -1,7 +1,7 @@
-import {todayBonusTotals} from './habit-bonus-summary.mjs?v=home-bonus-summary-20261027';
-import {dataStore} from './data.mjs?v=replies-20261027';
-import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=sync-ui-20261028';
-import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=sync-ui-20261028';
+import {todayBonusTotals} from './habit-bonus-summary.mjs?v=sync-live-20261028';
+import {dataStore} from './data.mjs?v=sync-live-20261028';
+import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=sync-live-20261028';
+import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=sync-live-20261028';
 export function statusButtons(current,action,disabled=false){const group=document.createElement('div');group.className='habit-statuses';group.setAttribute('role','group');group.setAttribute('aria-label','完成程度');for(const state of ['-','M','P','E']){const button=document.createElement('button');button.type='button';button.textContent=state==='-'?'–':state;button.setAttribute('aria-label',({'-':'未完成',M:'Mini 1 點',P:'Plus 2 點',E:'Elite 3 點'})[state]);button.setAttribute('aria-pressed',String(current===state));button.disabled=disabled;button.onclick=()=>action(state);group.append(button);}return group;}
 export function mountHabitQuick(root,context,{beforeRender=()=>{},afterRender=()=>{}}={}){const panel=root.querySelector('#habits-panel');if(!panel)return;let busy=false,trigger,refocusBonus=false;
  const dialog=document.createElement('dialog');dialog.id='home-bonus-picker';dialog.className='task-dialog';dialog.setAttribute('aria-labelledby','home-bonus-picker-title');dialog.innerHTML='<h2 id="home-bonus-picker-title">選擇加分項目</h2><div data-home-bonus-items></div><p data-home-bonus-error class="small-note" role="alert"></p>';root.append(dialog);dialog.addEventListener('close',()=>{if(busy)refocusBonus=true;else (trigger?.isConnected?trigger:panel.querySelector('[data-open-bonus]'))?.focus({preventScroll:true});});dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});dialog.addEventListener('click',event=>{if(event.target!==dialog||busy)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();});

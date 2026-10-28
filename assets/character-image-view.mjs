@@ -1,5 +1,5 @@
-import {resolveCharacterImage} from './character-images-model.mjs?v=companion-images-20261027';
-import {acquireImageURL} from './image-store.mjs?v=companion-images-20261027';
+import {resolveCharacterImage} from './character-images-model.mjs?v=sync-live-20261028';
+import {acquireImageURL} from './image-store.mjs?v=sync-live-20261028';
 // A view owns at most two visible layers and one pending URL. No global cache.
 export function createCharacterImageView(target,{avatar=false,thumbnail=false}={}){
  const placeholder=document.createElement('span');placeholder.className='character-image-placeholder';

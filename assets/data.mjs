@@ -1,17 +1,17 @@
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=replies-20261027';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=replies-20261027';
-import {integrateAffinity} from './affinity-integration.mjs?v=replies-20261027';
-import {settleAffinity} from './affinity-settlement.mjs?v=replies-20261027';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=replies-20261027';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=companion-images-20261027';
-import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=companion-images-20261027';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=replies-20261027';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=companion-images-20261027';
-import { coordinatedWrite } from './coordination.mjs?v=characters-20261027';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=companion-images-20261027';
-import { migrateImages } from './image-store.mjs?v=companion-images-20261027';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=companion-images-20261027';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=sync-live-20261028';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=sync-live-20261028';
+import {integrateAffinity} from './affinity-integration.mjs?v=sync-live-20261028';
+import {settleAffinity} from './affinity-settlement.mjs?v=sync-live-20261028';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=sync-live-20261028';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=sync-live-20261028';
+import {setOperationNotice} from './operation-notice.mjs?v=sync-live-20261028';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=sync-live-20261028';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=sync-live-20261028';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=sync-live-20261028';
+import { coordinatedWrite } from './coordination.mjs?v=sync-live-20261028';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=sync-live-20261028';
+import { migrateImages } from './image-store.mjs?v=sync-live-20261028';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=sync-live-20261028';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -23,6 +23,14 @@ const redoRecord = redoCandidate;
 const initial = () => ({ revision: 0, companion: emptyCharacters(), affinity: emptyAffinity(), statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, tasks: emptyTasks(), habits: emptyHabits(), stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
 // Preserve the published one-time legacy restart, but perform the write only
 // under the shared write lock; existing v2 progress and settings are untouched.
+// Only a genuinely empty device may adopt a cloud root without a choice.
+export function isPristineDocument(document){
+ const clean=value=>{const d=structuredClone(value);delete d.revision;delete d.affinity;return d;};
+ const a=document.affinity;
+ if(a&&(a.transactions?.length||a.diagnostics?.length||a.policies?.some(p=>p.id!=='initial')||Object.entries(a).some(([k,v])=>!['version','startedAt','lastSeenAt','policies','transactions','diagnostics'].includes(k)&&v&&Object.keys(v).length)))return false;
+ return JSON.stringify(clean(document))===JSON.stringify(clean(initial()));
+}
+
 export function migrateStatsRules(storage) {
   const raw=storage.getItem(STORAGE_KEY);if(!raw)return;
   const value=JSON.parse(raw);
@@ -136,7 +144,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=replies-20261027');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=sync-live-20261028');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;

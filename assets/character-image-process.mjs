@@ -1,5 +1,5 @@
-import {IMAGE_LIMITS} from './character-images-model.mjs?v=companion-images-20261027';
-import {encodeCanvas,decodeImage,createImageCropper} from './avatar-crop.mjs?v=companion-images-20261027';
+import {IMAGE_LIMITS} from './character-images-model.mjs?v=sync-live-20261028';
+import {encodeCanvas,decodeImage,createImageCropper} from './avatar-crop.mjs?v=sync-live-20261028';
 export {createImageCropper,decodeImage};
 const fail=()=>{throw new Error('請選擇內容完整的 PNG、JPEG 或 WebP；不接受 SVG、GIF 或動畫圖片。');};
 // Read dimensions BEFORE decoding to reject decompression bombs. Animated formats

@@ -1,9 +1,9 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=replies-20261027';
-import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=replies-20261027';
-import {replyPersonaKey,usableReplies,pickReply,replyPrompt,parseDailyReply} from './reply-model.mjs?v=replies-20261027';
-import {readReplyCategory,editReplyCategory} from './reply-service.mjs?v=replies-20261027';
-import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=replies-20261027';
-import {validDailySource} from './daily-events.mjs?v=replies-20261027';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=sync-live-20261028';
+import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=sync-live-20261028';
+import {replyPersonaKey,usableReplies,pickReply,replyPrompt,parseDailyReply} from './reply-model.mjs?v=sync-live-20261028';
+import {readReplyCategory,editReplyCategory} from './reply-service.mjs?v=sync-live-20261028';
+import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=sync-live-20261028';
+import {validDailySource} from './daily-events.mjs?v=sync-live-20261028';
 const last=new Map();export const DAILY_FALLBACK='慢慢來，依照自己的步調繼續就好。';
 export async function dailyResponse(store,event,{valid=()=>true,random=Math.random,connection=getSharedAIConnection()}={}){
  const validNow=()=>valid()&&validDailySource(store.get(),event);

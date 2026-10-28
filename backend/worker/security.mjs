@@ -1,4 +1,4 @@
-import {fail,readJSON} from '../../assets/ai-errors.mjs?v=provider-audit-3';
+import {fail,readJSON} from '../../assets/ai-errors.mjs?v=sync-live-20261028';
 export const randomToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),n=>n.toString(16).padStart(2,'0')).join('');
 export const validToken=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
 export async function digest(value){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),n=>n.toString(16).padStart(2,'0')).join('');}

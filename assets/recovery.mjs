@@ -1,9 +1,10 @@
-import {applyAffinityPlan} from './affinity-model.mjs?v=replies-20261027';
+import {applyAffinityPlan} from './affinity-model.mjs?v=sync-live-20261028';
 // One policy for startup, replay, mutations, image references and backups.
 export const RECOVERY_LIMIT=15, DAY=86400000, HISTORY_VERSION=1;
 const shortKeys=new Set(['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','settings']);
 const longKeys=new Set(['stats','activities','tasks','habits']);
-const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const ordered=v=>Array.isArray(v)?v.map(ordered):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,ordered(v[k])])):v;
+const equal=(a,b)=>JSON.stringify(ordered(a))===JSON.stringify(ordered(b));
 export function recoveryLifetime(record){
  const keys=Object.keys(record.after??{}).filter(k=>!equal(record.before?.[k],record.after[k]));
  if(!keys.length||keys.some(k=>!shortKeys.has(k)&&!longKeys.has(k)))return 0;

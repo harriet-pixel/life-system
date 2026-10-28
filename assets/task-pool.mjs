@@ -1,6 +1,6 @@
-import {observeNameLists} from './task-name-layout.mjs?v=habits-20261026';
-import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=task-home-polish-20261027';
-import {isOverdue,inResidentLibrary} from './tasks-model.mjs?v=companion-images-20261027';
+import {observeNameLists} from './task-name-layout.mjs?v=sync-live-20261028';
+import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=sync-live-20261028';
+import {isOverdue,inResidentLibrary} from './tasks-model.mjs?v=sync-live-20261028';
 export function createTaskPool(root,context,actions,{openMenu,askDate}){
  const $=s=>root.querySelector(s),selection=new Map();let current=[],limits={},lastData,lastToday;
  const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
