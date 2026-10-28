@@ -1,8 +1,8 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=replies-20261027';
+import {mountHabitQuick} from './habit-quick.mjs?v=sync-ui-20261028';
 import {renderHomeToday} from './home-today.mjs?v=replies-20261027';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
 import {createTaskEditor} from './task-editor.mjs?v=replies-20261027';
-import {createCategoryManager} from './task-categories.mjs?v=replies-20261027';
+import {createCategoryManager} from './task-categories.mjs?v=sync-ui-20261028';
 import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=mobile-polish-20261027';
 import {taskActions} from './task-actions.mjs?v=replies-20261027';
 import {localDate} from './tasks-model.mjs?v=companion-images-20261027';
@@ -84,7 +84,7 @@ itemMenu.addEventListener('click',e=>{const r=itemMenu.getBoundingClientRect();i
 itemMenu.addEventListener('close',()=>{(menuTrigger?.isConnected?menuTrigger:root.querySelector('#home-new-event'))?.focus({preventScroll:true});});
 tasks.openMenu=(task,o)=>{menuTrigger=document.activeElement;const title=document.createElement('h2');title.id='home-task-menu-title';title.textContent=task.name;const close=menuButton('×',()=>itemMenu.close());close.className='task-item-close';close.setAttribute('aria-label','關閉');const controls=document.createElement('div');controls.className='task-menu-actions';controls.append(menuButton('編輯事件',()=>{itemMenu.close();return editor.open(task,o.date);}),menuButton(task.kind==='repeat'?'刪除此日安排':'刪除事件',async()=>{if(o.status==='done'){itemMenu.close();return tasks.deleteCompleted(task.id,o.date);}if(!window.confirm('刪除此日安排？其他日期與完成歷史保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id,o.date));itemMenu.close();}));if(task.kind==='repeat')controls.append(menuButton('刪除整個重複事項',async()=>{if(!window.confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id));itemMenu.close();}));itemMenu.replaceChildren(title,close,controls);itemMenu.showModal();};
 let selectedPanel=0;
-const homeNotice=root.querySelector('#operation-status'),noticeAnchor=document.createComment('home notice');homeNotice.before(noticeAnchor);const noticeMedia=matchMedia('(min-width:1024px)');const syncHomeNotice=()=>{homeNotice.hidden=false;if(noticeMedia.matches)root.querySelector('.companion').append(homeNotice);else root.querySelector(selectedPanel===1?'#habits-panel .habit-manage-footer':'#tasks-panel .section-bottom')?.prepend(homeNotice);};context.listen(noticeMedia,'change',syncHomeNotice);context.onResume(syncHomeNotice);
+const homeNotice=root.querySelector('#operation-status'),noticeAnchor=document.createComment('home notice');homeNotice.before(noticeAnchor);const noticeMedia=matchMedia('(min-width:1024px)');const homeNoticeTop=document.createElement('div');homeNoticeTop.className='home-notice-top';homeNoticeTop.setAttribute('aria-label','首頁通知');root.querySelector('.intro').before(homeNoticeTop);const syncHomeNotice=()=>{homeNotice.hidden=false;if(noticeMedia.matches)root.querySelector('.companion').append(homeNotice);else homeNoticeTop.append(homeNotice);};context.listen(noticeMedia,'change',syncHomeNotice);context.onResume(syncHomeNotice);
 
 
 root.querySelector('#home-new-event').disabled=false;

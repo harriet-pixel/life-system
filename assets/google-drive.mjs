@@ -1,4 +1,4 @@
-import {backupDeviceName} from './cloud-backup-display.mjs';
+import {backupDeviceName} from './cloud-backup-display.mjs?v=sync-window-20261028';
 import {createDriveAuthSession} from './drive-auth-session.mjs?v=habits-20261026';
 import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=habits-20261026';
 import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=replies-20261027';
@@ -41,11 +41,11 @@ export async function driveRequest(url,options={}) {
   if(!response.ok){if(response.status===401)disconnectDrive();const raw=response.headers.get('Retry-After'),retryAfterMs=raw?(Number.isFinite(Number(raw))?Number(raw)*1000:Math.max(0,Date.parse(raw)-Date.now())):0;let quota=false;if(response.status===403){try{const body=await response.clone().json();quota=body.error?.errors?.some(e=>/rateLimit|quota|dailyLimit|userRateLimit/i.test(e.reason));}catch{}}throw Object.assign(new Error(response.status===401?'Google 授權已過期，請重新連接。':response.status===403?'Google Drive 權限或儲存容量不足，操作未完成。':'Google Drive 操作失敗（HTTP '+response.status+'），請稍後重試。'),{code:response.status===401?'auth':'drive',status:response.status,transient:response.status===429||response.status>=500||quota,retryAfterMs:Number.isFinite(retryAfterMs)?retryAfterMs:0});}
   return response;
 }
-export async function uploadDriveBackup(blob,payload,{dataUpdatedAt=null,dataHash=null}={}) {
+export async function uploadDriveBackup(blob,payload,{dataUpdatedAt=null,dataHash=null,snapshotHash=null}={}) {
   const envelope=JSON.parse(await blob.text());if(envelope.encrypted!==false)throw new Error('新雲端備份使用未加密格式。');
   const response=await driveRequest('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id',{
     method:'POST',headers:{'Content-Type':'application/json','X-Upload-Content-Type':'application/json','X-Upload-Content-Length':String(blob.size)},
-    body:JSON.stringify({name:backupFilename(),parents:['appDataFolder'],appProperties:{lifeSystemFormat:'1',lifeSystemBackup:'plain-v1',backupTime:payload.createdAt,deviceName:backupDeviceName(),...(dataUpdatedAt?{dataUpdatedAt}:{}),...(dataHash?{dataHash}:{})},mimeType:'application/json'})});
+    body:JSON.stringify({name:backupFilename(),parents:['appDataFolder'],appProperties:{lifeSystemFormat:'1',lifeSystemBackup:'plain-v1',backupTime:payload.createdAt,deviceName:backupDeviceName(),...(dataUpdatedAt?{dataUpdatedAt}:{}),...(dataHash?{dataHash}:{}),...(snapshotHash?{snapshotHash}:{})},mimeType:'application/json'})});
   const location=response.headers.get('Location');
   if(!location||!/^https:\/\/(www|content)\.googleapis\.com\/upload\/drive\//.test(location))throw new Error('Google 上傳位置驗證失敗，已停止。');
   await driveRequest(location,{method:'PUT',headers:{'Content-Type':'application/json'},body:blob});

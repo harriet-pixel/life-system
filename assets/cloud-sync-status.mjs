@@ -1,0 +1,6 @@
+export const AUTO_SYNC_ENABLED=false; // Release gate: real Drive/two-device acceptance is still required.
+export function cloudStatus({connected=false,online=true,busy=false,pending=false,error=false,conflicts=0,checked=false,confirmed=false}={}){if(!online)return '離線';if(!connected)return '需要登入';if(conflicts)return '資料衝突';if(error)return '同步失敗';if(busy)return '同步中';return checked&&confirmed&&!pending?'已同步':'待同步';}
+export function taiwanTime(value){return typeof value==='string'&&Number.isFinite(Date.parse(value))?new Intl.DateTimeFormat('zh-TW',{timeZone:'Asia/Taipei',dateStyle:'medium',timeStyle:'medium',hour12:false}).format(new Date(value)):'未記錄';}
+let runtime=null;
+export const getSyncRuntime=()=>runtime;
+export const setSyncRuntime=value=>{runtime=value;};

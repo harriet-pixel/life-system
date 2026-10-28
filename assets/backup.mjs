@@ -161,7 +161,7 @@ export async function readBackup(file,password='') {
   const liveRefs=documentImageReferences(normalized);
   return {payload:{...payload,dataVersion:3,document:normalized,dataCount:dataCount(normalized)},assets:assets.filter(a=>liveRefs.has(a.id))};
 }
-export async function restoreBackup(store,prepared,expectedRevision,{afterReplace}={}) {
+export async function restoreBackup(store,prepared,expectedRevision,{afterReplace,replaceDocument}={}) {
   return maintenance(async()=>{
     store.refresh();check(store.get().revision===expectedRevision,'確認期間資料已改變，請重新選取備份。');
     validateDocument(prepared.payload.document);
@@ -175,7 +175,7 @@ export async function restoreBackup(store,prepared,expectedRevision,{afterReplac
     await validateRoleImageAssets(prepared.payload.document,[...existing,...prepared.assets]);
     if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=replies-20261027')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
     await stageImageAssets(prepared.assets);
-    store.replace(maintainRecovery(prepared.payload.document).document);await afterReplace?.();
+    const document=maintainRecovery(prepared.payload.document).document;if(replaceDocument)await replaceDocument(document);else store.replace(document);await afterReplace?.();
   });
 }
 export function backupFilename(){return 'Life system '+new Date().toISOString().replace(/[:.]/g,'-')+'.life-backup.json';}

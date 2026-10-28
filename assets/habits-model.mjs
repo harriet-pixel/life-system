@@ -29,3 +29,7 @@ export function validateHabits(raw){const h=structuredClone(raw);check(h?.versio
  for(const x of h.bonusItems){check(Array.isArray(x.versions)&&x.versions.length>0);for(const v of x.versions){check((v.color==null||/^#[0-9a-f]{6}$/i.test(v.color))&&typeof v.id==='string'&&typeof v.name==='string'&&typeof v.description==='string'&&Number.isSafeInteger(v.points)&&v.points>0);if(v.allocation)distribution(v.allocation,v.points);}}
  for(const r of h.bonusRecords){check(typeof r.id==='string'&&validDay(r.date)&&Number.isFinite(Date.parse(r.time))&&r.reward.points>0);distribution(r.reward.abilities,r.reward.points);const v=h.bonusItems.find(x=>x.id===r.itemId)?.versions.find(v=>v.id===r.versionId);check(v&&v.points===r.reward.points&&v.name===r.name&&JSON.stringify(distribution(v.allocation,v.points))===JSON.stringify(distribution(r.reward.abilities,r.reward.points)));if(r.cancelledAt)check(Number.isFinite(Date.parse(r.cancelledAt)));}check(new Set(h.specialUsed).size===h.specialUsed.length&&h.specialUsed.every(x=>/^\d{4}-\d{2}$/.test(x)));return h;
 }
+
+// Stable identities for the three legacy slots, independent of their names/versions.
+export const habitIdentity=(periodId,index)=>{infoForId(periodId);if(![0,1,2].includes(index))throw new Error('習慣不存在。');return periodId+':habit:'+index;};
+export function parseHabitIdentity(value){const match=/^(\d{4}-\d{2}-[12]):habit:([012])$/.exec(value??'');if(!match)throw new Error('習慣識別碼無效。');infoForId(match[1]);return {periodId:match[1],index:Number(match[2])};}

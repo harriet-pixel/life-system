@@ -1,7 +1,8 @@
+import {mountColorField} from './color-field.mjs?v=sync-ui-20261028';
 import {documentTime} from './cloud-backup-policy.mjs';
-import {cloudBackupLabel} from './cloud-backup-display.mjs';
+import {cloudBackupLabel} from './cloud-backup-display.mjs?v=sync-window-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {getCloudBackup} from './cloud-backup.mjs?v=replies-20261027';
+import {getCloudBackup} from './cloud-backup.mjs?v=sync-window-20261028';
 import {initializeAISettings} from './ai-settings.mjs?v=replies-20261027';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=companion-images-20261027';
 import {dataStore,persistentUndo} from './data.mjs?v=replies-20261027';
@@ -11,7 +12,7 @@ import {auditImages,deleteUnusedImages} from './image-references.mjs?v=replies-2
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=companion-images-20261027';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
 import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=replies-20261027';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=replies-20261027';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=sync-window-20261028';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);
@@ -96,7 +97,7 @@ for(const [id,trigger] of [['delete-confirm','delete-assets'],['restore-confirm'
 
 let appearanceDraft={...dataStore.get().settings.appearance},appearanceDirty=false,appearanceInput=false,appearanceRevision,releaseAppearance,draftPromise,previewVersion=0;
 function renderAppearanceControls(){
-  $('#theme-color').value=appearanceDraft.color;$('#theme-hex').value=appearanceDraft.color;$('#theme-font').value=appearanceDraft.font;
+  $('#theme-color').value=appearanceDraft.color;$('#theme-hex').value=appearanceDraft.color;mountColorField($('#theme-hex'))();$('#theme-font').value=appearanceDraft.font;
   applyAppearance(appearanceDraft,$('#appearance-preview'));
   const selected=appearanceDraft.font;$('#font-load-state').textContent='字型載入中；可繼續操作。';
   const family=getComputedStyle($('#appearance-preview')).fontFamily.split(',')[0];
@@ -188,7 +189,7 @@ $('#connect-drive').addEventListener('click',()=>run(async()=>{await connectDriv
 $('#upload-drive').addEventListener('click',()=>run(async()=>{await cloudBackup.backupNow();driveNotice('雲端備份已更新。');await refreshDriveVersions({quiet:true});},'drive'));
 $('#restore-cloud-latest').addEventListener('click',()=>document.dispatchEvent(new CustomEvent('life-system:restore-cloud-latest',{detail:{versionId:$('#drive-version').value||null}})));
 $('#drive-version').addEventListener('focus',()=>{if(Date.now()-listedAt>30000)void refreshDriveVersions({quiet:true});});
-$('#disconnect-drive').addEventListener('click',()=>{disconnectDrive();driveNotice('已中斷連接，既有雲端備份保留。');});
+$('#disconnect-drive').addEventListener('click',()=>{if(cloudBackup.hasPendingChanges()&&!window.confirm('本地尚有未備份變更，仍要中斷 Google 連線？本地資料將保留。'))return;document.dispatchEvent(new Event('life-system:drive-disconnected-manually'));disconnectDrive();driveNotice('已中斷連接，既有雲端備份保留。');});
 context.listen(document,'life-system:cloud-restore-status',event=>driveNotice(event.detail.message));
 if(driveConfigured)void prepareDriveAuth().then(()=>{if(!getDriveState().connected)driveNotice('Google 登入已準備好，請點選連接Google。');syncDrive();}).catch(error=>{driveNotice(error.message);syncDrive();});else driveNotice('Google 連接尚未設定；本機備份仍可使用。');
 let storageRevision=dataStore.get().revision;

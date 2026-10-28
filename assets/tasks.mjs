@@ -12,7 +12,7 @@ import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=compani
 import {taskActions} from './task-actions.mjs?v=replies-20261027';
 import {mountTaskCompanion} from './task-companion.mjs?v=replies-20261027';
 import {createTaskEditor} from './task-editor.mjs?v=replies-20261027';
-import {createCategoryManager} from './task-categories.mjs?v=replies-20261027';
+import {createCategoryManager} from './task-categories.mjs?v=sync-ui-20261028';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');

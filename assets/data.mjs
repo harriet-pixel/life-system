@@ -82,6 +82,8 @@ export function createDataStore(storage,{now=Date.now}={}) {
     notify,
     subscribeCommits(fn){commitListeners.add(fn);return()=>commitListeners.delete(fn);},
     setBusy(value) {busy=value;notify({statusOnly:true});},
+    // Dormant sync capability: callers must hold maintenance locks and validate the full document.
+    replaceSynchronized(value,expectedRevision) {if(state.revision!==expectedRevision)throw new Error('同步期間本地資料已更新。');const checked=maintainRecovery(copy(value),now());if(checked.blocked)throw new Error('同步復原鏈無法安全延續。');persist(checked.document);},
     replace(value) { const next=copy(value);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}if(state.replyLibrary||next.replyLibrary){next.replyLibrary??=emptyReplyLibrary();next.replyLibrary.epoch=crypto.randomUUID();}next.revision=Math.max(value.revision,state.revision+1);persist(next); },
     subscribe(fn,{changesOnly=false}={}) {const entry={fn,changesOnly};listeners.add(entry);fn(copy(currentRecovery().document));return()=>listeners.delete(entry);},
     refresh() { state = load(); notify(); },
