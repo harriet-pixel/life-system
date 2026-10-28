@@ -1,10 +1,10 @@
-import {REPLY_EVENTS,DEFAULT_REPLY_POOLS,categoryKey} from './reply-manifest.mjs?v=sync-live-20261028';
-import {EMOTIONS} from './character-images-model.mjs?v=sync-live-20261028';
-import {RELATIONSHIP_STAGES} from './characters-model.mjs?v=sync-live-20261028';
-import {usableReplies} from './reply-model.mjs?v=sync-live-20261028';
-import {readReplyCategory,editReplyCategory,saveReplyPools} from './reply-service.mjs?v=sync-live-20261028';
-import {cleanReplyAssets} from './reply-store.mjs?v=sync-live-20261028';
-import {holdDraft,maintenance} from './coordination.mjs?v=sync-live-20261028';
+import {REPLY_EVENTS,DEFAULT_REPLY_POOLS,categoryKey} from './reply-manifest.mjs?v=storage-rescue-20261028';
+import {EMOTIONS} from './character-images-model.mjs?v=storage-rescue-20261028';
+import {RELATIONSHIP_STAGES} from './characters-model.mjs?v=storage-rescue-20261028';
+import {usableReplies} from './reply-model.mjs?v=storage-rescue-20261028';
+import {readReplyCategory,editReplyCategory,saveReplyPools} from './reply-service.mjs?v=storage-rescue-20261028';
+import {cleanReplyAssets} from './reply-store.mjs?v=storage-rescue-20261028';
+import {holdDraft,maintenance} from './coordination.mjs?v=storage-rescue-20261028';
 export function mountReplyManager(root,context,{store,getCharacter,notify,onState}){
  const section=root.querySelector('#reply-library-section'),host=root.querySelector('#reply-library-body');
  host.innerHTML='<p class="small-note">生活事件回覆可重複播放；不使用私人聊天，不額外計分。每分類20筆有效、最多60筆含歷史。</p><fieldset id="reply-pools"><legend>情緒池（角色個別）</legend><div data-pool="positive"><strong>正向</strong></div><div data-pool="negative"><strong>負向</strong></div><button id="reply-pools-save" type="button">儲存情緒池</button><button id="reply-pools-cancel" type="button">取消情緒池草稿</button></fieldset><div class="reply-filters"><label>關係階段<select id="reply-stage"></select></label><label>事件類型<select id="reply-event"></select></label><label>情緒<select id="reply-emotion"></select></label></div><p id="reply-count" class="small-note" role="status"></p><div class="character-actions"><button id="reply-new" type="button">手動新增回覆</button><button id="reply-clear" type="button">清空目前分類</button></div><div id="reply-list"></div><details><summary>次要管理</summary><button id="reply-purge" type="button">清理目前分類停用舊回覆</button><button id="reply-clear-role" type="button">清空目前角色全部回覆</button><button id="reply-clean-assets" type="button">清理未使用的回覆庫資料</button></details>';

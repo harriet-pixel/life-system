@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=sync-live-20261028';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=sync-live-20261028';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=sync-live-20261028';
-import {dataStore} from './data.mjs?v=sync-live-20261028';
-import {createTaskService} from './tasks-service.mjs?v=sync-live-20261028';
-import {allocation,allocationContext} from './tasks-model.mjs?v=sync-live-20261028';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=sync-live-20261028';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=sync-live-20261028';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=sync-live-20261028';
+import {setOperationNotice} from './operation-notice.mjs?v=storage-rescue-20261028';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=storage-rescue-20261028';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=storage-rescue-20261028';
+import {dataStore} from './data.mjs?v=storage-rescue-20261028';
+import {createTaskService} from './tasks-service.mjs?v=storage-rescue-20261028';
+import {allocation,allocationContext} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=storage-rescue-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=storage-rescue-20261028';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=storage-rescue-20261028';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}

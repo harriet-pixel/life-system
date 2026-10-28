@@ -1,4 +1,4 @@
-import {readJSON} from './ai-errors.mjs?v=sync-live-20261028';
+import {readJSON} from './ai-errors.mjs?v=storage-rescue-20261028';
 export const WORKER_SESSION_KEY='life-system.ai-worker-session.v1';
 const tokenPattern=/^[a-f0-9]{64}$/;
 export function validateWorkerURL(value){if(value==='')return '';const url=new URL(value);if(url.protocol!=='https:'||!url.hostname.endsWith('.workers.dev')||url.username||url.password||url.port||url.pathname!=='/'||url.search||url.hash)throw new Error('Personal HTTPS workers.dev URL required');return url.origin;}

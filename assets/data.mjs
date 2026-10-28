@@ -1,17 +1,19 @@
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=sync-live-20261028';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=sync-live-20261028';
-import {integrateAffinity} from './affinity-integration.mjs?v=sync-live-20261028';
-import {settleAffinity} from './affinity-settlement.mjs?v=sync-live-20261028';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=sync-live-20261028';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=sync-live-20261028';
-import {setOperationNotice} from './operation-notice.mjs?v=sync-live-20261028';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=sync-live-20261028';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=sync-live-20261028';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=sync-live-20261028';
-import { coordinatedWrite } from './coordination.mjs?v=sync-live-20261028';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=sync-live-20261028';
-import { migrateImages } from './image-store.mjs?v=sync-live-20261028';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=sync-live-20261028';
+import {attemptJournalRescue} from './storage-vault.mjs?v=storage-rescue-20261028';
+import {storageFailure} from './storage-diagnostics.mjs?v=storage-rescue-20261028';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=storage-rescue-20261028';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=storage-rescue-20261028';
+import {integrateAffinity} from './affinity-integration.mjs?v=storage-rescue-20261028';
+import {settleAffinity} from './affinity-settlement.mjs?v=storage-rescue-20261028';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=storage-rescue-20261028';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=storage-rescue-20261028';
+import {setOperationNotice} from './operation-notice.mjs?v=storage-rescue-20261028';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=storage-rescue-20261028';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=storage-rescue-20261028';
+import { coordinatedWrite } from './coordination.mjs?v=storage-rescue-20261028';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=storage-rescue-20261028';
+import { migrateImages } from './image-store.mjs?v=storage-rescue-20261028';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=storage-rescue-20261028';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -81,7 +83,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     const recoveryAt=performance.now(),checkedAt=now(),checked=maintainRecovery(next,checkedAt);next=checked.document;timing?.phase('recovery-write-check',recoveryAt);
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
     try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);timing?.phase('storage-write',writeAt);}
-    catch { throw new Error('無法儲存，可能是瀏覽器儲存空間不足或儲存權限受限。資料尚未變更。'); }
+    catch(error) { throw storageFailure(error,storage,{operation:operation?.type??'primary-write',attemptedBytes:JSON.stringify(next).length*2}); }
     state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(fn=>{try{fn(copy(state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
   };
   const api = {
@@ -144,7 +146,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=sync-live-20261028');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=storage-rescue-20261028');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;
@@ -211,7 +213,7 @@ if (typeof window !== 'undefined') {
     const migrationNeeded=window.localStorage.getItem(STORAGE_KEY)?.includes('data:image/');
     const controls=migrationNeeded?[...document.querySelectorAll('input,button')].map(control=>[control,control.disabled]):[];
     if(migrationNeeded){controls.forEach(([control])=>control.disabled=true);if(status){status.hidden=false;setOperationNotice(status,'正在升級本機圖片儲存，請稍候。');}}
-    await coordinatedWrite(async()=>{await migrateImages(window.localStorage,STORAGE_KEY);migrateStatsRules(window.localStorage);});
+    await coordinatedWrite(async()=>{await attemptJournalRescue(window.localStorage);await migrateImages(window.localStorage,STORAGE_KEY);migrateStatsRules(window.localStorage);});
     controls.forEach(([control,disabled])=>control.disabled=disabled);
     if(migrationNeeded&&status){status.hidden=true;status.textContent='';}
   } catch(error) {
@@ -230,7 +232,7 @@ if (dataStore) {
       if(dataStore.getState().busy)throw new Error('資料操作進行中，請稍候再試。');
       const expectedRevision=dataStore.get().revision;
       dataStore.setBusy(true);
-      const timing=method==='transact'?args[0]?.timing:null,waitingAt=performance.now();try{return await coordinatedWrite(()=>{timing?.phase('lock-wait',waitingAt);const heldAt=performance.now();try{
+      const timing=method==='transact'?args[0]?.timing:null,waitingAt=performance.now();try{return await coordinatedWrite(async()=>{await attemptJournalRescue(window.localStorage);timing?.phase('lock-wait',waitingAt);const heldAt=performance.now();try{
         if(dataStore.get().revision!==expectedRevision)throw new Error('等待期間資料已更新，請重試操作。');
         return original(...args);
         }finally{timing?.phase('lock-held',heldAt);}
