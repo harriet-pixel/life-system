@@ -2,12 +2,12 @@ import {attemptJournalRescue} from './storage-vault.mjs?v=storage-rescue-2026102
 import {storageFailure} from './storage-diagnostics.mjs?v=storage-rescue-20261028';
 import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=storage-rescue-20261028';
 import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=storage-rescue-20261028';
-import {integrateAffinity} from './affinity-integration.mjs?v=storage-rescue-20261028';
-import {settleAffinity} from './affinity-settlement.mjs?v=storage-rescue-20261028';
+import {integrateAffinity} from './affinity-integration.mjs?v=action-ready-20261028';
+import {settleAffinity} from './affinity-settlement.mjs?v=action-ready-20261028';
 import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=storage-rescue-20261028';
 import {emptyHabits,validateHabits} from './habits-model.mjs?v=storage-rescue-20261028';
 import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=action-ready-20261028';
 import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=storage-rescue-20261028';
 import {validateProfileFields,validateActivities} from './validation.mjs?v=storage-rescue-20261028';
 import { coordinatedWrite } from './coordination.mjs?v=storage-rescue-20261028';
@@ -45,7 +45,7 @@ export function migrateStatsRules(storage) {
 }
 export function createDataStore(storage,{now=Date.now}={}) {
   let state, busy=false,recoveryNotice=null;
-  const listeners = new Set(),commitListeners=new Set();
+  const listeners = new Set(),commitListeners=new Map();
   const load = () => {
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return initial();
@@ -84,13 +84,13 @@ export function createDataStore(storage,{now=Date.now}={}) {
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
     try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);timing?.phase('storage-write',writeAt);}
     catch(error) { throw storageFailure(error,storage,{operation:operation?.type??'primary-write',attemptedBytes:JSON.stringify(next).length*2}); }
-    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(fn=>{try{fn(copy(state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
+    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach((metadataOnly,fn)=>{try{if(metadataOnly){if(operation){const record=state.history.at(-1);fn(null,copy({id:operation.id,type:operation.type,label:record?.label,delta:record?.delta}));}}else fn(copy(state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
   };
   const api = {
     get: () => copy(currentRecovery().document),
     maintain() {const result=effective();const raw=storage.getItem(STORAGE_KEY);if(raw&&JSON.stringify(result.document)!==raw)persist(result.document);return result;},
     notify,
-    subscribeCommits(fn){commitListeners.add(fn);return()=>commitListeners.delete(fn);},
+    subscribeCommits(fn,{metadataOnly=false}={}){commitListeners.set(fn,metadataOnly);return()=>commitListeners.delete(fn);},
     setBusy(value) {busy=value;notify({statusOnly:true});},
     // Dormant sync capability: callers must hold maintenance locks and validate the full document.
     replaceSynchronized(value,expectedRevision) {if(state.revision!==expectedRevision)throw new Error('同步期間本地資料已更新。');const checked=maintainRecovery(copy(value),now());if(checked.blocked)throw new Error('同步復原鏈無法安全延續。');persist(checked.document);},

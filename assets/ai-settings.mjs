@@ -1,5 +1,5 @@
 import {MODEL_REASONS} from './ai-capabilities.mjs?v=storage-rescue-20261028';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=mobile-daily-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=action-ready-20261028';
 const providerNotes={
  gemini:'Gemini 官方 SDK 支援瀏覽器；實際可用性仍依金鑰、地區與官方跨來源政策。',
  openai:'OpenAI／GPT：官方 SDK 要求明確啟用危險瀏覽器模式；本站採官方 REST 直連，以你設定的金鑰連接。',

@@ -4,7 +4,7 @@ import {AI_WORKER_URL} from './ai-worker-config.mjs?v=storage-rescue-20261028';
 import {createPageAIConnection} from './ai-client.mjs?v=mobile-daily-20261028';
 import {AI_BACKEND_URL} from './ai-config.mjs?v=storage-rescue-20261028';
 import {getAIAccessToken} from './ai-auth.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=mobile-daily-20261028';
+import {dataStore} from './data.mjs?v=action-ready-20261028';
 let shared;
 export function getSharedAIConnection(){
  if(!shared){

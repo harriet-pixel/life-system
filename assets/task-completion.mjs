@@ -1,11 +1,11 @@
 import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=mobile-daily-20261028';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=action-ready-20261028';
 import {recordTaskTiming} from './task-diagnostics.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=mobile-daily-20261028';
-import {createTaskService} from './tasks-service.mjs?v=storage-rescue-20261028';
-import {allocation,allocationContext} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {dataStore} from './data.mjs?v=action-ready-20261028';
+import {createTaskService} from './tasks-service.mjs?v=action-ready-20261028';
+import {allocation,allocationContext} from './tasks-model.mjs?v=action-ready-20261028';
 import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=storage-rescue-20261028';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=mobile-daily-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=action-ready-20261028';
 import {createRewardFeedback} from './task-reward-feedback.mjs?v=storage-rescue-20261028';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;

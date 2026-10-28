@@ -1,4 +1,4 @@
-import {dataStore,profileSummary,visibleExperience} from './data.mjs?v=mobile-daily-20261028';
+import {dataStore,profileSummary,visibleExperience} from './data.mjs?v=action-ready-20261028';
 // Move the existing controls; keep their listeners, data source and desktop homes.
 export function mountDailyHeader(root,context,kind){
  const main=root.querySelector('#main'),media=matchMedia('(width < 1024px)'),header=document.createElement('header');header.className='daily-mobile-header';header.hidden=true;

@@ -1,4 +1,4 @@
-import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=action-ready-20261028';
 import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=storage-rescue-20261028';
 import {relationshipStage} from './characters-model.mjs?v=storage-rescue-20261028';
 export function formalDailyEvents(operation,state){

@@ -1,16 +1,16 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=mobile-daily-20261028';
-import {renderHomeToday} from './home-today.mjs?v=mobile-daily-20261028';
+import {mountHabitQuick} from './habit-quick.mjs?v=action-ready-20261028';
+import {renderHomeToday} from './home-today.mjs?v=action-ready-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
-import {createTaskEditor} from './task-editor.mjs?v=mobile-daily-20261028';
-import {createCategoryManager} from './task-categories.mjs?v=mobile-daily-20261028';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=storage-rescue-20261028';
-import {taskActions} from './task-actions.mjs?v=mobile-daily-20261028';
-import {localDate} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {createTaskEditor} from './task-editor.mjs?v=action-ready-20261028';
+import {createCategoryManager} from './task-categories.mjs?v=action-ready-20261028';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=action-ready-20261028';
+import {taskActions} from './task-actions.mjs?v=action-ready-20261028';
+import {localDate} from './tasks-model.mjs?v=action-ready-20261028';
 import { createMobileTabPositioner } from './tab-position.mjs?v=storage-rescue-20261028';
 import { createActivityHeightSync } from './activity-height.mjs?v=storage-rescue-20261028';
-import { undoManager } from './undo.mjs?v=mobile-daily-20261028';
-import {createSharedCompanionView} from './companion-events.mjs?v=mobile-daily-20261028';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=mobile-daily-20261028';
+import { undoManager } from './undo.mjs?v=action-ready-20261028';
+import {createSharedCompanionView} from './companion-events.mjs?v=action-ready-20261028';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=action-ready-20261028';
 
 
 export function mountHome(root,context){
