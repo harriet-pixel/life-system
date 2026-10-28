@@ -2,8 +2,8 @@ import {mountColorField} from './color-field.mjs?v=storage-rescue-20261028';
 import {documentTime} from './cloud-backup-policy.mjs?v=storage-rescue-20261028';
 import {cloudBackupLabel} from './cloud-backup-display.mjs?v=storage-rescue-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=storage-rescue-20261028';
-import {initializeAISettings} from './ai-settings.mjs?v=storage-rescue-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=manual-backup-20261028';
+import {initializeAISettings} from './ai-settings.mjs?v=manual-backup-20261028';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=storage-rescue-20261028';
 import {dataStore,persistentUndo} from './data.mjs?v=storage-rescue-20261028';
 import {createMobileTabPositioner} from './tab-position.mjs?v=storage-rescue-20261028';
@@ -12,7 +12,7 @@ import {auditImages,deleteUnusedImages} from './image-references.mjs?v=storage-r
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=storage-rescue-20261028';
 import {holdDraft} from './coordination.mjs?v=storage-rescue-20261028';
 import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=storage-rescue-20261028';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=storage-rescue-20261028';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=manual-backup-20261028';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

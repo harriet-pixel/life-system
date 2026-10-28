@@ -1,7 +1,7 @@
 import {backupDeviceName} from './cloud-backup-display.mjs?v=storage-rescue-20261028';
 import {createDriveAuthSession} from './drive-auth-session.mjs?v=storage-rescue-20261028';
 import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=storage-rescue-20261028';
-import {MAX_FILE_BYTES,backupFilename} from './backup.mjs?v=storage-rescue-20261028';
+import {MAX_FILE_BYTES,backupFilename,readBackup} from './backup.mjs?v=storage-rescue-20261028';
 const SCOPE='https://www.googleapis.com/auth/drive.appdata';
 export const driveConfigured=Boolean(GOOGLE_CLIENT_ID);
 let token=null,expires=0,loading,sdkState='idle',sdkError='';const listeners=new Set();const session=createDriveAuthSession({getItem:k=>globalThis.sessionStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.sessionStorage.setItem(k,v),removeItem:k=>globalThis.sessionStorage?.removeItem(k)},GOOGLE_CLIENT_ID);
@@ -45,19 +45,27 @@ export async function uploadDriveBackup(blob,payload,{dataUpdatedAt=null,dataHas
   const envelope=JSON.parse(await blob.text());if(envelope.encrypted!==false)throw new Error('新雲端備份使用未加密格式。');
   const response=await driveRequest('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id',{
     method:'POST',headers:{'Content-Type':'application/json','X-Upload-Content-Type':'application/json','X-Upload-Content-Length':String(blob.size)},
-    body:JSON.stringify({name:backupFilename(),parents:['appDataFolder'],appProperties:{lifeSystemFormat:'1',lifeSystemBackup:'plain-v1',backupTime:payload.createdAt,deviceName:backupDeviceName(),...(dataUpdatedAt?{dataUpdatedAt}:{}),...(dataHash?{dataHash}:{}),...(snapshotHash?{snapshotHash}:{})},mimeType:'application/json'})});
+    body:JSON.stringify({name:backupFilename(),parents:['appDataFolder'],appProperties:{lifeSystemFormat:'1',lifeSystemBackup:'plain-v1',backupStatus:'pending',backupTime:payload.createdAt,deviceName:backupDeviceName(),...(dataUpdatedAt?{dataUpdatedAt}:{}),...(dataHash?{dataHash}:{}),...(snapshotHash?{snapshotHash}:{})},mimeType:'application/json'})});
   const location=response.headers.get('Location');
   if(!location||!/^https:\/\/(www|content)\.googleapis\.com\/upload\/drive\//.test(location))throw new Error('Google 上傳位置驗證失敗，已停止。');
-  await driveRequest(location,{method:'PUT',headers:{'Content-Type':'application/json'},body:blob});
+  const uploaded=await(await driveRequest(location,{method:'PUT',headers:{'Content-Type':'application/json'},body:blob})).json();
+  const file=(await listDriveBackups({includePending:true})).find(file=>file.id===uploaded.id);
+  if(!file)throw new Error('雲端尚未確認新備份，舊備份全部保留；請稍後手動重試。');
+  const downloaded=await downloadDriveBackup(file);
+  if(await downloaded.text()!==await blob.text())throw new Error('雲端備份回讀不一致，舊備份全部保留。');
+  await readBackup(downloaded);
+  const appProperties={...file.appProperties,backupStatus:'verified'};
+  await driveRequest('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(file.id),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({appProperties})});
+  return {...file,appProperties};
 }
 
-export async function listDriveBackups() {
+export async function listDriveBackups({includePending=false}={}) {
   const files=[];let pageToken;
   do{const params=new URLSearchParams({spaces:'appDataFolder',q:"trashed = false and appProperties has { key='lifeSystemFormat' and value='1' }",fields:'nextPageToken,files(id,name,size,createdTime,modifiedTime,appProperties)',pageSize:'100',orderBy:'createdTime desc'});if(pageToken)params.set('pageToken',pageToken);
     const data=await(await driveRequest('https://www.googleapis.com/drive/v3/files?'+params)).json();files.push(...(data.files??[]));pageToken=data.nextPageToken;
     if(files.length>5000)throw new Error('雲端備份清單過多，請先至帳戶管理檢查應用程式資料。');
   }while(pageToken);
-  return files.filter(f=>f.appProperties?.lifeSystemFormat==='1'&&!f.appProperties?.lifeSystemSyncVersion);
+  return files.filter(f=>f.appProperties?.lifeSystemFormat==='1'&&!f.appProperties?.lifeSystemSyncVersion&&(includePending||f.appProperties?.backupStatus!=='pending'));
 }
 export async function downloadDriveBackup(file) {
   if(!/^[a-zA-Z0-9_-]+$/.test(file.id)||Number(file.size)>MAX_FILE_BYTES)throw new Error('雲端備份大小或 ID 不正確。');

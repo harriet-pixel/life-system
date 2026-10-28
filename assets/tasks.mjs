@@ -1,5 +1,5 @@
 import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=storage-rescue-20261028';
-import {createListSettings} from './task-day-settings.mjs?v=storage-rescue-20261028';
+import {createListSettings} from './task-day-settings.mjs?v=manual-backup-20261028';
 import {currentSaveTrace} from './save-diagnostics.mjs?v=storage-rescue-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
 import {createDateResidents} from './task-date-residents.mjs?v=storage-rescue-20261028';

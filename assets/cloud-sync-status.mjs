@@ -7,3 +7,5 @@ export function taiwanTime(value){return typeof value==='string'&&Number.isFinit
 let runtime=null;
 export const getSyncRuntime=()=>runtime;
 export const setSyncRuntime=value=>{runtime=value;};
+
+export function backupStatus({connected=false,online=true,busy=false,pending=false,error=false}={}){if(!online)return '離線';if(!connected)return '需要登入';if(error)return '備份未完成';if(busy)return '備份中';return pending?'有未備份變更':'已連接';}
