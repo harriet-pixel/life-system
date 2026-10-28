@@ -1,6 +1,6 @@
-import {affinityTransaction,diagnostic,initializeAffinity} from './affinity-model.mjs?v=replies-20261027';
-import {occurrenceId,automatic,localDate,addDays} from './tasks-model.mjs?v=companion-images-20261027';
-import {taipeiDate,periodInfo,validDay} from './habits-model.mjs?v=companion-images-20261027';
+import {affinityTransaction,diagnostic,initializeAffinity} from './affinity-model.mjs?v=sync-live-20261028';
+import {occurrenceId,automatic,localDate,addDays} from './tasks-model.mjs?v=sync-live-20261028';
+import {taipeiDate,periodInfo,validDay} from './habits-model.mjs?v=sync-live-20261028';
 const DAY=86400000;
 const at=(rows,time)=>{let lo=0,hi=rows?.length??0;while(lo<hi){const mid=(lo+hi)>>>1;if(Date.parse(rows[mid].time)<=time)lo=mid+1;else hi=mid;}return rows?.[lo-1];};
 function historicalOwner(doc,cutoff){const rows=doc.companion?.switchHistory;return at(rows,cutoff)?.characterId??null;}

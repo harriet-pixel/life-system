@@ -1,16 +1,18 @@
-import {validateReplyManifest} from './characters-model.mjs?v=replies-20261027';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=companion-images-20261027';
-import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=replies-20261027';
-import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=replies-20261027';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=companion-images-20261027';
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=companion-images-20261027';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=replies-20261027';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=companion-images-20261027';
-import {ABILITIES} from './abilities.mjs?v=companion-images-20261027';
-import {maintenance} from './coordination.mjs?v=characters-20261027';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=replies-20261027';
-import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=companion-images-20261027';
-import {normalizeSettings} from './settings-model.mjs?v=companion-images-20261027';
+// JSON object member order is not part of the schema (Drive records are canonicalized).
+const sortedJSON=value=>JSON.stringify((function sort(v){return Array.isArray(v)?v.map(sort):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sort(v[k])])):v;})(value));
+import {validateReplyManifest} from './characters-model.mjs?v=sync-live-20261028';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=sync-live-20261028';
+import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=sync-live-20261028';
+import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=sync-live-20261028';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=sync-live-20261028';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=sync-live-20261028';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=sync-live-20261028';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=sync-live-20261028';
+import {ABILITIES} from './abilities.mjs?v=sync-live-20261028';
+import {maintenance} from './coordination.mjs?v=sync-live-20261028';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=sync-live-20261028';
+import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=sync-live-20261028';
+import {normalizeSettings} from './settings-model.mjs?v=sync-live-20261028';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -51,7 +53,7 @@ function validateFields(value,full=false,legacy=false) {
   for(const key of ['photo','avatar'])if(Object.hasOwn(value,key))check(value[key]===null||isImageReference(value[key]));
   for(const key of ['photoEdit','avatarEdit'])if(Object.hasOwn(value,key))check(value[key]===null||(value[key]&&typeof value[key]==='object'&&(value[key].source===undefined||value[key].source===null||isImageReference(value[key].source))&&validCrop(value[key].crop)));
   if(Object.hasOwn(value,'currentPortraitId'))check(value.currentPortraitId===null||typeof value.currentPortraitId==='string');
-  if(Object.hasOwn(value,'settings')){const normalized=normalizeSettings(value.settings);check(JSON.stringify(normalized.appearance)===JSON.stringify(value.settings.appearance),'備份設定格式不正確。');if(Object.hasOwn(value.settings,'ai'))check(JSON.stringify(normalized.ai)===JSON.stringify(value.settings.ai),'AI 備份僅可含服務商與模型偏好。');if(!legacy)check(!Object.hasOwn(value.settings,'history'),'備份含舊版歷史設定。');}
+  if(Object.hasOwn(value,'settings')){const normalized=normalizeSettings(value.settings);check(sortedJSON(normalized.appearance)===sortedJSON(value.settings.appearance),'備份設定格式不正確。');if(Object.hasOwn(value.settings,'ai'))check(sortedJSON(normalized.ai)===sortedJSON(value.settings.ai),'AI 備份僅可含服務商與模型偏好。');if(!legacy)check(!Object.hasOwn(value.settings,'history'),'備份含舊版歷史設定。');}
 }
 function validateRecord(r,doc,{snapshot=false,legacy=false}={}){
  check(typeof r.id==='string'&&typeof r.time==='string'&&(!snapshot||legacy||Number.isFinite(Date.parse(r.time)))&&['type','label','target'].every(k=>typeof r[k]==='string')&&Array.isArray(r.fields)&&r.fields.every(k=>typeof k==='string')&&typeof r.undone==='boolean');
@@ -73,7 +75,7 @@ export function validateDocument(doc,{legacy=false}={}){
   check(doc.historyVersion===1&&Array.isArray(doc.undoHistory)&&doc.undoHistory.length<=RECOVERY_LIMIT);
   doc.history.forEach(r=>validateRecord(r,doc));
   check(new Set(doc.undoHistory.map(r=>r.id)).size===doc.undoHistory.length);
-  for(const r of doc.undoHistory){validateRecord(r,doc,{snapshot:true});const meta=doc.history.find(m=>m.id===r.id);check(meta&&JSON.stringify(actionMetadata(r))===JSON.stringify(meta),'復原紀錄與行動紀錄不一致。');}
+  for(const r of doc.undoHistory){validateRecord(r,doc,{snapshot:true});const meta=doc.history.find(m=>m.id===r.id);check(meta&&sortedJSON(actionMetadata(r))===sortedJSON(meta),'復原紀錄與行動紀錄不一致。');}
  }
  if(doc.tasks){const actions=new Map(doc.history.map(r=>[r.id,r]));for(const c of doc.tasks.completions){let r=actions.get(c.transactionId);if(r?.type==='task.completed.batch'){const evidence=deletionEvidence(doc,c);r={...r,type:'task.completed',delta:{currency:evidence.currency,experience:evidence.experience,abilities:ABILITIES.map(a=>({id:a.id,value:evidence.abilities[a.id]}))}};}check(r?.type==='task.completed','完成紀錄缺少原獎勵交易。');for(const key of ['currency','experience'])if(c.reward?.[key]!=null)check(r.delta[key]===c.reward[key],'完成紀錄與獎勵交易不一致。');if(c.reward?.abilities)check(ABILITIES.every(a=>r.delta.abilities.filter(d=>d.id===a.id).length===1&&r.delta.abilities.find(d=>d.id===a.id)?.value===c.reward.abilities[a.id]),'完成紀錄與能力交易不一致。');if(c.retraction){const reversal=actions.get(c.retraction.transactionId),reward=c.retraction.reward;if(['recorded','history'].includes(c.retraction.method))check(ABILITIES.every(a=>r.delta.abilities.find(d=>d.id===a.id)?.value===reward.abilities[a.id]),'撤回能力與原交易不一致。');else check(c.reward?.abilities==null&&r.delta.abilities.length===0,'有原始能力紀錄時不得改用推估。');const group=doc.tasks.completions.filter(entry=>entry.retraction?.transactionId===c.retraction.transactionId),sum={currency:0,experience:0,abilities:Object.fromEntries(ABILITIES.map(a=>[a.id,0]))};for(const entry of group){sum.currency+=entry.retraction.reward.currency;sum.experience+=entry.retraction.reward.experience;ABILITIES.forEach(a=>sum.abilities[a.id]+=entry.retraction.reward.abilities[a.id]);}check(reversal?.type==='task.deleted-completed'&&!reversal.undone&&reversal.delta.currency===-sum.currency&&reversal.delta.experience===-sum.experience&&reversal.delta.abilities.length===5&&ABILITIES.every(a=>reversal.delta.abilities.filter(d=>d.id===a.id).length===1&&reversal.delta.abilities.find(d=>d.id===a.id)?.value===-sum.abilities[a.id]),'撤回紀錄與反向交易不一致。');}}}
 
@@ -101,7 +103,7 @@ export async function withBackup(store,password,consume,{snapshot}={}) {
     const ownRefs=documentImageReferences(document);check(ownRefs.size<=MAX_IMAGES);let size=0;
     const images=[];
     for(const asset of assets.filter(a=>ownRefs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
-    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=replies-20261027')).exportReplyAssets(document.replyLibrary):undefined;
+    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=sync-live-20261028')).exportReplyAssets(document.replyLibrary):undefined;
     const payload={...(replyAssets?{replyAssets}:{}),formatVersion:VERSION,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
     return consume(await encodeBackup(payload,password),payload);
   });
@@ -151,7 +153,7 @@ export async function readBackup(file,password='') {
   const refs=documentImageReferences(payload.document,{legacy:payload.dataVersion===2,raw:true});check([...refs].every(id=>ids.has(id)),'備份缺少必要圖片。');check(ids.size===refs.size,'備份含不在範圍內的圖片。');
   // Verify the original inventory before discarding expired legacy snapshots.
   // Never renew timestamps. Import only images still required at restore time.
-  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=replies-20261027')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
+  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=sync-live-20261028')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
   const document=maintainRecovery(payload.document).document;document.settings=normalizeSettings(document.settings);
   for(const r of document.undoHistory)for(const snapshot of [r.before,r.after])if(snapshot.settings)snapshot.settings=normalizeSettings(snapshot.settings);
   document.companion ??= emptyCharacters();document.affinity ??= emptyAffinity();
@@ -173,7 +175,7 @@ export async function restoreBackup(store,prepared,expectedRevision,{afterReplac
     check([...required].every(id=>available.has(id)),'還原缺少必要圖片，原資料已保留。');
     for(const asset of prepared.assets)check(asset.blob instanceof Blob&&'asset:'+await hash(await asset.blob.arrayBuffer())===asset.id,'還原圖片完整性不正確，原資料已保留。');
     await validateRoleImageAssets(prepared.payload.document,[...existing,...prepared.assets]);
-    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=replies-20261027')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
+    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=sync-live-20261028')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
     await stageImageAssets(prepared.assets);
     const document=maintainRecovery(prepared.payload.document).document;if(replaceDocument)await replaceDocument(document);else store.replace(document);await afterReplace?.();
   });

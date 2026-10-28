@@ -1,4 +1,4 @@
-import {REPLY_EVENTS,REPLY_EMOTIONS,validateCategoryKey,replyCheck} from './reply-manifest.mjs?v=replies-20261027';
+import {REPLY_EVENTS,REPLY_EMOTIONS,validateCategoryKey,replyCheck} from './reply-manifest.mjs?v=sync-live-20261028';
 export const REPLY_CAPACITY=20,REPLY_HISTORY_LIMIT=60;
 export const normalizeDialogue=text=>String(text??'').normalize('NFKC').trim().replace(/\s+/g,' ');
 export const duplicateKey=text=>normalizeDialogue(text).toLocaleLowerCase().replace(/[\p{P}\p{Z}\p{S}]/gu,'');

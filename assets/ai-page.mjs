@@ -1,5 +1,5 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=replies-20261027';
-import {mountAITestPanel} from './ai-test-panel.mjs?v=habits-20261026';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=sync-live-20261028';
+import {mountAITestPanel} from './ai-test-panel.mjs?v=sync-live-20261028';
 export function mountAIPage(root,context){
 const connection=getSharedAIConnection(),panel=document.createElement('details');panel.className='ai-developer-test settings-section';panel.hidden=true;
 const title=document.createElement('summary');title.textContent='開發用 AI 跨頁測試';panel.append(title);

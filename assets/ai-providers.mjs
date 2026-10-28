@@ -1,6 +1,6 @@
-import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=personal-worker-5';
-import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=provider-audit-3';
-import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=provider-audit-3';
+import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=sync-live-20261028';
+import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=sync-live-20261028';
+import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=sync-live-20261028';
 export const PROVIDERS = Object.freeze({
   gemini: {origin:'https://generativelanguage.googleapis.com', models:'/v1beta/models'},
   deepseek: {origin:'https://api.deepseek.com', models:'/models'},

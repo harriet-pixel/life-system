@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=companion-images-20261027';
+import {integerValue} from './validation.mjs?v=sync-live-20261028';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

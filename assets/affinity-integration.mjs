@@ -1,5 +1,5 @@
-import {validateAffinity,initializeAffinity,observeEligibility,activeOwner,sourceState,setSource} from './affinity-model.mjs?v=replies-20261027';
-import {settleAffinity} from './affinity-settlement.mjs?v=replies-20261027';
+import {validateAffinity,initializeAffinity,observeEligibility,activeOwner,sourceState,setSource} from './affinity-model.mjs?v=sync-live-20261028';
+import {settleAffinity} from './affinity-settlement.mjs?v=sync-live-20261028';
 const taskEntries=tasks=>{const map=new Map(),executions=new Map((tasks?.occurrences??[]).map(o=>[o.id,o]));for(const c of tasks?.completions??[]){if(c.cancelledAt)continue;const o=executions.get(c.occurrenceId),sourceId=c.occurrenceId.includes('@')?c.taskId+'@'+(o?.originalDate??c.date):c.occurrenceId;map.set('task:'+sourceId,{quantity:1,sourceId,domain:'task',origin:c.transactionId});}return map;};
 function habitEntries(h){const map=new Map();for(const r of h?.records??[])map.set('habit:'+r.periodId+':'+r.date+':'+r.habitIndex,{quantity:({'-':0,M:1,P:2,E:3})[r.state],sourceId:r.periodId+':'+r.date+':'+r.habitIndex,domain:'habit',origin:r.id});for(const p of h?.periods??[])for(const e of p.achievements)map.set('achievement:'+p.id+':'+e.id,{quantity:5,origin:p.id+':'+e.id});for(const r of h?.bonusRecords??[])map.set('bonus:'+r.id,{quantity:r.cancelledAt?0:1,origin:r.id});return map;}
 export function integrateAffinity(before,next,{type,operationId,time}){

@@ -1,7 +1,7 @@
-import {mountColorField} from './color-field.mjs?v=sync-layout-20261028';
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=habits-20261026';
-import {dataStore} from './data.mjs?v=replies-20261027';
-import {holdDraft} from './coordination.mjs?v=characters-20261027';
+import {mountColorField} from './color-field.mjs?v=sync-live-20261028';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=sync-live-20261028';
+import {dataStore} from './data.mjs?v=sync-live-20261028';
+import {holdDraft} from './coordination.mjs?v=sync-live-20261028';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

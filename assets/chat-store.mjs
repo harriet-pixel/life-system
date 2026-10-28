@@ -1,5 +1,5 @@
 // Separate short-lived database. Never part of the backup/image inventory.
-import {CHAT_TTL,CHAT_DOM_LIMIT,liveMessage} from './chat-model.mjs?v=replies-20261027';
+import {CHAT_TTL,CHAT_DOM_LIMIT,liveMessage} from './chat-model.mjs?v=sync-live-20261028';
 export const CHAT_DATABASE='life-system.chat.v1';let database;
 const channel=typeof BroadcastChannel!=='undefined'?new BroadcastChannel('life-system.chat.changed.v1'):null,listeners=new Set();
 channel?.addEventListener('message',event=>{if(typeof event.data==='string')listeners.forEach(fn=>fn(event.data));});

@@ -1,7 +1,7 @@
-import {AI_TEST_TEXT} from './ai-prompts.mjs?v=personal-worker-5';
-import {createAIConnection} from './ai-service.mjs?v=personal-worker-5';
-import {createAISession} from './ai-session.mjs?v=habits-20261026';
-import {createProviderAdapter} from './ai-providers.mjs?v=personal-worker-5';
+import {AI_TEST_TEXT} from './ai-prompts.mjs?v=sync-live-20261028';
+import {createAIConnection} from './ai-service.mjs?v=sync-live-20261028';
+import {createAISession} from './ai-session.mjs?v=sync-live-20261028';
+import {createProviderAdapter} from './ai-providers.mjs?v=sync-live-20261028';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null}={}){
  const session=createAISession(storage,{now}),listeners=new Set();

@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=companion-images-20261027';
-import { holdDraft } from './coordination.mjs?v=characters-20261027';
-import { createProfileImages } from './profile-images.mjs?v=companion-images-20261027';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=companion-images-20261027';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=companion-images-20261027';
-import { undoManager } from './undo.mjs?v=replies-20261027';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=replies-20261027';
+import {bindProfileValidation} from './validation.mjs?v=sync-live-20261028';
+import { holdDraft } from './coordination.mjs?v=sync-live-20261028';
+import { createProfileImages } from './profile-images.mjs?v=sync-live-20261028';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=sync-live-20261028';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=sync-live-20261028';
+import { undoManager } from './undo.mjs?v=sync-live-20261028';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=sync-live-20261028';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);
