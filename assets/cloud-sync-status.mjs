@@ -1,4 +1,4 @@
-export const AUTO_SYNC_ENABLED=true; // User-authorized live acceptance on the existing Pages site.
+export const AUTO_SYNC_ENABLED=false; // Emergency stop: local writes take priority; no automatic Drive I/O.
 export const SYNC_MODE_KEY='life-system.cloud-sync-mode.v1';
 export const autoSyncEnabled=(storage=globalThis.localStorage)=>AUTO_SYNC_ENABLED&&storage.getItem(SYNC_MODE_KEY)!=='manual';
 export function setAutoSyncEnabled(enabled,storage=localStorage){storage.setItem(SYNC_MODE_KEY,enabled?'auto':'manual');}

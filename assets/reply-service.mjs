@@ -1,7 +1,7 @@
-import {emptyReplyLibrary,validateReplyManifest,DEFAULT_REPLY_POOLS,categoryKey,validateReplyPools} from './reply-manifest.mjs?v=sync-live-20261028';
-import {readReplyRows,stageReplyRows} from './reply-store.mjs?v=sync-live-20261028';
-import {replyPersonaKey,writeReply,usableReplies} from './reply-model.mjs?v=sync-live-20261028';
-import {holdDraft} from './coordination.mjs?v=sync-live-20261028';
+import {emptyReplyLibrary,validateReplyManifest,DEFAULT_REPLY_POOLS,categoryKey,validateReplyPools} from './reply-manifest.mjs?v=storage-rescue-20261028';
+import {readReplyRows,stageReplyRows} from './reply-store.mjs?v=storage-rescue-20261028';
+import {replyPersonaKey,writeReply,usableReplies} from './reply-model.mjs?v=storage-rescue-20261028';
+import {holdDraft} from './coordination.mjs?v=storage-rescue-20261028';
 export async function readReplyCategory(store,characterId,key){const state=store.get(),c=state.companion.characters.find(c=>c.characterId===characterId);if(!c)throw new Error('角色已刪除。');validateReplyManifest(state.replyLibrary,state.companion);const ref=state.replyLibrary?.characters[characterId]?.categories[key]??null;return {character:c,ref,epoch:state.replyLibrary?.epoch??null,rows:await readReplyRows(ref,{characterId,key}),signature:await replyPersonaKey(c,Number(key[0]))};}
 export async function editReplyCategory(store,{characterId,key,expectedRef,expectedEpoch,expectedSignature,action,values,guard=()=>true}){
  const release=await holdDraft('companion');try{

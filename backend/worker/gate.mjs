@@ -1,6 +1,6 @@
-import {AI_TEST_TEXT} from '../../assets/ai-prompts.mjs?v=sync-live-20261028';
-import {AIError,fail} from '../../assets/ai-errors.mjs?v=sync-live-20261028';
-import {createProviderAdapter,PROVIDERS} from '../../assets/ai-providers.mjs?v=sync-live-20261028';
+import {AI_TEST_TEXT} from '../../assets/ai-prompts.mjs?v=storage-rescue-20261028';
+import {AIError,fail} from '../../assets/ai-errors.mjs?v=storage-rescue-20261028';
+import {createProviderAdapter,PROVIDERS} from '../../assets/ai-providers.mjs?v=storage-rescue-20261028';
 import {digest,randomToken,validToken,challenge,json,edgeFetch} from './security.mjs';
 const secrets={gemini:'GEMINI_API_KEY',deepseek:'DEEPSEEK_API_KEY',openai:'OPENAI_API_KEY',claude:'CLAUDE_API_KEY'};
 // Single SQLite-backed object: opaque session hashes, short OAuth attempts and

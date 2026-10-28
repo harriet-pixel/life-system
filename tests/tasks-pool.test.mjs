@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=sync-live-20261028';
-import {inResidentLibrary,rowsForDate,validateTasks} from '../assets/tasks-model.mjs?v=sync-live-20261028';
+import {createTaskService} from '../assets/tasks-service.mjs?v=storage-rescue-20261028';
+import {inResidentLibrary,rowsForDate,validateTasks} from '../assets/tasks-model.mjs?v=storage-rescue-20261028';
 import {validateDocument,encodeBackup,readBackup,dataCount} from '../assets/backup.mjs';
 const dist={physique:0,wisdom:2,charisma:0,resilience:0,perception:0};
 const values=extra=>({name:'原事件',categoryId:null,points:2,kind:'once',date:'2026-10-23',start:'2026-10-23',end:null,days:[],overdue:'keep',...extra});

@@ -1,3 +1,36 @@
+# 緊急回退與本地儲存修復（2026-10-28）
+
+正式站自動同步 **停用**（AUTO_SYNC_ENABLED=false；runtime拒絕顯式啟用、UI不得重新啟用），Cloudflare不變。此決定取代以下舊啟用記錄，保留最新頁面功能，不回退Git commit。
+
+## 根因與證據
+
+1. localStorage同步sidecar同時持有完整observed主文件（含Undo）、outbox交易及所有已讀checkpoint/operation快取。每次persist全量序列化，舊快照未從快取淘汰；12 MiB字元上限遠高於常見localStorage配額，且UTF-16實際占用更大。主資料和sidecar共用來源配額，故sidecar先佔滿空間後，data.persist的正式setItem也會拋QuotaExceededError。舊catch抹去原始類型，僅留下泛用「無法儲存」；切成手動只close runtime，未釋放sidecar容量，不能恢復可用性。已在1.4MB模擬手機配額，以及Chromium原生配額下重現：後者journal原文占10,480,780 bytes，正式寫入拋QuotaExceededError且主資料未變；移存並讀回核對後，同樣本地修改成功。
+2. 舊快照revision歸零但Redo排序保留，已由前次專項重現。完整備份與同步增量本來應有不同envelope；這次補強Drive回應metadata及內容format/version/id/kind一致性、明確區隔lifeSystemFormat與lifeSystemSyncVersion。驗證訊息列出schema欄位或紀錄位置，engine記錄validate-local-checkpoint／validate-cloud-checkpoint階段；永久格式錯誤不退避重試。**無法存取使用者真實Drive回應，因此不能宣稱已辨識此帳號每一筆失敗檔案的根因或完成真實API驗收。**
+3. runtime.pending與restoreBaseline要求confirmed，使同步失敗成為還原的永久前置阻擋；舊手動模式dirty同樣阻擋。現在手動還原以「先安全保留本地、再還原」取代「一定先同步成功」，不是移除安全檢查。
+
+## 保存與恢復
+
+- 開機及正式交易前，在primary寫鎖內將完整journal原文寫入IndexedDB `life-system.recovery-vault.v1/archives`，交易完成並讀回逐字核對，確認來源未變後，才將原localStorage journal鍵替換為小型索引。原文、outbox、checkpoint快取、既有錯誤均留在vault，不clear、不刪雲端。保護副本以內容hash去重，支援strict durability的瀏覽器使用strict。
+- 保存失敗不替換原journal，也不全站停用按鈕；剩餘配額允許時仍可本地寫入。若primary本身也超出配額或IndexedDB被封鎖，不能承諾有無限儲存空間，維持資料並給錯誤，不刪資料騰空間。
+- data.persist保留QuotaExceededError／SecurityError等類型、操作類型、嘗試byte數及primary/journal/其他localStorage估算；只保留20筆無個資記憶體診斷，不記全文、key名稱、Token或密碼。雲端窗顯示文字儲存估算。
+- 歷史備份下載／解密／完整schema及圖片驗證仍保留；使用者明確確認後，在原maintenance鎖與revision核對下，把目前primary原文及完整待送journal存入vault並讀回確認，再執行既有原子replace。任一步失敗，primary不替換。保護副本可從雲端視窗「下載還原前本地備份」匯出正常備份格式。
+- vault中所有仍在本機的圖片引用繼續保護；遠端快取引用但本機尚無Blob，不會阻擋目前資料備份。無法解析舊引用時保守保留所有本機圖片；不自動刪圖。回覆庫清理也保護archive引用，不讀聊天DB。
+- 舊同步協定仍封存；索引型journal不得直接重新交給舊同步引擎。修復容量與協定、真實Google驗收前不得只翻開關啟用。
+
+## 驗收範圍
+
+新增tests/storage-emergency.test.mjs與tests/emergency-storage.cjs：低配額重現、診斷不含個資、失敗後local任務儲存、完整journal逐字保存與重載、登入零自動Drive請求、備份／同步格式區隔、有未備份資料的安全還原與下載、圖像引用、IDB保存失敗時保留原資料及阻擋不安全還原。完整304項單元測試、八寬度、手動明文／舊加密還原、81項回覆庫與16項正式事件回歸通過。保護備份下載含原圖片也通過。
+
+緊急版手動上傳也預設preserveExisting=true，暫停舊的20筆超額清理；21筆舊手動版本＋新上傳驗證零DELETE。
+
+Google流量皆HTTP mock；配額為Chromium模擬手機限制，**不是真實Android/Windows或真實Google驗證**。實際帳號檔案內容、裝置配額與原始錯誤無法由執行環境直接讀取。發布狀態由對應gh-pages SHA的Pages工作流確認；公開網站直讀受環境代理403限制。
+
+使用者操作：關閉其他舊分頁；Windows Ctrl+F5、Android重新整理。先新增／編輯待辦並刷新確認本地保存。需要Google時再登入並手動上傳；還原選擇歷史版本，閱讀「先保留本地」確認，完成後關窗；可重新開窗下載還原前備份。不清除網站資料、不刪雲端檔案。自動同步維持暫停。
+
+---
+
+以下是歷史驗收，啟用決策已被本次緊急停用取代。
+
 # Undo／Redo 同步修正（2026-10-28）
 
 實際回報「備份結構驗證失敗」可由首次同步前執行Undo重現。舊同步把快照revision歸零，但保留redoable紀錄的undoOrder；既有完整備份驗證要求undoOrder不超過revision，因而拒絕合法快照。這是協定版本計數處理錯誤，不需清除資料。

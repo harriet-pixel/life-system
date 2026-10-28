@@ -1,4 +1,4 @@
-import {distribution} from './habits-model.mjs?v=sync-live-20261028';
-import {ABILITIES} from './abilities.mjs?v=sync-live-20261028';
+import {distribution} from './habits-model.mjs?v=storage-rescue-20261028';
+import {ABILITIES} from './abilities.mjs?v=storage-rescue-20261028';
 // Missing zero entries and integer strings are equivalent representations, never weights.
 export function parseHabitAllocation(text,points){if(typeof text!=='string')throw new Error('AI 沒有回傳能力分配。');let value;try{value=JSON.parse(text.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));}catch{throw new Error('AI 回傳不是完整 JSON；請重新評估。');}value=value?.abilities??value;if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('AI 能力分配格式不正確。');const aliases=new Map(ABILITIES.flatMap(a=>[[a.id,a.id],[a.name,a.id]])),result=Object.fromEntries(ABILITIES.map(a=>[a.id,0])),seen=new Set();for(const [key,raw]of Object.entries(value)){const id=aliases.get(key);if(!id||seen.has(id))throw new Error('AI 回傳未知或重複的能力欄位。');const n=typeof raw==='string'&&/^\d+$/.test(raw.trim())?Number(raw):raw;if(!Number.isSafeInteger(n)||n<0)throw new Error('AI 能力點數須為非負整數，不能使用比例或小數。');seen.add(id);result[id]=n;}const sum=Object.values(result).reduce((a,b)=>a+b,0);if(sum!==points)throw new Error(`AI 分配合計 ${sum} 點，應為 ${points} 點；請重新評估。`);return distribution(result,points);}

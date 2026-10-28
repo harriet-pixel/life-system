@@ -1,18 +1,18 @@
 // JSON object member order is not part of the schema (Drive records are canonicalized).
 const sortedJSON=value=>JSON.stringify((function sort(v){return Array.isArray(v)?v.map(sort):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sort(v[k])])):v;})(value));
-import {validateReplyManifest} from './characters-model.mjs?v=sync-live-20261028';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=sync-live-20261028';
-import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=sync-live-20261028';
-import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=sync-live-20261028';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=sync-live-20261028';
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=sync-live-20261028';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=sync-live-20261028';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=sync-live-20261028';
-import {ABILITIES} from './abilities.mjs?v=sync-live-20261028';
-import {maintenance} from './coordination.mjs?v=sync-live-20261028';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=sync-live-20261028';
-import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=sync-live-20261028';
-import {normalizeSettings} from './settings-model.mjs?v=sync-live-20261028';
+import {validateReplyManifest} from './characters-model.mjs?v=storage-rescue-20261028';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage-rescue-20261028';
+import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=storage-rescue-20261028';
+import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=storage-rescue-20261028';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=storage-rescue-20261028';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=storage-rescue-20261028';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=storage-rescue-20261028';
+import {ABILITIES} from './abilities.mjs?v=storage-rescue-20261028';
+import {maintenance} from './coordination.mjs?v=storage-rescue-20261028';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=storage-rescue-20261028';
+import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=storage-rescue-20261028';
+import {normalizeSettings} from './settings-model.mjs?v=storage-rescue-20261028';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -22,7 +22,7 @@ function unb64(text,max=MAX_FILE_BYTES) {
   if(typeof text!=='string'||text.length>Math.ceil(max/3)*4||text.length%4||!/^[A-Za-z0-9+/]*={0,2}$/.test(text))throw new Error('備份編碼或大小不正確。');
   const bytes=Uint8Array.from(atob(text),c=>c.charCodeAt(0));if(bytes.length>max)throw new Error('備份超過大小限制。');return bytes;
 }
-function check(condition,message='備份結構驗證失敗。'){if(!condition)throw new Error(message);}
+function check(condition,message='備份結構驗證失敗。'){if(!condition)throw Object.assign(new Error(message),{code:'schema'});}
 const topKeys=['revision','statsRulesVersion','profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','stats','history','settings'];
 const legacyKeys=[...topKeys,'tasks','habits','companion','affinity','replyLibrary'];topKeys.push('historyVersion','undoHistory','tasks','habits','companion','affinity','replyLibrary');
 const editKeys=legacyKeys.filter(k=>!['revision','history','statsRulesVersion'].includes(k));
@@ -34,13 +34,13 @@ function safeObject(value,depth=0) {
 }
 function validCrop(crop){return crop&&typeof crop==='object'&&['left','top','width','height'].every(k=>typeof crop[k]==='number'&&Number.isFinite(crop[k]))&&crop.left>=0&&crop.top>=0&&crop.width>0&&crop.height>0;}
 function validateFields(value,full=false,legacy=false) {
-  check(value&&typeof value==='object'&&!Array.isArray(value));
+  check(value&&typeof value==='object'&&!Array.isArray(value),'完整資料／復原快照必須是物件。');
   check(Object.keys(value).every(k=>(full?(legacy?legacyKeys:topKeys):editKeys).includes(k)),'備份含未知資料欄位，請使用相符版本。');
-  if(full){check((legacy?legacyKeys:topKeys).filter(k=>!['tasks','habits','companion','affinity','replyLibrary'].includes(k)).every(k=>Object.hasOwn(value,k)));check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
+  if(full){const missing=(legacy?legacyKeys:topKeys).filter(k=>!['tasks','habits','companion','affinity','replyLibrary'].includes(k)&&!Object.hasOwn(value,k));check(!missing.length,'完整資料缺少必要欄位：'+missing.join('、')); check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
   if(Object.hasOwn(value,'profile')){validateProfileFields(value.profile,undefined,{reading:true});check(value.profile&&['name','age','gender','bio','boundaries','motto'].every(k=>typeof value.profile[k]==='string'));check(value.profile.age===''||(/^\d+$/.test(value.profile.age)&&Number.isSafeInteger(Number(value.profile.age))));}
   if(Object.hasOwn(value,'stats')){
-    const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5);
-    check(s.abilities.every((a,i)=>a.id===ABILITIES[i].id&&a.name===ABILITIES[i].name&&Number.isSafeInteger(a.value)&&a.value>=0));
+    const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5,'數值資料的等級、經驗、貨幣或五項能力格式不正確。');
+    check(s.abilities.every((a,i)=>a.id===ABILITIES[i].id&&a.name===ABILITIES[i].name&&Number.isSafeInteger(a.value)&&a.value>=0),'備份結構：五項能力的ID、名稱、順序或整數值不正確。');
     check(new Set(s.abilities.map(a=>a.id)).size===5);
   }
   if(Object.hasOwn(value,'replyLibrary'))validateReplyManifest(value.replyLibrary,value.companion);
@@ -56,24 +56,24 @@ function validateFields(value,full=false,legacy=false) {
   if(Object.hasOwn(value,'settings')){const normalized=normalizeSettings(value.settings);check(sortedJSON(normalized.appearance)===sortedJSON(value.settings.appearance),'備份設定格式不正確。');if(Object.hasOwn(value.settings,'ai'))check(sortedJSON(normalized.ai)===sortedJSON(value.settings.ai),'AI 備份僅可含服務商與模型偏好。');if(!legacy)check(!Object.hasOwn(value.settings,'history'),'備份含舊版歷史設定。');}
 }
 function validateRecord(r,doc,{snapshot=false,legacy=false}={}){
- check(typeof r.id==='string'&&typeof r.time==='string'&&(!snapshot||legacy||Number.isFinite(Date.parse(r.time)))&&['type','label','target'].every(k=>typeof r[k]==='string')&&Array.isArray(r.fields)&&r.fields.every(k=>typeof k==='string')&&typeof r.undone==='boolean');
- check(r.delta&&Array.isArray(r.delta.abilities)&&r.delta.abilities.every(a=>typeof a.id==='string'&&Number.isFinite(a.value)));
- for(const k of ['experience','currency','level'])check(Number.isFinite(r.delta[k]));
- if(r.undone)check(Number.isFinite(Date.parse(r.undoneAt)));
+ check(typeof r.id==='string'&&typeof r.time==='string'&&(!snapshot||legacy||Number.isFinite(Date.parse(r.time)))&&['type','label','target'].every(k=>typeof r[k]==='string')&&Array.isArray(r.fields)&&r.fields.every(k=>typeof k==='string')&&typeof r.undone==='boolean','行動紀錄的ID、時間、類型或狀態格式不正確。');
+ check(r.delta&&Array.isArray(r.delta.abilities)&&r.delta.abilities.every(a=>typeof a.id==='string'&&Number.isFinite(a.value)),'行動紀錄的能力差額格式不正確。');
+ for(const k of ['experience','currency','level'])check(Number.isFinite(r.delta[k]),'行動紀錄的數值差額不是有限數字。');
+ if(r.undone)check(Number.isFinite(Date.parse(r.undoneAt)),'Undo 時間格式不正確。');
  if(snapshot){
-  if(r.redoable)check(r.undone&&Number.isSafeInteger(r.undoOrder)&&r.undoOrder<=doc.revision);
+  if(r.redoable)check(r.undone&&Number.isSafeInteger(r.undoOrder)&&r.undoOrder<=doc.revision,'Redo 紀錄的狀態、排序或資料版本不一致。');
   if(r.affinityPlan){check(doc.affinity?.version===1&&Array.isArray(r.affinityPlan));for(const p of r.affinityPlan)check(typeof p.sourceKey==='string'&&typeof p.origin==='string'&&[p.before,p.after].every(s=>s&&Number.isSafeInteger(s.quantity)&&s.quantity>=0&&(s.characterId===null||doc.companion?.characters.some(c=>c.characterId===s.characterId)||doc.companion?.deletedCharacterIds.includes(s.characterId))));}
-  validateFields(r.before,false,legacy);validateFields(r.after,false,legacy);check(Object.keys(r.before).length>0&&JSON.stringify(Object.keys(r.before).sort())===JSON.stringify(Object.keys(r.after).sort()));
+  validateFields(r.before,false,legacy);validateFields(r.after,false,legacy);check(Object.keys(r.before).length>0&&JSON.stringify(Object.keys(r.before).sort())===JSON.stringify(Object.keys(r.after).sort()),'復原快照前後欄位不一致或為空。');
  }else check(Object.keys(r).every(k=>['id','time','type','label','target','fields','delta','undone','undoneAt'].includes(k)),'行動紀錄不可包含個人資料或圖片快照。');
 }
 export function validateDocument(doc,{legacy=false}={}){
  safeObject(doc);validateFields(doc,true,legacy);
- check(Number.isSafeInteger(doc.revision)&&doc.revision>=0&&Array.isArray(doc.history));
+ check(Number.isSafeInteger(doc.revision)&&doc.revision>=0&&Array.isArray(doc.history),'完整資料的版本或行動紀錄格式不正確。');
  check(new Set(doc.history.map(r=>r.id)).size===doc.history.length);
  if(legacy){check(doc.history.length<=50);doc.history.forEach(r=>validateRecord(r,doc,{snapshot:true,legacy:true}));}
  else{
-  check(doc.historyVersion===1&&Array.isArray(doc.undoHistory)&&doc.undoHistory.length<=RECOVERY_LIMIT);
-  doc.history.forEach(r=>validateRecord(r,doc));
+  check(doc.historyVersion===1&&Array.isArray(doc.undoHistory)&&doc.undoHistory.length<=RECOVERY_LIMIT,'復原紀錄版本、格式或筆數不正確。');
+  doc.history.forEach((r,i)=>{try{validateRecord(r,doc);}catch(e){throw Object.assign(new Error('行動紀錄第'+(i+1)+'筆：'+e.message),{code:'schema'});}});
   check(new Set(doc.undoHistory.map(r=>r.id)).size===doc.undoHistory.length);
   for(const r of doc.undoHistory){validateRecord(r,doc,{snapshot:true});const meta=doc.history.find(m=>m.id===r.id);check(meta&&sortedJSON(actionMetadata(r))===sortedJSON(meta),'復原紀錄與行動紀錄不一致。');}
  }
@@ -103,7 +103,7 @@ export async function withBackup(store,password,consume,{snapshot}={}) {
     const ownRefs=documentImageReferences(document);check(ownRefs.size<=MAX_IMAGES);let size=0;
     const images=[];
     for(const asset of assets.filter(a=>ownRefs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
-    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=sync-live-20261028')).exportReplyAssets(document.replyLibrary):undefined;
+    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=storage-rescue-20261028')).exportReplyAssets(document.replyLibrary):undefined;
     const payload={...(replyAssets?{replyAssets}:{}),formatVersion:VERSION,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
     return consume(await encodeBackup(payload,password),payload);
   });
@@ -153,7 +153,7 @@ export async function readBackup(file,password='') {
   const refs=documentImageReferences(payload.document,{legacy:payload.dataVersion===2,raw:true});check([...refs].every(id=>ids.has(id)),'備份缺少必要圖片。');check(ids.size===refs.size,'備份含不在範圍內的圖片。');
   // Verify the original inventory before discarding expired legacy snapshots.
   // Never renew timestamps. Import only images still required at restore time.
-  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=sync-live-20261028')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
+  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=storage-rescue-20261028')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
   const document=maintainRecovery(payload.document).document;document.settings=normalizeSettings(document.settings);
   for(const r of document.undoHistory)for(const snapshot of [r.before,r.after])if(snapshot.settings)snapshot.settings=normalizeSettings(snapshot.settings);
   document.companion ??= emptyCharacters();document.affinity ??= emptyAffinity();
@@ -163,7 +163,7 @@ export async function readBackup(file,password='') {
   const liveRefs=documentImageReferences(normalized);
   return {payload:{...payload,dataVersion:3,document:normalized,dataCount:dataCount(normalized)},assets:assets.filter(a=>liveRefs.has(a.id))};
 }
-export async function restoreBackup(store,prepared,expectedRevision,{afterReplace,replaceDocument}={}) {
+export async function restoreBackup(store,prepared,expectedRevision,{beforeReplace,afterReplace,replaceDocument}={}) {
   return maintenance(async()=>{
     store.refresh();check(store.get().revision===expectedRevision,'確認期間資料已改變，請重新選取備份。');
     validateDocument(prepared.payload.document);
@@ -174,8 +174,8 @@ export async function restoreBackup(store,prepared,expectedRevision,{afterReplac
     const required=documentImageReferences(prepared.payload.document),available=new Set([...existing,...prepared.assets].map(a=>a.id));
     check([...required].every(id=>available.has(id)),'還原缺少必要圖片，原資料已保留。');
     for(const asset of prepared.assets)check(asset.blob instanceof Blob&&'asset:'+await hash(await asset.blob.arrayBuffer())===asset.id,'還原圖片完整性不正確，原資料已保留。');
-    await validateRoleImageAssets(prepared.payload.document,[...existing,...prepared.assets]);
-    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=sync-live-20261028')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
+    await validateRoleImageAssets(prepared.payload.document,[...existing,...prepared.assets]);await beforeReplace?.();
+    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=storage-rescue-20261028')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
     await stageImageAssets(prepared.assets);
     const document=maintainRecovery(prepared.payload.document).document;if(replaceDocument)await replaceDocument(document);else store.replace(document);await afterReplace?.();
   });

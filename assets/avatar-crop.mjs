@@ -1,4 +1,4 @@
-import {validateZoom} from './validation.mjs?v=sync-live-20261028';
+import {validateZoom} from './validation.mjs?v=storage-rescue-20261028';
 export const RAW_IMAGE_LIMIT = 20 * 1024 * 1024;
 export const IMAGE_LIMIT = 1024 * 1024;
 export const AVATAR_LIMIT = 200 * 1024;

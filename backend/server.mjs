@@ -1,4 +1,4 @@
-import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=sync-live-20261028';
+import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=storage-rescue-20261028';
 import {createServer} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {createJWTVerifier} from './auth.mjs';

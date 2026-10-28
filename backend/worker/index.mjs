@@ -1,4 +1,4 @@
-import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=sync-live-20261028';
+import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=storage-rescue-20261028';
 import {configuration,jsonBody,json,validToken,edgeFetch} from './security.mjs';
 export {PersonalGate} from './gate.mjs';
 const cookieName='__Host-life-oauth';

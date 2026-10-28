@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=sync-live-20261028';
-import { holdDraft } from './coordination.mjs?v=sync-live-20261028';
-import { createProfileImages } from './profile-images.mjs?v=sync-live-20261028';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=sync-live-20261028';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=sync-live-20261028';
-import { undoManager } from './undo.mjs?v=sync-live-20261028';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=sync-live-20261028';
+import {bindProfileValidation} from './validation.mjs?v=storage-rescue-20261028';
+import { holdDraft } from './coordination.mjs?v=storage-rescue-20261028';
+import { createProfileImages } from './profile-images.mjs?v=storage-rescue-20261028';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=storage-rescue-20261028';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=storage-rescue-20261028';
+import { undoManager } from './undo.mjs?v=storage-rescue-20261028';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=storage-rescue-20261028';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

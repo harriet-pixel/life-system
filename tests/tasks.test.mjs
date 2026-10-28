@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=sync-live-20261028';
-import {emptyTasks,localDate,addDays,rowsForDate,catchUp,validateTasks,allocation} from '../assets/tasks-model.mjs?v=sync-live-20261028';
+import {createTaskService} from '../assets/tasks-service.mjs?v=storage-rescue-20261028';
+import {emptyTasks,localDate,addDays,rowsForDate,catchUp,validateTasks,allocation} from '../assets/tasks-model.mjs?v=storage-rescue-20261028';
 import {validateDocument,encodeBackup,readBackup,dataCount,restoreBackup} from '../assets/backup.mjs';
 function fixture(){let raw=null,time=new Date('2026-10-23T12:00:00'),seq=0;const storage={getItem:()=>raw,setItem:(_,s)=>raw=s},store=createDataStore(storage,{now:()=>+time}),service=createTaskService(store,{now:()=>time,id:()=>`id-${++seq}`});return {store,service,storage,advance:d=>{time=new Date(time);time.setDate(time.getDate()+d);},reload:()=>createDataStore(storage,{now:()=>+time})};}
 const values=(extra={})=>({name:'閱讀',points:2,kind:'once',date:null,start:'2026-10-23',end:null,days:[],overdue:'keep',categoryId:null,...extra});
 const dist={physique:0,wisdom:2,charisma:0,resilience:0,perception:0};
 test('overdue grace day is shared by queries and atomic batches without changing scheduled dates',async()=>{
- const {isOverdue}=await import('../assets/tasks-model.mjs?v=sync-live-20261028');
+ const {isOverdue}=await import('../assets/tasks-model.mjs?v=storage-rescue-20261028');
  const f=fixture(),yesterday=await f.service.edit(values({date:'2026-10-22'})),earlier=await f.service.edit(values({date:'2026-10-21'}));await f.service.reconcile();
  const before=f.store.get(),entries=before.tasks.occurrences;
  assert.equal(isOverdue(entries.find(o=>o.taskId===yesterday),'2026-10-23'),false);assert.equal(isOverdue(entries.find(o=>o.taskId===earlier),'2026-10-23'),true);

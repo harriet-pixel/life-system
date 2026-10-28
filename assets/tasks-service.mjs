@@ -1,7 +1,7 @@
-import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=sync-live-20261028';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=sync-live-20261028';
-import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate} from './tasks-model.mjs?v=sync-live-20261028';
-import {expiresAt} from './recovery.mjs?v=sync-live-20261028';
+import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=storage-rescue-20261028';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=storage-rescue-20261028';
+import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {expiresAt} from './recovery.mjs?v=storage-rescue-20261028';
 export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.randomUUID(),emit=()=>{}}={}){
  const snapshot=()=>store.get();
  async function save(base,tasks,label,type='task.updated',stats,transactionId=id()){

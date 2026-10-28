@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=sync-live-20261028';
+import {ABILITIES} from './abilities.mjs?v=storage-rescue-20261028';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;

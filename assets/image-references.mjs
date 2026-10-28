@@ -1,16 +1,12 @@
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=sync-live-20261028';
-import {validateCharacterImages} from './character-images-model.mjs?v=sync-live-20261028';
-import {maintainRecovery} from './recovery.mjs?v=sync-live-20261028';
-import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=sync-live-20261028';
-import {maintenance} from './coordination.mjs?v=sync-live-20261028';
+import {archivedReferences} from './storage-vault.mjs?v=storage-rescue-20261028';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage-rescue-20261028';
+import {validateCharacterImages} from './character-images-model.mjs?v=storage-rescue-20261028';
+import {maintainRecovery} from './recovery.mjs?v=storage-rescue-20261028';
+import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=storage-rescue-20261028';
+import {maintenance} from './coordination.mjs?v=storage-rescue-20261028';
 const providers=new Map();
 // Always protect the durable outbox, including after reverting to manual mode.
-providers.set('跨裝置同步待處理',{transient:false,read:()=>{
- const raw=globalThis.localStorage?.getItem('life-system.cloud-sync-state.v1');if(!raw)return [];
- let journal;try{journal=JSON.parse(raw);}catch{throw new Error('無法核對同步圖片引用。');}
- if(journal.version!==1||!Array.isArray(journal.outbox)||!journal.observed)throw new Error('同步圖片引用版本不完整，停止清理。');
- return [...journal.outbox.flatMap(op=>(op.imageReferences??[]).filter(id=>id.startsWith('asset:'))),...documentImageReferences(journal.observed)];
-}});
+providers.set('跨裝置同步待處理',{transient:false,read:async()=>{const local=new Set((await listImageAssets()).map(a=>a.id));try{return (await archivedReferences('asset:')).filter(id=>local.has(id));}catch{return [...local];}} });
 export function registerImageReferenceSource(name,read,{transient=true}={}) {
   if(providers.has(name)) throw new Error('重複的圖片引用來源');
   providers.set(name,{read,transient});return ()=>providers.delete(name);

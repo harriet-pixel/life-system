@@ -1,26 +1,26 @@
-import {backupDeviceName} from './cloud-backup-display.mjs?v=sync-live-20261028';
-import {replyRefs} from './reply-manifest.mjs?v=sync-live-20261028';
+import {backupDeviceName} from './cloud-backup-display.mjs?v=storage-rescue-20261028';
+import {replyRefs} from './reply-manifest.mjs?v=storage-rescue-20261028';
 // Load the reusable reply asset store only when a manifest actually references it.
-const replyStore=()=>import('./reply-store.mjs?v=sync-live-20261028');
+const replyStore=()=>import('./reply-store.mjs?v=storage-rescue-20261028');
 const readReplyRows=async(...args)=>(await replyStore()).readReplyRows(...args);
 const validateReplyAssets=async(...args)=>(await replyStore()).validateReplyAssets(...args);
 const importReplyAssets=async(...args)=>(await replyStore()).importReplyAssets(...args);
-import {autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=sync-live-20261028';
-import {createSyncEngine} from './cloud-sync-engine.mjs?v=sync-redo-20261028';
-import {createSyncDrive} from './cloud-sync-drive.mjs?v=sync-live-20261028';
-import {dataStore,isPristineDocument} from './data.mjs?v=sync-live-20261028';
-import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=sync-live-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=sync-live-20261028';
-import {maintenance} from './coordination.mjs?v=sync-live-20261028';
-import {validateDocument} from './backup.mjs?v=sync-live-20261028';
-import {maintainRecovery} from './recovery.mjs?v=sync-live-20261028';
-import {documentImageReferences} from './image-references.mjs?v=sync-live-20261028';
-import {readImageBlob,listImageAssets,stageImageAssets} from './image-store.mjs?v=sync-live-20261028';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=sync-live-20261028';
-import {same,logicalDocument} from './cloud-sync-model.mjs?v=sync-redo-20261028';
+import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=storage-rescue-20261028';
+import {createSyncEngine} from './cloud-sync-engine.mjs?v=storage-rescue-20261028';
+import {createSyncDrive} from './cloud-sync-drive.mjs?v=storage-rescue-20261028';
+import {dataStore,isPristineDocument} from './data.mjs?v=storage-rescue-20261028';
+import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=storage-rescue-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=storage-rescue-20261028';
+import {maintenance} from './coordination.mjs?v=storage-rescue-20261028';
+import {validateDocument} from './backup.mjs?v=storage-rescue-20261028';
+import {maintainRecovery} from './recovery.mjs?v=storage-rescue-20261028';
+import {documentImageReferences} from './image-references.mjs?v=storage-rescue-20261028';
+import {readImageBlob,listImageAssets,stageImageAssets} from './image-store.mjs?v=storage-rescue-20261028';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage-rescue-20261028';
+import {same,logicalDocument} from './cloud-sync-model.mjs?v=storage-rescue-20261028';
 // Explicitly feature gated. A false gate performs no Drive reads, writes or local applies.
 export async function startCloudSync({enabled=autoSyncEnabled(),store=dataStore,storage=localStorage,remote=createSyncDrive(),onState=()=>{}}={}){
- if(!enabled)return {enabled:false,close(){},getState:()=>({state:'待同步',pending:0,checked:false,confirmed:false,message:'目前使用手動備份模式。'})};
+ if(!enabled||!AUTO_SYNC_ENABLED)return {enabled:false,close(){},getState:()=>({state:'待同步',pending:0,checked:false,confirmed:false,message:'目前使用手動備份模式。'})};
  if(getSyncRuntime()?.enabled)return getSyncRuntime();
  if(typeof store.replaceSynchronized!=='function')throw new Error('同步模組版本不完整，已停止；請重新載入相容版本。');
  let engine,wasConnected=getDriveState().connected,everConnected=wasConnected,manualDisconnect=false,authNotice=false,offlineNotice=false,snapshotTimer=null,closed=false;
