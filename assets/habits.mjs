@@ -1,4 +1,4 @@
-import {mountColorField} from './color-field.mjs?v=sync-ui-20261028';
+import {mountColorField} from './color-field.mjs?v=sync-layout-20261028';
 import {createRewardFeedback} from './task-reward-feedback.mjs?v=companion-images-20261027';
 import {mountTaskCompanion} from './task-companion.mjs?v=replies-20261027';
 import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=companion-images-20261027';
