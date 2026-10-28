@@ -82,7 +82,7 @@
 
 ## AI 連線（BYOK）
 
-第五分類沿用定位與外觀，含兩種互斥模式。開發用「瀏覽器直連測試模式」預設關閉，確認風險後可在後端／登入未設定時輸入金鑰；一組測試連線僅存 `life-system.ai-test.v1` sessionStorage，不自動到期，跨同分頁HTML／重載可恢復，換商清 key/model、關閉／中斷清除entry。sessionStorage 不是加密保管庫；不跨分頁廣播，不以關閉分頁當唯一保證。
+AI連接預設開啟，金鑰與模型保存在專用localStorage，手動中斷清除。重整恢復連接，各頁開發測試面板與模式開關移除；金鑰不進一般資料、歷史或備份。詳見AI_CONNECTION.md。
 
 正式模式仍以頁內記憶體與受驗證後端轉送，目前未部署；只有其 settings.ai 的 provider/model 非敏感偏好可進一般資料。測試 session、key、token 或連線狀態不進一般設定／歷史／Undo／Redo／備份，既有備份相容與白名單保留。沒有後端資源或登入建立，也未重設數值或清理資料。
 

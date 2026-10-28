@@ -1,4 +1,4 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=storage-rescue-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=mobile-daily-20261028';
 import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=storage-rescue-20261028';
 import {replyPersonaKey,usableReplies,pickReply,replyPrompt,parseDailyReply} from './reply-model.mjs?v=storage-rescue-20261028';
 import {readReplyCategory,editReplyCategory} from './reply-service.mjs?v=storage-rescue-20261028';

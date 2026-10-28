@@ -1,53 +1,22 @@
-# AI 連線：個人 Workers 後端與瀏覽器直連備用
+# AI 連線
 
-## 現況與產品界線
+2026-10-28：依使用者決定，瀏覽器 AI 連接預設開啟，移除各頁開發用跨頁／短文字測試面板及模式確認開關。Cloudflare 維持暫停，後端原碼與獨立認證保留，不部署。
 
-Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Cloudflare Workers 個人後端**（GitHub OAuth 本人帳號驗證、Worker Secret 保存 AI 金鑰）；Cloudflare 建置已暫停，待網頁完成後再處理；本次不建立或部署服務。公開 Worker URL 留白時如實顯示尚未設定。原瀏覽器直連作手動備用，預設關閉，不因後端未設定而停用。無自動切換或重送，不搬資料或自動接入夥伴／分點。部署與免費額度見 [個人 Worker 指南](docs/CLOUDFLARE_PERSONAL_AI.md)。
+## 瀏覽器保存與連接
 
-使用者已回報 DeepSeek 瀏覽器直連連線成功；其餘服務商、生成、跨頁及 Worker 真實流程不因此視為驗證通過。
+設定提供 Gemini、DeepSeek、OpenAI、Claude 官方 HTTPS API，仍沿同一 ai-runtime／client／service／providers；不新增代理或第二套連線。輸入金鑰後可連接、查詢、選擇模型，保留固定短文的「測試連線」；沒有自動生成、逐個測試模型或失敗重試。
 
-首次啟用會顯示確認：
+一組 provider/key/model 存在專用 localStorage `life-system.ai-test.v1`，保留既有schema與鍵名以相容舊設定；不是一般生活文件。金鑰不自動到期，關閉瀏覽器後保留，直到手動中斷清除金鑰／模型或換服務商。中斷後保留空的預設啟用設定以便重新輸入。有效舊sessionStorage設定只在沒有持久設定時遷移，成功保存後移除舊分頁副本；不復活過期v1或無效紀錄。
 
-> 金鑰將暫存於此分頁，本站程式與可存取本頁的擴充功能可能讀取。請使用測試專用金鑰並於服務商設定用量限制。
+首次開站／重整有已保存金鑰時，自動重新取得有效模型清單並恢復已選模型；未設定金鑰不請求API。同文件切頁沿同一連線，不重查或生成。storage事件使其他同來源分頁取消舊連線並載入新設定，不因每次輸入字元自動發送模型查詢；正式使用時再經原驗證流程連接。pagehide取消在途請求，保留持久設定。
 
-這是有風險的開發模式，**sessionStorage 不是加密保管庫，不具後端保管等級安全性**；不可只依賴關閉分頁保證清除，也不承諾 JavaScript 能絕對抹除記憶體。金鑰由使用者自行在網站輸入，勿貼到聊天、GitHub 或提交。
+金鑰固定password、失焦／連接／切頁清空DOM，不回填或提供檢視按鈕。localStorage不是加密保管庫，同來源程式、擴充功能或開發工具仍可讀；設定頁直接說明此保存方式。勿將金鑰提交到聊天、Git或日誌。
 
-已盤點 COMPANION.md：成功事件與 dialogue/emotion 格式已有開發契約，但角色、好感度、正式情緒素材與回應設定尚未齊備，不能自行補角色／獎勵規則。**首頁夥伴保留 mock**，沒有把勾選或打卡接到真實 AI；新增獨立的開發測試入口，驗證明確輸入文字的跨頁生成。AI 回應只當文字顯示，不直接修改資料或數值。沒有清理使用者資料或重設數值。
+專用AI設定不進 `life-system.data.v1`、IndexedDB、history、Undo／Redo、備份、URL或console。正常雲端／本機備份只讀正式文件白名單，沿原保護；Google及未部署後端認證仍用原sessionStorage，未改成持久登入。儲存失敗安全停用，不把密鑰改存一般資料或其他位置。
 
-## 模式及金鑰資料流
+## 共用程式
 
-| 模式 | 金鑰與傳送路徑 | 目前可用性 |
-| --- | --- | --- |
-| 瀏覽器直連測試 | 設定輸入 → 本頁記憶體及專用 sessionStorage → 選定官方 HTTPS API 的認證標頭 | 明確啟用後可測試，不要求本站登入或後端 |
-| 個人 Workers | AI key 只在 Worker Secret → 官方 HTTPS API；Pages 僅帶本站 opaque session | 程式備妥，控制台部署／本人登入真實驗收待完成 |
-| 舊 Node BYOK 後端 | 本頁 key → HTTPS POST `/v1/ai` → JWT/scope → 官方 API | 保留原始碼，不是本次部署目標 |
-
-### 測試分頁生命週期
-
-- 金鑰只可輸入／替換，介面不提供再次查看。固定password，移除顯示切換；失焦、發送請求、切頁及pagehide清空DOM輸入值，不觸發空字串setKey，不中斷既有連線；重載／恢復不從session回填。這是UI行為，瀏覽器直連仍須在sessionStorage／記憶體持有金鑰以認證，不聲稱對DevTools或擴充功能不可讀。
-
-- 唯一命名空間 `life-system.ai-test.v1`，欄位固定為 version、enabled、provider、apiKey、model、issuedAt、expiresAt；一次一組，不另保存四家金鑰。與 localStorage 的 life-system.data.v1 完全分離。
-- 只有使用者確認啟用後才可寫入 sessionStorage。直連金鑰**不自動到期**；使用者手動中斷連線或關閉直連模式時清除。仍使用分頁sessionStorage，關閉分頁／瀏覽器是否保留依瀏覽器行為，不改存localStorage。
-- 啟動、pageshow恢復、回到可見頁面、每次AI操作前仍檢查格式及暫存是否存在，不設直連到期計時器。v2保留原欄位，expiresAt固定null；尚未到期的v1兩小時紀錄可一次遷移為v2，保留金鑰、模型與issuedAt；過期、已刪除或損壞的舊紀錄不復活。錯誤格式／未來issuedAt仍拒絕，不影響一般使用者資料。
-- 同文件站內路由保留同一 runtime、模型清單及輸入，僅取消離開頁面未完成的請求，不重送；真正 pagehide 才取消在途請求、清除該文件的執行記憶體／金鑰輸入框，不刪有效測試 session；同分頁跨本站 HTML 與重載仍可恢復。模型清單不保存，恢復後第一次生成會先動態重新列舉、確認已選模型仍有效，再送出該模型的請求。
-- 切換服務商、關閉模式或「中斷連線並清除金鑰」取消舊請求，清空金鑰、模型及狀態；模式關閉／中斷移除專用 session entry。換商只保留已同意的測試模式及新 provider，金鑰與模型為空。取消單次請求可保留仍有效的同一組測試設定。
-- 不寫 localStorage、IndexedDB、Cookie、一般設定文件、歷史、Undo／Redo、備份、URL、console／日誌；不使用 BroadcastChannel 或其他跨頁籤同步。sessionStorage 被瀏覽器或擴充功能讀取的風險由啟用提示明確說明。
-- 新分頁不保證共用；瀏覽器有時會複製 opener 的 sessionStorage，因此也不保證每個新分頁一定空白。不為此引入持久儲存或 URL 憑證傳遞。sessionStorage 不可用時安全停止測試模式，顯示提示，不退回 localStorage。
-- 只有正式模式的非敏感 provider/model 偏好可以使用原 settings.ai。測試模式的連線資料全部放專用 session，不寫進一般設定。原備份／匯入白名單不變，不能匯入金鑰、token、連線狀態或測試 session。
-
-## 共用程式與跨頁入口
-
-- `assets/ai-service.mjs`：原有 createAIConnection，並透過 ai-prompts 組裝共用語言規則；統一 provider/model 狀態、查詢、生成、取消、逾時、安全錯誤與競態；本次增加 transport 注入，沒有另建第二套服務。
-- `assets/ai-client.mjs`：同一控制器切換個人 Worker／舊 Node／明確啟用的瀏覽器 transport；直連暫存有效性檢查、手動清除、恢復與取消集中於此。
-- `assets/ai-worker-auth.mjs`：GitHub popup 訊息驗證、本站一小時工作階段、Workers 認證請求／登出；`ai-worker-config.mjs` 只有公開 Worker URL。
-- `assets/ai-session.mjs`：專用 session schema／原始到期時間；只有此模組讀寫測試 entry。
-- `assets/ai-runtime.mjs`：每個文件一個共用實例 `getSharedAIConnection()`；各頁使用同一邏輯，狀態不含可見金鑰或認證標頭。
-- `assets/ai-providers.mjs`、`ai-errors.mjs`、`ai-capabilities.mjs`：原 backend adapter 移至瀏覽器安全的共用模組；backend 下原檔只 re-export，不複製邏輯，不把 server/auth/env 放靜態成果。
-- `assets/ai-settings.mjs`：設定分類的模式開關、風險確認與原有 provider/key/model 控制項。
-- `assets/ai-test-panel.mjs`：統一短文字輸入（1–1,000 字元）、64/128/256 output-token 上限、送出／取消、文字回應與狀態；所有生成由使用者主動觸發，無重試。
-- `assets/ai-page.mjs`：首頁與我的資料，在本人後端登入或有效直連測試模式下顯示「開發用 AI 跨頁測試」。不改夥伴 mock、數值與交易規則，未來頁面可沿用同一 service／面板。
-
-未定義的 AI 產品功能不自動接入；AI 失敗不阻擋原本資料操作。只傳送使用者在測試區明確輸入的文字，不預設附帶 profile、禁忌、歷史、圖片或備份。回應以 textContent 呈現，模型名稱用 Option，不執行 HTML。連線測試只用固定 `請只回覆「測試成功」。`、64 output tokens；均提示可能產生 API 費用，不逐一測試模型。
+ai-session維持固定schema驗證；ai-runtime決定持久儲存、遷移及跨分頁生命週期；ai-client統一取消與恢復；ai-service負責模型、生成、時間上限、安全錯誤及競態。設定頁移除模式開關與短文字視窗，保留服務商／金鑰／連接／重新整理／中斷／模型／測試連線。ai-page與ai-test-panel已無依賴並移除。
 
 ## 全站共用語言規則
 

@@ -3,12 +3,12 @@ import {createAIConnection} from './ai-service.mjs?v=storage-rescue-20261028';
 import {createAISession} from './ai-session.mjs?v=storage-rescue-20261028';
 import {createProviderAdapter} from './ai-providers.mjs?v=storage-rescue-20261028';
 // One controller for formal backend and explicitly enabled browser testing.
-export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null}={}){
+export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null,defaultBrowser=false}={}){
  const session=createAISession(storage,{now}),listeners=new Set();
  let core,unsubscribe,mode='backend',epoch=0,override='';
  function read(){try{return session.read();}catch{return null;}}
- const initial=read();
- function state(){const value=mode==='browser'?read():null,current=core.getState();const message=mode==='browser'&&['unset','key_stored'].includes(current.status)?(current.hasKey?'金鑰已暫存於此分頁；可取得模型，跨頁生成會先重新驗證模型。':'測試模式已啟用，請輸入測試專用金鑰。'):current.message;const personal=mode==='backend'&&personalBackend?.getState().configured?personalBackend.getState():null;return {...current,message:personal&&['unset','unconfigured'].includes(current.status)?personal.message:message,mode,personal:personalBackend?.getState()??null,backendReady:Boolean(personal?.authenticated),restorableBackendModel:Boolean(personal?.authenticated&&preference.model),configured:core.configured,expiresAt:value?.expiresAt??null,restorableModel:Boolean(value?.apiKey&&value.model),sessionModel:value?.model??'',...(override?{message:override}:{})};}
+ let initial=read();if(!initial&&defaultBrowser){try{session.enable(preference.provider??'gemini');initial=read();}catch{}}
+ function state(){const value=mode==='browser'?read():null,current=core.getState();const message=mode==='browser'&&['unset','key_stored'].includes(current.status)?(current.hasKey?'金鑰已儲存在此瀏覽器；可連接並選取模型。':'AI 連接已開啟，請輸入 API 金鑰。'):current.message;const personal=mode==='backend'&&personalBackend?.getState().configured?personalBackend.getState():null;return {...current,message:personal&&['unset','unconfigured'].includes(current.status)?personal.message:message,mode,personal:personalBackend?.getState()??null,backendReady:Boolean(personal?.authenticated),restorableBackendModel:Boolean(personal?.authenticated&&preference.model),configured:core.configured,expiresAt:value?.expiresAt??null,restorableModel:Boolean(value?.apiKey&&value.model),sessionModel:value?.model??'',...(override?{message:override}:{})};}
  const emit=()=>listeners.forEach(listener=>listener(state()));
  function install(browser,value=null){
   epoch++;personalBackend?.cancel();unsubscribe?.();core?.disconnect();mode=browser?'browser':'backend';override='';
@@ -32,7 +32,7 @@ export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpo
   if(read())return true;
   install(false);override='瀏覽器直連暫存已清除或無效，請重新啟用並輸入金鑰。';emit();return false;
  }
- function storageFailure(){try{session.clear();}catch{}install(false);override='無法使用此分頁的 sessionStorage，已清除連線；請確認瀏覽器允許分頁暫存。';emit();}
+ function storageFailure(){try{session.clear();}catch{}install(false);override='無法保存 AI 連接，請確認瀏覽器允許網站儲存。';emit();}
  async function execute(operation,options){
   if(!checkExpiry())return;
   const version=epoch,current=core;
@@ -50,7 +50,7 @@ export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpo
   selectModel(model){if(checkExpiry())core.selectModel(model);},
   connect:()=>execute('connect'),refresh:()=>execute('refresh'),test:()=>execute('test'),generate:options=>execute('generate',options),
   cancel(){epoch++;core.cancel();},
-  disconnect(){try{session.clear();}catch{}if(mode==='browser')install(false);else core.disconnect();},
+  disconnect(){const provider=core.getState().provider;try{session.clear();if(defaultBrowser)session.enable(provider);}catch{}if(mode==='browser')install(defaultBrowser,read());else core.disconnect();},
   async login(){if(mode!=='backend')return;const result=await personalBackend?.login();if(result)install(false);return result;},
   async logout(){epoch++;core.disconnect();await personalBackend?.logout();install(false);},
   checkExpiry,

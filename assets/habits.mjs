@@ -1,12 +1,12 @@
 import {mountColorField} from './color-field.mjs?v=storage-rescue-20261028';
 import {createRewardFeedback} from './task-reward-feedback.mjs?v=storage-rescue-20261028';
-import {mountTaskCompanion} from './task-companion.mjs?v=storage-rescue-20261028';
+import {mountTaskCompanion} from './task-companion.mjs?v=mobile-daily-20261028';
 import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=storage-rescue-20261028';
 import {createMobileTabPositioner} from './tab-position.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=storage-rescue-20261028';
+import {dataStore} from './data.mjs?v=mobile-daily-20261028';
 import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=storage-rescue-20261028';
-import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=storage-rescue-20261028';
-import {statusButtons} from './habit-quick.mjs?v=storage-rescue-20261028';
+import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=mobile-daily-20261028';
+import {statusButtons} from './habit-quick.mjs?v=mobile-daily-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 export function mountHabits(root,context){

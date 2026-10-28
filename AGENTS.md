@@ -133,13 +133,13 @@
 ## AI 連線
 
 - 沿用同一 AI service 與四家 provider。新增 Cloudflare Workers 個人後端（GitHub OAuth 本人 numeric ID、Worker Secret、SQLite DO 限額），部署指南與免費界線見 `docs/CLOUDFLARE_PERSONAL_AI.md`；原 Node BYOK 後端保留，不是本次部署目標。Cloudflare 建置依使用者要求暫停，待網頁完成後再處理；本次不得建立或部署服務。控制台未部署前如實尚未設定，不購買網域、不搬 DNS、不升級付費。瀏覽器直連保留作手動備用，不自動切換／重送。
-- 「瀏覽器直連測試模式」預設關閉，啟用前明確提示金鑰暴露與測試 key／用量限制並確認。測試模式不因正式 endpoint 空白或未登入而停用輸入；只呼叫官方 HTTPS API，不用公共代理或停用瀏覽器安全性。
+- 瀏覽器AI連接預設開啟，只呼叫官方HTTPS API；設定頁說明專用localStorage保存與同來源讀取風險，不再有開發模式開關或跨頁測試面板。
 - AI金鑰欄固定password且不提供顯示按鈕；blur、連線／重新整理／測試及離頁清空輸入框，不清除連線；返回或重載不回填，留白可輸入新金鑰替換。瀏覽器直連所需session仍沿既有規則保存，不宣稱可阻止DevTools讀取。
-- 明確同意後，一組 provider/key/model只存專用sessionStorage `life-system.ai-test.v1`，直連不自動到期，手動中斷／關閉模式清除。v2 expiresAt=null，未到期v1可遷移，已過期或刪除者不復活。啟動、恢復、可見與每次請求前檢查；同文件站內切頁不觸發 pagehide、不重建連線；真正 pagehide 只取消執行記憶體，不刪仍有效的測試 entry。關閉模式或中斷清除；換商取消並清空金鑰、模型與狀態，不保留多家 key。
-- sessionStorage 不是加密保管庫，不保證關閉分頁可靠抹除；不寫其他瀏覽器儲存、一般設定／歷史／Undo／Redo／備份／URL／日誌，不跨頁籤廣播，不要求使用者把 key 貼到聊天或 Git。新分頁可能由瀏覽器複製 opener session，不宣稱可靠共用或完全隔離。
+- 一組provider/key/model存專用localStorage `life-system.ai-test.v1`，不自動到期；手動中斷或換商清除密鑰與模型，預設空連接仍開啟。有效舊sessionStorage設定可遷移；重整自動重連模型，同文件切頁不重查，storage事件取消其他分頁舊連接。
+- AI專用localStorage不是加密保管庫，不進一般設定、歷史、Undo／Redo、備份、URL或日誌；不改Google／後端原有sessionStorage。勿要求使用者把key貼到聊天或Git。
 - `ai-runtime`／`ai-client`／`ai-session` 集中恢復與生命週期；`ai-service` 統一狀態、生成、取消與錯誤；`assets/ai-providers`／`ai-capabilities`／`ai-errors` 前後端共用，不另建重複系統。backend/ 的 server/auth/env 永不進 work/build。
 - 個人 Worker 金鑰只放 Cloudflare Secret，不回前端；GitHub access token 只用於 callback／user，不保存。本站 opaque session 最長一小時，專用 sessionStorage `life-system.ai-worker-session.v1`，DO 只存 hash、期限與限額，登出後端撤銷。CORS 不是認證，不混用 Drive／Cloudflare 管理 token。缺設定安全停用後端，直連不受影響。舊 Node BYOK 模式仍僅本頁 key＋JWT/scope，不與 Worker 模式混稱。測試金鑰不走一般 settings.ai；原非敏感 provider/model 偏好及備份白名單保留。
-- 四家模型 schema、能力、分頁、生成相容性及官方來源見 `docs/AI_PROVIDER_AUDIT.md`。DeepSeek 優先使用模態／API 能力 metadata，Gemini／OpenAI 精確規則需依官方來源維護；Claude deprecated 不等於 retired。介面區分暫存金鑰、查詢、選取與生成，安全診斷區分空清單和全部篩除。模型動態查詢與已知能力資訊／精確 ID 相容規則交集，可能排除新模型；失敗不以固定／過期清單代替。僅主動測選取模型，不附帶個人資料，限輸入／輸出、不重試；AI 輸出只當文字，不直接改數值。首頁夥伴角色等規格仍未完整，維持 mock，首頁／資料頁提供獨立開發跨頁文字測試入口。
+- 四家模型 schema、能力、分頁、生成相容性及官方來源見 `docs/AI_PROVIDER_AUDIT.md`。DeepSeek 優先使用模態／API 能力 metadata，Gemini／OpenAI 精確規則需依官方來源維護；Claude deprecated 不等於 retired。介面區分暫存金鑰、查詢、選取與生成，安全診斷區分空清單和全部篩除。模型動態查詢與已知能力資訊／精確 ID 相容規則交集，可能排除新模型；失敗不以固定／過期清單代替。僅主動測選取模型，不附帶個人資料，限輸入／輸出、不重試；AI 輸出只當文字，不直接改數值。首頁夥伴角色等規格仍未完整，維持 mock，各頁開發跨頁文字測試入口已移除。
 - 共用 `ai-prompts.mjs` 統一繁體中文／臺灣詞彙，service 組裝、provider 原生 system／instructions 套用；角色不能覆蓋，結構化代碼／數字、程式碼、URL、ID 及明確保留原文不翻譯，不改使用者資料。未來功能必須經同一層。
 - 官方瀏覽器支援與驗收限制見 AI_CONNECTION.md。使用者已回報 DeepSeek 直連連線成功；不擴大為其他 provider、生成、跨頁或 Worker 部署已驗證。mock 不等於真實結果。
 
@@ -220,3 +220,9 @@
 緊急保存規則：localStorage配額失敗須保留原primary並輸出無個資的錯誤類型／操作／各類byte估算；同步sidecar不能阻擋primary。手動還原先在相同維護鎖內保存原primary與完整待送journal至本地vault、讀回核對，再提交已驗證目標。失敗不得替換；舊圖片及回覆庫引用持續保護，還原前保護副本持續保存。不得因舊同步失敗而永久要求先同步成功才可手動還原。正式決定維持手動備份與還原，不再使用自動同步；網站不載入同步 runtime。
 
 2026-10-28 手動備份介面調整：移除雲端視窗的文字儲存估算、還原前本地備份下載按鈕及自動同步模式切換；改以手動備份說明。還原前本地 vault 保護及既有紀錄保留，手動上傳與版本還原不變。
+
+## 行動版共用日常頁首（2026-10-28）
+
+首頁／待辦／習慣在小於1024px共用daily-header：日期→兩行資訊區→數據列→主頁籤，各區1em間距、三頁相同捲軸預留寬度。首頁資訊區兩行通知；待辦為任務看板N則＋一行通知，月曆／設定在右側同一資訊列；習慣為當月上下半月點數＋一行通知，保留設定／新增圖示。通知依可用寬度截為....，完整文字留title與aria-description，取代舊十字／內捲規則。不動桌面布局與正式獎勵。
+
+看板／懸而未決安排使用同一task-multi-schedule日曆的單日模式，原移動規則保留；常駐仍可跨月多選。導航當前圖示主題色底白線，已知路由HTML／模組平行讀取並在hover／focus／touch意圖預取，不mount背景頁、不執行AI／資料操作。

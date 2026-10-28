@@ -36,7 +36,7 @@ Google Identity Services 使用 OAuth token client，僅要求 `https://www.goog
 | IndexedDB `life-system.replies.v1` | 正式日常回覆庫內容，主文件保留引用。 |
 | IndexedDB `life-system.chat.v1` | 24小時短期聊天全文；不進雲端備份。正式無全文評估證據仍隨主文件備份。 |
 | IndexedDB `life-system.recovery-vault.v1` | 舊同步journal完整封存及還原前本機保護副本，不清除。localStorage原journal鍵可保留索引以減少配額。 |
-| sessionStorage | Google短期授權及獨立AI連線密鑰，不納入備份。 |
+| sessionStorage | Google短期授權與未部署後端認證，不納入備份。AI金鑰／模型另存專用localStorage（依AI_CONNECTION.md），仍不納入正式文件或備份。 |
 | Google Drive appDataFolder | 手動完整備份，以及保留但不再啟動讀寫的舊同步紀錄／資產。 |
 
 完整備份包含正式主文件、全部必要引用圖片與裁切設定、正式角色及回覆庫資產。未提交草稿、無引用閒置圖片、短期聊天、認證及API密鑰不納入。不是整個瀏覽器儲存的鏡像；舊同步journal與vault在本機繼續保留，不塞入正式生活文件。

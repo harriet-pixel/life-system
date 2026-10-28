@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=storage-rescue-20261028';
-import {getCompletionFlow} from './task-completion.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=storage-rescue-20261028';
+import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
+import {getCompletionFlow} from './task-completion.mjs?v=mobile-daily-20261028';
+import {dataStore} from './data.mjs?v=mobile-daily-20261028';
 import {createTaskService} from './tasks-service.mjs?v=storage-rescue-20261028';
 import {allocation,localDate} from './tasks-model.mjs?v=storage-rescue-20261028';
 import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=storage-rescue-20261028';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=storage-rescue-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=mobile-daily-20261028';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);

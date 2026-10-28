@@ -1,6 +1,6 @@
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=storage-rescue-20261028';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=storage-rescue-20261028';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=mobile-daily-20261028';
+import {dataStore} from './data.mjs?v=mobile-daily-20261028';
 import {localDate} from './tasks-model.mjs?v=storage-rescue-20261028';
 import {holdDraft} from './coordination.mjs?v=storage-rescue-20261028';
 
