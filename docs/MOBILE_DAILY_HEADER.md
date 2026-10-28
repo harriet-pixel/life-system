@@ -27,3 +27,5 @@
 針對新行為：mobile-daily-header.cjs、ai-persistent-browser.cjs、navigation-prefetch.cjs。
 
 既有回歸：tasks.cjs、habits.cjs、settings.cjs、navigation-retry.cjs、以cf36cc5為基準的settings-cache.cjs、manual-cloud-retention.cjs，以及npm lint／build／test。Google及AI流量為mock，不宣稱真實服務商或實機鍵盤已驗收。
+
+2026-10-28後續：浮窗初始top改為12px＋1rem，三頁同一元件；日常成功交易通知只取id／type／label／delta中繼資料，避免為通知複製整份生活文件。M/P/E使用記憶體暫時選取，先讓畫面繪製再做正式保存，跨重繪保留；失敗復原，不等待AI。新單次事件儲存時先取得並驗證固定能力分配（也可手動），選擇2／3點仍正常觸發推薦；完成直接使用已保存分配。日期icon同組提供今／明，設定日期草稿，不直接改已完成事件。相關新增測試為action-ready.cjs、float-offset.cjs及單次固定分配／通知中繼資料單元測試。

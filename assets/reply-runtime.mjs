@@ -1,9 +1,9 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=mobile-daily-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=action-ready-20261028';
 import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=storage-rescue-20261028';
 import {replyPersonaKey,usableReplies,pickReply,replyPrompt,parseDailyReply} from './reply-model.mjs?v=storage-rescue-20261028';
 import {readReplyCategory,editReplyCategory} from './reply-service.mjs?v=storage-rescue-20261028';
 import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=storage-rescue-20261028';
-import {validDailySource} from './daily-events.mjs?v=storage-rescue-20261028';
+import {validDailySource} from './daily-events.mjs?v=action-ready-20261028';
 const last=new Map();export const DAILY_FALLBACK='慢慢來，依照自己的步調繼續就好。';
 export async function dailyResponse(store,event,{valid=()=>true,random=Math.random,connection=getSharedAIConnection()}={}){
  const validNow=()=>valid()&&validDailySource(store.get(),event);

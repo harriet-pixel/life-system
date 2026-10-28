@@ -1,17 +1,17 @@
 import {backupStatus} from './cloud-sync-status.mjs?v=manual-backup-20261028';
-import {getDriveState,driveAuth} from './google-drive.mjs?v=manual-backup-20261028';
-import {createCloudRestore} from './cloud-restore.mjs?v=mobile-daily-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=mobile-daily-20261028';
+import {getDriveState,driveAuth} from './google-drive.mjs?v=action-ready-20261028';
+import {createCloudRestore} from './cloud-restore.mjs?v=action-ready-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=action-ready-20261028';
 import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
 import {initializeUIFeedback} from './ui-feedback.mjs?v=storage-rescue-20261028';
-import {ownsCompletionAI} from './task-completion.mjs?v=mobile-daily-20261028';
+import {ownsCompletionAI} from './task-completion.mjs?v=action-ready-20261028';
 import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=mobile-daily-20261028';
-import {persistentUndo,dataStore} from './data.mjs?v=mobile-daily-20261028';
+import {persistentUndo,dataStore} from './data.mjs?v=action-ready-20261028';
 import {createPageLifecycle} from './page-lifecycle.mjs?v=storage-rescue-20261028';
 import {initializeNavigationSize} from './navigation-size.mjs?v=storage-rescue-20261028';
-import {mountDailyHeader} from './daily-header.mjs?v=mobile-daily-20261028';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=mobile-daily-20261028';
-const routes={companion:{mount:()=>import('./characters-page.mjs?v=mobile-daily-20261028'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=mobile-daily-20261028'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=mobile-daily-20261028'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=mobile-daily-20261028'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=mobile-daily-20261028'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=mobile-daily-20261028'),export:'mountSettings'}};
+import {mountDailyHeader} from './daily-header.mjs?v=action-ready-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=action-ready-20261028';
+const routes={companion:{mount:()=>import('./characters-page.mjs?v=action-ready-20261028'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=action-ready-20261028'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=action-ready-20261028'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=action-ready-20261028'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=action-ready-20261028'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=action-ready-20261028'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map(),prefetchedPages=new Map();
 async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'storage-rescue-20261028'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
@@ -78,7 +78,7 @@ async function go(url,{pop=false,state=null,initial=false}={}){
   else if(destination)destination.scrollIntoView({block:'start',behavior:'instant'});
   else if(!initial)window.scrollTo({top:0,left:0,behavior:'instant'});
   history.replaceState({...history.state,lifeShell:{index}},'',target.href);
-  document.dispatchEvent(new CustomEvent('life-system:route-ready',{detail:{page:id}}));return true;
+  document.dispatchEvent(new CustomEvent('life-system:route-ready',{detail:{page:id}}));if(!initial)announce((pop?'已返回':'已前往')+(navigationItems.find(item=>item.id===id)?.label??'頁面')+'。');return true;
  }catch(error){if(ticket===sequence&&error.name!=='AbortError'){
    if(error.code==='version'||error.code==='module'){if(![...views.values()].some(v=>v.context.hooks.hasDraft?.())){const fresh=new URL(target.href);fresh.searchParams.set('__life_reload',String(Date.now()));location.assign(fresh.href);return false;}announce('網站版本或模組已更新，請先儲存或取消草稿，再切換頁面；資料未清除。');return false;}
    if(view&&previous&&view!==previous){view.context.dispose();views.delete(view.id);active=previous;await activate(previous);}
@@ -104,8 +104,13 @@ document.body.dataset.shell='ready';
 getCloudBackup();
 
 // Do not put settlement on the first-paint dependency path.
-const startAffinity=()=>import('./affinity-runtime.mjs?v=mobile-daily-20261028').catch(()=>{});
+const startAffinity=()=>import('./affinity-runtime.mjs?v=action-ready-20261028').catch(()=>{});
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
+
+// Local successful actions announce only after the authoritative commit.
+dataStore.subscribeCommits((doc,operation)=>{if(operation&&/^(task\.|habit\.)/.test(operation.type)&&['home','tasks','habits'].includes(active?.id)){const record=operation,points=record.delta?.currency;announce('已儲存：'+(record?.label??'操作')+(points>0?'，獲得 '+points+' 點':'')+'。');}},{metadataOnly:true});
+document.addEventListener('click',event=>{const tab=event.target.closest('[role=tab]');if(tab&&active?.root.contains(tab)&&['home','tasks','habits'].includes(active.id))announce('已切換至'+tab.textContent.trim()+'。');});
+document.addEventListener('close',event=>{if(!navigating&&event.target.matches?.('dialog')&&active?.root.contains(event.target)&&['home','tasks','habits'].includes(active.id))announce('已返回。');},true);
 
 // Manual backups do not masquerade as an acknowledged cross-device sync baseline.
 const iconCloud=getCloudBackup();const updateCloudIcons=()=>{const state=iconCloud.getState(),status=backupStatus({connected:getDriveState().connected,online:navigator.onLine,busy:state.busy,pending:state.pending,error:/未完成/.test(state.message)});for(const button of document.querySelectorAll('[data-cloud-restore]')){button.dataset.syncState=status;button.title='雲端備份與還原：'+status;button.setAttribute('aria-label',button.title);}};

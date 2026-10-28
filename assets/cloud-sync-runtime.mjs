@@ -7,12 +7,12 @@ const validateReplyAssets=async(...args)=>(await replyStore()).validateReplyAsse
 const importReplyAssets=async(...args)=>(await replyStore()).importReplyAssets(...args);
 import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=manual-backup-20261028';
 import {createSyncEngine} from './cloud-sync-engine.mjs?v=storage-rescue-20261028';
-import {createSyncDrive} from './cloud-sync-drive.mjs?v=manual-backup-20261028';
-import {dataStore,isPristineDocument} from './data.mjs?v=mobile-daily-20261028';
-import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=manual-backup-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=mobile-daily-20261028';
+import {createSyncDrive} from './cloud-sync-drive.mjs?v=action-ready-20261028';
+import {dataStore,isPristineDocument} from './data.mjs?v=action-ready-20261028';
+import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=action-ready-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=action-ready-20261028';
 import {maintenance} from './coordination.mjs?v=storage-rescue-20261028';
-import {validateDocument} from './backup.mjs?v=storage-rescue-20261028';
+import {validateDocument} from './backup.mjs?v=action-ready-20261028';
 import {maintainRecovery} from './recovery.mjs?v=storage-rescue-20261028';
 import {documentImageReferences} from './image-references.mjs?v=storage-rescue-20261028';
 import {readImageBlob,listImageAssets,stageImageAssets} from './image-store.mjs?v=storage-rescue-20261028';

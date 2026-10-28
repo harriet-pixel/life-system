@@ -1,18 +1,18 @@
 import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=storage-rescue-20261028';
-import {createListSettings} from './task-day-settings.mjs?v=mobile-daily-20261028';
+import {createListSettings} from './task-day-settings.mjs?v=action-ready-20261028';
 import {currentSaveTrace} from './save-diagnostics.mjs?v=storage-rescue-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
-import {createDateResidents} from './task-date-residents.mjs?v=mobile-daily-20261028';
+import {createDateResidents} from './task-date-residents.mjs?v=action-ready-20261028';
 import {createActivityHeightSync} from './activity-height.mjs?v=storage-rescue-20261028';
 import {createMobileTabPositioner} from './tab-position.mjs?v=storage-rescue-20261028';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=mobile-daily-20261028';
-import {createTaskPool} from './task-pool.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=mobile-daily-20261028';
-import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=storage-rescue-20261028';
-import {taskActions} from './task-actions.mjs?v=mobile-daily-20261028';
-import {mountTaskCompanion} from './task-companion.mjs?v=mobile-daily-20261028';
-import {createTaskEditor} from './task-editor.mjs?v=mobile-daily-20261028';
-import {createCategoryManager} from './task-categories.mjs?v=mobile-daily-20261028';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=action-ready-20261028';
+import {createTaskPool} from './task-pool.mjs?v=action-ready-20261028';
+import {dataStore} from './data.mjs?v=action-ready-20261028';
+import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=action-ready-20261028';
+import {taskActions} from './task-actions.mjs?v=action-ready-20261028';
+import {mountTaskCompanion} from './task-companion.mjs?v=action-ready-20261028';
+import {createTaskEditor} from './task-editor.mjs?v=action-ready-20261028';
+import {createCategoryManager} from './task-categories.mjs?v=action-ready-20261028';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');

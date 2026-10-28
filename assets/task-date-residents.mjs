@@ -1,5 +1,5 @@
-import {dataStore} from './data.mjs?v=mobile-daily-20261028';
-import {localDate,inResidentLibrary,occurrence} from './tasks-model.mjs?v=storage-rescue-20261028';
+import {dataStore} from './data.mjs?v=action-ready-20261028';
+import {localDate,inResidentLibrary,occurrence} from './tasks-model.mjs?v=action-ready-20261028';
 import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=storage-rescue-20261028';
 import {observeNameLists} from './task-name-layout.mjs?v=storage-rescue-20261028';
 export function createDateResidents(pane,context,actions,{onSuccess=()=>{},onSelection=()=>{},onBusy=()=>{},beforeConfirm=()=>true,kind='repeat'}={}){

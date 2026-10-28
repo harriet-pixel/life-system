@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=storage-rescue-20261028';
-import {rowsForDate,validateTasks,deletionEvidence} from '../assets/tasks-model.mjs?v=storage-rescue-20261028';
+import {createTaskService} from '../assets/tasks-service.mjs?v=action-ready-20261028';
+import {rowsForDate,validateTasks,deletionEvidence} from '../assets/tasks-model.mjs?v=action-ready-20261028';
 import {boardTasks,categoryOrder,sortDay,stableCreated,DAY_DEFAULTS} from '../assets/task-view-model.mjs?v=storage-rescue-20261028';
 import {validateDocument,encodeBackup,readBackup,dataCount} from '../assets/backup.mjs';
 const abilities={physique:0,wisdom:1,charisma:0,resilience:0,perception:0},date='2026-12-31';

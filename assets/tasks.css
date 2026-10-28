@@ -185,3 +185,6 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 
 .task-dialog .category-management-row{grid-template-columns:minmax(0,1fr) repeat(4,44px);gap:0}
 .task-dialog .category-management-row .category-icon-button{border:0;background:transparent;box-shadow:none;padding:6px;border-radius:0}
+
+.task-date-shortcuts{display:inline-flex;align-items:center;gap:0;flex:none}
+.task-dialog .task-date-shortcuts button{border:0;background:transparent;min-width:40px;min-height:44px;padding:8px;color:var(--color-primary)}
