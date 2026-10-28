@@ -1,6 +1,6 @@
 import {mountColorField} from './color-field.mjs?v=sync-ui-20261028';
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=habits-20261026';
-import {dataStore} from './data.mjs?v=chat-20261027';
+import {dataStore} from './data.mjs?v=replies-20261027';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
 
 export function createCategoryManager(root,context,actions){

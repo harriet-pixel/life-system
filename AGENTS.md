@@ -204,3 +204,7 @@
 生成只允許正式未封存角色；預覽不改active。切角色／人格／連線／離開使請求失效，舊結果不能修改新角色。所有取消／timeout沿共用AI，跨分頁角色鎖僅保護聊天回合，網路期間不持全站write lock。生活來源獎勵、返還及復原不變。全文不得寫console／長期診斷／backup。詳見docs/COMPANION_STAGE5_VERIFICATION.md；第六階段不能把私人聊天灌入日常回覆庫或重播計分。
 
 日常頁手機浮窗統一使用home-companion-float元件：無叉叉、點頭像收合／展開、Pointer Events及方向鍵移動、4秒自動消失。task-mobile-response只負責本頁有效完成／回應配對、動畫及modal／鍵盤／復原抑制，不再另做定位。首頁手機通知在當前面板底部操作同列；操作通知DOM須先移出再重建習慣面板，避免遺失。今日習慣程度無框、習慣與加分顏色可輸入HEX、個人一句話為主題色。雲端對話備份成功關窗，不再loadVersion。
+
+## 第六階段日常回覆庫維護
+
+正式規格見COMPANION.md第六階段與docs/COMPANION_STAGE6_VERIFICATION.md。replyLibrary為選填的稀疏metadata／內容雜湊引用，文字在獨立life-system.replies.v1；不可把文字加入每次生活交易。只以成功交易subscribeCommits快照識別正式事件，不信任UI派發、不在processing或歷史補算生成。回覆庫不計分，聊天室busy直接備援；分類有效20、含歷史60，正式事件最多一次生成且禁止自動重試。管理頁與生成器均延遲載入，首頁不預讀分類。備份包含replyAssets並原子發布引用，短期chat仍排除；雲端仍只手動上傳，Cloudflare維持暫停。

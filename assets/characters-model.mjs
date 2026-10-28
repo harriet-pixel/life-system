@@ -1,4 +1,4 @@
-import {validateCharacterImages} from './character-images-model.mjs?v=companion-images-20261027';
+import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=companion-images-20261027';
 // Manual character settings; image metadata is validated separately.
 export const RELATIONSHIP_STAGES=Object.freeze([
  ['初識',0],['熟悉',50],['友好',150],['信任',350],['默契',500],['深厚情誼',700],['長久羈絆',1000]
@@ -53,3 +53,16 @@ export function changeCharacters(raw,action,{now=Date.now(),id=()=>crypto.random
  }
  return validateCharacters(d);
 }
+
+// Tiny pointer-only schema. Reply text is never copied into a life transaction.
+export const emptyReplyLibrary=()=>({version:1,epoch:crypto.randomUUID(),characters:{}});
+export const REPLY_EVENTS=Object.freeze({'task.completed':'待辦完成','habit.mini':'Mini 打卡','habit.plus':'Plus 打卡','habit.elite':'Elite 打卡','habit.bonus':'加分打卡','achievement.unlocked':'正式成就','task.incomplete':'待辦未完成','habit.incomplete':'習慣未完成'});
+export const REPLY_EMOTIONS=Object.freeze(IMAGE_EMOTIONS.map(e=>e.id));
+export const DEFAULT_REPLY_POOLS=Object.freeze({positive:['neutral','happy','calm','determined','playful'],negative:['neutral','calm','thinking','concerned']});
+const replyObject=v=>v&&typeof v==='object'&&!Array.isArray(v),replyStamp=v=>typeof v==='string'&&Number.isFinite(Date.parse(v));
+export const replyCheck=(ok,message='回覆庫格式無法驗證，原資料已保留。')=>{if(!ok)throw new Error(message);};
+export const categoryKey=(stage,event,emotion)=>`${stage}|${event}|${emotion}`;
+export function validateCategoryKey(key){const [stage,event,emotion]=key.split('|');replyCheck(/^[1-7]$/.test(stage)&&Object.hasOwn(REPLY_EVENTS,event)&&REPLY_EMOTIONS.includes(emotion)&&key===categoryKey(stage,event,emotion));return {stageId:Number(stage),eventType:event,emotionId:emotion};}
+export function validateReplyPools(p){replyCheck(replyObject(p)&&Object.keys(p).length===2);for(const side of ['positive','negative'])replyCheck(Array.isArray(p[side])&&p[side].length>0&&p[side].length<=8&&new Set(p[side]).size===p[side].length&&p[side].every(e=>REPLY_EMOTIONS.includes(e)));return structuredClone(p);}
+export function validateReplyManifest(raw,companion){if(raw===undefined)return undefined;replyCheck(replyObject(raw)&&Object.keys(raw).length===3&&raw.version===1&&typeof raw.epoch==='string'&&/^[\w-]{1,100}$/.test(raw.epoch)&&replyObject(raw.characters));for(const [id,c]of Object.entries(raw.characters)){replyCheck(/^[\w-]{1,100}$/.test(id)&&replyObject(c)&&Object.keys(c).length===4&&replyStamp(c.createdAt)&&Number.isSafeInteger(c.revision)&&c.revision>=0&&replyObject(c.categories)&&Object.keys(c.categories).length<=448);if(companion)replyCheck(companion.characters.some(x=>x.characterId===id&&x.createdAt===c.createdAt));validateReplyPools(c.pools);for(const [key,ref]of Object.entries(c.categories)){validateCategoryKey(key);replyCheck(/^reply:[a-f0-9]{64}$/.test(ref));}}return structuredClone(raw);}
+export const replyRefs=manifest=>[...new Set(Object.values(manifest?.characters??{}).flatMap(c=>Object.values(c.categories)))];

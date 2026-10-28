@@ -129,3 +129,7 @@ Life system 沿用原生三頁與同一個 AI service。主要模式新增 **Clo
 夥伴聊天室沿唯一getSharedAIConnection與原模式／模型／金鑰規則，不建立新端點或自動切換。無有效連線可讀24小時訊息與保留草稿，不能送出。每使用者回合一次生成POST，同時取得文字、八情緒ID與positive／neutral／negative分類；恢復session時原客戶端可能先GET官方模型清單，這不是額外生成。總prompt不超過既有4000 UTF-16字元、輸入800、output256 tokens；近期24則同角色訊息可按長度預算減少，不送全七階段或全部個人／生活資料。純本機提交故障只恢復本機，不重新呼叫模型。
 
 訊息僅在獨立24小時IndexedDB，不入正式文件、長期history、diagnostics或備份；正式文件只留不可還原原文的結果雜湊及最小計分證據。金鑰／token不進聊天DB。取消／斷線／換角色／離開沿共用service，舊結果失效。沒有新AI連線或Cloudflare服務部署；真實模型驗收須由使用者既有連線測試，mock不能宣稱真實生成通過。詳見docs/COMPANION_STAGE5_VERIFICATION.md。
+
+## 日常回覆庫（第六階段）
+
+沿唯一getSharedAIConnection，不新增客戶端／模式／金鑰或後端。正式生活事件成功後，分類未滿20、歷史未滿60且AI非busy，最多一次生成JSON dialogue；output128 tokens、prompt不超過4000 UTF-16字元，僅必要人格、當前階段、固定事件及情緒，不送聊天室、任務專名、個人資料或帳本。滿額、負向提醒、無連線及聊天室busy直接快取／通用備援，不排背景隊列、不搶占聊天、不自動重送。回覆文字通用性檢查及人工審閱，不接受AI調整分類、情緒、人格或任何正式數值。生成測試使用mock；沒有真實模型憑證即不宣稱已完成真實AI驗收。

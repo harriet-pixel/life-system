@@ -1,0 +1,2 @@
+// Formal actor for legacy presentation regressions. No AI or prefilled library.
+exports.seedReplyActor=page=>page.evaluate(async()=>{const{dataStore}=await import('./assets/data.mjs?v=replies-20261027'),{createCharacterService}=await import('./assets/characters-service.mjs?v=replies-20261027');if(dataStore.get().companion.activeCharacterId)return;const s=createCharacterService(dataStore);await s.act({type:'create'});await s.act({type:'switch',characterId:dataStore.get().companion.characters.at(-1).characterId});});

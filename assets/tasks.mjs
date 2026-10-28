@@ -1,17 +1,17 @@
 import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=task-home-polish-20261027';
-import {createListSettings} from './task-day-settings.mjs?v=chat-20261027';
+import {createListSettings} from './task-day-settings.mjs?v=replies-20261027';
 import {currentSaveTrace} from './save-diagnostics.mjs?v=habits-20261026';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=habits-20261026';
-import {createDateResidents} from './task-date-residents.mjs?v=chat-20261027';
+import {createDateResidents} from './task-date-residents.mjs?v=replies-20261027';
 import {createActivityHeightSync} from './activity-height.mjs?v=habits-20261026';
 import {createMobileTabPositioner} from './tab-position.mjs?v=habits-20261026';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=chat-20261027';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=replies-20261027';
 import {createTaskPool} from './task-pool.mjs?v=task-home-polish-20261027';
-import {dataStore} from './data.mjs?v=chat-20261027';
+import {dataStore} from './data.mjs?v=replies-20261027';
 import {localDate,addDays,rowsForDate,weekday} from './tasks-model.mjs?v=companion-images-20261027';
-import {taskActions} from './task-actions.mjs?v=chat-20261027';
-import {mountTaskCompanion} from './task-companion.mjs?v=mobile-polish-20261027';
-import {createTaskEditor} from './task-editor.mjs?v=chat-20261027';
+import {taskActions} from './task-actions.mjs?v=replies-20261027';
+import {mountTaskCompanion} from './task-companion.mjs?v=replies-20261027';
+import {createTaskEditor} from './task-editor.mjs?v=replies-20261027';
 import {createCategoryManager} from './task-categories.mjs?v=sync-ui-20261028';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);

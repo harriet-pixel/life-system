@@ -1,11 +1,12 @@
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=chat-20261027';
-import {integrateAffinity} from './affinity-integration.mjs?v=chat-20261027';
-import {settleAffinity} from './affinity-settlement.mjs?v=chat-20261027';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=companion-images-20261027';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=replies-20261027';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=replies-20261027';
+import {integrateAffinity} from './affinity-integration.mjs?v=replies-20261027';
+import {settleAffinity} from './affinity-settlement.mjs?v=replies-20261027';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=replies-20261027';
 import {emptyHabits,validateHabits} from './habits-model.mjs?v=companion-images-20261027';
 import {setOperationNotice} from './operation-notice.mjs?v=habits-20261026';
 import {emptyTasks,validateTasks} from './tasks-model.mjs?v=companion-images-20261027';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=chat-20261027';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=replies-20261027';
 import {validateProfileFields,validateActivities} from './validation.mjs?v=companion-images-20261027';
 import { coordinatedWrite } from './coordination.mjs?v=characters-20261027';
 import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=companion-images-20261027';
@@ -66,14 +67,14 @@ export function createDataStore(storage,{now=Date.now}={}) {
   function currentRecovery(){const time=now();if(!recoveryCache||recoveryCache.state!==state||time<recoveryCache.time||time>=recoveryCache.deadline)return cacheRecovery(maintainRecovery(state,time),time);return recoveryCache.result;}
   const effective=()=>{const result=currentRecovery();return {...result,document:copy(result.document)};};
   const notify = ({statusOnly=false}={}) => {const current=currentRecovery().document;listeners.forEach(entry=>{if(!statusOnly||!entry.changesOnly)entry.fn(copy(current));});};
-  const persist = (next,timing=null) => {const readAt=performance.now();
+  const persist = (next,timing=null,operation=null) => {const readAt=performance.now();
     const current = load();timing?.phase('storage-read-check',readAt);
     if (current.revision !== state.revision) { state = current; notify(); throw new Error('資料已在其他頁面更新，請重試。'); }
     const recoveryAt=performance.now(),checkedAt=now(),checked=maintainRecovery(next,checkedAt);next=checked.document;timing?.phase('recovery-write-check',recoveryAt);
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
     try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);timing?.phase('storage-write',writeAt);}
     catch { throw new Error('無法儲存，可能是瀏覽器儲存空間不足或儲存權限受限。資料尚未變更。'); }
-    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(fn=>{try{fn(copy(state));}catch{}});timing?.phase('subscribers',subscribersAt);
+    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(fn=>{try{fn(copy(state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
   };
   const api = {
     get: () => copy(currentRecovery().document),
@@ -81,7 +82,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     notify,
     subscribeCommits(fn){commitListeners.add(fn);return()=>commitListeners.delete(fn);},
     setBusy(value) {busy=value;notify({statusOnly:true});},
-    replace(value) { const next=copy(value);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}next.revision=Math.max(value.revision,state.revision+1);persist(next); },
+    replace(value) { const next=copy(value);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}if(state.replyLibrary||next.replyLibrary){next.replyLibrary??=emptyReplyLibrary();next.replyLibrary.epoch=crypto.randomUUID();}next.revision=Math.max(value.revision,state.revision+1);persist(next); },
     subscribe(fn,{changesOnly=false}={}) {const entry={fn,changesOnly};listeners.add(entry);fn(copy(currentRecovery().document));return()=>listeners.delete(entry);},
     refresh() { state = load(); notify(); },
     transact({ type, label, target, changes, fields = [], expectedRevision, id, timing, reversible = true }) {const validateAt=performance.now();
@@ -93,13 +94,14 @@ export function createDataStore(storage,{now=Date.now}={}) {
         if(key==='profile')value=validateProfileFields(rawValue,state.profile);
         if(key==='affinity')value=validateAffinity(rawValue,state.companion);
         if(key==='companion')value=validateCharacters(rawValue);
+        if(key==='replyLibrary')value=validateReplyManifest(rawValue);
         if(key==='habits')value=validateHabits(rawValue);
         if(key==='tasks')value=validateTasks(rawValue);
         if(key==='activities')value=validateActivities(rawValue);
         if (key === 'stats') {
           value = validateStats(rawValue, state.stats);
         }
-        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'tasks', 'habits', 'stats', 'settings', 'companion', 'affinity'].includes(key)) throw new Error('不支援的資料類型');
+        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'tasks', 'habits', 'stats', 'settings', 'companion', 'affinity', 'replyLibrary'].includes(key)) throw new Error('不支援的資料類型');
         if (key === 'portraits' && (!Array.isArray(value) || value.length>6 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 6 個立繪，請先刪除或更換既有項目。');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
         before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
@@ -109,13 +111,13 @@ export function createDataStore(storage,{now=Date.now}={}) {
       const delta = {};
       for (const key of ['experience', 'level', 'currency']) delta[key] = typeof next.stats[key] === 'number' && typeof state.stats[key] === 'number' ? next.stats[key] - state.stats[key] : 0;
       delta.abilities = next.stats.abilities.map(a => ({ id: a.id, value: a.value - (state.stats.abilities.find(x => x.id === a.id)?.value ?? 0) }));
-      {
-        const transactionId=id??crypto.randomUUID(),time=new Date(now()).toISOString();
+      let committedId;{
+        const transactionId=id??crypto.randomUUID();committedId=transactionId;const time=new Date(now()).toISOString();
         const affinityPlan=integrateAffinity(state,next,{type:type??'data.update',operationId:transactionId,time});
         const record={id:transactionId,time,...(affinityPlan.length?{affinityPlan}:{}),type:type??'data.update',label:label??'已更新資料',target:target??'user',fields,before,after,delta,undone:false,undoneAt:null};
         next.history.push(actionMetadata(record));if(reversible)next.undoHistory.push(record);
       }
-      timing?.phase('transaction-validate',validateAt);persist(next,timing);return true;
+      timing?.phase('transaction-validate',validateAt);persist(next,timing,{id:committedId,type:type??'data.update',before,after});return true;
     },
     settleAffinities() {
       const next=effective().document,time=now();next.affinity=validateAffinity(next.affinity,next.companion,{clone:false});
@@ -130,8 +132,9 @@ export function createDataStore(storage,{now=Date.now}={}) {
       if(!setPenaltyPolicy(next,settings,time,crypto.randomUUID())&&!settled&&state.affinity?.startedAt!=null)return false;
       persist(next);return true;
     },
+    setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=chat-20261027');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=replies-20261027');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;
@@ -211,7 +214,7 @@ if (dataStore) {
   try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,'復原資料整理失敗，原資料已保留。'+error.message);}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
   let expiryTimer;
   let appliedAppearance;dataStore.subscribe(state=>{const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true});
-  for(const method of ['transact','undo','redo','setAIPreferences','settleAffinities','setAffinityPolicy','prepareChat','commitChatAssessment']) {
+  for(const method of ['transact','undo','redo','setAIPreferences','settleAffinities','setAffinityPolicy','prepareChat','commitChatAssessment','setReplyLibrary']) {
     const original=dataStore[method];
     dataStore[method]=async(...args)=>{
       if(dataStore.getState().busy)throw new Error('資料操作進行中，請稍候再試。');

@@ -1,7 +1,7 @@
 import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=sync-window-20261028';
 import {getCloudBackup} from './cloud-backup.mjs?v=sync-window-20261028';
-import {dataStore} from './data.mjs?v=chat-20261027';
-import {readBackup} from './backup.mjs?v=chat-20261027';
+import {dataStore} from './data.mjs?v=replies-20261027';
+import {readBackup} from './backup.mjs?v=replies-20261027';
 import {backupDeviceName,displayDeviceName,cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs?v=sync-window-20261028';
 import {cloudStatus,taiwanTime,AUTO_SYNC_ENABLED} from './cloud-sync-status.mjs';
 export function createCloudRestore(){
