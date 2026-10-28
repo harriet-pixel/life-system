@@ -1,4 +1,4 @@
-import {mountColorField} from './color-field.mjs?v=sync-ui-20261028';
+import {mountColorField} from './color-field.mjs?v=sync-layout-20261028';
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=habits-20261026';
 import {dataStore} from './data.mjs?v=replies-20261027';
 import {holdDraft} from './coordination.mjs?v=characters-20261027';
@@ -9,14 +9,14 @@ export function createCategoryManager(root,context,actions){
  dialog.innerHTML='<h2 id="category-manager-title">管理分類</h2><div data-category-list></div><p data-category-list-error role="alert" hidden></p><div class="task-buttons"><button type="button" data-category-new>新增分類</button><button type="button" data-category-close>關閉</button></div>';
  const editor=document.createElement('dialog');
  editor.className='task-dialog';editor.id='category-editor';editor.setAttribute('aria-labelledby','category-editor-title');
- editor.innerHTML='<form><h2 id="category-editor-title">新增分類</h2><label>分類名稱<input name="categoryName" required></label><label>文字顏色（留白使用預設文字色）<input name="categoryColor" placeholder="#222222" spellcheck="false"></label><label>選擇顏色<input type="color" name="colorPicker" value="#222222"></label><p data-category-preview>分類文字預覽</p><p data-category-error role="alert"></p><div class="task-buttons"><button type="button" data-category-cancel>取消</button><button type="submit">儲存分類</button></div></form>';
+ editor.innerHTML='<form><h2 id="category-editor-title">新增分類</h2><label>分類名稱<input name="categoryName" required></label><label>文字顏色<input name="categoryColor" placeholder="#222222" spellcheck="false"></label><p class="small-note">留白使用預設文字色。</p><label>選擇顏色<input type="color" name="colorPicker" value="#222222"></label><p data-category-preview>分類文字預覽</p><p data-category-error role="alert"></p><div class="task-buttons"><button type="button" data-category-cancel>取消</button><button type="submit">儲存分類</button></div></form>';
  root.append(dialog,editor);
  const form=editor.querySelector('form'),submitStart=captureSubmitStart(form),field=name=>form.elements.namedItem(name),error=editor.querySelector('[data-category-error]'),listError=dialog.querySelector('[data-category-list-error]');
  let listRoot=dialog;
  let editing=null,release,focus,busy=false,opening=false,mode='closed',ignoredListCloses=0,editorTrigger=null,externalReturn=null,savedId=null,embedded=null;
  const icons={edit:'<path d="m15 4 5 5M4 20l4-1L20 7a2 2 0 0 0-5-5L3 14l-1 7Z"/>',remove:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>'};
  function iconButton(kind,label){const button=document.createElement('button');button.type='button';button.className='category-icon-button';button.setAttribute('aria-label',label);button.title=label;button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icons[kind]+'</svg>';return button;}
- const updateColorPreview=mountColorField(field('categoryColor'));
+ mountColorField(field('colorPicker'));const updateColorPreview=mountColorField(field('categoryColor'));
  function preview(){updateColorPreview();const color=field('categoryColor').value;editor.querySelector('[data-category-preview]').style.color=/^#[0-9a-f]{6}$/i.test(color)?color:'';if(/^#[0-9a-f]{6}$/i.test(color))field('colorPicker').value=color;}
  field('colorPicker').oninput=()=>{field('categoryColor').value=field('colorPicker').value;preview();};field('categoryColor').oninput=preview;
  function restoreListFocus(){const target=editorTrigger?.kind==='edit'?[...listRoot.querySelectorAll('[data-category-edit]')].find(b=>b.dataset.categoryEdit===editorTrigger.id):null;(target??listRoot.querySelector('[data-category-new]')).focus({preventScroll:true});}

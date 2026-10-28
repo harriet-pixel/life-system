@@ -112,3 +112,8 @@
 [data-cloud-restore][data-sync-state]::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;border-radius:50%;background:var(--color-primary)}
 [data-cloud-restore]:is([data-sync-state="離線"],[data-sync-state="需要登入"])::after{background:var(--color-muted)}
 [data-cloud-restore]:is([data-sync-state="同步失敗"],[data-sync-state="資料衝突"])::after{background:var(--color-danger,#9b3030)}
+/* A long caption must not consume the editable HEX control on a narrow screen. */
+#main .color-field-row,.task-dialog .color-field-row{gap:.35em}
+.color-field-caption{flex:0 1 auto;max-inline-size:35%;min-inline-size:0;overflow-wrap:anywhere}
+#main .color-field-row input,.task-dialog .color-field-row input{min-inline-size:min(6.5em,44%);box-sizing:border-box}
+.color-field-row .color-preview{max-inline-size:32px;max-block-size:32px}
