@@ -1,4 +1,4 @@
-import {applyAffinityPlan} from './affinity-model.mjs?v=persona-20261029';
+import {applyAffinityPlan} from './affinity-model.mjs?v=daily-polish-20261029';
 // One policy for startup, replay, mutations, image references and backups.
 export const RECOVERY_LIMIT=15, DAY=86400000, HISTORY_VERSION=1;
 const shortKeys=new Set(['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','settings']);

@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=storage-rescue-20261028';
+import {ABILITIES} from './abilities.mjs?v=daily-polish-20261029';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;
@@ -6,7 +6,7 @@ export function createRewardFeedback(root,context){
  context.onSuspend(clear);document.addEventListener('life-system:route-ready',clear);
  const resize=()=>layoutCurrent?.();window.addEventListener('resize',resize);document.fonts.addEventListener('loadingdone',resize);window.visualViewport?.addEventListener('resize',resize);window.visualViewport?.addEventListener('scroll',resize);
  function play(){if(playing||!queue.length)return;playing=true;const lines=queue.shift(),reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  nodes=lines.map((line,i)=>{const n=document.createElement('span'),label=document.createElement('span'),amount=document.createElement('strong');n.className='task-reward-text'+(reduced?' is-static':'');n.dataset.rewardKind=line.kind;n.rewardLine=line;n.setAttribute('aria-hidden','true');label.className='task-reward-label';label.textContent=line.name+' ';amount.className='task-reward-amount';amount.textContent='+'+line.value;n.append(label,amount);n.style.animationDelay=i*100+'ms';
+  nodes=lines.map((line,i)=>{const n=document.createElement('span'),label=document.createElement('span'),amount=document.createElement('strong');n.className='task-reward-text'+(reduced?' is-static':'');n.dataset.rewardKind=line.kind;n.rewardLine=line;n.setAttribute('aria-hidden','true');label.className='task-reward-label';label.textContent=line.name+' ';amount.className='task-reward-amount';amount.textContent=(line.value>0?'+':'−')+Math.abs(line.value);n.append(label,amount);n.style.animationDelay=i*100+'ms';
    if(!reduced){for(let j=0;j<3;j++){const spark=document.createElement('i');spark.className='task-reward-spark';spark.style.setProperty('--spark-angle',j*120+25+'deg');spark.style.animationDelay=i*100+'ms';n.append(spark);}}
    root.append(n);return n;});
   layoutCurrent=()=>{const current=getComputedStyle(document.querySelector('#current-page-name')??document.body);nodes.forEach(n=>n.style.fontFamily=current.fontFamily);const v=window.visualViewport,w=v?.width??innerWidth,h=v?.height??innerHeight,x=v?.offsetLeft??0,y=v?.offsetTop??0;
@@ -17,5 +17,5 @@ export function createRewardFeedback(root,context){
    nodes.forEach((n,i)=>{const row=Math.floor(i/columns),count=Math.min(columns,nodes.length-row*columns),col=i%columns,cx=x+w/2+(col-(count-1)/2)*(cellW+gap);n.style.left=Math.max(x+12,Math.min(cx-sizes[i].width/2,x+w-sizes[i].width-12))+'px';n.style.top=Math.max(y+24,Math.min(start+row*(cellH+gap)+12+(col?4:0),y+h-sizes[i].height-12))+'px';});};layoutCurrent();
   timer=setTimeout(()=>{nodes.forEach(n=>n.remove());nodes=[];playing=false;layoutCurrent=null;play();},reduced?1400:1530+(nodes.length-1)*100);
  }
- return completion=>{if(!context.active||!completion||seen.has(completion.id))return;seen.add(completion.id);queue.push([{name:'貨幣',kind:'currency',value:completion.reward.currency},{name:'經驗值',kind:'experience',value:completion.reward.experience},...ABILITIES.filter(a=>completion.reward.abilities[a.id]>0).map(a=>({name:a.name,kind:a.id,value:completion.reward.abilities[a.id]}))]);play();};
+ return completion=>{if(!context.active||!completion||seen.has(completion.id))return;seen.add(completion.id);queue.push([{name:'貨幣',kind:'currency',value:completion.reward.currency},{name:'經驗值',kind:'experience',value:completion.reward.experience},...ABILITIES.filter(a=>completion.reward.abilities[a.id]!==0).map(a=>({name:a.name,kind:a.id,value:completion.reward.abilities[a.id]}))].filter(line=>Number.isFinite(line.value)&&line.value!==0));if(queue.at(-1)?.length)play();else queue.pop();};
 }

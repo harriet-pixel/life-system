@@ -1,4 +1,4 @@
-import {createOperation,mergeOperations,applyOperation,digest,same,logicalDocument,MAX_OPERATIONS,MAX_EPOCHS,MAX_RECEIPTS,DATA_KEYS,syncRevisionDocument} from './cloud-sync-model.mjs?v=storage-rescue-20261028';
+import {createOperation,mergeOperations,applyOperation,digest,same,logicalDocument,MAX_OPERATIONS,MAX_EPOCHS,MAX_RECEIPTS,DATA_KEYS,syncRevisionDocument} from './cloud-sync-model.mjs?v=daily-polish-20261029';
 function createMutex(){let queue=Promise.resolve();return work=>{const result=queue.then(work);queue=result.catch(()=>{});return result;};}
 export const SYNC_STATE_KEY='life-system.cloud-sync-state.v1';
 // All dependencies are injected so tests use isolated browsers and a mock Drive.

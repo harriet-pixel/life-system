@@ -1,5 +1,5 @@
-import {REPLY_EVENTS,REPLY_EMOTIONS,validateCategoryKey,replyCheck} from './reply-manifest.mjs?v=persona-20261029';
-import {compactPersona,boundedPrompt,personaFingerprintInput} from './persona-prompt.mjs?v=persona-20261029';
+import {REPLY_EVENTS,REPLY_EMOTIONS,validateCategoryKey,replyCheck} from './reply-manifest.mjs?v=daily-polish-20261029';
+import {compactPersona,boundedPrompt,personaFingerprintInput} from './persona-prompt.mjs?v=daily-polish-20261029';
 export const REPLY_CAPACITY=10,REPLY_HISTORY_LIMIT=10;
 export const normalizeDialogue=text=>String(text??'').normalize('NFKC').trim().replace(/\s+/g,' ');
 export const duplicateKey=text=>normalizeDialogue(text).toLocaleLowerCase().replace(/[\p{P}\p{Z}\p{S}]/gu,'');

@@ -1,7 +1,9 @@
+import {initializeTabSwipe} from './tab-swipe.mjs?v=daily-polish-20261029';
 // One document controller for geometric tab indicators. Press feedback is CSS only.
 let controller;
 export function initializeUIFeedback(){
  if(controller)return controller;
+ initializeTabSwipe();
  const states=new Map();let frame=0,pressed=null,pointer=null;
  const clearPress=()=>{pressed?.removeAttribute('data-pressed');pressed=null;pointer=null;};
  // Native touch :active can be deferred during scroll recognition. One passive

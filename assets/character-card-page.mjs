@@ -1,7 +1,7 @@
-import {blankCard,characterCard,validateCard,cardCSV,parseCard,cardDifferences,setCardField,CARD_LIMIT} from './character-card.mjs?v=persona-20261029';
-import {createCharacterService} from './characters-service.mjs?v=persona-20261029';
-import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
-import {guardedDialog,downloadText} from './companion-dialog.mjs?v=persona-20261029';
+import {blankCard,characterCard,validateCard,cardCSV,parseCard,cardDifferences,setCardField,CARD_LIMIT} from './character-card.mjs?v=daily-polish-20261029';
+import {createCharacterService} from './characters-service.mjs?v=daily-polish-20261029';
+import {holdDraft} from './coordination.mjs?v=daily-polish-20261029';
+import {guardedDialog,downloadText} from './companion-dialog.mjs?v=daily-polish-20261029';
 export function mountCharacterCards(root,context,{store,getCharacter,hasRoleDraft,notify,onState}){
  const host=root.querySelector('#character-card-body');host.innerHTML='<div class="character-actions"><button type="button" id="card-template">下載空白CSV模板</button><button type="button" id="card-csv">下載目前角色CSV</button><button type="button" id="card-json">下載目前角色JSON</button></div><label>匯入角色卡（CSV／JSON，1MiB內）<input type="file" id="card-file" accept=".csv,.json"></label><p id="legacy-persona-note" class="small-note">舊資料已對應精簡欄位；超出新上限的長文仍完整保留於下方原文，可另行匯出。</p><details id="legacy-persona-view"><summary>舊人格原文（只讀保留）</summary><textarea id="legacy-persona-text" readonly rows="6" aria-label="舊人格原文"></textarea><button type="button" id="legacy-persona-export">匯出舊人格原文</button></details>';
  const $=s=>root.querySelector(s),dialog=document.createElement('dialog');dialog.id='card-preview';dialog.className='companion-editor-dialog';dialog.setAttribute('aria-labelledby','card-preview-title');dialog.innerHTML='<header><h2 id="card-preview-title">角色卡匯入預覽</h2><button type="button" data-close aria-label="關閉角色卡預覽">✕</button></header><p class="small-note">預覽不修改正式資料。更新只套用勾選的差異；不包含好感度、圖片、回覆庫或聊天。</p><label>匯入方式<select id="card-mode"><option value="update">更新目前角色</option><option value="create">建立新角色</option></select></label><div id="card-differences"></div><p id="card-error" role="alert"></p><footer><button type="button" data-cancel>取消</button><button type="button" id="card-apply">確認匯入</button></footer>';root.append(dialog);

@@ -1,9 +1,9 @@
-import {archivedReferences} from './storage-vault.mjs?v=storage-rescue-20261028';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage-rescue-20261028';
-import {validateCharacterImages} from './character-images-model.mjs?v=storage-rescue-20261028';
-import {maintainRecovery} from './recovery.mjs?v=persona-20261029';
-import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=storage-rescue-20261028';
-import {maintenance} from './coordination.mjs?v=interaction-perf-20261028';
+import {archivedReferences} from './storage-vault.mjs?v=daily-polish-20261029';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=daily-polish-20261029';
+import {validateCharacterImages} from './character-images-model.mjs?v=daily-polish-20261029';
+import {maintainRecovery} from './recovery.mjs?v=daily-polish-20261029';
+import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=daily-polish-20261029';
+import {maintenance} from './coordination.mjs?v=daily-polish-20261029';
 const providers=new Map();
 // Always protect the durable outbox, including after reverting to manual mode.
 providers.set('跨裝置同步待處理',{transient:false,read:async()=>{const local=new Set((await listImageAssets()).map(a=>a.id));try{return (await archivedReferences('asset:')).filter(id=>local.has(id));}catch{return [...local];}} });

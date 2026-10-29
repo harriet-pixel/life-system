@@ -1,16 +1,16 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=persona-20261029';
-import {renderHomeToday} from './home-today.mjs?v=persona-20261029';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
-import {createTaskEditor} from './task-editor.mjs?v=persona-20261029';
-import {createCategoryManager} from './task-categories.mjs?v=persona-20261029';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=action-ready-20261028';
-import {taskActions} from './task-actions.mjs?v=persona-20261029';
-import {localDate} from './tasks-model.mjs?v=action-ready-20261028';
-import { createMobileTabPositioner } from './tab-position.mjs?v=storage-rescue-20261028';
-import { createActivityHeightSync } from './activity-height.mjs?v=storage-rescue-20261028';
-import { undoManager } from './undo.mjs?v=persona-20261029';
-import {createSharedCompanionView} from './companion-events.mjs?v=persona-20261029';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=persona-20261029';
+import {mountHabitQuick} from './habit-quick.mjs?v=daily-polish-20261029';
+import {renderHomeToday} from './home-today.mjs?v=daily-polish-20261029';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261029';
+import {createTaskEditor} from './task-editor.mjs?v=daily-polish-20261029';
+import {createCategoryManager} from './task-categories.mjs?v=daily-polish-20261029';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=daily-polish-20261029';
+import {taskActions} from './task-actions.mjs?v=daily-polish-20261029';
+import {localDate} from './tasks-model.mjs?v=daily-polish-20261029';
+import { createMobileTabPositioner } from './tab-position.mjs?v=daily-polish-20261029';
+import { createActivityHeightSync } from './activity-height.mjs?v=daily-polish-20261029';
+import { undoManager } from './undo.mjs?v=daily-polish-20261029';
+import {createSharedCompanionView} from './companion-events.mjs?v=daily-polish-20261029';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=daily-polish-20261029';
 
 
 export function mountHome(root,context){
@@ -40,7 +40,7 @@ const companion = createSharedCompanionView({
   getContext: () => ({ character: null, affinity: null }),
   render(reply,actions,meta) {
     if(!meta?.replayed)floating.reply();
-    if(reply.daily){portrait.dataset.emotion=reply.emotion;dialogue.textContent=reply.dialogue;void import('./daily-visuals.mjs?v=storage-rescue-20261028').then(m=>{dailyVisual??=m.mountDailyVisuals(root,context,dataStore);if(context.active)dailyVisual.show(reply);}).catch(()=>{});return;}
+    if(reply.daily){portrait.dataset.emotion=reply.emotion;dialogue.textContent=reply.dialogue;void import('./daily-visuals.mjs?v=daily-polish-20261029').then(m=>{dailyVisual??=m.mountDailyVisuals(root,context,dataStore);if(context.active)dailyVisual.show(reply);}).catch(()=>{});return;}
     const asset = emotionPortraits[reply.emotion];
     // Both fields are one validated reply, committed synchronously.
     dialogue.textContent = reply.dialogue;

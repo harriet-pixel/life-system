@@ -1,8 +1,8 @@
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=storage-rescue-20261028';
-import {allocation,fixedAllocationFor} from './tasks-model.mjs?v=action-ready-20261028';
-import {dataStore} from './data.mjs?v=persona-20261029';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=persona-20261029';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=storage-rescue-20261028';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=daily-polish-20261029';
+import {allocation,fixedAllocationFor} from './tasks-model.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=daily-polish-20261029';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=daily-polish-20261029';
 export function createFixedAllocationEditor(form,context){
  const panel=document.createElement('fieldset');panel.className='task-fixed-editor';panel.hidden=true;panel.innerHTML='<legend>固定能力分配</legend><p class="small-note">每次完成均使用此設定，簡述不會自動改變分配。可推薦後調整，或直接手動設定。</p><button type="button" data-fixed-recommend>AI 推薦能力分配</button><div data-fixed-fields></div><p data-fixed-total role="status"></p><p data-fixed-status role="status"></p>';form.querySelector('[data-repeat]').after(panel);
  let epoch=0,request=null,source='manual',legacyOptional=false,touched=false,manualEdited=false,computedBasis=null,definition=null;const field=name=>form.elements.namedItem(name),values=()=>Object.fromEntries(ABILITIES.map(a=>[a.id,Number(form.querySelector(`[name=fixed_${a.id}]:checked`).value)]));

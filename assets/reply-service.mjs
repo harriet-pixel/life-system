@@ -1,7 +1,7 @@
-import {emptyReplyLibrary,upgradeReplyManifest,validateCategoryKey,validateReplyManifest,DEFAULT_REPLY_POOLS,categoryKey,validateReplyPools} from './reply-manifest.mjs?v=persona-20261029';
-import {readReplyRows,stageReplyRows} from './reply-store.mjs?v=persona-20261029';
-import {replyPersonaKey,writeReply,usableReplies} from './reply-model.mjs?v=persona-20261029';
-import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
+import {emptyReplyLibrary,upgradeReplyManifest,validateCategoryKey,validateReplyManifest,DEFAULT_REPLY_POOLS,categoryKey,validateReplyPools} from './reply-manifest.mjs?v=daily-polish-20261029';
+import {readReplyRows,stageReplyRows} from './reply-store.mjs?v=daily-polish-20261029';
+import {replyPersonaKey,writeReply,usableReplies} from './reply-model.mjs?v=daily-polish-20261029';
+import {holdDraft} from './coordination.mjs?v=daily-polish-20261029';
 export async function readReplyCategory(store,characterId,key){const state=store.getFields?store.getFields(['companion','replyLibrary','revision']):store.get(),c=state.companion.characters.find(c=>c.characterId===characterId);if(!c)throw new Error('角色已刪除。');validateReplyManifest(state.replyLibrary,state.companion);const ref=state.replyLibrary?.version===2?(state.replyLibrary?.characters[characterId]?.categories[key]??null):null;return {character:c,ref,epoch:state.replyLibrary?.epoch??null,rows:await readReplyRows(ref,{characterId,key}),signature:await replyPersonaKey(c)};}
 export async function editReplyCategory(store,{characterId,key,expectedRef,expectedEpoch,expectedSignature,action,values,guard=()=>true}){
  const release=await holdDraft('companion');try{

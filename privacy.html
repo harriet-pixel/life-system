@@ -7,10 +7,10 @@
   <meta name="description" content="Life system 隱私權政策：說明本機資料、Google Drive 手動備份、AI 服務與資料刪除方式。">
   <title>Life system｜隱私權政策</title>
   <link rel="icon" href="data:,">
-  <script src="assets/appearance-core.js?v=storage-rescue-20261028" data-appearance-core></script>
-  <link rel="stylesheet" href="assets/styles.css?v=storage-rescue-20261028">
-  <link rel="stylesheet" href="assets/appearance.css?v=storage-rescue-20261028">
-  <link rel="stylesheet" href="assets/privacy.css?v=privacy-20261028">
+  <script src="assets/appearance-core.js?v=daily-polish-20261029" data-appearance-core></script>
+  <link rel="stylesheet" href="assets/styles.css?v=daily-polish-20261029">
+  <link rel="stylesheet" href="assets/appearance.css?v=daily-polish-20261029">
+  <link rel="stylesheet" href="assets/privacy.css?v=daily-polish-20261029">
 </head>
 <body class="privacy-page">
   <a class="skip-link" href="#main">跳至主要內容</a>
@@ -18,7 +18,7 @@
     <header class="privacy-header"><a href="index.html">Life system｜返回首頁</a></header>
     <main id="main" tabindex="-1" class="privacy-content">
       <h1>Life system｜隱私權政策</h1>
-      <p class="privacy-date">更新日期：<time datetime="2026-10-28">2026 年 10 月 28 日</time></p>
+      <p class="privacy-date">更新日期：<time datetime="2026-10-29">2026 年 10 月 29 日</time></p>
       <p>Life system 是協助整理待辦事項、習慣打卡、個人資料、成長數值及夥伴角色的生活工具。本政策適用於本網站，說明目前公開版本實際存取、使用、傳輸及保存資料的方式。閱讀本頁不需要登入。</p>
 
       <section aria-labelledby="purpose"><h2 id="purpose">一、資料與使用目的</h2>
@@ -31,7 +31,7 @@
         <p><code>https://www.googleapis.com/auth/drive.appdata</code></p>
         <p>此權限允許在您 Google Drive 的應用程式專用資料夾（appDataFolder）中讀取、建立及管理本應用資料，不授予瀏覽您一般 Drive 文件的權限。網站會讀取備份清單、檔案 ID、名稱、大小、建立／修改時間及應用程式中繼資料，並於您要求還原時下載備份。</p>
         <p>目前程式不要求 openid、email 或 profile 權限，也不呼叫 Google 帳號個人資料 API 取得姓名、電子郵件、頭像或帳號識別碼。網站會接收授權結果、Access Token 及有效期限，用於向 Google Drive 驗證請求；Google 仍會自行處理登入、帳號選擇與授權程序。</p>
-        <p>Access Token 暫存於本分頁的 sessionStorage（<code>life-system.drive-auth.v1</code>）及執行記憶體，依 Google 回傳期限提前一分鐘失效，最長不超過一小時。不保存 Refresh Token，不將憑證放入一般生活資料或備份。sessionStorage 不是加密保管庫；瀏覽器還原分頁或複製分頁可能影響其保存方式。</p>
+        <p>Access Token 暫存於本分頁的 sessionStorage（<code>life-system.drive-auth.v1</code>）及執行記憶體，依 Google 回傳期限提前一分鐘失效，最長不超過一小時。另以 localStorage 保存「已連結 Google」狀態（life-system.drive-link.v1），不含帳號個資或 Token；除非自行中斷，重開網站仍保留連結。短期授權到期時，在您操作雲端功能時更新，Google 可能要求重新驗證。不保存 Refresh Token，不將憑證放入一般生活資料或備份。sessionStorage 不是加密保管庫；瀏覽器還原分頁或複製分頁可能影響其保存方式。</p>
       </section>
 
       <section aria-labelledby="cloud"><h2 id="cloud">三、雲端備份與還原</h2>

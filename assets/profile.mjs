@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=storage-rescue-20261028';
-import { holdDraft } from './coordination.mjs?v=interaction-perf-20261028';
-import { createProfileImages } from './profile-images.mjs?v=storage-rescue-20261028';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=storage-rescue-20261028';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=storage-rescue-20261028';
-import { undoManager } from './undo.mjs?v=persona-20261029';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=persona-20261029';
+import {bindProfileValidation} from './validation.mjs?v=daily-polish-20261029';
+import { holdDraft } from './coordination.mjs?v=daily-polish-20261029';
+import { createProfileImages } from './profile-images.mjs?v=daily-polish-20261029';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=daily-polish-20261029';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=daily-polish-20261029';
+import { undoManager } from './undo.mjs?v=daily-polish-20261029';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=daily-polish-20261029';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

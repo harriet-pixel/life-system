@@ -78,3 +78,5 @@ Google目前將 drive.appdata 列為 **non-sensitive**，不是敏感或受限Sc
 - 真實帳號登入與供應商API不以mock結果宣稱通過。
 - `npm run test:browser` 通過：設定／圖片保護／備份還原／跨頁與跨分頁／Undo與Redo／多字型與手機排版。
 - `BASE_URL=http://127.0.0.1:3000/ node tests/chat-browser.cjs`：24項聊天與AI模擬檢查通過。
+
+2026-10-29連結狀態：life-system.drive-link.v1只保存version／公開clientId／linked，不保存Google帳號個資或Token。重整、新分頁及重開仍可辨識曾連結；有效Token保留原sessionStorage期限，失效或401僅清除Token。雲端操作由使用者手勢更新授權，prompt空字串沿既有授權，Google仍可能要求驗證；沒有Refresh Token／後端，也不承諾繞過Google到期／撤銷或瀏覽器快顯限制。明確中斷清除連結並讓其他分頁失效。公開政策入口由首頁移至設定。

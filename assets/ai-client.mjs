@@ -1,7 +1,7 @@
-import {AI_TEST_TEXT} from './ai-prompts.mjs?v=storage-rescue-20261028';
-import {createAIConnection} from './ai-service.mjs?v=persona-20261029';
-import {createAISession} from './ai-session.mjs?v=storage-rescue-20261028';
-import {createProviderAdapter} from './ai-providers.mjs?v=persona-20261029';
+import {AI_TEST_TEXT} from './ai-prompts.mjs?v=daily-polish-20261029';
+import {createAIConnection} from './ai-service.mjs?v=daily-polish-20261029';
+import {createAISession} from './ai-session.mjs?v=daily-polish-20261029';
+import {createProviderAdapter} from './ai-providers.mjs?v=daily-polish-20261029';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null,defaultBrowser=false}={}){
  const session=createAISession(storage,{now}),listeners=new Set();

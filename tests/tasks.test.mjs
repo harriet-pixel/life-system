@@ -1,18 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=interaction-perf-20261028';
-import {emptyTasks,localDate,addDays,rowsForDate,catchUp,validateTasks,allocation} from '../assets/tasks-model.mjs?v=action-ready-20261028';
+import {createTaskService} from '../assets/tasks-service.mjs?v=daily-polish-20261029';
+import {emptyTasks,localDate,addDays,rowsForDate,catchUp,validateTasks,allocation} from '../assets/tasks-model.mjs?v=daily-polish-20261029';
 import {validateDocument,encodeBackup,readBackup,dataCount,restoreBackup} from '../assets/backup.mjs';
 function fixture(){let raw=null,time=new Date('2026-10-23T12:00:00'),seq=0;const storage={getItem:()=>raw,setItem:(_,s)=>raw=s},store=createDataStore(storage,{now:()=>+time}),service=createTaskService(store,{now:()=>time,id:()=>`id-${++seq}`});return {store,service,storage,advance:d=>{time=new Date(time);time.setDate(time.getDate()+d);},reload:()=>createDataStore(storage,{now:()=>+time})};}
 const values=(extra={})=>({name:'閱讀',points:2,kind:'once',date:null,start:'2026-10-23',end:null,days:[],overdue:'keep',categoryId:null,...extra});
 const dist={physique:0,wisdom:2,charisma:0,resilience:0,perception:0};
-test('overdue grace day is shared by queries and atomic batches without changing scheduled dates',async()=>{
- const {isOverdue}=await import('../assets/tasks-model.mjs?v=action-ready-20261028');
- const f=fixture(),yesterday=await f.service.edit(values({date:'2026-10-22'})),earlier=await f.service.edit(values({date:'2026-10-21'}));await f.service.reconcile();
+test('all past pending dates share unresolved eligibility by queries and atomic batches without changing scheduled dates',async()=>{
+ const {isOverdue}=await import('../assets/tasks-model.mjs?v=daily-polish-20261029');
+ const f=fixture(),yesterday=await f.service.edit(values({date:'2026-10-22'})),earlier=await f.service.edit(values({date:'2026-10-21'})),today=await f.service.edit(values({date:'2026-10-23'}));await f.service.reconcile();
  const before=f.store.get(),entries=before.tasks.occurrences;
- assert.equal(isOverdue(entries.find(o=>o.taskId===yesterday),'2026-10-23'),false);assert.equal(isOverdue(entries.find(o=>o.taskId===earlier),'2026-10-23'),true);
- for(const date of [null,'2026-10-25'])await assert.rejects(f.service.batch([{taskId:earlier,date:'2026-10-21'},{taskId:yesterday,date:'2026-10-22'}],date),/前天/);
+ assert.equal(isOverdue(entries.find(o=>o.taskId===yesterday),'2026-10-23'),true);assert.equal(isOverdue(entries.find(o=>o.taskId===earlier),'2026-10-23'),true);
+ for(const date of [null,'2026-10-25'])await assert.rejects(f.service.batch([{taskId:earlier,date:'2026-10-21'},{taskId:today,date:'2026-10-23'}],date),/昨天/);
  assert.deepEqual(f.store.get(),before);assert.equal(rowsForDate(before.tasks,'2026-10-22').length,1);
  f.advance(1);await f.service.reconcile();assert.equal(isOverdue(f.store.get().tasks.occurrences.find(o=>o.taskId===yesterday),'2026-10-24'),true);
  assert.equal(f.store.get().tasks.occurrences.find(o=>o.taskId===yesterday).date,'2026-10-22');assert.equal(f.store.get().stats.currency,0);
