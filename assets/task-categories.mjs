@@ -1,6 +1,6 @@
 import {mountColorField} from './color-field.mjs?v=daily-polish-20261029';
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
 import {holdDraft} from './coordination.mjs?v=daily-polish-20261029';
 
 export function createCategoryManager(root,context,actions){

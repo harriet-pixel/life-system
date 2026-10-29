@@ -1,6 +1,6 @@
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=daily-polish-20261029';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=companion-panel-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
 import {localDate,addDays} from './tasks-model.mjs?v=daily-polish-20261029';
 import {holdDraft} from './coordination.mjs?v=daily-polish-20261029';
 

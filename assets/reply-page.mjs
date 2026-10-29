@@ -1,11 +1,11 @@
-import {guardedDialog,downloadText} from './companion-dialog.mjs?v=daily-polish-20261029';
-import {generateLibraryPreview} from './reply-generation.mjs?v=daily-polish-20261029';
-import {REPLY_EVENTS,DEFAULT_REPLY_POOLS,categoryKey} from './reply-manifest.mjs?v=daily-polish-20261029';
+import {guardedDialog,downloadText} from './companion-dialog.mjs?v=companion-panel-20261029';
+import {generateLibraryPreview} from './reply-generation.mjs?v=companion-panel-20261029';
+import {REPLY_EVENTS,DEFAULT_REPLY_POOLS,categoryKey} from './reply-manifest.mjs?v=companion-panel-20261029';
 import {EMOTIONS} from './character-images-model.mjs?v=daily-polish-20261029';
-import {RELATIONSHIP_STAGES} from './characters-model.mjs?v=daily-polish-20261029';
-import {usableReplies} from './reply-model.mjs?v=daily-polish-20261029';
-import {readReplyCategory,editReplyCategory,saveReplyPools,upgradeReplyLibrary} from './reply-service.mjs?v=daily-polish-20261029';
-import {cleanReplyAssets,readReplyRows} from './reply-store.mjs?v=daily-polish-20261029';
+import {RELATIONSHIP_STAGES} from './characters-model.mjs?v=companion-panel-20261029';
+import {usableReplies} from './reply-model.mjs?v=companion-panel-20261029';
+import {readReplyCategory,editReplyCategory,saveReplyPools,upgradeReplyLibrary} from './reply-service.mjs?v=companion-panel-20261029';
+import {cleanReplyAssets,readReplyRows} from './reply-store.mjs?v=companion-panel-20261029';
 import {holdDraft,maintenance} from './coordination.mjs?v=daily-polish-20261029';
 export function mountReplyManager(root,context,{store,getCharacter,notify,onState}){
  const section=root.querySelector('#reply-library-section'),host=root.querySelector('#reply-library-body');

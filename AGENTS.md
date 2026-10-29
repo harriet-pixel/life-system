@@ -46,7 +46,7 @@
 - 待辦為正式今日資料，與待辦頁共用完成、獎勵及復原；習慣與正式習慣頁共用服務，首頁只提供今日快捷操作。舊示意活動鍵保留，不灌入正式待辦。
 - 首頁今日清單可在完整外框模組就緒前先顯示，但必須先等待同一 dataStore 的遷移、寫入鎖及復原期限檢查；共用同一渲染函式，不直接另讀 localStorage。操作模組未就緒前停用勾選與新增，正式掛載時接管並移除預覽訂閱；失敗顯示明確錯誤，不永久停在載入中。詳見 docs/LOAD_AND_DATE.md。
 - 兩面板以當前較高者同步高度，避免切換與手機定位跳動；保留共用 DOM、勾選與對話狀態。
-- 首頁一般招呼仍沿既有流程；正式生活事件使用情境AI優先與手動備援庫，圖片沿第四階段。
+- 首頁招呼依正式出場角色手動四時段設定，正式生活事件使用情境AI優先與手動備援庫，圖片沿第四階段。
 
 ### 待辦事項
 
@@ -139,7 +139,7 @@
 - AI專用localStorage不是加密保管庫，不進一般設定、歷史、Undo／Redo、備份、URL或日誌；不改Google／後端原有sessionStorage。勿要求使用者把key貼到聊天或Git。
 - `ai-runtime`／`ai-client`／`ai-session` 集中恢復與生命週期；`ai-service` 統一狀態、生成、取消與錯誤；`assets/ai-providers`／`ai-capabilities`／`ai-errors` 前後端共用，不另建重複系統。backend/ 的 server/auth/env 永不進 work/build。
 - 個人 Worker 金鑰只放 Cloudflare Secret，不回前端；GitHub access token 只用於 callback／user，不保存。本站 opaque session 最長一小時，專用 sessionStorage `life-system.ai-worker-session.v1`，DO 只存 hash、期限與限額，登出後端撤銷。CORS 不是認證，不混用 Drive／Cloudflare 管理 token。缺設定安全停用後端，直連不受影響。舊 Node BYOK 模式仍僅本頁 key＋JWT/scope，不與 Worker 模式混稱。測試金鑰不走一般 settings.ai；原非敏感 provider/model 偏好及備份白名單保留。
-- 四家模型 schema、能力、分頁、生成相容性及官方來源見 `docs/AI_PROVIDER_AUDIT.md`。DeepSeek 優先使用模態／API 能力 metadata，Gemini／OpenAI 精確規則需依官方來源維護；Claude deprecated 不等於 retired。介面區分暫存金鑰、查詢、選取與生成，安全診斷區分空清單和全部篩除。模型動態查詢與已知能力資訊／精確 ID 相容規則交集，可能排除新模型；失敗不以固定／過期清單代替。僅主動測選取模型，不附帶個人資料，限輸入／輸出、不重試；AI 輸出只當文字，不直接改數值。正式生活事件採情境AI與手動備援庫；一般首頁招呼沿原流程，各頁開發跨頁文字測試入口已移除。
+- 四家模型 schema、能力、分頁、生成相容性及官方來源見 `docs/AI_PROVIDER_AUDIT.md`。DeepSeek 優先使用模態／API 能力 metadata，Gemini／OpenAI 精確規則需依官方來源維護；Claude deprecated 不等於 retired。介面區分暫存金鑰、查詢、選取與生成，安全診斷區分空清單和全部篩除。模型動態查詢與已知能力資訊／精確 ID 相容規則交集，可能排除新模型；失敗不以固定／過期清單代替。僅主動測選取模型，不附帶個人資料，限輸入／輸出、不重試；AI 輸出只當文字，不直接改數值。正式生活事件採情境AI與手動備援庫；一般首頁招呼使用出場角色手動四時段設定，各頁開發跨頁文字測試入口已移除。
 - 共用 `ai-prompts.mjs` 統一繁體中文／臺灣詞彙，service 組裝、provider 原生 system／instructions 套用；角色不能覆蓋，結構化代碼／數字、程式碼、URL、ID 及明確保留原文不翻譯，不改使用者資料。未來功能必須經同一層。
 - 官方瀏覽器支援與驗收限制見 AI_CONNECTION.md。使用者已回報 DeepSeek 直連連線成功；不擴大為其他 provider、生成、跨頁或 Worker 部署已驗證。mock 不等於真實結果。
 
@@ -187,7 +187,7 @@
 
 固定情緒與輕量schema在character-images-model.mjs；每角色選填imageSettings（image／thumbnail／獨立相對crop，圖片revision與人格configVersion分開）。圖片沿唯一image-store／IndexedDB，禁止在共用文件存base64；只掃明確圖片欄位，不能掃人格文字。先入庫、再驗證角色／圖片版本與資產後經共用交易提交。服務及視窗沿companion草稿鎖、引用來源與24小時暫存保護；失敗保留舊圖，無背景垃圾回收。圖片與全站切換方式不進Undo，其他Undo不變。
 
-首頁不載入圖片管理／顯示／處理模組，不讀取夥伴Blob；角色圖片區按需使用120×160縮圖，完整圖只於桌面聊天室或管理視窗需要時讀取。頭部固定neutral，每訊息各自emotionId，缺圖退neutral／占位。全站direct／fade選擇即存settings.companionImages，reduced-motion強制direct。雲端仍只手動上傳。完整規格、限制、驗收與第五階段界線見docs/COMPANION_STAGE4_VERIFICATION.md。
+首頁不載入圖片管理／處理模組；有出場角色時按需載入顯示模組及目前neutral圖片，無角色不讀Blob；角色圖片區按需使用120×160縮圖，完整圖只於桌面聊天室或管理視窗需要時讀取。頭部固定neutral，每訊息各自emotionId，缺圖退neutral／占位。全站direct／fade選擇即存settings.companionImages，reduced-motion強制direct。雲端仍只手動上傳。完整規格、限制、驗收與第五階段界線見docs/COMPANION_STAGE4_VERIFICATION.md。
 
 首頁今日待辦依共用listSettings排序；名稱獨立開編輯／刪除選單，不觸發方框。首頁桌面操作通知集中立繪下方。待辦桌面新增事件／設定與當前頁名同列靠右，管理分類入口集中設定；分類上下移動以原categories順序保存，納入共用交易／Undo。待辦池完成一律歸入當日，舊日期先檢查安排衝突。習慣設定儲存成功自動關窗。
 
@@ -203,7 +203,7 @@
 
 ## 精簡人格、情境回應與備援庫（2026-10-29）
 
-人格使用同一A／B／C／D來源：A固定特質8欄、B表現4欄、C關係4欄、D每階段態度／行為／開放界線3欄。companion.version:2、每角色personaVersion:2；僅舊version:1在初次讀取／還原時遷移，保留characterId、createdAt、出場歷史、好感度／最高階段及圖片。configVersion只遷移一次加1；全部舊14／8欄保存單份legacyPersona原文，可檢視／另匯出，不送AI。不能對應的文字不無差別塞入新人格。失敗不清空原primary；角色讀取錯誤不得阻止首頁其他本機資料讀取。
+人格使用同一A／B／C／D來源：A固定特質8欄、B表現4欄、C關係4欄、D每階段態度／行為／開放界線3欄。companion.version:2、每角色personaVersion:2；僅舊version:1在初次讀取／還原時遷移，保留characterId、createdAt、出場歷史、好感度／最高階段及圖片。configVersion只遷移一次加1；全部舊14／8欄保存單份legacyPersona原文於正式資料及完整備份，不再顯示舊人格原文區塊、不送AI。不能對應的文字不無差別塞入新人格。失敗不清空原primary；角色讀取錯誤不得阻止首頁其他本機資料讀取。
 
 persona-prompt提供共用有界投影。聊天沿24小時／24則／4000字元／256輸出及原好感度流程；日常只必要人格、當前階段、使用者稱呼／短簡介、正式事件名稱／完成結果與指定情緒，不送性別、其他角色、聊天、完整生活資料或帳本。正式交易成功才由subscribeCommits推導，保留450ms合併與最多3個實際名稱；每正式來源24小時去重，最多一次情境生成、128輸出，失敗／忙碌／無連線用備援再固定neutral。事件AI只顯示，不存回覆庫、不計分、不等待或回滾生活交易；七日補算靜默。換角色、人格、來源撤銷、Undo／Redo、離頁與還原使舊結果永久失效，沿共用cancel，不持資料鎖等網路。
 
@@ -211,7 +211,7 @@ replyLibrary.version:2按角色／positive-negative／八情緒稀疏分類，�
 
 只有按「AI生成10句」才可生成備援；已有資料先確認，再一次結構化生成、驗證及預覽，確認保存才原子取代。取消／失敗／不滿10句都不自動補齊。唯一特定purpose=reply-library允許瀏覽器provider輸出上限1024；聊天及一般請求維持256。未部署的舊後端限制不因此啟用或部署。每句1–240字元，正規化／標點去重，唯一占位符{事件名稱}只以已驗證來源名稱替換（名稱100、替換後400字元上限）；缺名稱跳過，無可用句則固定備援。兩情緒池各至少一項，不在池內的分類仍可保留管理。
 
-角色卡管理與回覆庫管理皆展開才載入，首頁不預載。空白CSV含UTF-8 BOM與37個正式欄位；目前角色可下載CSV／JSON，只有人格及關係描述。匯入上限1MiB、JSON深度6、嚴格版本／欄位、CSV公式文字逃脫，先預覽與勾選文字差異，再用原服務及configVersion／身份／revision提交。新卡產生新ID；更新保留出場、好感度、最高階段、圖片、回覆庫、聊天與切換歷史，衝突保留預覽。不將HTML執行、不信任updatedAt。正式完整本機／加密／手動Drive備份涵蓋新舊人格、回覆庫與圖片，仍排除短期聊天／金鑰／登入；20筆手動雲端政策、vault保護與自動同步停用保持不變。驗證見docs/COMPANION_REFACTOR_VERIFICATION.md。
+角色卡在角色設定最上方常展開，僅進夥伴頁載入；備援庫仍展開才載入，首頁不預載兩者。空白角色卡CSV含UTF-8 BOM與37個正式欄位，只含分類、欄位名稱、填寫內容三欄，不含欄位說明。下載名稱為「下載空白角色卡」、「下載角色卡CSV」、「下載角色JSON」；人格卡只有人格及關係描述。CSV支援舊四欄、逗號／分號／Tab、可選metadata及尾端空白列；錯誤明確顯示在匯入區。匯入上限1MiB、JSON深度6、嚴格版本／欄位、CSV公式文字逃脫，先預覽與勾選文字差異，再用原服務及configVersion／身份／revision提交。新卡產生新ID；更新保留出場、好感度、最高階段、圖片、回覆庫、聊天與切換歷史，衝突保留預覽。不將HTML執行、不信任updatedAt。正式完整本機／加密／手動Drive備份涵蓋新舊人格、回覆庫與圖片，仍排除短期聊天／金鑰／登入；20筆手動雲端政策、vault保護與自動同步停用保持不變。驗證見docs/COMPANION_REFACTOR_VERIFICATION.md。
 
 ## 介面／雲端整合（2026-10-28）
 
@@ -240,3 +240,7 @@ M/P/E立即更新暫時aria-pressed／busy，不先重繪整頁；pending只留�
 新單次事件與重複事件均支援固定能力分配，總點數仍是使用者選定的1–3。新單次事件在儲存時若未手動設定，使用既有AI推薦並驗證總和後才保存；無效／不可用可改手動，不保存半成品。完成讀正式fixedAllocation，不再查能力分配AI；舊未設事件保留原相容流程。備份／還原與Undo／Redo驗證固定分配。事件日期icon旁提供今／明，以裝置今天／明天設定草稿，不直接保存，也不移動已完成事件。
 
 2026-10-29日常介面：手機整個主頁籤內容區塊（含事項名稱、一般按鈕、摘要及容器留白）支援水平滑動切換，不只頁籤列；辨識完成的水平滑動取消原本點擊，下一次真實點按不受影響。垂直捲動、內層橫向圖表、文字輸入控制與dialog不攔截。導覽｜為獨立無互動裝飾，不放於圖示色塊。習慣與加分正式增減使用待辦同一全域數值動畫佇列，正負號依實際delta，不重複播放頁面動畫；主交易通知不被緊接的關窗通知覆蓋。隱私權政策入口只放設定頁。Google以localStorage保存無憑證的連結意圖；Token仍在sessionStorage並遵守Google期限，到期／401不視為自行中斷，使用者操作雲端時更新授權；明確中斷會清除連結並通知其他分頁，不啟用自動同步或背景備份。
+
+## 手動首頁招呼與日常頁角色連動（2026-10-29）
+
+每角色選填greetings包含morning（臺灣05–11時）、afternoon（12–17時）、evening（18–21時）、night（22–04時）四句，留白使用既有預設。僅明確儲存透過角色服務／revision提交，核對createdAt與原greetings避免跨分頁覆蓋；不更動人格configVersion、好感度或出場歷史，不觸發AI。完整本機／加密／手動雲端備份保留；人格角色卡不包含招呼。activeCharacter為dataStore的輕量唯讀投影，不是第二份儲存；首頁及待辦只訂閱當前角色身份／名稱／招呼／圖片引用。首頁顯示正式角色招呼及neutral圖，待辦顯示同一角色並沿正式生活情境回應，不因預覽換出場；無新輪詢、後端或自動上傳。驗證見docs/COMPANION_PANEL_VERIFICATION.md。

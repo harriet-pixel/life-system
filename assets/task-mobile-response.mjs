@@ -1,5 +1,5 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-panel-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
 // Presentation only: ephemeral local commits + their existing paired mock reply.
 // Nothing is persisted or replayed on route restore, storage sync, Undo or Redo.
 export function createMobileTaskResponse(root,context,{kind='tasks',selector='.tasks-dashboard>.companion'}={}){

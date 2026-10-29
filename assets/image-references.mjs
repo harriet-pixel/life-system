@@ -1,7 +1,7 @@
 import {archivedReferences} from './storage-vault.mjs?v=daily-polish-20261029';
 import {validateRoleImageAssets} from './character-image-integrity.mjs?v=daily-polish-20261029';
 import {validateCharacterImages} from './character-images-model.mjs?v=daily-polish-20261029';
-import {maintainRecovery} from './recovery.mjs?v=daily-polish-20261029';
+import {maintainRecovery} from './recovery.mjs?v=companion-panel-20261029';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=daily-polish-20261029';
 import {maintenance} from './coordination.mjs?v=daily-polish-20261029';
 const providers=new Map();
