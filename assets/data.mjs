@@ -85,7 +85,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
     try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);loadedRaw=raw;timing?.phase('storage-write',writeAt);}
     catch(error) { throw storageFailure(error,storage,{operation:operation?.type??'primary-write',attemptedBytes:JSON.stringify(next).length*2}); }
-    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(({metadataOnly,omit,keys,types},fn)=>{try{if(types&&!types.includes(operation?.type))return;if(metadataOnly){if(operation){const record=state.history.at(-1);fn(null,copy({id:operation.id,type:operation.type,label:record?.label,delta:record?.delta}));}}else fn(copy(keys?project(state,keys):omit?.length?Object.fromEntries(Object.entries(state).filter(([key])=>!omit.includes(key))):state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
+    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(({metadataOnly,omit,keys,types},fn)=>{try{if(types&&!types.includes(operation?.type))return;if(metadataOnly){if(operation){const record=state.history.at(-1);fn(null,copy({id:operation.id,type:operation.type,label:operation.label??record?.label,delta:operation.delta??record?.delta}));}}else fn(copy(keys?project(state,keys):omit?.length?Object.fromEntries(Object.entries(state).filter(([key])=>!omit.includes(key))):state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
   };
   const api = {
     get: () => copy(currentRecovery().document),
@@ -131,7 +131,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
         const record={id:transactionId,time,...(affinityPlan.length?{affinityPlan}:{}),type:type??'data.update',label:label??'已更新資料',target:target??'user',fields,before,after,delta,undone:false,undoneAt:null};
         next.history.push(actionMetadata(record));if(reversible)next.undoHistory.push(record);
       }
-      timing?.phase('transaction-validate',validateAt);persist(next,timing,{id:committedId,type:type??'data.update',before,after});return true;
+      timing?.phase('transaction-validate',validateAt);persist(next,timing,{id:committedId,type:type??'data.update',label:label??'已更新資料',delta,before,after});return true;
     },
     settleAffinities() {
       const next=effective().document,time=now();next.affinity=validateAffinity(next.affinity,next.companion,{clone:false});
@@ -180,7 +180,8 @@ export function createDataStore(storage,{now=Date.now}={}) {
       if (redo) delete record.undoOrder;
       else record.undoOrder = state.revision + 1;
       const metadata=next.history.find(r=>r.id===record.id);if(metadata){metadata.undone=record.undone;metadata.undoneAt=record.undoneAt;}
-      persist(next); return { ok: true, label: record.label };
+      const fields=Object.keys(record.before).filter(key=>['tasks','habits','stats'].includes(key));const operation=fields.some(key=>key==='tasks'||key==='habits')?{id:crypto.randomUUID(),type:redo?'life.redo':'life.undo',delta:{currency:next.stats.currency-state.stats.currency,experience:next.stats.experience-state.stats.experience,level:next.stats.level-state.stats.level,abilities:next.stats.abilities.map(a=>({id:a.id,value:a.value-state.stats.abilities.find(b=>b.id===a.id).value}))},label:(redo?'恢復：':'撤回：')+record.label,before:Object.fromEntries(fields.map(key=>[key,state[key]])),after:Object.fromEntries(fields.map(key=>[key,next[key]]))}:null;
+      persist(next,null,operation); return { ok: true, label: record.label };
     } catch (error) { return { ok: false, reason: 'failed', error }; }
   }
   return api;

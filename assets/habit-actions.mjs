@@ -1,8 +1,8 @@
 import {parseHabitAllocation} from './habit-allocation.mjs?v=daily-polish-20261029';
-import {createSharedCompanionView,cancelSharedCompanion} from './companion-events.mjs?v=companion-panel-20261029';
-import {dataStore} from './data.mjs?v=companion-panel-20261029';
+import {createSharedCompanionView,cancelSharedCompanion} from './companion-events.mjs?v=companion-actions-20261029';
+import {dataStore} from './data.mjs?v=companion-actions-20261029';
 import {createHabitService} from './habits-service.mjs?v=daily-polish-20261029';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-panel-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-actions-20261029';
 import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=daily-polish-20261029';
 import {distribution} from './habits-model.mjs?v=daily-polish-20261029';
 export const habitService=createHabitService(dataStore);

@@ -109,7 +109,7 @@ export async function withBackup(store,password,consume,{snapshot}={}) {
     const ownRefs=documentImageReferences(document,{raw:true});check(ownRefs.size<=MAX_IMAGES);let size=0;
     const images=[];
     for(const asset of assets.filter(a=>ownRefs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
-    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=companion-panel-20261029')).exportReplyAssets(document.replyLibrary):undefined;
+    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=companion-actions-20261029')).exportReplyAssets(document.replyLibrary):undefined;
     const payload={...(replyAssets?{replyAssets}:{}),formatVersion:VERSION,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
     return consume(await encodeBackup(payload,password),payload);
   });
@@ -159,7 +159,7 @@ export async function readBackup(file,password='') {
   const refs=documentImageReferences(payload.document,{legacy:payload.dataVersion===2,raw:true});check([...refs].every(id=>ids.has(id)),'備份缺少必要圖片。');check(ids.size===refs.size,'備份含不在範圍內的圖片。');
   // Verify the original inventory before discarding expired legacy snapshots.
   // Never renew timestamps. Import only images still required at restore time.
-  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=companion-panel-20261029')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
+  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=companion-actions-20261029')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
   const document=maintainRecovery(payload.document).document;document.settings=normalizeSettings(document.settings);
   for(const r of document.undoHistory)for(const snapshot of [r.before,r.after])if(snapshot.settings)snapshot.settings=normalizeSettings(snapshot.settings);
   document.companion ??= emptyCharacters();document.affinity ??= emptyAffinity();
@@ -181,7 +181,7 @@ export async function restoreBackup(store,prepared,expectedRevision,{beforeRepla
     check([...required].every(id=>available.has(id)),'還原缺少必要圖片，原資料已保留。');
     for(const asset of prepared.assets)check(asset.blob instanceof Blob&&'asset:'+await hash(await asset.blob.arrayBuffer())===asset.id,'還原圖片完整性不正確，原資料已保留。');
     await validateRoleImageAssets(prepared.payload.document,[...existing,...prepared.assets]);await beforeReplace?.();
-    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=companion-panel-20261029')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
+    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=companion-actions-20261029')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
     await stageImageAssets(prepared.assets);
     const document=maintainRecovery(prepared.payload.document).document;if(replaceDocument)await replaceDocument(document);else store.replace(document);await afterReplace?.();
   });

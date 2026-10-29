@@ -1,5 +1,5 @@
 import {archivedReferences} from './storage-vault.mjs?v=daily-polish-20261029';
-import {digest,validateReplyRows} from './reply-model.mjs?v=companion-panel-20261029';
+import {digest,validateReplyRows} from './reply-model.mjs?v=companion-actions-20261029';
 import {replyRefs,validateReplyManifest} from './reply-manifest.mjs?v=companion-panel-20261029';
 export const REPLY_DATABASE='life-system.replies.v1';let database;
 function open(){return database??=new Promise((resolve,reject)=>{const r=indexedDB.open(REPLY_DATABASE,1);r.onupgradeneeded=()=>{r.result.createObjectStore('categories',{keyPath:'id'});r.result.createObjectStore('events',{keyPath:'id'}).createIndex('expires','expiresAt');};r.onsuccess=()=>resolve(r.result);r.onerror=()=>{database=null;reject(new Error('回覆庫儲存空間無法開啟；生活資料未更動。'));};});}

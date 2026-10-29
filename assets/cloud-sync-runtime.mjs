@@ -1,18 +1,18 @@
 import {backupDeviceName} from './cloud-backup-display.mjs?v=daily-polish-20261029';
 import {replyRefs} from './reply-manifest.mjs?v=companion-panel-20261029';
 // Load the reusable reply asset store only when a manifest actually references it.
-const replyStore=()=>import('./reply-store.mjs?v=companion-panel-20261029');
+const replyStore=()=>import('./reply-store.mjs?v=companion-actions-20261029');
 const readReplyRows=async(...args)=>(await replyStore()).readReplyRows(...args);
 const validateReplyAssets=async(...args)=>(await replyStore()).validateReplyAssets(...args);
 const importReplyAssets=async(...args)=>(await replyStore()).importReplyAssets(...args);
 import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=daily-polish-20261029';
 import {createSyncEngine} from './cloud-sync-engine.mjs?v=daily-polish-20261029';
-import {createSyncDrive} from './cloud-sync-drive.mjs?v=companion-panel-20261029';
-import {dataStore,isPristineDocument} from './data.mjs?v=companion-panel-20261029';
-import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=companion-panel-20261029';
-import {getCloudBackup} from './cloud-backup.mjs?v=companion-panel-20261029';
+import {createSyncDrive} from './cloud-sync-drive.mjs?v=companion-actions-20261029';
+import {dataStore,isPristineDocument} from './data.mjs?v=companion-actions-20261029';
+import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=companion-actions-20261029';
+import {getCloudBackup} from './cloud-backup.mjs?v=companion-actions-20261029';
 import {maintenance} from './coordination.mjs?v=daily-polish-20261029';
-import {validateDocument} from './backup.mjs?v=companion-panel-20261029';
+import {validateDocument} from './backup.mjs?v=companion-actions-20261029';
 import {maintainRecovery} from './recovery.mjs?v=companion-panel-20261029';
 import {documentImageReferences} from './image-references.mjs?v=companion-panel-20261029';
 import {readImageBlob,listImageAssets,stageImageAssets} from './image-store.mjs?v=daily-polish-20261029';

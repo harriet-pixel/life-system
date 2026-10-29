@@ -1,4 +1,4 @@
-import {driveRequest} from './google-drive.mjs?v=companion-panel-20261029';
+import {driveRequest} from './google-drive.mjs?v=companion-actions-20261029';
 import {digest} from './cloud-sync-model.mjs?v=daily-polish-20261029';
 const URL='https://www.googleapis.com/drive/v3/files';
 const bytesHash=async blob=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))].map(n=>n.toString(16).padStart(2,'0')).join('');

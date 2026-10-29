@@ -1,7 +1,7 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-panel-20261029';
-import {readReplyCategory} from './reply-service.mjs?v=companion-panel-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-actions-20261029';
+import {readReplyCategory} from './reply-service.mjs?v=companion-actions-20261029';
 import {validateCategoryKey} from './reply-manifest.mjs?v=companion-panel-20261029';
-import {libraryPrompt,parseLibraryReply} from './reply-model.mjs?v=companion-panel-20261029';
+import {libraryPrompt,parseLibraryReply} from './reply-model.mjs?v=companion-actions-20261029';
 import {relationshipStage} from './characters-model.mjs?v=companion-panel-20261029';
 export async function generateLibraryPreview(store,id,key,{connection=getSharedAIConnection(),valid=()=>true,onCancel=()=>{}}={}){
  const base=await readReplyCategory(store,id,key),scope=validateCategoryKey(key),stage=relationshipStage(base.character.affinity).stage;if(scope.legacy||base.character.archived)throw new Error('此角色或分類無法生成。');

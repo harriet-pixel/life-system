@@ -1,17 +1,17 @@
 import {homeGreeting} from './characters-model.mjs?v=companion-panel-20261029';
-import {mountHabitQuick} from './habit-quick.mjs?v=companion-panel-20261029';
-import {renderHomeToday} from './home-today.mjs?v=companion-panel-20261029';
+import {mountHabitQuick} from './habit-quick.mjs?v=companion-actions-20261029';
+import {renderHomeToday} from './home-today.mjs?v=companion-actions-20261029';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261029';
-import {createTaskEditor} from './task-editor.mjs?v=companion-panel-20261029';
-import {createCategoryManager} from './task-categories.mjs?v=companion-panel-20261029';
+import {createTaskEditor} from './task-editor.mjs?v=companion-actions-20261029';
+import {createCategoryManager} from './task-categories.mjs?v=companion-actions-20261029';
 import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-panel-20261029';
-import {taskActions} from './task-actions.mjs?v=companion-panel-20261029';
+import {taskActions} from './task-actions.mjs?v=companion-actions-20261029';
 import {localDate} from './tasks-model.mjs?v=daily-polish-20261029';
 import { createMobileTabPositioner } from './tab-position.mjs?v=daily-polish-20261029';
 import { createActivityHeightSync } from './activity-height.mjs?v=daily-polish-20261029';
-import { undoManager } from './undo.mjs?v=companion-panel-20261029';
-import {createSharedCompanionView} from './companion-events.mjs?v=companion-panel-20261029';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=companion-panel-20261029';
+import { undoManager } from './undo.mjs?v=companion-actions-20261029';
+import {createSharedCompanionView} from './companion-events.mjs?v=companion-actions-20261029';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=companion-actions-20261029';
 
 
 export function mountHome(root,context){
@@ -36,16 +36,18 @@ function showPlaceholder(label) {
   placeholder.hidden = false;
   portrait.setAttribute('aria-label', `夥伴頭像佔位：${label}，尚未提供情緒立繪`);
 }
-let dailyVisual=null;
+let dailyVisual=null,visualRequest=0;
 let greetingIdentity='';
-function showHomeGreeting(actor){dialogue.textContent=homeGreeting(actor);if(actor)void import('./daily-visuals.mjs?v=daily-polish-20261029').then(m=>{dailyVisual??=m.mountDailyVisuals(root,context,dataStore);if(context.active)dailyVisual.show({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});}).catch(()=>{});}
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=companion-actions-20261029').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+context.onSuspend(()=>visualRequest++);
+function showHomeGreeting(actor){dialogue.textContent=homeGreeting(actor);if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
 context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
 context.onResume(()=>showHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter));
 const companion = createSharedCompanionView({
   getContext: () => ({ character: null, affinity: null }),
   render(reply,actions,meta) {
     if(!meta?.replayed)floating.reply();
-    if(reply.daily){portrait.dataset.emotion=reply.emotion;dialogue.textContent=reply.dialogue;void import('./daily-visuals.mjs?v=daily-polish-20261029').then(m=>{dailyVisual??=m.mountDailyVisuals(root,context,dataStore);if(context.active)dailyVisual.show(reply);}).catch(()=>{});return;}
+    if(reply.daily){portrait.dataset.emotion=reply.emotion;dialogue.textContent=reply.dialogue;showDaily(reply);return;}
     const asset = emotionPortraits[reply.emotion];
     // Both fields are one validated reply, committed synchronously.
     dialogue.textContent = reply.dialogue;

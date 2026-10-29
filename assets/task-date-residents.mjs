@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=companion-panel-20261029';
+import {dataStore} from './data.mjs?v=companion-actions-20261029';
 import {localDate,inResidentLibrary,occurrence} from './tasks-model.mjs?v=daily-polish-20261029';
 import {boardTasks,categoryOrder,stableCreated} from './task-view-model.mjs?v=daily-polish-20261029';
 import {observeNameLists} from './task-name-layout.mjs?v=daily-polish-20261029';
