@@ -9,13 +9,16 @@ import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=act
 import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=storage-rescue-20261028';
 import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=storage-rescue-20261028';
 import {ABILITIES} from './abilities.mjs?v=storage-rescue-20261028';
-import {maintenance} from './coordination.mjs?v=storage-rescue-20261028';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=storage-rescue-20261028';
+import {maintenance} from './coordination.mjs?v=interaction-perf-20261028';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=interaction-perf-20261028';
 import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=storage-rescue-20261028';
 import {normalizeSettings} from './settings-model.mjs?v=storage-rescue-20261028';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
+// Yield only explicit, potentially large backup work; keep the maintenance
+// lock so another tab cannot change the captured data between these steps.
+export const yieldBackupWork=()=>globalThis.scheduler?.yield?globalThis.scheduler.yield():new Promise(resolve=>setTimeout(resolve,0));
 export const hash=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(v=>v.toString(16).padStart(2,'0')).join('');
 const b64=bytes=>{let text='';for(let i=0;i<bytes.length;i+=8192)text+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(text);};
 function unb64(text,max=MAX_FILE_BYTES) {
@@ -98,9 +101,12 @@ export async function encodeBackup(payload,password='') {
 export async function withBackup(store,password,consume,{snapshot}={}) {
   validateNewPassword(password);
   return maintenance(async()=>{
-    store.refresh();store.maintain();const document=validateDocument(snapshot?maintainRecovery(snapshot).document:store.get());check(encoder.encode(JSON.stringify(document)).length<=10*1024*1024,'資料文件超過 10 MiB 備份上限；目前資料與行動紀錄均保留。');const {assets,refs,transientSources}=await inspectImages(document);
+    store.refresh();store.maintain();await yieldBackupWork();
+    const document=snapshot?maintainRecovery(snapshot).document:store.get();await yieldBackupWork();
+    validateDocument(document);check(encoder.encode(JSON.stringify(document)).length<=10*1024*1024,'資料文件超過 10 MiB 備份上限；目前資料與行動紀錄均保留。');await yieldBackupWork();
+    const {assets,refs,transientSources}=await inspectImages(document,{maintained:true});
     check(!transientSources.length,'請先儲存或取消以下圖片操作再備份：'+transientSources.join('、'));
-    const ownRefs=documentImageReferences(document);check(ownRefs.size<=MAX_IMAGES);let size=0;
+    const ownRefs=documentImageReferences(document,{raw:true});check(ownRefs.size<=MAX_IMAGES);let size=0;
     const images=[];
     for(const asset of assets.filter(a=>ownRefs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
     const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=storage-rescue-20261028')).exportReplyAssets(document.replyLibrary):undefined;

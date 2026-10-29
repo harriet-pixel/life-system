@@ -30,3 +30,10 @@ export async function holdDraft(kind='profile') {
     }).catch(reject);
   });
 }
+
+// Show an already pending operation before its required atomic write. The
+// bounded fallback also lets writes proceed if the tab becomes hidden.
+export function pendingFeedbackFrame(){
+ if(typeof document==='undefined'||document.hidden)return Promise.resolve();
+ return new Promise(resolve=>{let frame,pulse,deadline,done=false;const finish=()=>{if(done)return;done=true;cancelAnimationFrame(frame);clearTimeout(pulse);clearTimeout(deadline);resolve();};deadline=setTimeout(finish,64);frame=requestAnimationFrame(()=>{pulse=setTimeout(finish,0);});});
+}

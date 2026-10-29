@@ -25,14 +25,14 @@ try{
  console.log('PASS appearance: preview/save/reload/cross-page/cross-tab/Undo/Redo');
  // Recovery is fixed by the system; no history recording toggle remains.
  await openSettingsSection(page,'history');assert.equal(await page.locator('#history-record-all').count(),0);
- await home.evaluate(async()=>{const{habitService}=await import('./assets/habit-actions.mjs?v=action-ready-20261028');const id=await habitService.saveBonus({name:'測試額外行動',description:'',points:1});await habitService.evaluateBonus(id,async()=>({physique:1,wisdom:0,charisma:0,resilience:0,perception:0}));});
+ await home.evaluate(async()=>{const{habitService}=await import('./assets/habit-actions.mjs?v=interaction-perf-20261028');const id=await habitService.saveBonus({name:'測試額外行動',description:'',points:1});await habitService.evaluateBonus(id,async()=>({physique:1,wisdom:0,charisma:0,resilience:0,perception:0}));});
  const count=await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length);
  await home.locator('#habits-tab').click();await home.locator('#habits-panel').getByRole('button',{name:'加分打卡',exact:true}).click();await home.locator('#home-bonus-picker [data-home-bonus-items] button').first().click();await home.waitForTimeout(200);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length),count+1);
  console.log('PASS fixed journaling and homepage data changes');
  // Build real, content-addressed image fixtures, including history-only and redo references.
  const fixture=await page.evaluate(async()=>{
-  const {dataStore:s}=await import('./assets/data.mjs?v=action-ready-20261028'),images=await import('./assets/image-store.mjs?v=storage-rescue-20261028');
+  const {dataStore:s}=await import('./assets/data.mjs?v=interaction-perf-20261028'),images=await import('./assets/image-store.mjs?v=storage-rescue-20261028');
   const ids=[];
   for(let i=0;i<8;i++){const c=document.createElement('canvas');c.width=c.height=4;const x=c.getContext('2d');x.fillStyle=`rgb(${i*30},30,90)`;x.fillRect(0,0,4,4);ids.push(await images.storeImage(c.toDataURL()));}
   const change=photo=>s.transact({type:'image.test',label:'圖片',target:'user',fields:[],changes:{photo}});
@@ -49,7 +49,7 @@ try{
  // Candidate becomes referenced between listing and final confirmation: skip it.
  await page.locator('.asset-row input').evaluateAll((nodes,id)=>nodes.find(n=>n.value===id).click(),fixture.ids[5]);
  await page.locator('#delete-assets').click();
- await page.evaluate(async id=>{const {dataStore:s}=await import('./assets/data.mjs?v=action-ready-20261028');await s.transact({type:'image.test',target:'user',label:'新引用',fields:[],changes:{photo:id}});},fixture.ids[5]);
+ await page.evaluate(async id=>{const {dataStore:s}=await import('./assets/data.mjs?v=interaction-perf-20261028');await s.transact({type:'image.test',target:'user',label:'新引用',fields:[],changes:{photo:id}});},fixture.ids[5]);
  await page.locator('#confirm-delete').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('跳過 1'));
  // A draft in another tab blocks cleanup/backup; closing the tab releases it.
  await profile.locator('#edit-profile').click();await profile.waitForSelector('#profile-dialog[open]');
@@ -58,14 +58,14 @@ try{
  await profile.close();
  await openSettingsSection(page,'storage');await page.locator('#refresh-storage').click();await page.waitForFunction(()=>document.querySelectorAll('.asset-row').length===2);
  await page.locator('.asset-row input').evaluateAll((nodes,id)=>nodes.find(n=>n.value===id).click(),fixture.ids[6]);await page.locator('#delete-assets').click();await page.locator('#confirm-delete').click();await page.waitForFunction(()=>document.querySelector('#operation-status').textContent.includes('已永久刪除 1'));
- const state=await page.evaluate(async()=>{const {dataStore:s}=await import('./assets/data.mjs?v=action-ready-20261028');const {listImageAssets}=await import('./assets/image-store.mjs?v=storage-rescue-20261028');return {doc:s.get(),ids:(await listImageAssets()).map(a=>a.id)};});
+ const state=await page.evaluate(async()=>{const {dataStore:s}=await import('./assets/data.mjs?v=interaction-perf-20261028');const {listImageAssets}=await import('./assets/image-store.mjs?v=storage-rescue-20261028');return {doc:s.get(),ids:(await listImageAssets()).map(a=>a.id)};});
  assert.ok(!state.ids.includes(fixture.ids[6]));for(const i of [0,1,2,3,4,5,7])assert.ok(state.ids.includes(fixture.ids[i]));
  // Unknown reference source must fail closed.
- const closed=await page.evaluate(async()=>{const refs=await import('./assets/image-references.mjs?v=storage-rescue-20261028'),{dataStore:s}=await import('./assets/data.mjs?v=action-ready-20261028');const off=refs.registerImageReferenceSource('failing',()=>{throw new Error('引用來源失敗');});try{await refs.deleteUnusedImages(s,[]);return false;}catch{return true;}finally{off();}});assert.equal(closed,true);
+ const closed=await page.evaluate(async()=>{const refs=await import('./assets/image-references.mjs?v=interaction-perf-20261028'),{dataStore:s}=await import('./assets/data.mjs?v=interaction-perf-20261028');const off=refs.registerImageReferenceSource('failing',()=>{throw new Error('引用來源失敗');});try{await refs.deleteUnusedImages(s,[]);return false;}catch{return true;}finally{off();}});assert.equal(closed,true);
  console.log('PASS storage: current/history/Undo/Redo/lease protection, stale selection, draft tab close, failed provider, only unused deletion');
  // Encrypted round trip preserves IDs, history branch metadata, settings and image bytes.
  const roundtrip=await page.evaluate(async()=>{
-  const backup=await import('./assets/backup.mjs?v=action-ready-20261028'),{dataStore:s}=await import('./assets/data.mjs?v=action-ready-20261028');
+  const backup=await import('./assets/backup.mjs?v=interaction-perf-20261028'),{dataStore:s}=await import('./assets/data.mjs?v=interaction-perf-20261028');
   const text=await backup.withBackup(s,'test password',blob=>blob.text());const before=s.get();const prepared=await backup.readBackup(new Blob([text]),'test password');
   await s.transact({type:'profile.test',label:'暫時名稱',target:'user',fields:[],changes:{profile:{...s.get().profile,name:'changed'}}});
   await backup.restoreBackup(s,prepared,s.get().revision);const after=s.get();
@@ -74,13 +74,13 @@ try{
  const {revision:a,...before}=roundtrip.before,{revision:b,...after}=roundtrip.after;assert.deepEqual(after,before);assert.ok(roundtrip.imageCount>=5);
  // Invalid backups do not modify storage; inject a publication failure after staging.
  const protections=await page.evaluate(async text=>{
-  const b=await import('./assets/backup.mjs?v=action-ready-20261028'),{dataStore:s,STORAGE_KEY}=await import('./assets/data.mjs?v=action-ready-20261028');const original=localStorage.getItem(STORAGE_KEY);const out=[];
+  const b=await import('./assets/backup.mjs?v=interaction-perf-20261028'),{dataStore:s,STORAGE_KEY}=await import('./assets/data.mjs?v=interaction-perf-20261028');const original=localStorage.getItem(STORAGE_KEY);const out=[];
   for(const [file,password] of [[new Blob([text]),'wrong'],[new Blob(['broken']),'']]){try{await b.readBackup(file,password);out.push(false);}catch{out.push(localStorage.getItem(STORAGE_KEY)===original);}}
   const prepared=await b.readBackup(new Blob([text]),'test password');
   const native=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===STORAGE_KEY)throw new DOMException('quota','QuotaExceededError');return native.call(this,k,v);};
   try{await b.restoreBackup(s,prepared,s.get().revision);out.push(false);}catch{out.push(localStorage.getItem(STORAGE_KEY)===original);}finally{Storage.prototype.setItem=native;}
   let release,started;const ready=new Promise(r=>started=r);const active=b.withBackup(s,'',()=>new Promise(r=>{release=r;started();}));await ready;
-  const refs=await import('./assets/image-references.mjs?v=storage-rescue-20261028');try{await refs.deleteUnusedImages(s,[]);out.push(false);}catch{out.push(true);}finally{release();await active;}
+  const refs=await import('./assets/image-references.mjs?v=interaction-perf-20261028');try{await refs.deleteUnusedImages(s,[]);out.push(false);}catch{out.push(true);}finally{release();await active;}
   const {payload}=prepared;payload.images.pop();payload.imageCount=payload.images.length;
   try{await b.readBackup(await b.encodeBackup(payload));out.push(false);}catch{out.push(localStorage.getItem(STORAGE_KEY)===original);}
   payload.dataVersion=999;try{await b.readBackup(await b.encodeBackup(payload));out.push(false);}catch{out.push(true);}

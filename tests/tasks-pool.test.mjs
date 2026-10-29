@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=action-ready-20261028';
+import {createTaskService} from '../assets/tasks-service.mjs?v=interaction-perf-20261028';
 import {inResidentLibrary,rowsForDate,validateTasks} from '../assets/tasks-model.mjs?v=action-ready-20261028';
 import {validateDocument,encodeBackup,readBackup,dataCount} from '../assets/backup.mjs';
 const dist={physique:0,wisdom:2,charisma:0,resilience:0,perception:0};

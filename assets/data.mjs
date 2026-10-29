@@ -10,7 +10,7 @@ import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028
 import {emptyTasks,validateTasks} from './tasks-model.mjs?v=action-ready-20261028';
 import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=storage-rescue-20261028';
 import {validateProfileFields,validateActivities} from './validation.mjs?v=storage-rescue-20261028';
-import { coordinatedWrite } from './coordination.mjs?v=storage-rescue-20261028';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=interaction-perf-20261028';
 import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=storage-rescue-20261028';
 import { migrateImages } from './image-store.mjs?v=storage-rescue-20261028';
 import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=storage-rescue-20261028';
@@ -44,11 +44,11 @@ export function migrateStatsRules(storage) {
   storage.setItem(STORAGE_KEY,JSON.stringify(next));
 }
 export function createDataStore(storage,{now=Date.now}={}) {
-  let state, busy=false,recoveryNotice=null;
+  let state, busy=false,recoveryNotice=null,loadedRaw;
   const listeners = new Set(),commitListeners=new Map();
   const load = () => {
     const raw = storage.getItem(STORAGE_KEY);
-    if (!raw) return initial();
+    if (!raw) {loadedRaw=raw;return initial();}
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
     value.companion ??= emptyCharacters();
@@ -67,7 +67,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
       if (snapshot?.profile) snapshot.profile.motto ??= '';
       if (snapshot?.stats) snapshot.stats = normalizeStats(snapshot.stats);
     }
-    const result=maintainRecovery(value,now());if(result.blocked)recoveryNotice='部分復原鏈與目前資料不一致，已停止提供相關復原；目前資料與行動紀錄保留。';return result.document;
+    const result=maintainRecovery(value,now());if(result.blocked)recoveryNotice='部分復原鏈與目前資料不一致，已停止提供相關復原；目前資料與行動紀錄保留。';loadedRaw=raw;return result.document;
   };
   state = load();
   // Read-only recovery proof is reusable while the state identity and expiry window
@@ -76,27 +76,29 @@ export function createDataStore(storage,{now=Date.now}={}) {
   function cacheRecovery(result,time){const deadline=Math.min(Infinity,...result.document.undoHistory.map(expiresAt));recoveryCache={state,result,time,deadline};if(result.blocked)recoveryNotice='復原鏈已無法安全延續，相關復原已停止；目前資料與行動紀錄保留。';return result;}
   function currentRecovery(){const time=now();if(!recoveryCache||recoveryCache.state!==state||time<recoveryCache.time||time>=recoveryCache.deadline)return cacheRecovery(maintainRecovery(state,time),time);return recoveryCache.result;}
   const effective=()=>{const result=currentRecovery();return {...result,document:copy(result.document)};};
-  const notify = ({statusOnly=false}={}) => {const current=currentRecovery().document;listeners.forEach(entry=>{if(!statusOnly||!entry.changesOnly)entry.fn(copy(current));});};
+  const project=(document,keys)=>keys===null?document:Object.fromEntries(keys.map(key=>{return [key,Object.hasOwn(document,key)?document[key]:undefined];}));
+  const notify = ({statusOnly=false}={}) => {const current=currentRecovery().document;listeners.forEach(entry=>{if(!statusOnly||!entry.changesOnly){const value=project(current,entry.keys),signature=entry.distinct?JSON.stringify(value):null;if(entry.distinct&&signature===entry.signature)return;entry.signature=signature;entry.fn(copy(value));}});};
   const persist = (next,timing=null,operation=null) => {const readAt=performance.now();
     const current = load();timing?.phase('storage-read-check',readAt);
     if (current.revision !== state.revision) { state = current; notify(); throw new Error('資料已在其他頁面更新，請重試。'); }
     const recoveryAt=performance.now(),checkedAt=now(),checked=maintainRecovery(next,checkedAt);next=checked.document;timing?.phase('recovery-write-check',recoveryAt);
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
-    try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);timing?.phase('storage-write',writeAt);}
+    try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);loadedRaw=raw;timing?.phase('storage-write',writeAt);}
     catch(error) { throw storageFailure(error,storage,{operation:operation?.type??'primary-write',attemptedBytes:JSON.stringify(next).length*2}); }
-    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach((metadataOnly,fn)=>{try{if(metadataOnly){if(operation){const record=state.history.at(-1);fn(null,copy({id:operation.id,type:operation.type,label:record?.label,delta:record?.delta}));}}else fn(copy(state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
+    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(({metadataOnly,omit,keys,types},fn)=>{try{if(types&&!types.includes(operation?.type))return;if(metadataOnly){if(operation){const record=state.history.at(-1);fn(null,copy({id:operation.id,type:operation.type,label:record?.label,delta:record?.delta}));}}else fn(copy(keys?project(state,keys):omit?.length?Object.fromEntries(Object.entries(state).filter(([key])=>!omit.includes(key))):state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
   };
   const api = {
     get: () => copy(currentRecovery().document),
+    getFields: keys => copy(project(currentRecovery().document,keys)),
     maintain() {const result=effective();const raw=storage.getItem(STORAGE_KEY);if(raw&&JSON.stringify(result.document)!==raw)persist(result.document);return result;},
     notify,
-    subscribeCommits(fn,{metadataOnly=false}={}){commitListeners.set(fn,metadataOnly);return()=>commitListeners.delete(fn);},
+    subscribeCommits(fn,{metadataOnly=false,omit=null,keys=null,types=null}={}){commitListeners.set(fn,{metadataOnly,omit,keys,types});return()=>commitListeners.delete(fn);},
     setBusy(value) {busy=value;notify({statusOnly:true});},
     // Dormant sync capability: callers must hold maintenance locks and validate the full document.
     replaceSynchronized(value,expectedRevision) {if(state.revision!==expectedRevision)throw new Error('同步期間本地資料已更新。');const checked=maintainRecovery(copy(value),now());if(checked.blocked)throw new Error('同步復原鏈無法安全延續。');persist(checked.document);},
     replace(value) { const next=copy(value);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}if(state.replyLibrary||next.replyLibrary){next.replyLibrary??=emptyReplyLibrary();next.replyLibrary.epoch=crypto.randomUUID();}next.revision=Math.max(value.revision,state.revision+1);persist(next); },
-    subscribe(fn,{changesOnly=false}={}) {const entry={fn,changesOnly};listeners.add(entry);fn(copy(currentRecovery().document));return()=>listeners.delete(entry);},
-    refresh() { state = load(); notify(); },
+    subscribe(fn,{changesOnly=false,keys=null,distinct=false}={}) {const value=project(currentRecovery().document,keys),entry={fn,changesOnly,keys,distinct,signature:distinct?JSON.stringify(value):null};listeners.add(entry);fn(copy(value));return()=>listeners.delete(entry);},
+    refresh() {if(storage.getItem(STORAGE_KEY)===loadedRaw){const previous=recoveryCache?.result.document;if(currentRecovery().document!==previous)notify();return;}state = load();notify();},
     transact({ type, label, target, changes, fields = [], expectedRevision, id, timing, reversible = true }) {const validateAt=performance.now();
       if(expectedRevision!==undefined&&state.revision!==expectedRevision)throw new Error('等待期間資料已更新，請重新操作。');
       api.maintain();
@@ -225,22 +227,22 @@ export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : nu
 if (dataStore) {
   try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,'復原資料整理失敗，原資料已保留。'+error.message);}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
   let expiryTimer;
-  let appliedAppearance;dataStore.subscribe(state=>{const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true});
+  let appliedAppearance;dataStore.subscribe(state=>{const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true,keys:['settings']});
   for(const method of ['transact','undo','redo','setAIPreferences','settleAffinities','setAffinityPolicy','prepareChat','commitChatAssessment','setReplyLibrary']) {
     const original=dataStore[method];
     dataStore[method]=async(...args)=>{
       if(dataStore.getState().busy)throw new Error('資料操作進行中，請稍候再試。');
-      const expectedRevision=dataStore.get().revision;
+      const expectedRevision=dataStore.getFields(['revision']).revision;
       dataStore.setBusy(true);
-      const timing=method==='transact'?args[0]?.timing:null,waitingAt=performance.now();try{return await coordinatedWrite(async()=>{await attemptJournalRescue(window.localStorage);timing?.phase('lock-wait',waitingAt);const heldAt=performance.now();try{
-        if(dataStore.get().revision!==expectedRevision)throw new Error('等待期間資料已更新，請重試操作。');
+      const timing=method==='transact'?args[0]?.timing:null,waitingAt=performance.now();try{if(['undo','redo'].includes(method)||method==='transact'&&['task.completed','task.completed.batch','task.view-settings'].includes(args[0]?.type))await pendingFeedbackFrame();return await coordinatedWrite(async()=>{await attemptJournalRescue(window.localStorage);timing?.phase('lock-wait',waitingAt);const heldAt=performance.now();try{
+        if(dataStore.getFields(['revision']).revision!==expectedRevision)throw new Error('等待期間資料已更新，請重試操作。');
         return original(...args);
         }finally{timing?.phase('lock-held',heldAt);}
       });}finally{dataStore.setBusy(false);}
     };
   }
 }
-export const persistentUndo = dataStore && { getState: () => dataStore.getState(), undo: () => dataStore.undo(), redo: () => dataStore.redo(), subscribe: fn => dataStore.subscribe(() => fn(dataStore.getState())) };
+export const persistentUndo = dataStore && { getState: () => dataStore.getState(), undo: () => dataStore.undo(), redo: () => dataStore.redo(), subscribe: fn => dataStore.subscribe(() => fn(dataStore.getState()),{keys:[]}) };
 if (typeof window !== 'undefined') window.addEventListener('storage', e => { if (e.key === STORAGE_KEY || e.key === null) dataStore.refresh(); });
 
 export function profileSummary(stats) {

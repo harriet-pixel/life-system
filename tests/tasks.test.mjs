@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=action-ready-20261028';
+import {createTaskService} from '../assets/tasks-service.mjs?v=interaction-perf-20261028';
 import {emptyTasks,localDate,addDays,rowsForDate,catchUp,validateTasks,allocation} from '../assets/tasks-model.mjs?v=action-ready-20261028';
 import {validateDocument,encodeBackup,readBackup,dataCount,restoreBackup} from '../assets/backup.mjs';
 function fixture(){let raw=null,time=new Date('2026-10-23T12:00:00'),seq=0;const storage={getItem:()=>raw,setItem:(_,s)=>raw=s},store=createDataStore(storage,{now:()=>+time}),service=createTaskService(store,{now:()=>time,id:()=>`id-${++seq}`});return {store,service,storage,advance:d=>{time=new Date(time);time.setDate(time.getDate()+d);},reload:()=>createDataStore(storage,{now:()=>+time})};}

@@ -1,10 +1,10 @@
 import {bindProfileValidation} from './validation.mjs?v=storage-rescue-20261028';
-import { holdDraft } from './coordination.mjs?v=storage-rescue-20261028';
+import { holdDraft } from './coordination.mjs?v=interaction-perf-20261028';
 import { createProfileImages } from './profile-images.mjs?v=storage-rescue-20261028';
 import { imageURL, prepareImageReferences } from './image-store.mjs?v=storage-rescue-20261028';
 import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=storage-rescue-20261028';
-import { undoManager } from './undo.mjs?v=action-ready-20261028';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=action-ready-20261028';
+import { undoManager } from './undo.mjs?v=interaction-perf-20261028';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=interaction-perf-20261028';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);
@@ -16,7 +16,7 @@ const defaultAvatar = $('#default-avatar');
 const avatarImage = $('#user-avatar'), avatarPlaceholder = $('#avatar-placeholder');
 async function renderPhoto() {
   const version=++renderedImageVersion;
-  const current=dataStore.get();
+  const current=dataStore.getFields(['photo','avatar']);
   let photo,avatar;
   try { [photo,avatar]=await Promise.all([imageURL(current.photo),imageURL(current.avatar)]); }
   catch(error) { notice(error.message);return; }
@@ -39,7 +39,7 @@ async function renderPhoto() {
 function element(tag, text) { const el = document.createElement(tag); el.textContent = text; return el; }
 function renderRadar() {
   const container = $('#ability-radar');
-  const abilities = dataStore.get().stats.abilities;
+  const abilities = dataStore.getFields(['stats']).stats.abilities;
   const width = container.getBoundingClientRect().width;
   if (!width || abilities.length !== 5) return;
   // Work in rendered pixels so labels retain the normal body size at every width.
@@ -78,8 +78,7 @@ function renderRadar() {
 }
 context.observe(new ResizeObserver(renderRadar),[$('#ability-radar')]);
 document.fonts.ready.then(renderRadar);
-function render() {
-  const state = dataStore.get();
+function render(state = dataStore.getFields(['profile','stats','photo','avatar'])) {
   $('#profile-name').textContent = state.profile.name || '尚未設定稱呼';
   const motto=(state.profile.motto ?? '').trim();
   $('#profile-motto').textContent=motto;$('#profile-motto').hidden=!motto;
@@ -191,7 +190,7 @@ $('#edit-profile').addEventListener('click',async()=>{
   if(openingProfile||dialog.open)return;openingProfile=true;
   try {releaseDraft=await holdDraft();} catch(error){notice(error.message);return;} finally{openingProfile=false;}
   if(!context.active){releaseDraft?.();releaseDraft=null;return;}
-  baseState=dataStore.get();$('#values-reset-status').textContent='';saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
+  baseState=dataStore.getFields(['revision','profile','stats','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId']);$('#values-reset-status').textContent='';saveVersion++;lockSave(false);$('#ability-edit-details').open=false;
   personalKeys.forEach(key=>{form.elements[key].value=baseState.profile[key];form.elements[key].dispatchEvent(new Event('profile-populate'));});
   syncGenderChoices();
   numericFields.forEach(({id})=>form.elements[id].value=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value);
@@ -213,9 +212,9 @@ $('#confirm-restart').addEventListener('click',async()=>{
  try{
   // A draft shared lock does not conflict with the write lock. No maintenance
   // lock is acquired, and the existing personal/image draft stays protected.
-  if(dataStore.get().revision!==baseState.revision)throw new Error('資料已在其他頁面更新；草稿保留，請取消後重新開啟設定。');
+  if(dataStore.getFields(['revision']).revision!==baseState.revision)throw new Error('資料已在其他頁面更新；草稿保留，請取消後重新開啟設定。');
   const stats=createInitialStats();await dataStore.transact({type:'stats.restart',label:'已重新開始數值',target:'user',fields:['restart'],changes:{stats}});
-  baseState={...baseState,stats:dataStore.get().stats,revision:dataStore.get().revision};
+  baseState={...baseState,stats:dataStore.getFields(['stats']).stats,revision:dataStore.getFields(['revision']).revision};
   numericFields.forEach(({id})=>{const value=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value;form.elements[id].value=String(value);initialFields[id]=String(value);});
   clearErrors();$('#values-reset-status').textContent='數值已立即重設並保存；如需撤銷，請使用 Undo。';restartDialog.close();
  }catch(error){$('#restart-error').textContent=error.message;}
@@ -234,7 +233,7 @@ form.addEventListener('submit',async event=>{
     const images=await imageDraft.collect();
     const storedImages=await prepareImageReferences(images);
     if(!dialog.open||version!==saveVersion)return;
-    if(dataStore.get().revision!==baseState.revision)throw new Error('資料已在其他頁面更新；草稿已保留，請取消後重新開啟設定，以免覆蓋新資料。');
+    if(dataStore.getFields(['revision']).revision!==baseState.revision)throw new Error('資料已在其他頁面更新；草稿已保留，請取消後重新開啟設定，以免覆蓋新資料。');
     const changed=personalKeys.filter(key=>profile[key]!==baseState.profile[key]);
     for(const{id}of numericFields){const before=id in baseState.stats?baseState.stats[id]:baseState.stats.abilities.find(a=>a.id===id).value;const after=id in stats?stats[id]:stats.abilities.find(a=>a.id===id).value;if(before!==after)changed.push(id);}
     for(const[key,value]of Object.entries(storedImages))if(JSON.stringify(value)!==JSON.stringify(baseState[key]??null))changed.push(key);
@@ -244,7 +243,7 @@ form.addEventListener('submit',async event=>{
   finally{if(version===saveVersion)lockSave(false);}
 });
 
-context.subscribe(dataStore,render);
+context.subscribe(dataStore,render,{changesOnly:true,keys:['profile','stats','photo','avatar']});
 
 context.setHooks({hasDraft:()=>dialog.open&&hasUnsavedChanges(),busy:()=>saving||imageBusy||restarting});
 

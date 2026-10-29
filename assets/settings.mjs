@@ -2,17 +2,17 @@ import {mountColorField} from './color-field.mjs?v=storage-rescue-20261028';
 import {documentTime} from './cloud-backup-policy.mjs?v=storage-rescue-20261028';
 import {cloudBackupLabel} from './cloud-backup-display.mjs?v=storage-rescue-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=action-ready-20261028';
-import {initializeAISettings} from './ai-settings.mjs?v=action-ready-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=interaction-perf-20261028';
+import {initializeAISettings} from './ai-settings.mjs?v=interaction-perf-20261028';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=storage-rescue-20261028';
-import {dataStore,persistentUndo} from './data.mjs?v=action-ready-20261028';
+import {dataStore,persistentUndo} from './data.mjs?v=interaction-perf-20261028';
 import {createMobileTabPositioner} from './tab-position.mjs?v=storage-rescue-20261028';
-import {createHistoryView} from './history-view.mjs?v=storage-rescue-20261028';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=storage-rescue-20261028';
+import {createHistoryView} from './history-view.mjs?v=interaction-perf-20261028';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=interaction-perf-20261028';
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=storage-rescue-20261028';
-import {holdDraft} from './coordination.mjs?v=storage-rescue-20261028';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=action-ready-20261028';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=action-ready-20261028';
+import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=interaction-perf-20261028';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=interaction-perf-20261028';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);
@@ -95,7 +95,7 @@ for(const [id,trigger] of [['delete-confirm','delete-assets'],['restore-confirm'
   const dialog=$('#'+id);dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});dialog.addEventListener('close',()=>$('#'+trigger).focus({preventScroll:true}));
 }
 
-let appearanceDraft={...dataStore.get().settings.appearance},appearanceDirty=false,appearanceInput=false,appearanceRevision,releaseAppearance,draftPromise,previewVersion=0;
+let appearanceDraft={...dataStore.getFields(['settings']).settings.appearance},appearanceDirty=false,appearanceInput=false,appearanceRevision,releaseAppearance,draftPromise,previewVersion=0;
 function renderAppearanceControls(){
   $('#theme-color').value=appearanceDraft.color;mountColorField($('#theme-color'))();$('#theme-hex').value=appearanceDraft.color;mountColorField($('#theme-hex'))();$('#theme-font').value=appearanceDraft.font;
   applyAppearance(appearanceDraft,$('#appearance-preview'));
@@ -113,13 +113,13 @@ async function previewAppearance(changes){
       if(!draftPromise)draftPromise=holdDraft('appearance');
       const release=await draftPromise;
       if(version!==previewVersion){release();return;}
-      if(!appearanceDirty){releaseAppearance=release;appearanceRevision=dataStore.get().revision;appearanceDirty=true;}
+      if(!appearanceDirty){releaseAppearance=release;appearanceRevision=dataStore.getFields(['revision']).revision;appearanceDirty=true;}
     }
     appearanceDraft=normalizeSettings({appearance:{...appearanceDraft,...changes}}).appearance;
     $('#appearance-error').textContent='';renderAppearanceControls();
   }catch(error){$('#appearance-error').textContent=error.message;draftPromise=null;}
 }
-function cancelAppearance(){previewVersion++;releaseAppearance?.();releaseAppearance=null;draftPromise=null;appearanceDirty=false;appearanceInput=false;appearanceDraft={...dataStore.get().settings.appearance};$('#appearance-error').textContent='';renderAppearanceControls();}
+function cancelAppearance(){previewVersion++;releaseAppearance?.();releaseAppearance=null;draftPromise=null;appearanceDirty=false;appearanceInput=false;appearanceDraft={...dataStore.getFields(['settings']).settings.appearance};$('#appearance-error').textContent='';renderAppearanceControls();}
 for(const color of ['#104a7a','#315e46','#744251','#605079','#eddfbc']){
   const button=element('button');button.type='button';button.style.setProperty('--swatch',color);button.setAttribute('aria-label','預覽主題色 '+color);button.addEventListener('click',()=>previewAppearance({color}));$('#theme-swatches').append(button);
 }
@@ -130,8 +130,8 @@ $('#cancel-appearance').addEventListener('click',cancelAppearance);
 $('#save-appearance').addEventListener('click',()=>run(async()=>{
   if($('#appearance-error').textContent)throw new Error('請先修正外觀設定格式，或取消預覽。');
   if(!appearanceDirty){notice('沒有外觀變更需要儲存。');return;}
-  if(dataStore.get().revision!==appearanceRevision)throw new Error('預覽期間資料已變更，請取消預覽後重新設定，避免覆蓋新資料。');
-  const saved=await dataStore.transact({type:'appearance.update',label:'已更新外觀設定',target:'settings',fields:[],changes:{settings:{...dataStore.get().settings,appearance:appearanceDraft}}});
+  if(dataStore.getFields(['revision']).revision!==appearanceRevision)throw new Error('預覽期間資料已變更，請取消預覽後重新設定，避免覆蓋新資料。');
+  const saved=await dataStore.transact({type:'appearance.update',label:'已更新外觀設定',target:'settings',fields:[],changes:{settings:{...dataStore.getFields(['settings']).settings,appearance:appearanceDraft}}});
   cancelAppearance();notice(saved?'外觀已儲存並套用全站。':'沒有外觀變更需要儲存。');
 }));
 
@@ -157,7 +157,7 @@ async function validateRestore(){
   try{
     const result=await readBackup(file,validateRestorePassword($('#restore-password').value));
     if(generation!==restoreGeneration||!$('#restore-confirm').open)return;
-    prepared=result;restoreRevision=dataStore.get().revision;$('#restore-password').value='';
+    prepared=result;restoreRevision=dataStore.getFields(['revision']).revision;$('#restore-password').value='';
     const p=result.payload;$('#restore-summary').textContent=`備份時間：${time(p.createdAt)}；資料 ${p.dataCount} 筆，圖片 ${p.imageCount} 張；格式 v${p.formatVersion}、資料 v${p.dataVersion}。`;
   }catch(error){if(generation===restoreGeneration)throw error;}
   finally{if(generation===restoreGeneration){$('#restore-password').value='';syncRestoreControls();}}
@@ -192,8 +192,8 @@ $('#drive-version').addEventListener('focus',()=>{if(Date.now()-listedAt>30000)v
 $('#disconnect-drive').addEventListener('click',()=>{if(cloudBackup.hasPendingChanges()&&!window.confirm('本地尚有未備份變更，仍要中斷 Google 連線？本地資料將保留。'))return;document.dispatchEvent(new Event('life-system:drive-disconnected-manually'));disconnectDrive();driveNotice('已中斷連接，既有雲端備份保留。');});
 context.listen(document,'life-system:cloud-restore-status',event=>driveNotice(event.detail.message));
 if(driveConfigured)void prepareDriveAuth().then(()=>{if(!getDriveState().connected)driveNotice('Google 登入已準備好，請點選連接Google。');syncDrive();}).catch(error=>{driveNotice(error.message);syncDrive();});else driveNotice('Google 連接尚未設定；本機備份仍可使用。');
-let storageRevision=dataStore.get().revision;
-context.subscribe(dataStore,state=>{if(state.revision!==storageRevision){storageRevision=state.revision;storageLoaded=false;}history.render(state);if(!appearanceDirty&&!appearanceInput){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}});
+let storageRevision=dataStore.getFields(['revision']).revision;
+context.subscribe(dataStore,state=>{if(state.revision!==storageRevision){storageRevision=state.revision;storageLoaded=false;}history.render(state);if(!appearanceDirty&&!appearanceInput){appearanceDraft={...state.settings.appearance};renderAppearanceControls();}},{changesOnly:true,keys:['revision','history','undoHistory','stats','settings']});
 context.listen(window,'pagehide',()=>{storageVersion++;releaseThumbnails();releaseAppearance?.();clearRestore();for(const id of ['backup-password'])$('#'+id).value='';});
 context.listen(window,'pageshow',event=>{if(event.persisted){cancelAppearance();if(storageVisible())refreshStorage();}});
 aiConnection=initializeAISettings(root,context);

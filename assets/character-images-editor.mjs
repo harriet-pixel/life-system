@@ -1,8 +1,8 @@
 import {EMOTIONS,defaultAvatarCrop,validateAvatarCrop,imageSignature,imageLimitText} from './character-images-model.mjs?v=storage-rescue-20261028';
-import {holdDraft} from './coordination.mjs?v=storage-rescue-20261028';
-import {registerImageReferenceSource} from './image-references.mjs?v=storage-rescue-20261028';
+import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
+import {registerImageReferenceSource} from './image-references.mjs?v=interaction-perf-20261028';
 import {acquireImageURL,storeImageBlob} from './image-store.mjs?v=storage-rescue-20261028';
-import {saveCharacterImage} from './character-images-service.mjs?v=storage-rescue-20261028';
+import {saveCharacterImage} from './character-images-service.mjs?v=interaction-perf-20261028';
 export function createCharacterImageEditor({root,store,getCharacter,notify,onState}){
  const dialog=document.createElement('dialog');dialog.id='character-image-dialog';dialog.setAttribute('aria-labelledby','character-image-title');
  // Static local markup only; all user values use textContent/property assignment.
