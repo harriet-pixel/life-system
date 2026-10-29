@@ -1,6 +1,6 @@
 import {mountGreetings} from './character-greetings-page.mjs?v=companion-actions-20261029';
 import {guardedDialog} from './companion-dialog.mjs?v=companion-actions-20261029';
-import {mountCharacterImages} from './character-images-ui.mjs?v=companion-actions-20261029';
+import {mountCharacterImages} from './character-images-ui.mjs?v=companion-display-20261029';
 import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=companion-panel-20261029';
 import {dataStore} from './data.mjs?v=companion-actions-20261029';
 import {holdDraft} from './coordination.mjs?v=daily-polish-20261029';

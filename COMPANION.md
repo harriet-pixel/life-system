@@ -130,4 +130,10 @@ replyLibrary.version:2按角色／positive-negative／八情緒稀疏分類，�
 
 日常回應涵蓋正式待辦完成／取消／完成刪除、習慣升降級／撤回、加分打卡／取消與本機Undo／Redo造成的紀錄／數值變動。replay只在原交易成功後發送暫時life.undo／life.redo operation（唯一ID、前後生活快照與實際delta）；不新增長期history、不再次計分或重新獎勵。life.changed綁當前角色身份、人格、出場歷史、epoch及提交revision，數值或來源失效丟棄。撤回用calm中性、無連線固定「紀錄已調整，照現在的步調繼續就好。」，不抽取完成恭喜語句，不責備或改好感度。舊回應仍取消；背景結算／同步／重載不觸發生活生成。
 
-三個日常頁共用首頁浮窗、四時段進入／返回招呼、頭像收合／拖曳／方向鍵、4秒隱藏、modal／鍵盤／安全區避讓，正式回應等待獎勵動畫結束。手機頭像clamp(72px,21vw,96px)；僅目前浮窗從原圖crop產生256px方形顯示Blob，有限URL／解碼資源在清除／離頁釋放，不新增圖片資產或備份資料；聊天室訊息仍用原縮圖。詳見docs/COMPANION_ACTIONS_VERIFICATION.md。
+三個日常頁共用浮窗：僅首頁進入／返回顯示四時段招呼，待辦與習慣切頁不招呼、只顯示正式操作回應；頭像收合／拖曳／方向鍵、10秒隱藏、modal／鍵盤／安全區避讓，正式回應等待獎勵動畫結束。手機頭像clamp(72px,21vw,96px)；僅目前浮窗從原圖crop產生256px方形顯示Blob，有限URL／解碼資源在清除／離頁釋放，不新增圖片資產或備份資料；聊天室訊息仍用原縮圖。詳見docs/COMPANION_ACTIONS_VERIFICATION.md。
+
+## 日常圖片與手機浮窗顯示修正（2026-10-29）
+
+日常圖片層使用帶#main與擁有者層級的CSS選擇器，固定position:absolute／inset:0與滿框尺寸；不受角色設定頁character-image-view的position:relative覆蓋。桌面3:4滿框、手機原crop頭像；同文件手機／桌面切換時移除不再適用的avatar class。來源Blob、裁切、圖片備份及正式資料不變。
+
+手機浮窗顯示10秒，獨立44px觸控關閉按鈕位於圓形頭像右上方，錨定頭像而非較高對話框；關閉不觸發拖曳／收合或資料交易。僅首頁進入／返回顯示招呼，待辦／習慣僅正式操作回應。浮窗最多40個可見字元（省略號計入、保留組合emoji），以顯示層處理；原招呼／AI回覆／角色及備援文字不截短，切至桌面還原完整文字。詳見docs/COMPANION_DISPLAY_VERIFICATION.md。

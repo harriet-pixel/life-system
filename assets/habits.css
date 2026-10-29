@@ -118,3 +118,9 @@
 .color-field-caption{flex:0 1 auto;max-inline-size:35%;min-inline-size:0;overflow-wrap:anywhere}
 #main .color-field-row input,.task-dialog .color-field-row input{min-inline-size:min(6.5em,44%);box-sizing:border-box}
 .color-field-row .color-preview{max-inline-size:32px;max-block-size:32px}
+
+@media(width<1024px){
+ #main .home-companion-float button.home-companion-dismiss{display:inline-grid;grid-column:2;grid-row:1;align-self:end;justify-self:end;place-items:center;position:relative;z-index:2;left:10px;top:calc(34px - var(--home-mini-size));width:44px;height:44px;min-width:44px;min-height:44px;margin:0;padding:10px;border:0;border-radius:50%;background:transparent;pointer-events:auto;cursor:pointer}
+ #main .home-companion-float .home-companion-dismiss svg{width:24px;height:24px;padding:4px;box-sizing:border-box;border:1px solid var(--color-border);border-radius:50%;background:var(--color-background);color:var(--color-primary)}
+ #main .home-companion-float:is(.is-bubble-right,.is-collapsed) button.home-companion-dismiss{grid-column:1}
+}

@@ -1,5 +1,4 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-panel-20261029';
-import {homeGreeting} from './characters-model.mjs?v=companion-actions-20261029';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-display-20261029';
 import {validDailySource} from './daily-events.mjs?v=companion-actions-20261029';
 import {dataStore} from './data.mjs?v=companion-actions-20261029';
 // Presentation only: formal local commits and their paired character replies.
@@ -10,8 +9,7 @@ export function createMobileTaskResponse(root,context,{kind='tasks',selector='.t
  let floating;
  const hide=()=>{companion.classList.remove('is-floating-response');shown=null;floating?.hide();};
  const clear=()=>{candidate=null;commits.clear();hide();};
- companion.classList.toggle('is-floating-response',mobile.matches);context.onResume(()=>companion.classList.toggle('is-floating-response',mobile.matches));
- floating=mountHomeCompanionFloat(root,context,{selector,greeting:true,greetingText:()=>homeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter),onHide:hide});
+ floating=mountHomeCompanionFloat(root,context,{selector,greeting:false,onHide:hide});
  const valid=entry=>entry?.dailyEvent?validDailySource(dataStore.getFields(['revision','companion','replyLibrary','tasks','habits']),entry.dailyEvent):kind==='habits'?Boolean(entry&&(dataStore.getFields(['habits']).habits.records.some(r=>r.id===entry.id&&r.state!=='-')||dataStore.getFields(['habits']).habits.bonusRecords.some(r=>r.id===entry.id&&!r.cancelledAt))):Boolean(entry&&dataStore.getFields(['tasks']).tasks.completions.some(c=>c.id===entry.id&&!c.cancelledAt&&!c.retraction));
  const keyboard=()=>{const editable=document.activeElement?.matches('input:not([type=checkbox]):not([type=radio]),textarea,select,[contenteditable=true]'),v=window.visualViewport;if(Math.abs(innerWidth-stableWidth)>40||!editable){stableWidth=innerWidth;stableHeight=Math.max(innerHeight,v?.height??0);}return document.documentElement.dataset.keyboard==='open'||Boolean(editable&&stableHeight-Math.min(innerHeight,v?.height??innerHeight)>120);};
  const blocked=()=>!context.active||document.hidden||!mobile.matches||Boolean(document.querySelector('dialog[open]'))||keyboard();

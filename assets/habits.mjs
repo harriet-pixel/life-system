@@ -1,5 +1,5 @@
 import {mountColorField} from './color-field.mjs?v=daily-polish-20261029';
-import {mountTaskCompanion} from './task-companion.mjs?v=companion-actions-20261029';
+import {mountTaskCompanion} from './task-companion.mjs?v=companion-display-20261029';
 import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=daily-polish-20261029';
 import {createMobileTabPositioner} from './tab-position.mjs?v=daily-polish-20261029';
 import {dataStore} from './data.mjs?v=companion-actions-20261029';
