@@ -1,5 +1,5 @@
 import {EMOTIONS,imageLimitText,resolveCharacterImage} from './character-images-model.mjs?v=daily-polish-20261029';
-import {createCharacterImageView} from './character-image-view.mjs?v=daily-polish-20261029';
+import {createCharacterImageView} from './character-image-view.mjs?v=companion-actions-20261029';
 export function mountCharacterImages(root,context,{getCharacter,getSettings,store,notify,onState}){
  const section=root.querySelector('#character-images-section'),grid=root.querySelector('#character-image-grid'),selector=root.querySelector('#character-image-transition');
  let editor=null,opening=false,suspended=false,last=null,chatEmotion='neutral';const cards=[];

@@ -1,9 +1,9 @@
 import {preserveBeforeRestore,listArchives} from './storage-vault.mjs?v=daily-polish-20261029';
 import {getSyncRuntime} from './cloud-sync-status.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=companion-panel-20261029';
-import {withBackup,restoreBackup,downloadBlob,yieldBackupWork} from './backup.mjs?v=companion-panel-20261029';
+import {dataStore} from './data.mjs?v=companion-actions-20261029';
+import {withBackup,restoreBackup,downloadBlob,yieldBackupWork} from './backup.mjs?v=companion-actions-20261029';
 import {registerImageReferenceSource,documentImageReferences} from './image-references.mjs?v=companion-panel-20261029';
-import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=companion-panel-20261029';
+import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=companion-actions-20261029';
 import {backupWarning,confirmOlderBackup,validTime} from './cloud-backup-policy.mjs?v=daily-polish-20261029';
 import {cloudBackupIdentity} from './cloud-backup-display.mjs?v=daily-polish-20261029';
 export const BACKUP_LIMIT=20;

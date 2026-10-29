@@ -2,17 +2,17 @@ import {mountColorField} from './color-field.mjs?v=daily-polish-20261029';
 import {documentTime} from './cloud-backup-policy.mjs?v=daily-polish-20261029';
 import {cloudBackupLabel} from './cloud-backup-display.mjs?v=daily-polish-20261029';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261029';
-import {getCloudBackup} from './cloud-backup.mjs?v=companion-panel-20261029';
-import {initializeAISettings} from './ai-settings.mjs?v=companion-panel-20261029';
+import {getCloudBackup} from './cloud-backup.mjs?v=companion-actions-20261029';
+import {initializeAISettings} from './ai-settings.mjs?v=companion-actions-20261029';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=daily-polish-20261029';
-import {dataStore,persistentUndo} from './data.mjs?v=companion-panel-20261029';
+import {dataStore,persistentUndo} from './data.mjs?v=companion-actions-20261029';
 import {createMobileTabPositioner} from './tab-position.mjs?v=daily-polish-20261029';
 import {createHistoryView} from './history-view.mjs?v=daily-polish-20261029';
 import {auditImages,deleteUnusedImages} from './image-references.mjs?v=companion-panel-20261029';
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=daily-polish-20261029';
 import {holdDraft} from './coordination.mjs?v=daily-polish-20261029';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=companion-panel-20261029';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=companion-panel-20261029';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=companion-actions-20261029';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=companion-actions-20261029';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

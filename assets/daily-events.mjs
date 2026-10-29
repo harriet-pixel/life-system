@@ -1,7 +1,10 @@
 import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=daily-polish-20261029';
 import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=daily-polish-20261029';
 import {relationshipStage} from './characters-model.mjs?v=companion-panel-20261029';
+export const DAILY_OPERATIONS=Object.freeze(['task.completed','task.completed.batch','task.cancelled','task.deleted-completed','task.deleted','task.updated','task.batch','task.created','habit.check','habit.bonus','habit.bonus-cancel','habit.updated','life.undo','life.redo']);
 export function formalDailyEvents(operation,state){
+ if(!DAILY_OPERATIONS.includes(operation.type))return [];
+
  const c=state.companion?.characters.find(c=>c.characterId===state.companion.activeCharacterId&&!c.archived);if(!c)return [];
  const events=[],push=(eventType,id,domain)=>events.push({sourceEventId:operation.id+':'+eventType+':'+id,operationId:operation.id,characterId:c.characterId,characterCreatedAt:c.createdAt,configVersion:c.configVersion,stageId:relationshipStage(c.affinity).stage,eventType,sourceId:id,domain,switchCount:state.companion.switchHistory.length,epoch:state.replyLibrary?.epoch??null,character:c});
  if(['task.completed','task.completed.batch'].includes(operation.type)){const before=new Set((operation.before.tasks?.completions??[]).filter(c=>!c.cancelledAt&&!c.retraction).map(c=>c.id));for(const r of operation.after.tasks?.completions??[])if(!before.has(r.id)&&!r.cancelledAt&&!r.retraction&&r.date===localDate())push('task.completed',r.id,'task');}
@@ -9,9 +12,13 @@ export function formalDailyEvents(operation,state){
   const known=new Set(old.periods.flatMap(p=>p.achievements.map(a=>p.id+':'+a.id)));for(const p of next.periods)for(const a of p.achievements)if(!known.has(p.id+':'+a.id)&&events.length)push('achievement.unlocked',p.id+':'+a.id,'achievement');
  }
  if(operation.type==='habit.bonus'){const known=new Set(operation.before.habits.bonusRecords.map(r=>r.id));for(const r of operation.after.habits.bonusRecords)if(!known.has(r.id)&&!r.cancelledAt&&r.date===taipeiDate())push('habit.bonus',r.id,'bonus');}
+ if(!events.length){const before=operation.before,after=operation.after,taskChanged=before.tasks&&after.tasks&&JSON.stringify(before.tasks.completions)!==JSON.stringify(after.tasks.completions),habitChanged=before.habits&&after.habits&&(JSON.stringify(before.habits.records)!==JSON.stringify(after.habits.records)||JSON.stringify(before.habits.bonusRecords)!==JSON.stringify(after.habits.bonusRecords)),numbers=before.stats&&after.stats&&JSON.stringify(before.stats)!==JSON.stringify(after.stats);
+  if((taskChanged||habitChanged||numbers)&&(/^(task\.|habit\.|life\.)/.test(operation.type))){push('life.changed',operation.id,'change');const e=events.at(-1);e.revision=state.revision;e.result=String(operation.label??'生活紀錄已更新').slice(0,80);e.names=[];if(taskChanged){const r=after.tasks.completions.find(r=>JSON.stringify(r)!==JSON.stringify(before.tasks.completions.find(b=>b.id===r.id)));if(r?.name)e.names=[r.name];}if(habitChanged){const r=after.habits.records.find(r=>JSON.stringify(r)!==JSON.stringify(before.habits.records.find(b=>b.id===r.id)))??after.habits.bonusRecords.find(r=>JSON.stringify(r)!==JSON.stringify(before.habits.bonusRecords.find(b=>b.id===r.id)));if(r?.name)e.names=[r.name];}if(numbers){const delta=[['貨幣',after.stats.currency-before.stats.currency],['經驗',after.stats.experience-before.stats.experience],...after.stats.abilities.map(a=>[({physique:'體能',wisdom:'智慧',charisma:'魅力',resilience:'韌性',perception:'感知'})[a.id],a.value-before.stats.abilities.find(b=>b.id===a.id).value])];e.result+='；'+delta.filter(([,n])=>n).map(([k,n])=>k+(n>0?'+':'')+n).join('、');}e.emotionId='calm';}
+ }
  return events;
 }
 export function validDailySource(state,e){const c=state.companion?.characters.find(c=>c.characterId===e.characterId);if(!c||c.archived||c.createdAt!==e.characterCreatedAt||state.companion.activeCharacterId!==e.characterId||state.companion.switchHistory.length!==e.switchCount||(state.replyLibrary?.epoch??null)!==e.epoch)return false;
+ if(e.domain==='change')return state.revision===e.revision;
  if(e.domain==='task-reminder'&&e.eventType==='task.incomplete'){const date=e.date??localDate();return validDate(date)&&date<=localDate()&&rowsForDate(state.tasks,date).some(r=>r.occurrence.id===e.sourceId&&r.occurrence.status==='pending');}
  if(e.domain==='habit-reminder'&&e.eventType==='habit.incomplete'){const [periodId,date,index]=e.sourceId.split('|');return date===taipeiDate()&&/^[0-2]$/.test(index)&&activePeriod(state.habits,date)?.id===periodId&&!state.habits.records.some(r=>r.periodId===periodId&&r.date===date&&r.habitIndex===Number(index)&&r.state!=='-');}
  if(e.domain==='task')return state.tasks.completions.some(r=>r.id===e.sourceId&&!r.cancelledAt&&!r.retraction);
@@ -21,7 +28,7 @@ export function validDailySource(state,e){const c=state.companion?.characters.fi
 }
 // Text comes only from persisted source records, not UI labels or arbitrary placeholders.
 export function dailyContext(state,e){
- if(!validDailySource(state,e))return {names:[]};let name='',result='';
+ if(!validDailySource(state,e))return {names:[]};if(e.domain==='change')return {names:e.names.map(n=>String(n).slice(0,100)),result:e.result};let name='',result='';
  if(e.domain==='task'){const r=state.tasks.completions.find(r=>r.id===e.sourceId);name=r?.name??'';result='已完成';}
  if(e.domain==='habit'){const r=state.habits.records.find(r=>r.id===e.sourceId);name=r?.name??'';result=[({'M':'Mini','P':'Plus','E':'Elite'})[r?.state],String(r?.target??'').slice(0,80)].filter(Boolean).join('：');}
  if(e.domain==='bonus'){name=state.habits.bonusRecords.find(r=>r.id===e.sourceId)?.name??'';result='已完成加分打卡';}

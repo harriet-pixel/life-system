@@ -1,7 +1,7 @@
 import {resolveCharacterImage} from './character-images-model.mjs?v=daily-polish-20261029';
 import {acquireImageURL} from './image-store.mjs?v=daily-polish-20261029';
 // A view owns at most two visible layers and one pending URL. No global cache.
-export function createCharacterImageView(target,{avatar=false,thumbnail=false}={}){
+export function createCharacterImageView(target,{avatar=false,thumbnail=false,avatarPixels=0}={}){
  const placeholder=document.createElement('span');placeholder.className='character-image-placeholder';
  // Clone the site's existing neutral icon, without creating another asset.
  const icon=target.querySelector('svg');if(icon)placeholder.append(icon.cloneNode(true));else placeholder.textContent='尚無圖片';
@@ -17,12 +17,12 @@ export function createCharacterImageView(target,{avatar=false,thumbnail=false}={
   for(const candidate of item===neutral?[item]:[item,neutral].filter(Boolean)){
    let lease;
    try{
-    lease=await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
+    lease=avatar&&avatarPixels?await import('./daily-avatar.mjs?v=companion-panel-20261029').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
     if(token!==sequence){lease.release();return;}pending=lease;
     const image=new Image();image.alt='';image.decoding='async';image.src=lease.url;await image.decode();
     if(token!==sequence){lease.release();return;}pending=null;
     image.className='character-image-layer';
-    if(avatar){const {x,y,size}=candidate.crop;image.style.width=(100/size)+'%';image.style.height=(400/3/size)+'%';image.style.left=(-x/size*100)+'%';image.style.top=(-y/size*100)+'%';}
+    if(avatar&&!lease.cropped){const {x,y,size}=candidate.crop;image.style.width=(100/size)+'%';image.style.height=(400/3/size)+'%';image.style.left=(-x/size*100)+'%';image.style.top=(-y/size*100)+'%';}
     const fade=transition==='fade'&&!matchMedia('(prefers-reduced-motion: reduce)').matches;
     image.style.opacity=fade&&layers.length?'0':'1';target.append(image);const layer={image,lease};layers.push(layer);placeholder.hidden=true;
     if(fade&&layers.length>1){image.style.transition='opacity 250ms ease';requestAnimationFrame(()=>{if(token===sequence)image.style.opacity='1';});timer=setTimeout(()=>{while(layers.length>1)clean(layers.shift());},270);}

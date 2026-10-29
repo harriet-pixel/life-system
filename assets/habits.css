@@ -52,7 +52,7 @@
 
 /* Shared mobile portrait controls across daily pages. */
 @media(width < 1024px){
- #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float{--home-mini-size:clamp(44px,14vw,72px);position:fixed;z-index:900;left:var(--home-float-left,12px);top:var(--home-float-top,12px);width:var(--home-float-width,calc(100% - 24px));max-height:var(--home-float-max-height,60dvh);margin:0;padding:0;border:0;background:transparent;pointer-events:none}
+ #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float{--home-mini-size:clamp(72px,21vw,96px);position:fixed;z-index:900;left:var(--home-float-left,12px);top:var(--home-float-top,12px);width:var(--home-float-width,calc(100% - 24px));max-height:var(--home-float-max-height,60dvh);margin:0;padding:0;border:0;background:transparent;pointer-events:none}
  #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-float .companion-banner{display:grid;grid-template-columns:minmax(0,1fr) var(--home-mini-size);gap:12px;align-items:end}
  #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-toggle{grid-column:2;grid-row:1;width:var(--home-mini-size);height:var(--home-mini-size);min-width:var(--home-mini-size);min-height:var(--home-mini-size);padding:0;border:0;background:transparent;pointer-events:auto;touch-action:none;cursor:grab;border-radius:50%}
  #main:is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) .home-companion-toggle:active{cursor:grabbing}

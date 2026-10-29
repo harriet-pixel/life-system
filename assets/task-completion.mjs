@@ -1,11 +1,11 @@
 import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261029';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=companion-panel-20261029';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=companion-actions-20261029';
 import {recordTaskTiming} from './task-diagnostics.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=companion-panel-20261029';
+import {dataStore} from './data.mjs?v=companion-actions-20261029';
 import {createTaskService} from './tasks-service.mjs?v=companion-panel-20261029';
 import {allocation,allocationContext} from './tasks-model.mjs?v=daily-polish-20261029';
 import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=daily-polish-20261029';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-panel-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-actions-20261029';
 import {createRewardFeedback} from './task-reward-feedback.mjs?v=daily-polish-20261029';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;

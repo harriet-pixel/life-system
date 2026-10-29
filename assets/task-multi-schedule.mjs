@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=companion-panel-20261029';
+import {dataStore} from './data.mjs?v=companion-actions-20261029';
 import {localDate,addDays,weekday,occurrence} from './tasks-model.mjs?v=daily-polish-20261029';
 export function createMultiSchedule(root,actions,context){
  const dialog=document.createElement('dialog');dialog.id='task-multi-schedule';dialog.className='task-dialog';dialog.setAttribute('aria-labelledby','task-multi-title');dialog.innerHTML='<h2 id="task-multi-title">多日期安排</h2><p data-multi-name></p><p class="small-note">已有安排或例外的日期不可重選；不變更自動週期及有效期限。</p><div class="task-multi-month"><button type="button" data-previous aria-label="上個月">←</button><span data-month aria-live="polite"></span><button type="button" data-next aria-label="下個月">→</button></div><div class="task-month-grid task-multi-grid" aria-label="多選日期月曆"></div><p data-count role="status"></p><p data-error role="alert"></p><button type="button" data-clear>清除選取</button><div class="task-buttons"><button type="button" data-cancel>取消</button><button type="button" data-confirm>確認安排</button></div>';root.append(dialog);
