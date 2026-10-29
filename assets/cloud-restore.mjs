@@ -1,7 +1,7 @@
-import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=interaction-perf-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=interaction-perf-20261028';
-import {dataStore} from './data.mjs?v=interaction-perf-20261028';
-import {readBackup} from './backup.mjs?v=interaction-perf-20261028';
+import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=persona-20261029';
+import {getCloudBackup} from './cloud-backup.mjs?v=persona-20261029';
+import {dataStore} from './data.mjs?v=persona-20261029';
+import {readBackup} from './backup.mjs?v=persona-20261029';
 import {backupDeviceName,displayDeviceName,cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs?v=storage-rescue-20261028';
 import {backupStatus,taiwanTime} from './cloud-sync-status.mjs?v=manual-backup-20261028';
 export function createCloudRestore(){

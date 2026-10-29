@@ -1,6 +1,6 @@
 import {mountColorField} from './color-field.mjs?v=storage-rescue-20261028';
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=interaction-perf-20261028';
+import {dataStore} from './data.mjs?v=persona-20261029';
 import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
 
 export function createCategoryManager(root,context,actions){

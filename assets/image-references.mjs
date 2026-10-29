@@ -1,7 +1,7 @@
 import {archivedReferences} from './storage-vault.mjs?v=storage-rescue-20261028';
 import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage-rescue-20261028';
 import {validateCharacterImages} from './character-images-model.mjs?v=storage-rescue-20261028';
-import {maintainRecovery} from './recovery.mjs?v=storage-rescue-20261028';
+import {maintainRecovery} from './recovery.mjs?v=persona-20261029';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=storage-rescue-20261028';
 import {maintenance} from './coordination.mjs?v=interaction-perf-20261028';
 const providers=new Map();

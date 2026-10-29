@@ -91,7 +91,7 @@ export function createAIConnection({endpoint='',getAccessToken=async()=>null,fet
   selectModel(model){if(!state.models.some(item=>item.id===model)||state.busy)return;state.model=model;desiredModel=model;state.status='model_selected';state.message='模型已選取；尚未執行生成，生成測試可能產生費用。';emit();void remember(model);},
   connect(){return operate('models');},refresh(){return operate('models');},
   test(){if(!state.model||!state.connected||state.busy)return;return operate('test');},
-  generate({text,maxOutputTokens=64}={}){if(!state.model||!state.connected||state.busy)return;return operate('generate',{text,maxOutputTokens});},
+  generate({text,maxOutputTokens=64,purpose}={}){if(!state.model||!state.connected||state.busy)return;return operate('generate',{text,maxOutputTokens,...(purpose==='reply-library'?{purpose}: {})});},
   disconnect(){cancel();apiKey='';blocked.clear();clearList();state.hasKey=false;state.status=configured?'unset':'unconfigured';state.message=configured?'已中斷連線並清除本頁金鑰。':AI_MESSAGES.unconfigured;emit();},
   cancel(){cancel();state.status='cancelled';state.message='已取消本次 AI 請求。';emit();},
   configured,

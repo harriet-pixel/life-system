@@ -1,6 +1,6 @@
 import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=storage-rescue-20261028';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=interaction-perf-20261028';
-import {dataStore} from './data.mjs?v=interaction-perf-20261028';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=persona-20261029';
+import {dataStore} from './data.mjs?v=persona-20261029';
 import {localDate,addDays} from './tasks-model.mjs?v=action-ready-20261028';
 import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
 

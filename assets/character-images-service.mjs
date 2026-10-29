@@ -1,6 +1,6 @@
 import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
 import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage-rescue-20261028';
-import {validateCharacters} from './characters-model.mjs?v=storage-rescue-20261028';
+import {validateCharacters} from './characters-model.mjs?v=persona-20261029';
 import {updateCharacterImage} from './character-images-model.mjs?v=storage-rescue-20261028';
 import {readImageBlob} from './image-store.mjs?v=storage-rescue-20261028';
 // Editor protects staging; the service also holds the existing draft lock

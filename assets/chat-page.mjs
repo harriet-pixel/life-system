@@ -1,6 +1,6 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=interaction-perf-20261028';
-import {createChatController,chatConnected} from './chat-controller.mjs?v=storage-rescue-20261028';
-import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=storage-rescue-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=persona-20261029';
+import {createChatController,chatConnected} from './chat-controller.mjs?v=persona-20261029';
+import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=persona-20261029';
 export function mountChat(root,context,{store,getCharacter,getSnapshot,images,onDraft}){
  const $=s=>root.querySelector(s),input=$('#chat-input'),send=$('#chat-send'),cancel=$('#chat-cancel'),area=$('#chat-messages'),status=$('#chat-status');
  const connection=getSharedAIConnection(),drafts=new Map(),positions=new Map(),nodes=new Map();let viewed=null,rendered=null,subscription=null,active=false,ui={turns:[],messages:[],busy:false,loading:false,connection:connection.getState()},sending=false,scrollBottom=true;
@@ -11,6 +11,7 @@ export function mountChat(root,context,{store,getCharacter,getSnapshot,images,on
  function eligibility(){const c=getCharacter(),state=getSnapshot();return Boolean(c&&!c.archived&&state.companion.activeCharacterId===c.characterId);}
  function controls(){const c=getCharacter(),connected=chatConnected(ui.connection),ready=eligibility();input.disabled=!ready;input.maxLength=CHAT_INPUT_LIMIT;input.placeholder=ready?'輸入訊息（最多 800 字元）':'先將此角色設為夥伴再開始聊天';
   send.disabled=!ready||!connected||ui.busy||ui.connection.busy||sending||!input.value.trim()||ui.turns.some(t=>t.phase==='ready');cancel.hidden=!ui.busy;cancel.disabled=!ui.busy;
+  for(const button of area.querySelectorAll('[data-chat-retry]')){const turn=ui.turns.find(t=>t.chatTurnId===button.dataset.chatRetry),recover=Boolean(turn?.assistant)&&!turn?.invalid;button.disabled=!turn||ui.busy||sending||(!recover&&(!ready||!connected||ui.connection.busy))||(turn.phase==='generating'&&ui.activeTurnId===turn.chatTurnId);}
   $('#chat-connection-help').textContent=!c?'請先新增或選擇角色。':!ready?'目前僅預覽；請先設為夥伴，未封存角色才能發起新聊天。':!connected?'請至「設定 → AI 連線」連接 AI 並選擇模型。聊天草稿會保留。':ui.busy?'正在生成；離開聊天室會取消，不會自動重送。':'透過目前共用 AI 連線生成；每次送出一次請求，訊息各自保留 24 小時且不備份。';
  }
  function messageNode(m){let row=nodes.get(m.messageId);if(!row){row=document.createElement('article');row.className='chat-message '+(m.role==='assistant'?'chat-message-character':'chat-message-user');row.dataset.messageId=m.messageId;row.dataset.messageRole=m.role;

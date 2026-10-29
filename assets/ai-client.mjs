@@ -1,7 +1,7 @@
 import {AI_TEST_TEXT} from './ai-prompts.mjs?v=storage-rescue-20261028';
-import {createAIConnection} from './ai-service.mjs?v=storage-rescue-20261028';
+import {createAIConnection} from './ai-service.mjs?v=persona-20261029';
 import {createAISession} from './ai-session.mjs?v=storage-rescue-20261028';
-import {createProviderAdapter} from './ai-providers.mjs?v=storage-rescue-20261028';
+import {createProviderAdapter} from './ai-providers.mjs?v=persona-20261029';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null,defaultBrowser=false}={}){
  const session=createAISession(storage,{now}),listeners=new Set();
@@ -19,7 +19,7 @@ export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpo
     if(!checkExpiry())throw {code:'expired'};
     const adapter=createProviderAdapter(request.provider,request.apiKey,{fetcher,signal:request.signal,browser:true});
     if(request.operation==='models')return adapter.listModels();
-    const result=await adapter.generate({model:request.model,text:request.operation==='test'?AI_TEST_TEXT:request.text,maxOutputTokens:request.operation==='test'?64:request.maxOutputTokens,descriptor:request.descriptor,prompt:request.prompt});
+    const result=await adapter.generate({model:request.model,text:request.operation==='test'?AI_TEST_TEXT:request.text,maxOutputTokens:request.operation==='test'?64:request.maxOutputTokens,descriptor:request.descriptor,prompt:request.prompt,purpose:request.purpose});
     return request.operation==='test'?{ok:true}:result;
    }:personalBackend?.getState().configured?request=>personalBackend.request(request):null,
   });

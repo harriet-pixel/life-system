@@ -1,14 +1,14 @@
 import {attemptJournalRescue} from './storage-vault.mjs?v=storage-rescue-20261028';
 import {storageFailure} from './storage-diagnostics.mjs?v=storage-rescue-20261028';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=storage-rescue-20261028';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=storage-rescue-20261028';
-import {integrateAffinity} from './affinity-integration.mjs?v=action-ready-20261028';
-import {settleAffinity} from './affinity-settlement.mjs?v=action-ready-20261028';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=storage-rescue-20261028';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=persona-20261029';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=persona-20261029';
+import {integrateAffinity} from './affinity-integration.mjs?v=persona-20261029';
+import {settleAffinity} from './affinity-settlement.mjs?v=persona-20261029';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=persona-20261029';
 import {emptyHabits,validateHabits} from './habits-model.mjs?v=storage-rescue-20261028';
 import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
 import {emptyTasks,validateTasks} from './tasks-model.mjs?v=action-ready-20261028';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=storage-rescue-20261028';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=persona-20261029';
 import {validateProfileFields,validateActivities} from './validation.mjs?v=storage-rescue-20261028';
 import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=interaction-perf-20261028';
 import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=storage-rescue-20261028';
@@ -51,7 +51,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     if (!raw) {loadedRaw=raw;return initial();}
     const value = JSON.parse(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
-    value.companion ??= emptyCharacters();
+    value.companion ??= emptyCharacters();if(value.companion.version===1){try{value.companion=validateCharacters(value.companion);}catch{recoveryNotice='角色格式遷移暫停，原始內容已保留；其他本機資料仍可讀取。';}}
     value.affinity ??= emptyAffinity();
     value.habits = validateHabits(value.habits ?? emptyHabits());
     value.tasks = validateTasks(value.tasks ?? emptyTasks());
@@ -96,7 +96,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     setBusy(value) {busy=value;notify({statusOnly:true});},
     // Dormant sync capability: callers must hold maintenance locks and validate the full document.
     replaceSynchronized(value,expectedRevision) {if(state.revision!==expectedRevision)throw new Error('同步期間本地資料已更新。');const checked=maintainRecovery(copy(value),now());if(checked.blocked)throw new Error('同步復原鏈無法安全延續。');persist(checked.document);},
-    replace(value) { const next=copy(value);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}if(state.replyLibrary||next.replyLibrary){next.replyLibrary??=emptyReplyLibrary();next.replyLibrary.epoch=crypto.randomUUID();}next.revision=Math.max(value.revision,state.revision+1);persist(next); },
+    replace(value) { const next=copy(value);next.companion=validateCharacters(next.companion);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}next.replyLibrary??=emptyReplyLibrary();next.replyLibrary.epoch=crypto.randomUUID();next.revision=Math.max(value.revision,state.revision+1);persist(next); },
     subscribe(fn,{changesOnly=false,keys=null,distinct=false}={}) {const value=project(currentRecovery().document,keys),entry={fn,changesOnly,keys,distinct,signature:distinct?JSON.stringify(value):null};listeners.add(entry);fn(copy(value));return()=>listeners.delete(entry);},
     refresh() {if(storage.getItem(STORAGE_KEY)===loadedRaw){const previous=recoveryCache?.result.document;if(currentRecovery().document!==previous)notify();return;}state = load();notify();},
     transact({ type, label, target, changes, fields = [], expectedRevision, id, timing, reversible = true }) {const validateAt=performance.now();
@@ -148,7 +148,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=storage-rescue-20261028');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=persona-20261029');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;
