@@ -1,17 +1,17 @@
-import {dataStore} from './data.mjs?v=interaction-perf-20261028';
+import {dataStore} from './data.mjs?v=persona-20261029';
 let singleton;const operations=new Map();
-function shared(){if(singleton)return singleton;const views=new Set();let version=0,timer,pending=[],reply=null,actions=[];
+function shared(){if(singleton)return singleton;const views=new Set();let version=0,timer,pending=[],reply=null,actions=[],imports=[],cancelRequest=null;
  const state=value=>views.forEach(v=>v.onStateChange?.(value));
- const cancel=()=>{version++;clearTimeout(timer);pending=[];state('cancelled');};
+ const cancel=()=>{cancelRequest?.();cancelRequest=null;version++;clearTimeout(timer);pending=[];imports=[];state('cancelled');};
  const controller={cancelPending:cancel,invalidateAction:cancel};
  dataStore.subscribeCommits((document,operation)=>{
   if(!views.size||!operation||!['task.completed','task.completed.batch','habit.check','habit.bonus'].includes(operation.type))return;
-  const token=++version;state('queued');
-  void import('./daily-events.mjs?v=action-ready-20261028').then(module=>{
-   if(token!==version||!views.size)return;const events=module.formalDailyEvents(operation,document);if(!events.length)return;pending.push(...events);clearTimeout(timer);timer=setTimeout(async()=>{
+  imports.push({operation,document});if(imports.length>10)imports.shift();cancelRequest?.();cancelRequest=null;const token=++version;state('queued');
+  void import('./daily-events.mjs?v=persona-20261029').then(module=>{
+   if(token!==version||!views.size)return;const events=imports.splice(0).flatMap(o=>module.formalDailyEvents(o.operation,o.document));if(!events.length)return;pending.push(...events);clearTimeout(timer);timer=setTimeout(async()=>{
     const batch=pending;pending=[];const selected=batch.find(e=>e.eventType==='achievement.unlocked')??batch.at(-1);if(!selected)return;state('generating');
     const mapped=batch.filter(e=>e.domain!=='achievement').map(e=>{const operation=[...operations].find(([,v])=>v.completionId===e.sourceId);return {type:e.domain==='task'?'task.processing':'habit.checked-in',actionId:operation?.[0]??e.sourceId,label:'正式生活事件'};});
-    try{const runtime=await import('./reply-runtime.mjs?v=interaction-perf-20261028');const value=await runtime.dailyResponse(dataStore,selected,{valid:()=>token===version&&views.size>0});if(!value||token!==version)return;
+    try{const runtime=await import('./reply-runtime.mjs?v=persona-20261029');const value=await runtime.dailyResponse(dataStore,selected,{valid:()=>token===version&&views.size>0,batch,onCancel:fn=>{if(token===version)cancelRequest=fn;}});if(!value||token!==version)return;
      reply=value;actions=mapped;views.forEach(v=>v.render?.(reply,actions,{replayed:false,daily:true}));state('ready');
     }catch{if(token===version&&module.validDailySource(dataStore.get(),selected)){reply={dialogue:'慢慢來，依照自己的步調繼續就好。',emotion:'neutral',characterId:selected.characterId,characterCreatedAt:selected.characterCreatedAt,daily:true};views.forEach(v=>v.render?.(reply,mapped,{replayed:false,daily:true}));state('fallback');}}
    },450);

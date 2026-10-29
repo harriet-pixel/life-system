@@ -1,7 +1,7 @@
 import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=storage-rescue-20261028';
 import {currentSaveTrace} from './save-diagnostics.mjs?v=storage-rescue-20261028';
 import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate} from './tasks-model.mjs?v=action-ready-20261028';
-import {expiresAt} from './recovery.mjs?v=storage-rescue-20261028';
+import {expiresAt} from './recovery.mjs?v=persona-20261029';
 export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.randomUUID(),emit=()=>{}}={}){
  const snapshot=()=>store.get();
  let viewQueue=Promise.resolve();

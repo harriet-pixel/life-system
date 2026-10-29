@@ -24,7 +24,7 @@ export function mountCharacterImages(root,context,{getCharacter,getSettings,stor
   if(opening||editor?.open)return;opening=true;onState();
   try{
    if(document.querySelector('dialog[open]'))throw new Error('請先關閉目前視窗。');
-   const module=await import('./character-images-editor.mjs?v=interaction-perf-20261028');
+   const module=await import('./character-images-editor.mjs?v=persona-20261029');
    if(!context.active)return;
    editor??=module.createCharacterImageEditor({root,store,getCharacter,notify,onState});await editor.show(emotion,trigger);
   }catch(error){notify(error.message);}finally{opening=false;onState();}

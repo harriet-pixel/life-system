@@ -3,7 +3,7 @@ const base=(process.env.BASE_URL||'http://127.0.0.1:3013/').replace(/\/?$/,'/');
 (async()=>{const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});let cases=0;try{
 for(const width of [320,375,390,450,451,768,1024,1280])for(const font of ['device','serif','sans','rounded']){
  const c=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
- await p.goto(base+'settings.html');await p.waitForSelector('body[data-shell=ready]');await p.evaluate(async font=>{const{dataStore:s}=await import('./assets/data.mjs?v=interaction-perf-20261028');await s.transact({type:'appearance',changes:{settings:{...s.get().settings,appearance:{...s.get().settings.appearance,font}}}});await document.fonts.ready;},font);
+ await p.goto(base+'settings.html');await p.waitForSelector('body[data-shell=ready]');await p.evaluate(async font=>{const{dataStore:s}=await import('./assets/data.mjs?v=persona-20261029');await s.transact({type:'appearance',changes:{settings:{...s.get().settings,appearance:{...s.get().settings.appearance,font}}}});await document.fonts.ready;},font);
  assert.deepEqual(await p.locator('.settings-content > [role=tablist] [role=tab]').allTextContents(),['一般設定','資料管理']);
  await p.evaluate(()=>{window.tabScrollCalls=[];const original=window.scrollTo;window.scrollTo=function(...args){tabScrollCalls.push(args);return original.apply(this,args);};});
  const snapshot=()=>p.evaluate(()=>{const r=document.querySelector('.settings-content > .activity-tabs').getBoundingClientRect();return{height:r.height,top:r.top,calls:tabScrollCalls.length};});

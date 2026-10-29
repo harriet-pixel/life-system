@@ -1,19 +1,19 @@
 import {backupStatus} from './cloud-sync-status.mjs?v=manual-backup-20261028';
-import {getDriveState,driveAuth} from './google-drive.mjs?v=interaction-perf-20261028';
-import {createCloudRestore} from './cloud-restore.mjs?v=interaction-perf-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=interaction-perf-20261028';
+import {getDriveState,driveAuth} from './google-drive.mjs?v=persona-20261029';
+import {createCloudRestore} from './cloud-restore.mjs?v=persona-20261029';
+import {getCloudBackup} from './cloud-backup.mjs?v=persona-20261029';
 import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
 import {initializeUIFeedback} from './ui-feedback.mjs?v=storage-rescue-20261028';
-import {ownsCompletionAI} from './task-completion.mjs?v=interaction-perf-20261028';
+import {ownsCompletionAI} from './task-completion.mjs?v=persona-20261029';
 import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=mobile-daily-20261028';
-import {persistentUndo,dataStore} from './data.mjs?v=interaction-perf-20261028';
+import {persistentUndo,dataStore} from './data.mjs?v=persona-20261029';
 import {createPageLifecycle} from './page-lifecycle.mjs?v=storage-rescue-20261028';
 import {initializeNavigationSize} from './navigation-size.mjs?v=storage-rescue-20261028';
-import {mountDailyHeader} from './daily-header.mjs?v=interaction-perf-20261028';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=interaction-perf-20261028';
-const routes={companion:{mount:()=>import('./characters-page.mjs?v=interaction-perf-20261028'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=interaction-perf-20261028'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=interaction-perf-20261028'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=interaction-perf-20261028'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=interaction-perf-20261028'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=interaction-perf-20261028'),export:'mountSettings'}};
+import {mountDailyHeader} from './daily-header.mjs?v=persona-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=persona-20261029';
+const routes={companion:{mount:()=>import('./characters-page.mjs?v=persona-20261029'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=persona-20261029'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=persona-20261029'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=persona-20261029'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=persona-20261029'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=persona-20261029'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map(),prefetchedPages=new Map();
-async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'interaction-perf-20261028'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'persona-20261029'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
@@ -104,7 +104,7 @@ document.body.dataset.shell='ready';
 getCloudBackup();
 
 // Do not put settlement on the first-paint dependency path.
-const startAffinity=()=>import('./affinity-runtime.mjs?v=interaction-perf-20261028').catch(()=>{});
+const startAffinity=()=>import('./affinity-runtime.mjs?v=persona-20261029').catch(()=>{});
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
 
 // Local successful actions announce only after the authoritative commit.

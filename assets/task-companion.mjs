@@ -1,6 +1,6 @@
-import {dataStore} from './data.mjs?v=interaction-perf-20261028';
-import {createMobileTaskResponse} from './task-mobile-response.mjs?v=interaction-perf-20261028';
-import {createSharedCompanionView} from './companion-events.mjs?v=interaction-perf-20261028';
+import {dataStore} from './data.mjs?v=persona-20261029';
+import {createMobileTaskResponse} from './task-mobile-response.mjs?v=persona-20261029';
+import {createSharedCompanionView} from './companion-events.mjs?v=persona-20261029';
 export function mountTaskCompanion(root,context,options={}){
  const floating=createMobileTaskResponse(root,context,options);
  const sync=()=>{root.querySelector('#portrait-placeholder').firstElementChild.textContent=matchMedia('(min-width:1024px)').matches?'立繪佔位':'頭像佔位';};context.listen(matchMedia('(min-width:1024px)'),'change',sync);sync();

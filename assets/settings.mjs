@@ -2,17 +2,17 @@ import {mountColorField} from './color-field.mjs?v=storage-rescue-20261028';
 import {documentTime} from './cloud-backup-policy.mjs?v=storage-rescue-20261028';
 import {cloudBackupLabel} from './cloud-backup-display.mjs?v=storage-rescue-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=interaction-perf-20261028';
-import {initializeAISettings} from './ai-settings.mjs?v=interaction-perf-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=persona-20261029';
+import {initializeAISettings} from './ai-settings.mjs?v=persona-20261029';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=storage-rescue-20261028';
-import {dataStore,persistentUndo} from './data.mjs?v=interaction-perf-20261028';
+import {dataStore,persistentUndo} from './data.mjs?v=persona-20261029';
 import {createMobileTabPositioner} from './tab-position.mjs?v=storage-rescue-20261028';
 import {createHistoryView} from './history-view.mjs?v=interaction-perf-20261028';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=interaction-perf-20261028';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=persona-20261029';
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=storage-rescue-20261028';
 import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=interaction-perf-20261028';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=interaction-perf-20261028';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=persona-20261029';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,disconnectDrive} from './google-drive.mjs?v=persona-20261029';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

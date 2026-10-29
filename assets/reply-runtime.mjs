@@ -1,32 +1,22 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=interaction-perf-20261028';
-import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=storage-rescue-20261028';
-import {replyPersonaKey,usableReplies,pickReply,replyPrompt,parseDailyReply} from './reply-model.mjs?v=storage-rescue-20261028';
-import {readReplyCategory,editReplyCategory} from './reply-service.mjs?v=interaction-perf-20261028';
-import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=storage-rescue-20261028';
-import {validDailySource} from './daily-events.mjs?v=action-ready-20261028';
+import {personaFingerprintInput} from './persona-prompt.mjs?v=persona-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=persona-20261029';
+import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=persona-20261029';
+import {usableReplies,pickReply,replyPrompt,parseDailyReply,substituteReply} from './reply-model.mjs?v=persona-20261029';
+import {readReplyCategory} from './reply-service.mjs?v=persona-20261029';
+import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=persona-20261029';
+import {validDailySource,dailyContext} from './daily-events.mjs?v=persona-20261029';
 const last=new Map();export const DAILY_FALLBACK='慢慢來，依照自己的步調繼續就好。';
-export async function dailyResponse(store,event,{valid=()=>true,random=Math.random,connection=getSharedAIConnection()}={}){
- const validNow=()=>valid()&&validDailySource(store.get(),event);
- const fallback=(emotion=event.emotionId??'neutral')=>({dialogue:DAILY_FALLBACK,emotion,characterId:event.characterId,characterCreatedAt:event.characterCreatedAt,daily:true});
- if(!validNow())return null;
- const pools=store.get().replyLibrary?.characters[event.characterId]?.pools??DEFAULT_REPLY_POOLS,side=event.eventType.endsWith('.incomplete')?'negative':'positive';event.emotionId??=pools[side][Math.min(pools[side].length-1,Math.floor(random()*pools[side].length))];
- const signature=await replyPersonaKey(event.character,event.stageId);
- const claimed=await claimReplyEvent(event.sourceEventId,{characterId:event.characterId,characterCreatedAt:event.characterCreatedAt,configVersion:event.configVersion,operationId:event.operationId,epoch:event.epoch,signature,stageId:event.stageId,eventType:event.eventType,emotionId:event.emotionId});if(!claimed)return null;
- void pruneReplyEvents().catch(()=>{});const key=categoryKey(event.stageId,event.eventType,event.emotionId),lock='life-system.reply.category.'+event.characterId+':'+key;
- const play=rows=>{const chosen=pickReply(rows,last.get(lock),random);if(chosen){last.set(lock,chosen.replyId);if(last.size>128)last.delete(last.keys().next().value);return {...fallback(),dialogue:chosen.dialogue,replyId:chosen.replyId};}return fallback();};
- const work=async locked=>{
-  let base=await readReplyCategory(store,event.characterId,key);if(base.signature!==signature||!validNow())return null;let rows=usableReplies(base.rows,signature);
-  const ai=connection.getState();if(!locked||rows.length>=20||base.rows.length>=60||side==='negative'||ai.busy||!ai.configured||!(ai.model||ai.sessionModel||ai.restorableModel||ai.restorableBackendModel))return play(rows);
-  let owns=false;const unsubscribe=store.subscribe(state=>{if(owns&&(!valid()||!validDailySource(state,event)||JSON.stringify([state.companion.characters.find(c=>c.characterId===event.characterId)?.settings,state.companion.characters.find(c=>c.characterId===event.characterId)?.stages?.[event.stageId]])!==JSON.stringify([event.character.settings,event.character.stages[event.stageId]]))){connection.cancel();owns=false;}},{changesOnly:true});
-  try{
-   if(!validNow())return null;owns=true;const result=await connection.generate({text:replyPrompt(event.character,event.stageId,event.eventType,event.emotionId),maxOutputTokens:128});owns=false;
-   if(!validNow()||!result?.text)return validNow()?play(rows):null;const dialogue=parseDailyReply(result.text);
-   // Re-read under the category generation lock. The short data lock is acquired
-   // only by setReplyLibrary, never held while the network is outstanding.
-   base=await readReplyCategory(store,event.characterId,key);if(base.signature!==signature||!validNow())return null;rows=usableReplies(base.rows,signature);if(rows.length>=20)return play(rows);
-   await editReplyCategory(store,{characterId:event.characterId,key,expectedRef:base.ref,expectedEpoch:base.epoch,expectedSignature:signature,action:'write',values:{stageId:event.stageId,eventType:event.eventType,emotionId:event.emotionId,dialogue,source:'ai',enabled:true},guard:validNow});
-   return {...fallback(),dialogue};
-  }catch{return validNow()?play(rows):null;}finally{owns=false;unsubscribe();}
- };
- return navigator.locks.request(lock,{ifAvailable:true},l=>work(Boolean(l)));
+const snapshot=store=>store.getFields?store.getFields(['companion','replyLibrary','tasks','habits','profile']):store.get();
+export async function dailyResponse(store,event,{valid=()=>true,random=Math.random,connection=getSharedAIConnection(),batch=[event],onCancel=()=>{}}={}){
+ let invalidated=false;const original=JSON.stringify([event.characterCreatedAt,event.configVersion,personaFingerprintInput(event.character)]);
+ const validNow=()=>{const s=snapshot(store),c=s.companion.characters.find(c=>c.characterId===event.characterId);return !invalidated&&valid()&&validDailySource(s,event)&&c&&JSON.stringify([c.createdAt,c.configVersion,personaFingerprintInput(c)])===original;};
+ if(!validNow())return null;const state=snapshot(store),side=event.eventType.endsWith('.incomplete')?'negative':'positive',pool=(state.replyLibrary?.characters[event.characterId]?.pools??DEFAULT_REPLY_POOLS)[side];event.emotionId??=pool[Math.min(pool.length-1,Math.floor(random()*pool.length))];
+ const context=dailyContext(state,event);context.names=[...new Set([...(context.names??[]),...batch.filter(e=>e.characterId===event.characterId).flatMap(e=>dailyContext(state,e).names)])].slice(0,3);
+ const baseReply={emotion:event.emotionId,characterId:event.characterId,characterCreatedAt:event.characterCreatedAt,daily:true};
+ const claim=await claimReplyEvent(event.sourceEventId,{characterId:event.characterId,characterCreatedAt:event.characterCreatedAt,configVersion:event.configVersion,operationId:event.operationId,epoch:event.epoch,stageId:event.stageId,eventType:event.eventType,emotionId:event.emotionId});if(!claim)return null;void pruneReplyEvents().catch(()=>{});
+ const key=categoryKey(side,event.emotionId),lock=event.characterId+':'+key;
+ const fallback=async()=>{if(!validNow())return null;try{const base=await readReplyCategory(store,event.characterId,key);if(!validNow())return null;const rows=usableReplies(base.rows,base.signature).filter(r=>substituteReply(r.dialogue,context.names[0]));const row=pickReply(rows,last.get(lock),random);if(row){last.set(lock,row.replyId);if(last.size>128)last.delete(last.keys().next().value);return {...baseReply,dialogue:substituteReply(row.dialogue,context.names[0]),replyId:row.replyId,fallback:true};}}catch{}return validNow()?{...baseReply,emotion:'neutral',dialogue:DAILY_FALLBACK,fallback:true}:null;};
+ const ai=connection.getState();if(ai.busy||!ai.configured||!(ai.model||ai.sessionModel||ai.restorableModel||ai.restorableBackendModel))return fallback();
+ let owns=false;const cancel=()=>{invalidated=true;if(owns){owns=false;connection.cancel();}};onCancel(cancel);const off=store.subscribe(()=>{if(owns&&!validNow()){invalidated=true;owns=false;connection.cancel();}},{changesOnly:true,keys:['companion','replyLibrary','tasks','habits']});
+ try{if(!validNow())return null;owns=true;const result=await connection.generate({text:replyPrompt(event.character,event.stageId,event.eventType,event.emotionId,context),maxOutputTokens:128});owns=false;if(!validNow())return null;if(!result?.text)return fallback();return {...baseReply,dialogue:parseDailyReply(result.text)};}catch{return fallback();}finally{owns=false;off();onCancel(null);}
 }
