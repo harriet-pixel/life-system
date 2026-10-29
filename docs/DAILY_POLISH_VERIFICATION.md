@@ -3,7 +3,7 @@
 以遠端 main eea3384 為基準，保留精簡人格、情境回覆、角色卡、手動雲端備份及既有資料保護。沒有啟用自動同步或Cloudflare。
 
 - 逾期：isOverdue統一為pending且日期早於當地今天。昨天起納入懸而未決／數量／批次；日清單不再重複顯示逾期pending，完成歷史仍顯示。原訂日期、ID、安排及獎勵不重寫，不自動略過。
-- 手機主頁籤：原生Touch Events與Pointer Events共用方向／距離判斷，至少48px且橫向大於縱向1.6倍，900ms內；兩端夾限、不環繞。只點擊原有tab，ARIA／草稿沿既有流程。dialog、表單控制、一般按鈕／連結、選字與內層原生橫向區域不截取，垂直捲動不阻擋。桌面仍點擊／鍵盤。
+- 手機主頁籤：原生Touch Events與Pointer Events共用方向／距離判斷，至少48px且橫向大於縱向1.6倍，900ms內；兩端夾限、不環繞。只點擊原有tab，ARIA／草稿沿既有流程。範圍包括aria-controls指向的面板、內容外框留白與習慣下方紀錄區；名稱、一般按鈕／連結、checkbox／radio也可作為滑動起點，完成滑動後取消該次點擊，下一次真實按下會解除抑制。dialog、文字／範圍輸入、下拉、選字、內層頁籤與原生橫向區域不截取，垂直捲動不阻擋。桌面仍點擊／鍵盤。
 - 導覽：｜為獨立aria-hidden span，桌面色塊只在圖示連結，手機隱藏分隔符。
 - 打卡：正式habit.check／habit.bonus／habit.bonus-cancel交易的實際delta送入待辦同一全域動畫queue。貨幣／經驗／五能力均只顯示非零值，使用+與−，不從預估點數計算；頁面自己的重複動畫移除。相同operation ID去重，切頁清除；刷新與同步不重播。通知沿既有daily-header與正式交易來源，緊接交易的關窗不覆蓋成功通知。
 - 隱私權：入口從首頁移至設定，公開privacy.html保留並補述Google連結狀態保存方式。
@@ -18,3 +18,5 @@
 - 最新角色回歸tests/replies-browser.cjs（83項）與tests/replies-events.cjs（18項）。舊companion-ui.cjs仍含v1 settings.traits斷言，與遠端v2人格規格不符，本次不以它代替最新角色回歸。
 
 Google GIS與Drive API皆mock，未以真實帳號驗證。沒有後端的Token模式不能承諾Google永不到期；Google撤銷、重新驗證、登入cookie或快顯限制可能要求再操作。網站保留連結意圖，不把無效Token顯示成有效授權，也不自動反覆彈窗。未在實體Android／Windows驗收，原生觸控為Chromium mobile context。
+
+補驗tests/block-swipe.cjs：實際CDP Touch Events從首頁新增按鈕／外框留白、待辦名稱／checkbox、加分打卡按鈕、習慣下方紀錄summary與設定details起滑，均不誤觸開窗、完成、發獎或收闔；正常tap、縱向與內部橫向捲動保留。lint、build與330項單元通過；同步／登入及資料格式未改。快取只更新shell／UI controller／swipe module，其他singleton URL維持不變。
