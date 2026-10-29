@@ -4,7 +4,7 @@ import {renderHomeToday} from './home-today.mjs?v=companion-actions-20261029';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261029';
 import {createTaskEditor} from './task-editor.mjs?v=companion-actions-20261029';
 import {createCategoryManager} from './task-categories.mjs?v=companion-actions-20261029';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-panel-20261029';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-display-20261029';
 import {taskActions} from './task-actions.mjs?v=companion-actions-20261029';
 import {localDate} from './tasks-model.mjs?v=daily-polish-20261029';
 import { createMobileTabPositioner } from './tab-position.mjs?v=daily-polish-20261029';
@@ -38,7 +38,7 @@ function showPlaceholder(label) {
 }
 let dailyVisual=null,visualRequest=0;
 let greetingIdentity='';
-function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=companion-actions-20261029').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=companion-display-20261029').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
 context.onSuspend(()=>visualRequest++);
 function showHomeGreeting(actor){dialogue.textContent=homeGreeting(actor);if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
 context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});

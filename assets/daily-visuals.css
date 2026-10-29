@@ -1,1 +1,9 @@
-.companion-portrait.has-daily-image{position:relative}.companion-portrait.has-daily-image>:not(.daily-character-image){visibility:hidden}.daily-character-image{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden;pointer-events:none}.daily-character-image .character-image-placeholder{display:grid;place-items:center}.daily-character-image svg{width:48px;height:48px}.daily-character-image .character-image-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.daily-character-image.character-avatar-view{border-radius:50%}.daily-character-image.character-avatar-view .character-image-layer{inset:auto;max-width:none;object-fit:fill}@media(prefers-reduced-motion:reduce){.daily-character-image .character-image-layer{transition:none!important}}
+/* Owned daily layers must win against character-editor styles in either route order. */
+#main .companion-portrait.has-daily-image{position:relative;isolation:isolate}
+#main .companion-portrait.has-daily-image>:not(.daily-character-image){visibility:hidden}
+#main .companion-portrait.has-daily-image>.daily-character-image{position:absolute;inset:0;display:block;width:100%;height:100%;overflow:hidden;pointer-events:none}
+#main .daily-character-image .character-image-placeholder{display:grid;place-items:center;height:100%}
+#main .daily-character-image svg{width:48px;height:48px}
+#main .companion-portrait.has-daily-image>.daily-character-image .character-image-layer{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;object-fit:cover}
+#main .daily-character-image.character-avatar-view{border-radius:50%}
+@media(prefers-reduced-motion:reduce){#main .daily-character-image .character-image-layer{transition:none!important}}

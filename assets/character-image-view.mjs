@@ -5,7 +5,7 @@ export function createCharacterImageView(target,{avatar=false,thumbnail=false,av
  const placeholder=document.createElement('span');placeholder.className='character-image-placeholder';
  // Clone the site's existing neutral icon, without creating another asset.
  const icon=target.querySelector('svg');if(icon)placeholder.append(icon.cloneNode(true));else placeholder.textContent='尚無圖片';
- target.replaceChildren(placeholder);target.classList.add('character-image-view');if(avatar)target.classList.add('character-avatar-view');
+ target.replaceChildren(placeholder);target.classList.add('character-image-view');target.classList.toggle('character-avatar-view',avatar);
  let sequence=0,signature='',layers=[],pending=null,timer=null;
  const clean=layer=>{layer.image.remove();layer.lease.release();};
  function clear(){sequence++;signature='';pending?.release();pending=null;clearTimeout(timer);layers.forEach(clean);layers=[];placeholder.hidden=false;}

@@ -10,7 +10,7 @@ import {createTaskPool} from './task-pool.mjs?v=daily-polish-20261029';
 import {dataStore} from './data.mjs?v=companion-actions-20261029';
 import {localDate,addDays,rowsForDate,weekday,isOverdue} from './tasks-model.mjs?v=daily-polish-20261029';
 import {taskActions} from './task-actions.mjs?v=companion-actions-20261029';
-import {mountTaskCompanion} from './task-companion.mjs?v=companion-actions-20261029';
+import {mountTaskCompanion} from './task-companion.mjs?v=companion-display-20261029';
 import {createTaskEditor} from './task-editor.mjs?v=companion-actions-20261029';
 import {createCategoryManager} from './task-categories.mjs?v=companion-actions-20261029';
 export function mountTasks(root,context){
