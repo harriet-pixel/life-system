@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=persona-20261029';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=persona-20261029';
-import {createTaskService} from './tasks-service.mjs?v=persona-20261029';
-import {allocation,allocationContext} from './tasks-model.mjs?v=action-ready-20261028';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=storage-rescue-20261028';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=persona-20261029';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=storage-rescue-20261028';
+import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261029';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=daily-polish-20261029';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {createTaskService} from './tasks-service.mjs?v=daily-polish-20261029';
+import {allocation,allocationContext} from './tasks-model.mjs?v=daily-polish-20261029';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=daily-polish-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=daily-polish-20261029';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=daily-polish-20261029';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}

@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=storage-rescue-20261028';
+import {integerValue} from './validation.mjs?v=daily-polish-20261029';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

@@ -1,12 +1,12 @@
-import {guardedDialog,downloadText} from './companion-dialog.mjs?v=persona-20261029';
-import {generateLibraryPreview} from './reply-generation.mjs?v=persona-20261029';
-import {REPLY_EVENTS,DEFAULT_REPLY_POOLS,categoryKey} from './reply-manifest.mjs?v=persona-20261029';
-import {EMOTIONS} from './character-images-model.mjs?v=storage-rescue-20261028';
-import {RELATIONSHIP_STAGES} from './characters-model.mjs?v=persona-20261029';
-import {usableReplies} from './reply-model.mjs?v=persona-20261029';
-import {readReplyCategory,editReplyCategory,saveReplyPools,upgradeReplyLibrary} from './reply-service.mjs?v=persona-20261029';
-import {cleanReplyAssets,readReplyRows} from './reply-store.mjs?v=persona-20261029';
-import {holdDraft,maintenance} from './coordination.mjs?v=interaction-perf-20261028';
+import {guardedDialog,downloadText} from './companion-dialog.mjs?v=daily-polish-20261029';
+import {generateLibraryPreview} from './reply-generation.mjs?v=daily-polish-20261029';
+import {REPLY_EVENTS,DEFAULT_REPLY_POOLS,categoryKey} from './reply-manifest.mjs?v=daily-polish-20261029';
+import {EMOTIONS} from './character-images-model.mjs?v=daily-polish-20261029';
+import {RELATIONSHIP_STAGES} from './characters-model.mjs?v=daily-polish-20261029';
+import {usableReplies} from './reply-model.mjs?v=daily-polish-20261029';
+import {readReplyCategory,editReplyCategory,saveReplyPools,upgradeReplyLibrary} from './reply-service.mjs?v=daily-polish-20261029';
+import {cleanReplyAssets,readReplyRows} from './reply-store.mjs?v=daily-polish-20261029';
+import {holdDraft,maintenance} from './coordination.mjs?v=daily-polish-20261029';
 export function mountReplyManager(root,context,{store,getCharacter,notify,onState}){
  const section=root.querySelector('#reply-library-section'),host=root.querySelector('#reply-library-body');
  host.innerHTML='<p class="small-note">生活事件回覆可重複播放；不使用私人聊天，不額外計分。每分類最多10句，僅手動生成；生活情境台詞不會自動加入。可使用{事件名稱}。</p><fieldset id="reply-pools"><legend>情緒池（角色個別）</legend><div data-pool="positive"><strong>正向</strong></div><div data-pool="negative"><strong>負向</strong></div><button id="reply-pools-save" type="button">儲存情緒池</button><button id="reply-pools-cancel" type="button">取消情緒池草稿</button></fieldset><div class="reply-filters"><label>回應方向<select id="reply-direction"><option value="positive">正向</option><option value="negative">負向</option></select></label><label>情緒<select id="reply-emotion"></select></label></div><p id="reply-count" class="small-note" role="status"></p><div class="character-actions"><button id="reply-generate" type="button">AI 生成 10 句</button><button id="reply-generate-cancel" type="button" hidden>取消生成</button><button id="reply-new" type="button">手動新增回覆</button><button id="reply-clear" type="button">清空目前分類</button></div><div id="reply-list"></div><details id="reply-legacy"><summary>舊格式回覆（保留原文）</summary><select id="reply-legacy-category" aria-label="舊回覆分類"></select><div id="reply-legacy-list"></div><button id="reply-legacy-export" type="button">匯出此角色全部舊回覆</button></details><details><summary>次要管理</summary><button id="reply-purge" type="button">清理目前分類停用回覆</button><button id="reply-clear-role" type="button">清空目前角色備援回覆（舊格式保留）</button><button id="reply-clean-assets" type="button">清理未使用的回覆庫資料</button></details>';

@@ -1,19 +1,19 @@
-import {backupStatus} from './cloud-sync-status.mjs?v=manual-backup-20261028';
-import {getDriveState,driveAuth} from './google-drive.mjs?v=persona-20261029';
-import {createCloudRestore} from './cloud-restore.mjs?v=persona-20261029';
-import {getCloudBackup} from './cloud-backup.mjs?v=persona-20261029';
-import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
-import {initializeUIFeedback} from './ui-feedback.mjs?v=storage-rescue-20261028';
-import {ownsCompletionAI} from './task-completion.mjs?v=persona-20261029';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=mobile-daily-20261028';
-import {persistentUndo,dataStore} from './data.mjs?v=persona-20261029';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=storage-rescue-20261028';
-import {initializeNavigationSize} from './navigation-size.mjs?v=storage-rescue-20261028';
-import {mountDailyHeader} from './daily-header.mjs?v=persona-20261029';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=persona-20261029';
-const routes={companion:{mount:()=>import('./characters-page.mjs?v=persona-20261029'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=persona-20261029'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=persona-20261029'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=persona-20261029'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=persona-20261029'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=persona-20261029'),export:'mountSettings'}};
+import {backupStatus} from './cloud-sync-status.mjs?v=daily-polish-20261029';
+import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=daily-polish-20261029';
+import {createCloudRestore} from './cloud-restore.mjs?v=daily-polish-20261029';
+import {getCloudBackup} from './cloud-backup.mjs?v=daily-polish-20261029';
+import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261029';
+import {initializeUIFeedback} from './ui-feedback.mjs?v=daily-polish-20261029';
+import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=daily-polish-20261029';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=daily-polish-20261029';
+import {persistentUndo,dataStore} from './data.mjs?v=daily-polish-20261029';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=daily-polish-20261029';
+import {initializeNavigationSize} from './navigation-size.mjs?v=daily-polish-20261029';
+import {mountDailyHeader} from './daily-header.mjs?v=daily-polish-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=daily-polish-20261029';
+const routes={companion:{mount:()=>import('./characters-page.mjs?v=daily-polish-20261029'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=daily-polish-20261029'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=daily-polish-20261029'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=daily-polish-20261029'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=daily-polish-20261029'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=daily-polish-20261029'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map(),prefetchedPages=new Map();
-async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'persona-20261029'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'daily-polish-20261029'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
@@ -102,18 +102,20 @@ await go(location.href,{initial:true});
 // One data source, one global navigation and one AI service for this document.
 document.body.dataset.shell='ready';
 getCloudBackup();
+if(getDriveState().linked)void prepareDriveAuth().catch(()=>{});
 
 // Do not put settlement on the first-paint dependency path.
-const startAffinity=()=>import('./affinity-runtime.mjs?v=persona-20261029').catch(()=>{});
+const startAffinity=()=>import('./affinity-runtime.mjs?v=daily-polish-20261029').catch(()=>{});
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
 
 // Local successful actions announce only after the authoritative commit.
-dataStore.subscribeCommits((doc,operation)=>{if(operation&&/^(task\.|habit\.)/.test(operation.type)&&['home','tasks','habits'].includes(active?.id)){const record=operation,points=record.delta?.currency;announce('已儲存：'+(record?.label??'操作')+(points>0?'，獲得 '+points+' 點':'')+'。');}},{metadataOnly:true});
+let lastActionNoticeAt=-Infinity;
+dataStore.subscribeCommits((doc,operation)=>{if(operation&&/^(task\.|habit\.)/.test(operation.type)&&['home','tasks','habits'].includes(active?.id)){if(['habit.check','habit.bonus','habit.bonus-cancel'].includes(operation.type)&&operation.delta){const d=operation.delta;getCompletionFlow().showReward({id:operation.id,reward:{currency:d.currency,experience:d.experience,abilities:Object.fromEntries(d.abilities.map(a=>[a.id,a.value]))}});}lastActionNoticeAt=performance.now();const record=operation,points=record.delta?.currency;announce('已儲存：'+(record?.label??'操作')+(points>0?'，獲得 '+points+' 點':points<0?'，扣回 '+Math.abs(points)+' 點':'')+'。');}},{metadataOnly:true});
 document.addEventListener('click',event=>{const tab=event.target.closest('[role=tab]');if(tab&&active?.root.contains(tab)&&['home','tasks','habits'].includes(active.id))announce('已切換至'+tab.textContent.trim()+'。');});
-document.addEventListener('close',event=>{if(!navigating&&event.target.matches?.('dialog')&&active?.root.contains(event.target)&&['home','tasks','habits'].includes(active.id))announce('已返回。');},true);
+document.addEventListener('close',event=>{if(performance.now()-lastActionNoticeAt>500&&!navigating&&event.target.matches?.('dialog')&&active?.root.contains(event.target)&&['home','tasks','habits'].includes(active.id))announce('已返回。');},true);
 
 // Manual backups do not masquerade as an acknowledged cross-device sync baseline.
-const iconCloud=getCloudBackup();const updateCloudIcons=()=>{const state=iconCloud.getState(),status=backupStatus({connected:getDriveState().connected,online:navigator.onLine,busy:state.busy,pending:state.pending,error:/未完成/.test(state.message)});for(const button of document.querySelectorAll('[data-cloud-restore]')){button.dataset.syncState=status;button.title='雲端備份與還原：'+status;button.setAttribute('aria-label',button.title);}};
+const iconCloud=getCloudBackup();const updateCloudIcons=()=>{const state=iconCloud.getState(),status=getDriveState().needsReauth?'授權待更新':backupStatus({connected:getDriveState().connected,online:navigator.onLine,busy:state.busy,pending:state.pending,error:/未完成/.test(state.message)});for(const button of document.querySelectorAll('[data-cloud-restore]')){button.dataset.syncState=status;button.title='雲端備份與還原：'+status;button.setAttribute('aria-label',button.title);}};
 iconCloud.subscribe(updateCloudIcons);driveAuth.subscribe(updateCloudIcons);window.addEventListener('online',updateCloudIcons);window.addEventListener('offline',updateCloudIcons);
 
 // Read-only prefetch on hover/focus/touch; never mount views or invoke AI/data actions.

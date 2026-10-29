@@ -1,17 +1,16 @@
-import {mountColorField} from './color-field.mjs?v=storage-rescue-20261028';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=storage-rescue-20261028';
-import {mountTaskCompanion} from './task-companion.mjs?v=persona-20261029';
-import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=storage-rescue-20261028';
-import {createMobileTabPositioner} from './tab-position.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=persona-20261029';
-import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=storage-rescue-20261028';
-import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=persona-20261029';
-import {statusButtons} from './habit-quick.mjs?v=persona-20261029';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
+import {mountColorField} from './color-field.mjs?v=daily-polish-20261029';
+import {mountTaskCompanion} from './task-companion.mjs?v=daily-polish-20261029';
+import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=daily-polish-20261029';
+import {createMobileTabPositioner} from './tab-position.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=daily-polish-20261029';
+import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=daily-polish-20261029';
+import {statusButtons} from './habit-quick.mjs?v=daily-polish-20261029';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261029';
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 export function mountHabits(root,context){
  const $=s=>root.querySelector(s),today=()=>taipeiDate();let selectedMonth=today().slice(0,7),half=periodInfo(today()).id.slice(-1),busy=false,formBase='',editingPeriod=null,bonusId=null,settingRevision=null,bonusRevision=null,singleHabit=null,settingsSection='habits',selectedCard=0,selectedYear=taipeiDate().slice(0,4),yearStart=Number(taipeiDate().slice(0,4))-5;
- const feedback=createRewardFeedback(root,context);async function completeAction(action,respond=true){const before=dataStore.getFields(['stats']).stats,result=await action();if(result&&respond){const after=dataStore.getFields(['stats']).stats,currency=after.currency-before.currency,experience=after.experience-before.experience;if(currency>0)feedback({id:result.id+':'+dataStore.getFields(['revision']).revision,reward:{currency,experience,abilities:Object.fromEntries(after.abilities.map(a=>[a.id,a.value-before.abilities.find(b=>b.id===a.id).value]))}});void habitReply(result);}return result;}
+ async function completeAction(action,respond=true){const result=await action();if(result&&respond)void habitReply(result);return result;}
  mountTaskCompanion(root,context,{kind:'habits',selector:'#habit-companion'});initializeTaskDialogs(root,context);
  const say=message=>{const status=$('#operation-status');status.hidden=false;status.textContent=String(message);status.scrollTop=0;};
 

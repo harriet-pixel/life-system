@@ -1,6 +1,6 @@
-import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=action-ready-20261028';
-import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=storage-rescue-20261028';
-import {relationshipStage} from './characters-model.mjs?v=persona-20261029';
+import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=daily-polish-20261029';
+import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=daily-polish-20261029';
+import {relationshipStage} from './characters-model.mjs?v=daily-polish-20261029';
 export function formalDailyEvents(operation,state){
  const c=state.companion?.characters.find(c=>c.characterId===state.companion.activeCharacterId&&!c.archived);if(!c)return [];
  const events=[],push=(eventType,id,domain)=>events.push({sourceEventId:operation.id+':'+eventType+':'+id,operationId:operation.id,characterId:c.characterId,characterCreatedAt:c.createdAt,configVersion:c.configVersion,stageId:relationshipStage(c.affinity).stage,eventType,sourceId:id,domain,switchCount:state.companion.switchHistory.length,epoch:state.replyLibrary?.epoch??null,character:c});

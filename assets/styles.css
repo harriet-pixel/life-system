@@ -183,7 +183,7 @@ body[data-navigation="ready"] .page-shell { padding-bottom: calc(var(--bottom-na
   .desktop-navigation .navigation-list { justify-content: flex-start; }
   .desktop-navigation .navigation-item { font-size: 1.05rem; line-height: 1.7; min-height: 52px; padding: 10px 5px; }
   .desktop-navigation .toolbar-button { width: 52px; min-width: 52px; min-height: 52px; padding: 12px; }
-  .desktop-navigation .navigation-item + .navigation-item::before { content: "｜"; margin-right: 8px; color: #a4abb0; }
+  .desktop-navigation .navigation-separator { display:inline-flex;align-items:center;flex:none;color:#a4abb0;padding-inline:4px;pointer-events:none; }
   .desktop-navigation .navigation-unavailable { font-size: .75rem; }
   .home-grid .section-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; position: relative; padding-inline: 1em; }
   .home-grid .section-heading > div { grid-column: 1 / -1; grid-row: 1; text-align: center; padding-inline: 5em; }
@@ -280,3 +280,6 @@ body[data-navigation="ready"] .page-shell {padding-bottom:calc(var(--bottom-nav-
 @media(width < 1024px){[data-page-view=home] .companion:not(.home-companion-float){display:none}}
 
 @media(max-width:1023px){[data-page-view=home] .section-bottom {justify-content:flex-end;}[data-page-view=home] #home-new-event {margin-left:auto;}}
+
+@media(width<1024px){[data-page-view] [role=tablist]{touch-action:pan-y pinch-zoom}[data-page-view] dialog [role=tabpanel]{touch-action:auto}[data-page-view] :is(.habit-matrix-scroll,#annual-line,.task-month-grid){touch-action:auto}}
+@media(width<1024px){.navigation-separator{display:none}}

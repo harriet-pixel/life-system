@@ -1,5 +1,5 @@
-import {assembleAIPrompt,AI_TEST_TEXT} from './ai-prompts.mjs?v=storage-rescue-20261028';
-import {MODEL_ID,MODEL_REASONS} from './ai-capabilities.mjs?v=storage-rescue-20261028';
+import {assembleAIPrompt,AI_TEST_TEXT} from './ai-prompts.mjs?v=daily-polish-20261029';
+import {MODEL_ID,MODEL_REASONS} from './ai-capabilities.mjs?v=daily-polish-20261029';
 export const AI_PROVIDERS = Object.freeze(['gemini','deepseek','openai','claude']);
 export const AI_MESSAGES = Object.freeze({
  backend_unconfigured:'個人後端尚未完成設定；可手動切換瀏覽器直連，沒有自動重送。', provider_unconfigured:'後端尚未設定此服務商的 Secret，請在 Cloudflare 設定。', backend_unavailable:'個人後端或網路暫時無法使用；可手動切換瀏覽器直連，沒有自動重送。', backend_rate_limit:'個人後端已達請求上限，請稍後重試或手動切換直連；未自動重送。', backend_busy:'個人後端已有兩筆請求處理中；請稍後手動重試。',

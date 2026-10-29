@@ -1,19 +1,19 @@
-import {attemptJournalRescue} from './storage-vault.mjs?v=storage-rescue-20261028';
-import {storageFailure} from './storage-diagnostics.mjs?v=storage-rescue-20261028';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=persona-20261029';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=persona-20261029';
-import {integrateAffinity} from './affinity-integration.mjs?v=persona-20261029';
-import {settleAffinity} from './affinity-settlement.mjs?v=persona-20261029';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=persona-20261029';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=storage-rescue-20261028';
-import {setOperationNotice} from './operation-notice.mjs?v=mobile-daily-20261028';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=action-ready-20261028';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=persona-20261029';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=storage-rescue-20261028';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=interaction-perf-20261028';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=storage-rescue-20261028';
-import { migrateImages } from './image-store.mjs?v=storage-rescue-20261028';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=storage-rescue-20261028';
+import {attemptJournalRescue} from './storage-vault.mjs?v=daily-polish-20261029';
+import {storageFailure} from './storage-diagnostics.mjs?v=daily-polish-20261029';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=daily-polish-20261029';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=daily-polish-20261029';
+import {integrateAffinity} from './affinity-integration.mjs?v=daily-polish-20261029';
+import {settleAffinity} from './affinity-settlement.mjs?v=daily-polish-20261029';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=daily-polish-20261029';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=daily-polish-20261029';
+import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261029';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=daily-polish-20261029';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=daily-polish-20261029';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=daily-polish-20261029';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=daily-polish-20261029';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=daily-polish-20261029';
+import { migrateImages } from './image-store.mjs?v=daily-polish-20261029';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=daily-polish-20261029';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -148,7 +148,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=persona-20261029');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=daily-polish-20261029');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;

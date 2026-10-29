@@ -1,6 +1,6 @@
-import {validateViews} from './task-view-model.mjs?v=storage-rescue-20261028';
-import {validHex} from './settings-model.mjs?v=storage-rescue-20261028';
-import {ABILITIES} from './abilities.mjs?v=storage-rescue-20261028';
+import {validateViews} from './task-view-model.mjs?v=daily-polish-20261029';
+import {validHex} from './settings-model.mjs?v=daily-polish-20261029';
+import {ABILITIES} from './abilities.mjs?v=daily-polish-20261029';
 export function categoryColor(color){if(color===null||color===undefined||color==='')return null;if(!validHex(color))throw new Error('分類顏色請使用 #RRGGBB 格式。');return color.toLowerCase();}
 export const ALLOCATION_RULE_VERSION='1';
 export const validBrief=value=>value===undefined||(typeof value==='string'&&!/[\r\n]/.test(value));
@@ -71,8 +71,8 @@ export function clearSchedule(data,task,from=null){
  if(task.kind==='once')task.date=null;
 }
 
-// Yesterday is handled through daily date navigation; only earlier pending dates enter the pool.
-export const isOverdue=(entry,today=localDate())=>Boolean(entry&&entry.status==='pending'&&entry.date<addDays(today,-1));
+// Every past pending arrangement belongs to the unresolved pool; retain its source date.
+export const isOverdue=(entry,today=localDate())=>Boolean(entry&&entry.status==='pending'&&entry.date<today);
 
 // Expiration hides a library definition, never its pending or completed executions.
 export const inResidentLibrary=(task,today=localDate())=>!task.deleted&&task.kind==='repeat'&&(!task.end||task.end>=today);
