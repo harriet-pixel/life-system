@@ -1,18 +1,18 @@
 import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=daily-polish-20261029';
-import {createListSettings} from './task-day-settings.mjs?v=daily-polish-20261029';
+import {createListSettings} from './task-day-settings.mjs?v=companion-panel-20261029';
 import {currentSaveTrace} from './save-diagnostics.mjs?v=daily-polish-20261029';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261029';
-import {createDateResidents} from './task-date-residents.mjs?v=daily-polish-20261029';
+import {createDateResidents} from './task-date-residents.mjs?v=companion-panel-20261029';
 import {createActivityHeightSync} from './activity-height.mjs?v=daily-polish-20261029';
 import {createMobileTabPositioner} from './tab-position.mjs?v=daily-polish-20261029';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=daily-polish-20261029';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=companion-panel-20261029';
 import {createTaskPool} from './task-pool.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
 import {localDate,addDays,rowsForDate,weekday,isOverdue} from './tasks-model.mjs?v=daily-polish-20261029';
-import {taskActions} from './task-actions.mjs?v=daily-polish-20261029';
-import {mountTaskCompanion} from './task-companion.mjs?v=daily-polish-20261029';
-import {createTaskEditor} from './task-editor.mjs?v=daily-polish-20261029';
-import {createCategoryManager} from './task-categories.mjs?v=daily-polish-20261029';
+import {taskActions} from './task-actions.mjs?v=companion-panel-20261029';
+import {mountTaskCompanion} from './task-companion.mjs?v=companion-panel-20261029';
+import {createTaskEditor} from './task-editor.mjs?v=companion-panel-20261029';
+import {createCategoryManager} from './task-categories.mjs?v=companion-panel-20261029';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');

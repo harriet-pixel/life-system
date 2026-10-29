@@ -1,11 +1,11 @@
 import {mountColorField} from './color-field.mjs?v=daily-polish-20261029';
-import {mountTaskCompanion} from './task-companion.mjs?v=daily-polish-20261029';
+import {mountTaskCompanion} from './task-companion.mjs?v=companion-panel-20261029';
 import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=daily-polish-20261029';
 import {createMobileTabPositioner} from './tab-position.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
 import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=daily-polish-20261029';
-import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=daily-polish-20261029';
-import {statusButtons} from './habit-quick.mjs?v=daily-polish-20261029';
+import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=companion-panel-20261029';
+import {statusButtons} from './habit-quick.mjs?v=companion-panel-20261029';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261029';
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 export function mountHabits(root,context){

@@ -16,7 +16,7 @@ export function mountCharacterImages(root,context,{getCharacter,getSettings,stor
   for(const node of nodes){if(!messages.has(node))messages.set(node,createCharacterImageView(node,{avatar:true,thumbnail:true}));void messages.get(node).show(c,node.dataset.emotionId??'neutral',transition);}
  }
  function updateCards(){
-  if(suspended||!section.open||root.querySelector('#character-panel').hidden){for(const card of cards)card.view.clear();return;}
+  if(suspended||(section.matches('details')&&!section.open)||root.querySelector('#character-panel').hidden){for(const card of cards)card.view.clear();return;}
   const c=getCharacter();
   for(const {emotion,view,status,button}of cards){const own=c?.imageSettings?.emotions?.[emotion.id];status.textContent=own?'已設定':resolveCharacterImage(c,emotion.id)?'使用一般立繪':'尚未設定';button.disabled=!c;void view.show(c,emotion.id,'direct');}
  }
@@ -24,7 +24,7 @@ export function mountCharacterImages(root,context,{getCharacter,getSettings,stor
   if(opening||editor?.open)return;opening=true;onState();
   try{
    if(document.querySelector('dialog[open]'))throw new Error('請先關閉目前視窗。');
-   const module=await import('./character-images-editor.mjs?v=daily-polish-20261029');
+   const module=await import('./character-images-editor.mjs?v=companion-panel-20261029');
    if(!context.active)return;
    editor??=module.createCharacterImageEditor({root,store,getCharacter,notify,onState});await editor.show(emotion,trigger);
   }catch(error){notify(error.message);}finally{opening=false;onState();}

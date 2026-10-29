@@ -1,13 +1,15 @@
-import {mountCharacterImages} from './character-images-ui.mjs?v=daily-polish-20261029';
-import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {mountGreetings} from './character-greetings-page.mjs?v=companion-panel-20261029';
+import {guardedDialog} from './companion-dialog.mjs?v=companion-panel-20261029';
+import {mountCharacterImages} from './character-images-ui.mjs?v=companion-panel-20261029';
+import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=companion-panel-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
 import {holdDraft} from './coordination.mjs?v=daily-polish-20261029';
-import {createCharacterService} from './characters-service.mjs?v=daily-polish-20261029';
-import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter} from './characters-model.mjs?v=daily-polish-20261029';
+import {createCharacterService} from './characters-service.mjs?v=companion-panel-20261029';
+import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter} from './characters-model.mjs?v=companion-panel-20261029';
 
 // The shared shell keeps this module lazy. Its CSS is loaded only on this route.
 if(typeof document!=='undefined'){
- const url=new URL('./characters.css?v=daily-polish-20261029',import.meta.url).href;
+ const url=new URL('./characters.css?v=companion-panel-20261029',import.meta.url).href;
  const existing=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===url);
  if(!existing?.sheet){
   existing?.remove();
@@ -23,9 +25,9 @@ export function mountCharacters(root,context){
  const settingInputs=new Map(),stageInputs=new Map(),stageButtons=[];
  let snapshot,selected=null,base=null,draft=null,stage=1,current=null,readError=false;
  let roleDirty=false,policyDirty=false,policyBase=null,busy=false,release=null,held=null,draftToken=0,optionSignature='';
- let images,chat=null,chatImport=null,replies=null,replyImport=null,cards=null,cardImport=null;
- const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=daily-polish-20261029').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;$('#chat-status').textContent='聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。';throw error;});};
- const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft())||Boolean(replies?.hasDraft())||Boolean(cards?.hasDraft());
+ let images,chat=null,chatImport=null,replies=null,replyImport=null,cards=null,cardImport=null,greetings=null;
+ const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=companion-panel-20261029').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;$('#chat-status').textContent='聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。';throw error;});};
+ const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft())||Boolean(replies?.hasDraft())||Boolean(cards?.hasDraft())||Boolean(greetings?.hasDraft());
  const notify=message=>{$('#operation-status').textContent=message;};
  const policySignature=settings=>JSON.stringify(['enabled','chat','tasks','habits','limit'].map(k=>settings[k]));
  function draftNotice(){
@@ -63,13 +65,11 @@ export function mountCharacters(root,context){
  function fields(container,definitions,values,prefix,inputs){
   const nodes=[];inputs.clear();
   for(const [key,title]of Object.entries(definitions)){
-   const label=document.createElement('label'),caption=document.createElement('span');caption.textContent=title;
+   const label=document.createElement('label'),caption=document.createElement('span');caption.textContent=title.replace('（50字內）','');
    const input=document.createElement(key==='name'||key==='address'?'input':'textarea');
    input.name=prefix+key;input.value=values?.[key]??'';
    if(input.tagName==='TEXTAREA')input.rows=2;
-   const hint=document.createElement('span');hint.className='small-note';hint.textContent=(key==='name'?'100':key==='background'?'50':'4000')+' 字以內'+({values:'；建議2–3項',traits:'；建議3項',catchphrases:'；建議2–3組',trust:'；僅影響信任表達，不改變正式好感度'}[key]??'');
-   hint.id='character-help-'+input.name.replaceAll('.','-');input.setAttribute('aria-describedby',hint.id);
-   label.append(caption,input,hint);nodes.push(label);inputs.set(key,input);
+   label.append(caption,input);nodes.push(label);inputs.set(key,input);
   }
   container.replaceChildren(...nodes);
  }
@@ -129,7 +129,7 @@ export function mountCharacters(root,context){
   $('#character-cancel').disabled=busy||!base;
   $('#character-activate').disabled=disabled||!current||current.archived||snapshot?.companion.activeCharacterId===selected||roleDirty;
   $('#character-archive').disabled=disabled||!current||roleDirty;
-  $('#character-delete').disabled=disabled||!current||roleDirty;
+  $('#character-delete').disabled=disabled||!current||roleDirty;$('#character-settings-open').disabled=disabled||!current;$('#character-danger-open').disabled=disabled||!current||roleDirty||Boolean(greetings?.hasDraft());
   $('#character-archive').textContent=current?.archived?'取消封存':'封存角色';
  }
  function render(state){
@@ -170,7 +170,7 @@ export function mountCharacters(root,context){
    $('#affinity-policy-status').textContent=state.affinity?.diagnostics.at(-1)?.code==='clock-unreliable'?'裝置時間異常，未完成扣分已暫停；請校正日期後重試。':'';
    if(missing)notify('角色已刪除，尚未儲存的內容保留於此頁；不會重新建立角色。');
   }catch(error){readError=true;notify(error.message);if(!base){form.hidden=true;$('#character-future-settings').hidden=true;$('#character-empty').hidden=false;$('#character-empty-title').textContent='無法讀取角色';$('#character-empty-help').textContent='原資料已保留，請確認資料後再重試。';}}
-  controls();sizeChat();images?.update();chat?.update();void replies?.update();cards?.update();
+  controls();sizeChat();images?.update();chat?.update();void replies?.update();cards?.update();greetings?.update();
  }
  async function run(work){
   if(busy)return;busy=true;controls();context.notify();
@@ -181,24 +181,24 @@ export function mountCharacters(root,context){
  function discardRole(){if(roleDirty&&!confirm('捨棄目前角色尚未儲存的草稿？全站扣分草稿會保留。'))return false;free('role');return true;}
  form.addEventListener('input',event=>{capture();if(event.target.tagName==='TEXTAREA')fitMany([event.target]);void protect('role');controls();});
  form.addEventListener('toggle',fitVisible,true);
- select.addEventListener('change',()=>{if(cards&&!cards.beforeSelection()){select.value=selected??'';return;}const next=select.value;if(next===selected)return;if(replies&&!replies.beforeSelection()){select.value=selected??'';return;}if(!images.beforeSelection()){select.value=selected??'';return;}if(!discardRole()){select.value=selected??'';return;}selected=next;base=null;draft=null;render(snapshot);});
+ select.addEventListener('change',()=>{if(greetings&&!greetings.beforeSelection()){select.value=selected??'';return;}if(cards&&!cards.beforeSelection()){select.value=selected??'';return;}const next=select.value;if(next===selected)return;if(replies&&!replies.beforeSelection()){select.value=selected??'';return;}if(!images.beforeSelection()){select.value=selected??'';return;}if(!discardRole()){select.value=selected??'';return;}selected=next;base=null;draft=null;render(snapshot);});
  $('#character-create').onclick=()=>{
-  if((cards&&!cards.beforeSelection())||(replies&&!replies.beforeSelection())||!images.beforeSelection()||!discardRole())return;
-  void run(async()=>{const before=new Set(snapshot.companion.characters.map(c=>c.characterId));await service.act({type:'create'});selected=snapshot.companion.characters.find(c=>!before.has(c.characterId))?.characterId??selected;base=null;draft=null;tab(1);$('#character-basic-section').open=true;notify('已新增角色。');});
+  if((greetings&&!greetings.beforeSelection())||(cards&&!cards.beforeSelection())||(replies&&!replies.beforeSelection())||!images.beforeSelection()||!discardRole())return;
+  void run(async()=>{const before=new Set(snapshot.companion.characters.map(c=>c.characterId));await service.act({type:'create'});selected=snapshot.companion.characters.find(c=>!before.has(c.characterId))?.characterId??selected;base=null;draft=null;tab(1);notify('已新增角色。');alert('已建立角色，請點選「角色設定」填寫內容。');});
  };
  form.onsubmit=event=>{
   event.preventDefault();if(!base||!draft)return;capture();
   const action={type:'edit',characterId:selected,expectedVersion:base.configVersion,expectedConfig:JSON.stringify([base.createdAt,base.settings,base.stages]),settings:structuredClone(draft.settings),stages:structuredClone(draft.stages)};
-  void run(async()=>{await service.act(action);free('role');notify('角色設定已儲存。');});
+  void run(async()=>{await service.act(action);free('role');$('#character-settings-dialog').close();notify('角色設定已儲存。');});
  };
- $('#character-cancel').onclick=()=>{if(!discardRole())return;base=null;draft=null;render(snapshot);};
+ $('#character-cancel').onclick=()=>{if(!discardRole())return;base=null;draft=null;render(snapshot);$('#character-settings-dialog').close();};
  $('#character-activate').onclick=()=>void run(async()=>{await service.act({type:'switch',characterId:selected});notify('已切換出場夥伴。');});
  function replacement(){if(snapshot.companion.activeCharacterId!==selected)return {};return confirm('這是目前出場角色。繼續會先取消出場；之後可另選角色設為夥伴。')?{replacementId:null}:null;}
- $('#character-archive').onclick=()=>{if(!current)return;const archived=current.archived,extra=archived?{}:replacement();if(!extra)return;void run(async()=>{await service.act({type:archived?'unarchive':'archive',characterId:selected,...extra});notify(archived?'已取消封存。':'已封存，設定及歷史保留。');});};
+ $('#character-archive').onclick=()=>{if(!current)return;const archived=current.archived,extra=archived?{}:replacement();if(!extra)return;void run(async()=>{await service.act({type:archived?'unarchive':'archive',characterId:selected,...extra});$('#character-danger-dialog').close();notify(archived?'已取消封存。':'已封存，設定及歷史保留。');});};
  $('#character-delete').onclick=()=>{
   if(!current||!confirm('永久刪除將移除這位角色的全部設定與好感度，無法復原；出場歷史只保留匿名角色 ID，既有備份不會一併刪除。'))return;
   const extra=replacement();if(!extra)return;if(prompt('再次確認：請輸入角色名稱「'+current.settings.name+'」')!==current.settings.name){notify('未刪除角色。');return;}
-  void run(async()=>{await service.act({type:'delete',characterId:selected,...extra});free('role');base=null;draft=null;notify('角色已永久刪除。');});
+  void run(async()=>{await service.act({type:'delete',characterId:selected,...extra});free('role');base=null;draft=null;$('#character-danger-dialog').close();notify('角色已永久刪除。');});
  };
  policyForm.addEventListener('input',()=>void protect('policy'));
  policyForm.onsubmit=event=>{
@@ -206,16 +206,24 @@ export function mountCharacters(root,context){
   void run(async()=>{validatePenaltySettings(settings);const actual=dataStore.getFields(['affinity']).affinity?.policies.at(-1)?.settings??DEFAULT_PENALTIES;if(policySignature(actual)!==policyBase)throw new Error('扣分設定已在其他分頁修改；草稿保留，請先取消後重新讀取。');await dataStore.setAffinityPolicy(settings);free('policy');notify('扣分設定已儲存，僅影響後續適用的結算。');});
  };
  $('#affinity-policy-cancel').onclick=()=>{if(policyDirty&&!confirm('捨棄尚未儲存的全站扣分設定？角色草稿會保留。'))return;free('policy');render(snapshot);};
+ const settingsModal=guardedDialog($('#character-settings-dialog'),{dirty:()=>roleDirty,busy:()=>busy,onClose(){if(roleDirty){free('role');base=null;draft=null;render(snapshot);}}});
+ $('#character-settings-open').onclick=()=>{if(!current)return;settingsModal.open($('#character-settings-open'));fitVisible();};$('#character-settings-close').onclick=settingsModal.close;
+ const dangerModal=guardedDialog($('#character-danger-dialog'),{busy:()=>busy});$('#character-danger-open').onclick=()=>dangerModal.open($('#character-danger-open'));$('#character-danger-close').onclick=dangerModal.close;
+ const groups=['basic','core','relation','styles'],groupLabels=['A 固定特質','B 角色表現','C 關係設定','D 七階段關係'];
+ const groupButtons=groups.map((id,i)=>{const b=document.createElement('button');b.type='button';b.id='persona-tab-'+i;b.setAttribute('role','tab');b.setAttribute('aria-controls','character-'+id+'-section');b.textContent=groupLabels[i];$('#character-'+id+'-section').setAttribute('aria-labelledby',b.id);$('#persona-tabs').append(b);return b;});
+ function groupTab(index){groupButtons.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;$('#character-'+groups[i]+'-section').hidden=i!==index;});fitVisible();}
+ groupButtons.forEach((b,i)=>{b.onclick=()=>groupTab(i);b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const n=e.key==='Home'?0:e.key==='End'?3:(i+(e.key==='ArrowRight'?1:3))%4;groupTab(n);groupButtons[n].focus();};});groupTab(0);
  const tabs=[$('#chat-tab'),$('#character-tab')];
  function tab(index){
   tabs.forEach((button,i)=>{button.setAttribute('aria-selected',String(i===index));button.tabIndex=i===index?0:-1;$('#'+button.getAttribute('aria-controls')).hidden=i!==index;});
   if(index===1)fitVisible();else{sizeChat();void loadChat().catch(()=>{});}chat?.activate();
  }
  tabs.forEach((button,index)=>{button.onclick=()=>tab(index);button.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?1:1-index;tab(next);tabs[next].focus({preventScroll:true});};});
+ greetings=mountGreetings(root,{store:dataStore,getCharacter:()=>readError?null:current,onState:()=>{controls();draftNotice();}});
  images=mountCharacterImages(root,context,{getCharacter:()=>readError?null:current,getSettings:()=>snapshot?.settings,store:dataStore,notify,onState:()=>{draftNotice();}});
- context.setHooks({hasDraft:()=>dirty()||Boolean(chat?.hasDraft()),busy:()=>busy||images.busy()||Boolean(replies?.busy())||Boolean(cards?.busy())});
- $('#character-card-section').addEventListener('toggle',()=>{if(!$('#character-card-section').open)return;cardImport??=import('./character-card-page.mjs?v=daily-polish-20261029').then(m=>cards=m.mountCharacterCards(root,context,{store:dataStore,getCharacter:()=>readError?null:current,hasRoleDraft:()=>roleDirty,notify,onState:draftNotice})).catch(e=>{cardImport=null;notify(e.message);throw e;});void cardImport.then(c=>c.update()).catch(()=>{});});
- $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=daily-polish-20261029').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
+ context.setHooks({hasDraft:()=>dirty()||Boolean(chat?.hasDraft()),busy:()=>busy||images.busy()||Boolean(replies?.busy())||Boolean(cards?.busy())||Boolean(greetings?.busy())});
+ void import('./character-card-page.mjs?v=companion-panel-20261029').then(m=>{cards=m.mountCharacterCards(root,context,{store:dataStore,getCharacter:()=>readError?null:current,hasRoleDraft:()=>roleDirty,notify,onState:draftNotice});cards.update();}).catch(e=>notify(e.message));
+ $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=companion-panel-20261029').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
  context.subscribe(dataStore,render,{changesOnly:true,keys:['revision','companion','affinity','replyLibrary','settings']});
  context.listen(window,'resize',()=>{fitVisible();sizeChat();},{passive:true});
  if(window.visualViewport)context.listen(window.visualViewport,'resize',sizeChat,{passive:true});

@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
 import {rowsForDate,localDate} from './tasks-model.mjs?v=daily-polish-20261029';
 
 import {sortDay,listSettings} from './task-view-model.mjs?v=daily-polish-20261029';

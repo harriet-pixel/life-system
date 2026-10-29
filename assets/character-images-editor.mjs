@@ -1,8 +1,8 @@
 import {EMOTIONS,defaultAvatarCrop,validateAvatarCrop,imageSignature,imageLimitText} from './character-images-model.mjs?v=daily-polish-20261029';
 import {holdDraft} from './coordination.mjs?v=daily-polish-20261029';
-import {registerImageReferenceSource} from './image-references.mjs?v=daily-polish-20261029';
+import {registerImageReferenceSource} from './image-references.mjs?v=companion-panel-20261029';
 import {acquireImageURL,storeImageBlob} from './image-store.mjs?v=daily-polish-20261029';
-import {saveCharacterImage} from './character-images-service.mjs?v=daily-polish-20261029';
+import {saveCharacterImage} from './character-images-service.mjs?v=companion-panel-20261029';
 export function createCharacterImageEditor({root,store,getCharacter,notify,onState}){
  const dialog=document.createElement('dialog');dialog.id='character-image-dialog';dialog.setAttribute('aria-labelledby','character-image-title');
  // Static local markup only; all user values use textContent/property assignment.

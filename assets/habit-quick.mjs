@@ -1,8 +1,8 @@
 import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261029';
 import {todayBonusTotals} from './habit-bonus-summary.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
 import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=daily-polish-20261029';
-import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=daily-polish-20261029';
+import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=companion-panel-20261029';
 const pendingChoices=new Map();
 export function statusButtons(current,action,disabled=false,identity=null){
  const pending=identity&&pendingChoices.get(identity),group=document.createElement('div');group.className='habit-statuses';group.setAttribute('role','group');group.setAttribute('aria-label','完成程度');

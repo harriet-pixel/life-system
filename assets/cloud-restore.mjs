@@ -1,7 +1,7 @@
-import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive,ensureDriveAccess} from './google-drive.mjs?v=daily-polish-20261029';
-import {getCloudBackup} from './cloud-backup.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=daily-polish-20261029';
-import {readBackup} from './backup.mjs?v=daily-polish-20261029';
+import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive,ensureDriveAccess} from './google-drive.mjs?v=companion-panel-20261029';
+import {getCloudBackup} from './cloud-backup.mjs?v=companion-panel-20261029';
+import {dataStore} from './data.mjs?v=companion-panel-20261029';
+import {readBackup} from './backup.mjs?v=companion-panel-20261029';
 import {backupDeviceName,displayDeviceName,cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs?v=daily-polish-20261029';
 import {backupStatus,taiwanTime} from './cloud-sync-status.mjs?v=daily-polish-20261029';
 export function createCloudRestore(){

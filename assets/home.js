@@ -1,20 +1,21 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=daily-polish-20261029';
-import {renderHomeToday} from './home-today.mjs?v=daily-polish-20261029';
+import {homeGreeting} from './characters-model.mjs?v=companion-panel-20261029';
+import {mountHabitQuick} from './habit-quick.mjs?v=companion-panel-20261029';
+import {renderHomeToday} from './home-today.mjs?v=companion-panel-20261029';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261029';
-import {createTaskEditor} from './task-editor.mjs?v=daily-polish-20261029';
-import {createCategoryManager} from './task-categories.mjs?v=daily-polish-20261029';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=daily-polish-20261029';
-import {taskActions} from './task-actions.mjs?v=daily-polish-20261029';
+import {createTaskEditor} from './task-editor.mjs?v=companion-panel-20261029';
+import {createCategoryManager} from './task-categories.mjs?v=companion-panel-20261029';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-panel-20261029';
+import {taskActions} from './task-actions.mjs?v=companion-panel-20261029';
 import {localDate} from './tasks-model.mjs?v=daily-polish-20261029';
 import { createMobileTabPositioner } from './tab-position.mjs?v=daily-polish-20261029';
 import { createActivityHeightSync } from './activity-height.mjs?v=daily-polish-20261029';
-import { undoManager } from './undo.mjs?v=daily-polish-20261029';
-import {createSharedCompanionView} from './companion-events.mjs?v=daily-polish-20261029';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=daily-polish-20261029';
+import { undoManager } from './undo.mjs?v=companion-panel-20261029';
+import {createSharedCompanionView} from './companion-events.mjs?v=companion-panel-20261029';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=companion-panel-20261029';
 
 
 export function mountHome(root,context){
-const floating=mountHomeCompanionFloat(root,context);
+const floating=mountHomeCompanionFloat(root,context,{greetingText:()=>homeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter)});
 const refreshDate=()=>{globalThis.LifeHomeDate?.render(root);renderToday();};
 context.listen(window,'focus',refreshDate);context.listen(document,'visibilitychange',()=>{if(!document.hidden)refreshDate();});context.onResume(refreshDate);
 let dateTimer;const startDateTimer=()=>{clearInterval(dateTimer);dateTimer=setInterval(refreshDate,60000);};startDateTimer();context.onSuspend(()=>clearInterval(dateTimer));context.onResume(startDateTimer);
@@ -36,6 +37,10 @@ function showPlaceholder(label) {
   portrait.setAttribute('aria-label', `夥伴頭像佔位：${label}，尚未提供情緒立繪`);
 }
 let dailyVisual=null;
+let greetingIdentity='';
+function showHomeGreeting(actor){dialogue.textContent=homeGreeting(actor);if(actor)void import('./daily-visuals.mjs?v=daily-polish-20261029').then(m=>{dailyVisual??=m.mountDailyVisuals(root,context,dataStore);if(context.active)dailyVisual.show({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});}).catch(()=>{});}
+context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
+context.onResume(()=>showHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter));
 const companion = createSharedCompanionView({
   getContext: () => ({ character: null, affinity: null }),
   render(reply,actions,meta) {

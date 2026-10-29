@@ -1,10 +1,10 @@
-import {personaFingerprintInput} from './persona-prompt.mjs?v=daily-polish-20261029';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=daily-polish-20261029';
-import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=daily-polish-20261029';
-import {usableReplies,pickReply,replyPrompt,parseDailyReply,substituteReply} from './reply-model.mjs?v=daily-polish-20261029';
-import {readReplyCategory} from './reply-service.mjs?v=daily-polish-20261029';
-import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=daily-polish-20261029';
-import {validDailySource,dailyContext} from './daily-events.mjs?v=daily-polish-20261029';
+import {personaFingerprintInput} from './persona-prompt.mjs?v=companion-panel-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-panel-20261029';
+import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=companion-panel-20261029';
+import {usableReplies,pickReply,replyPrompt,parseDailyReply,substituteReply} from './reply-model.mjs?v=companion-panel-20261029';
+import {readReplyCategory} from './reply-service.mjs?v=companion-panel-20261029';
+import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=companion-panel-20261029';
+import {validDailySource,dailyContext} from './daily-events.mjs?v=companion-panel-20261029';
 const last=new Map();export const DAILY_FALLBACK='慢慢來，依照自己的步調繼續就好。';
 const snapshot=store=>store.getFields?store.getFields(['companion','replyLibrary','tasks','habits','profile']):store.get();
 export async function dailyResponse(store,event,{valid=()=>true,random=Math.random,connection=getSharedAIConnection(),batch=[event],onCancel=()=>{}}={}){
