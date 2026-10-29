@@ -1,16 +1,16 @@
-import {mountHabitQuick} from './habit-quick.mjs?v=action-ready-20261028';
-import {renderHomeToday} from './home-today.mjs?v=action-ready-20261028';
+import {mountHabitQuick} from './habit-quick.mjs?v=interaction-perf-20261028';
+import {renderHomeToday} from './home-today.mjs?v=interaction-perf-20261028';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-rescue-20261028';
-import {createTaskEditor} from './task-editor.mjs?v=action-ready-20261028';
-import {createCategoryManager} from './task-categories.mjs?v=action-ready-20261028';
+import {createTaskEditor} from './task-editor.mjs?v=interaction-perf-20261028';
+import {createCategoryManager} from './task-categories.mjs?v=interaction-perf-20261028';
 import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=action-ready-20261028';
-import {taskActions} from './task-actions.mjs?v=action-ready-20261028';
+import {taskActions} from './task-actions.mjs?v=interaction-perf-20261028';
 import {localDate} from './tasks-model.mjs?v=action-ready-20261028';
 import { createMobileTabPositioner } from './tab-position.mjs?v=storage-rescue-20261028';
 import { createActivityHeightSync } from './activity-height.mjs?v=storage-rescue-20261028';
-import { undoManager } from './undo.mjs?v=action-ready-20261028';
-import {createSharedCompanionView} from './companion-events.mjs?v=action-ready-20261028';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=action-ready-20261028';
+import { undoManager } from './undo.mjs?v=interaction-perf-20261028';
+import {createSharedCompanionView} from './companion-events.mjs?v=interaction-perf-20261028';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=interaction-perf-20261028';
 
 
 export function mountHome(root,context){
@@ -94,15 +94,14 @@ context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=
 function renderToday(){renderHomeToday(root,tasks);}
 context.subscribe(tasks.completions,renderToday);
 mountHabitQuick(root,context,{beforeRender:()=>noticeAnchor.after(homeNotice),afterRender:syncHomeNotice});
-context.subscribe(dataStore,() => {
+context.subscribe(dataStore,({stats}) => {
   renderToday();
-  const stats = dataStore.get().stats;
   const summary = root.querySelector('#home-stats');
   const [experience, level, currency] = profileSummary(stats).split(' ｜ ');
   summary.textContent = `${level} ｜ ${experience}｜ ${currency}`;
   summary.setAttribute('aria-label', `累積總經驗值：${visibleExperience(stats.experience)}，等級：${stats.level}，貨幣：${stats.currency}`);
   summary.title = summary.getAttribute('aria-label');
-});
+},{changesOnly:true,keys:['stats']});
 
 // Responsive tabs share the existing DOM, so switching never resets selections
 // and never emits a successful-action event or triggers companion generation.
@@ -112,7 +111,7 @@ const activityPanels = tabButtons.map((button) => root.querySelector("#"+CSS.esc
 const updateActivityHeight = createActivityHeightSync(root.querySelector('.home-grid'),activityPanels,context);
 const positionActivityTabs = createMobileTabPositioner(activityTabs, updateActivityHeight,{scrollPage:false});
 context.onSuspend(()=>positionActivityTabs.cancel());
-context.subscribe(dataStore,updateActivityHeight);
+context.subscribe(dataStore,updateActivityHeight,{changesOnly:true,keys:[]});
 const desktopLayout = window.matchMedia('(min-width: 1024px)');
 
 function syncActivityTabs() {

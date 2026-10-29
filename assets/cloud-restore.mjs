@@ -1,7 +1,7 @@
-import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=action-ready-20261028';
-import {getCloudBackup} from './cloud-backup.mjs?v=action-ready-20261028';
-import {dataStore} from './data.mjs?v=action-ready-20261028';
-import {readBackup} from './backup.mjs?v=action-ready-20261028';
+import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive} from './google-drive.mjs?v=interaction-perf-20261028';
+import {getCloudBackup} from './cloud-backup.mjs?v=interaction-perf-20261028';
+import {dataStore} from './data.mjs?v=interaction-perf-20261028';
+import {readBackup} from './backup.mjs?v=interaction-perf-20261028';
 import {backupDeviceName,displayDeviceName,cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs?v=storage-rescue-20261028';
 import {backupStatus,taiwanTime} from './cloud-sync-status.mjs?v=manual-backup-20261028';
 export function createCloudRestore(){
@@ -17,7 +17,7 @@ export function createCloudRestore(){
  async function loadList(requested=null){const list=await service.list();files=list;versions.replaceChildren();const latest=document.createElement('option');latest.value='';latest.textContent='最新備份';versions.append(latest);for(const file of files){const option=document.createElement('option');option.value=file.id;option.textContent=cloudBackupLabel(file);versions.append(option);}if(requested&&files.some(f=>f.id===requested))versions.value=requested;else if(requested)throw new Error('所選雲端版本已不存在。');selectedFile=files.find(f=>f.id===versions.value)??files[0]??null;summary.textContent=files.length?'目前共'+files.length+'筆完整備份。'+(files.length>20?'下次上傳驗證成功後保留最近20筆。':'')+'選取版本後按還原，將先驗證並詢問確認。':'尚無雲端備份。';displayTimes();}
  versions.onchange=()=>{prepared=null;blob=null;password.value='';unlock.hidden=true;selectedFile=files.find(f=>f.id===versions.value)??files[0]??null;displayTimes();};
  async function apply(ticket){if(ticket!==epoch||!dialog.open||!prepared)return;const label=cloudBackupLabel(selectedFile),confirmed=window.confirm('還原 '+label+'？將先在此裝置保存目前本地資料與舊同步紀錄，確認保存成功才取代正式資料；不會刪除雲端版本。');if(!confirmed)return;const latest=await service.list();if(ticket!==epoch||!dialog.open)return;const current=latest.find(f=>f.id===selectedFile.id);if(!current||cloudBackupIdentity(current)!==cloudBackupIdentity(selectedFile)||(!versions.value&&latest[0]?.id!==selectedFile.id))throw new Error('雲端版本已變動，請重新選擇。');await service.restore(prepared,revision,{dataUpdatedAt:selectedFile.appProperties?.dataUpdatedAt??null});emit('雲端備份已還原。');if(ticket===epoch)dialog.close();}
- async function validate(ticket){const result=await readBackup(blob,password.value);if(ticket!==epoch||!dialog.open)return;prepared=result;revision=dataStore.get().revision;unlock.hidden=true;password.value='';await apply(ticket);}
+ async function validate(ticket){const result=await readBackup(blob,password.value);if(ticket!==epoch||!dialog.open)return;prepared=result;revision=dataStore.getFields(['revision']).revision;unlock.hidden=true;password.value='';await apply(ticket);}
  restore.onclick=async()=>{if(busy)return;busy=true;const ticket=epoch;error.textContent='';syncControls();try{if(prepared){await apply(ticket);return;}const result=await service.prepareVersion(versions.value||null);if(ticket!==epoch||!dialog.open)return;selectedFile=result.file;blob=result.blob;const envelope=JSON.parse(await blob.text());if(envelope.encrypted){unlock.hidden=false;summary.textContent='此備份已加密，請輸入原密碼並解密驗證。';}else await validate(ticket);}catch(e){if(ticket===epoch)fail(e);}finally{busy=false;syncControls();}};
  $('[data-cloud-verify]').onclick=async()=>{if(busy||!blob)return;busy=true;const ticket=epoch;syncControls();try{await validate(ticket);}catch(e){if(ticket===epoch)fail(e);}finally{password.value='';busy=false;syncControls();}};
  backup.onclick=async()=>{if(busy)return;busy=true;const ticket=epoch;syncControls();try{await service.backupNow();emit('本地資料已上傳雲端。');if(ticket===epoch&&dialog.open)dialog.close();}catch(e){if(ticket===epoch)fail(e);}finally{busy=false;syncControls();}};

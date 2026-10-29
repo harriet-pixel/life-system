@@ -1,7 +1,7 @@
-import {mountCharacterImages} from './character-images-ui.mjs?v=storage-rescue-20261028';
+import {mountCharacterImages} from './character-images-ui.mjs?v=interaction-perf-20261028';
 import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=storage-rescue-20261028';
-import {dataStore} from './data.mjs?v=action-ready-20261028';
-import {holdDraft} from './coordination.mjs?v=storage-rescue-20261028';
+import {dataStore} from './data.mjs?v=interaction-perf-20261028';
+import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
 import {createCharacterService} from './characters-service.mjs?v=storage-rescue-20261028';
 import {CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter} from './characters-model.mjs?v=storage-rescue-20261028';
 
@@ -24,7 +24,7 @@ export function mountCharacters(root,context){
  let snapshot,selected=null,base=null,draft=null,stage=1,current=null,readError=false;
  let roleDirty=false,policyDirty=false,policyBase=null,busy=false,release=null,held=null,draftToken=0,optionSignature='';
  let images,chat=null,chatImport=null,replies=null,replyImport=null;
- const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=action-ready-20261028').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;$('#chat-status').textContent='聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。';throw error;});};
+ const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=interaction-perf-20261028').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;$('#chat-status').textContent='聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。';throw error;});};
  const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft())||Boolean(replies?.hasDraft());
  const notify=message=>{$('#operation-status').textContent=message;};
  const policySignature=settings=>JSON.stringify(['enabled','chat','tasks','habits','limit'].map(k=>settings[k]));
@@ -207,7 +207,7 @@ export function mountCharacters(root,context){
  policyForm.addEventListener('input',()=>void protect('policy'));
  policyForm.onsubmit=event=>{
   event.preventDefault();const settings=Object.fromEntries(['enabled','tasks','habits','chat'].map(k=>[k,policyForm.elements[k].checked]));settings.limit=Number(policyForm.elements.limit.value);
-  void run(async()=>{validatePenaltySettings(settings);const actual=dataStore.get().affinity?.policies.at(-1)?.settings??DEFAULT_PENALTIES;if(policySignature(actual)!==policyBase)throw new Error('扣分設定已在其他分頁修改；草稿保留，請先取消後重新讀取。');await dataStore.setAffinityPolicy(settings);free('policy');notify('扣分設定已儲存，僅影響後續適用的結算。');});
+  void run(async()=>{validatePenaltySettings(settings);const actual=dataStore.getFields(['affinity']).affinity?.policies.at(-1)?.settings??DEFAULT_PENALTIES;if(policySignature(actual)!==policyBase)throw new Error('扣分設定已在其他分頁修改；草稿保留，請先取消後重新讀取。');await dataStore.setAffinityPolicy(settings);free('policy');notify('扣分設定已儲存，僅影響後續適用的結算。');});
  };
  $('#affinity-policy-cancel').onclick=()=>{if(policyDirty&&!confirm('捨棄尚未儲存的全站扣分設定？角色草稿會保留。'))return;free('policy');render(snapshot);};
  const tabs=[$('#chat-tab'),$('#character-tab')];
@@ -218,8 +218,8 @@ export function mountCharacters(root,context){
  tabs.forEach((button,index)=>{button.onclick=()=>tab(index);button.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?1:1-index;tab(next);tabs[next].focus({preventScroll:true});};});
  images=mountCharacterImages(root,context,{getCharacter:()=>readError?null:current,getSettings:()=>snapshot?.settings,store:dataStore,notify,onState:()=>{draftNotice();}});
  context.setHooks({hasDraft:()=>dirty()||Boolean(chat?.hasDraft()),busy:()=>busy||images.busy()||Boolean(replies?.busy())});
- $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=storage-rescue-20261028').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
- context.subscribe(dataStore,render,{changesOnly:true});
+ $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=interaction-perf-20261028').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
+ context.subscribe(dataStore,render,{changesOnly:true,keys:['revision','companion','affinity','replyLibrary','settings']});
  context.listen(window,'resize',()=>{fitVisible();sizeChat();},{passive:true});
  if(window.visualViewport)context.listen(window.visualViewport,'resize',sizeChat,{passive:true});
  if(document.fonts)context.listen(document.fonts,'loadingdone',()=>{fitVisible();sizeChat();});

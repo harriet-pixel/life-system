@@ -3,7 +3,7 @@ import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage
 import {validateCharacterImages} from './character-images-model.mjs?v=storage-rescue-20261028';
 import {maintainRecovery} from './recovery.mjs?v=storage-rescue-20261028';
 import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=storage-rescue-20261028';
-import {maintenance} from './coordination.mjs?v=storage-rescue-20261028';
+import {maintenance} from './coordination.mjs?v=interaction-perf-20261028';
 const providers=new Map();
 // Always protect the durable outbox, including after reverting to manual mode.
 providers.set('跨裝置同步待處理',{transient:false,read:async()=>{const local=new Set((await listImageAssets()).map(a=>a.id));try{return (await archivedReferences('asset:')).filter(id=>local.has(id));}catch{return [...local];}} });
@@ -36,9 +36,11 @@ export function documentImageReferences(state,{legacy=false,raw=false}={}) {
   }
   return refs;
 }
-export async function inspectImages(state) {
+export async function inspectImages(state,{maintained=false}={}) {
   if(!state?.profile||!Array.isArray(state.history)||!Array.isArray(state.portraits)) throw new Error('資料尚未完整載入，無法安全檢查圖片。');
-  const refs=documentImageReferences(state),persistedRefs=new Set(refs),transientSources=[];
+  // A backup may reuse its already maintained, isolated snapshot. Deletion
+  // and every other caller still recheck the live recovery chain by default.
+  const refs=documentImageReferences(state,{raw:maintained}),persistedRefs=new Set(refs),transientSources=[];
   for(const [name,{read,transient}] of providers) {
     const value=await read();if(value===undefined)throw new Error('圖片引用來源尚未就緒：'+name);const found=collectReferences(value);if(transient&&[...found].some(id=>!persistedRefs.has(id)))transientSources.push(name);found.forEach(id=>refs.add(id));
   }

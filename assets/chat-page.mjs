@@ -1,4 +1,4 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=action-ready-20261028';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=interaction-perf-20261028';
 import {createChatController,chatConnected} from './chat-controller.mjs?v=storage-rescue-20261028';
 import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=storage-rescue-20261028';
 export function mountChat(root,context,{store,getCharacter,getSnapshot,images,onDraft}){

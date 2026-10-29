@@ -1,4 +1,4 @@
-import {dataStore} from './data.mjs?v=action-ready-20261028';
+import {dataStore} from './data.mjs?v=interaction-perf-20261028';
 import {rowsForDate,localDate} from './tasks-model.mjs?v=action-ready-20261028';
 
 import {sortDay,listSettings} from './task-view-model.mjs?v=storage-rescue-20261028';
@@ -11,7 +11,7 @@ export function renderHomeToday(root,actions=null){
   todayList.dispatchEvent(new Event('life-system:home-tasks-ready'));
  }
  globalThis.LifeHomeDate?.render(root);
- const snapshot=dataStore.get(),rows=sortDay(snapshot.tasks,rowsForDate(snapshot.tasks,localDate()),listSettings(snapshot.tasks));
+ const snapshot=dataStore.getFields(['tasks']),rows=sortDay(snapshot.tasks,rowsForDate(snapshot.tasks,localDate()),listSettings(snapshot.tasks));
  todayList.replaceChildren(...rows.map(row=>{
   const li=document.createElement('li'),label=document.createElement('div');
   li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;

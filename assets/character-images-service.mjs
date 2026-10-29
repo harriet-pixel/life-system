@@ -1,4 +1,4 @@
-import {holdDraft} from './coordination.mjs?v=storage-rescue-20261028';
+import {holdDraft} from './coordination.mjs?v=interaction-perf-20261028';
 import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage-rescue-20261028';
 import {validateCharacters} from './characters-model.mjs?v=storage-rescue-20261028';
 import {updateCharacterImage} from './character-images-model.mjs?v=storage-rescue-20261028';
