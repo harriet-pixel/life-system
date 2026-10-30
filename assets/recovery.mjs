@@ -1,8 +1,9 @@
-import {applyAffinityPlan} from './affinity-model.mjs?v=companion-panel-20261029';
+import {walletMatches,applyWalletSnapshot} from './wallet-recovery.mjs?v=wallet-20261031';
+import {applyAffinityPlan} from './affinity-model.mjs?v=wallet-20261031';
 // One policy for startup, replay, mutations, image references and backups.
 export const RECOVERY_LIMIT=15, DAY=86400000, HISTORY_VERSION=1;
 const shortKeys=new Set(['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','settings']);
-const longKeys=new Set(['stats','activities','tasks','habits']);
+const longKeys=new Set(['stats','activities','tasks','habits','wallet']);
 const ordered=v=>Array.isArray(v)?v.map(ordered):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,ordered(v[k])])):v;
 const equal=(a,b)=>JSON.stringify(ordered(a))===JSON.stringify(ordered(b));
 export function recoveryLifetime(record){
@@ -17,12 +18,13 @@ export const undoCandidate=records=>[...records].reverse().find(r=>!r.undone);
 export const redoCandidate=records=>records.filter(r=>r.undone&&r.redoable===true&&Number.isSafeInteger(r.undoOrder)).sort((a,b)=>b.undoOrder-a.undoOrder)[0];
 export function expectedMatches(state,record,redo=false){
  const expected=redo?record.before:record.after;
- return Object.keys(expected??{}).every(k=>k==='settings'&&record.type==='appearance.update'?equal(state.settings.appearance,expected.settings.appearance):equal(state[k],expected[k]));
+ return Object.keys(expected??{}).every(k=>k==='wallet'?walletMatches(state.wallet,expected.wallet):k==='settings'&&record.type==='appearance.update'?equal(state.settings.appearance,expected.settings.appearance):equal(state[k],expected[k]));
 }
 export function applySnapshot(state,record,redo=false,options={}){
  if(record.affinityPlan)applyAffinityPlan(state,record.affinityPlan,{redo,time:options.time??record.time,operationId:options.operationId??record.id+(redo?':redo':':undo')});
  for(const [key,value]of Object.entries(redo?record.after:record.before)){
-  if(key==='settings'&&record.type==='appearance.update')state.settings={...state.settings,appearance:structuredClone(value.appearance)};
+  if(key==='wallet')applyWalletSnapshot(state.wallet,value);
+  else if(key==='settings'&&record.type==='appearance.update')state.settings={...state.settings,appearance:structuredClone(value.appearance)};
   else state[key]=structuredClone(value);
  }
 }

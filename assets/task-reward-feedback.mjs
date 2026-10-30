@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=daily-polish-20261029';
+import {ABILITIES} from './abilities.mjs?v=wallet-20261031';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;

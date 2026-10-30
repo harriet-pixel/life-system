@@ -1,6 +1,6 @@
-import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=daily-polish-20261029';
-import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=daily-polish-20261029';
-import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=daily-polish-20261029';
+import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=wallet-20261031';
+import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=wallet-20261031';
+import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=wallet-20261031';
 export const PROVIDERS = Object.freeze({
   gemini: {origin:'https://generativelanguage.googleapis.com', models:'/v1beta/models'},
   deepseek: {origin:'https://api.deepseek.com', models:'/models'},

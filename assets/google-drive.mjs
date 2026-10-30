@@ -1,7 +1,7 @@
-import {backupDeviceName} from './cloud-backup-display.mjs?v=daily-polish-20261029';
-import {createDriveAuthSession,createDriveLink,DRIVE_LINK_KEY} from './drive-auth-session.mjs?v=daily-polish-20261029';
-import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=daily-polish-20261029';
-import {MAX_FILE_BYTES,backupFilename,readBackup} from './backup.mjs?v=companion-actions-20261029';
+import {backupDeviceName} from './cloud-backup-display.mjs?v=wallet-20261031';
+import {createDriveAuthSession,createDriveLink,DRIVE_LINK_KEY} from './drive-auth-session.mjs?v=wallet-20261031';
+import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=wallet-20261031';
+import {MAX_FILE_BYTES,backupFilename,readBackup} from './backup.mjs?v=wallet-20261031';
 const SCOPE='https://www.googleapis.com/auth/drive.appdata';
 export const driveConfigured=Boolean(GOOGLE_CLIENT_ID);
 let token=null,expires=0,loading,sdkState='idle',sdkError='';const listeners=new Set();const session=createDriveAuthSession({getItem:k=>globalThis.sessionStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.sessionStorage.setItem(k,v),removeItem:k=>globalThis.sessionStorage?.removeItem(k)},GOOGLE_CLIENT_ID);

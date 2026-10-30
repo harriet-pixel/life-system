@@ -1,6 +1,6 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-display-20261029';
-import {validDailySource} from './daily-events.mjs?v=companion-actions-20261029';
-import {dataStore} from './data.mjs?v=companion-actions-20261029';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=wallet-20261031';
+import {validDailySource} from './daily-events.mjs?v=wallet-20261031';
+import {dataStore} from './data.mjs?v=wallet-20261031';
 // Presentation only: formal local commits and their paired character replies.
 // Recovery produces a fresh reply; route restore and storage sync never replay one.
 export function createMobileTaskResponse(root,context,{kind='tasks',selector='.tasks-dashboard>.companion'}={}){
@@ -10,7 +10,7 @@ export function createMobileTaskResponse(root,context,{kind='tasks',selector='.t
  const hide=()=>{companion.classList.remove('is-floating-response');shown=null;floating?.hide();};
  const clear=()=>{candidate=null;commits.clear();hide();};
  floating=mountHomeCompanionFloat(root,context,{selector,greeting:false,onHide:hide});
- const valid=entry=>entry?.dailyEvent?validDailySource(dataStore.getFields(['revision','companion','replyLibrary','tasks','habits']),entry.dailyEvent):kind==='habits'?Boolean(entry&&(dataStore.getFields(['habits']).habits.records.some(r=>r.id===entry.id&&r.state!=='-')||dataStore.getFields(['habits']).habits.bonusRecords.some(r=>r.id===entry.id&&!r.cancelledAt))):Boolean(entry&&dataStore.getFields(['tasks']).tasks.completions.some(c=>c.id===entry.id&&!c.cancelledAt&&!c.retraction));
+ const valid=entry=>entry?.dailyEvent?validDailySource(dataStore.getFields(entry.dailyEvent.domain==='wallet'?['revision','companion','replyLibrary','walletRecord:'+entry.dailyEvent.sourceId]:['revision','companion','replyLibrary','tasks','habits']),entry.dailyEvent):kind==='habits'?Boolean(entry&&(dataStore.getFields(['habits']).habits.records.some(r=>r.id===entry.id&&r.state!=='-')||dataStore.getFields(['habits']).habits.bonusRecords.some(r=>r.id===entry.id&&!r.cancelledAt))):Boolean(entry&&dataStore.getFields(['tasks']).tasks.completions.some(c=>c.id===entry.id&&!c.cancelledAt&&!c.retraction));
  const keyboard=()=>{const editable=document.activeElement?.matches('input:not([type=checkbox]):not([type=radio]),textarea,select,[contenteditable=true]'),v=window.visualViewport;if(Math.abs(innerWidth-stableWidth)>40||!editable){stableWidth=innerWidth;stableHeight=Math.max(innerHeight,v?.height??0);}return document.documentElement.dataset.keyboard==='open'||Boolean(editable&&stableHeight-Math.min(innerHeight,v?.height??innerHeight)>120);};
  const blocked=()=>!context.active||document.hidden||!mobile.matches||Boolean(document.querySelector('dialog[open]'))||keyboard();
 

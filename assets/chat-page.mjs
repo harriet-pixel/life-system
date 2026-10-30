@@ -1,6 +1,6 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-actions-20261029';
-import {createChatController,chatConnected} from './chat-controller.mjs?v=companion-actions-20261029';
-import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=companion-actions-20261029';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=wallet-20261031';
+import {createChatController,chatConnected} from './chat-controller.mjs?v=wallet-20261031';
+import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=wallet-20261031';
 export function mountChat(root,context,{store,getCharacter,getSnapshot,images,onDraft}){
  const $=s=>root.querySelector(s),input=$('#chat-input'),send=$('#chat-send'),cancel=$('#chat-cancel'),area=$('#chat-messages'),status=$('#chat-status');
  const connection=getSharedAIConnection(),drafts=new Map(),positions=new Map(),nodes=new Map();let viewed=null,rendered=null,subscription=null,active=false,ui={turns:[],messages:[],busy:false,loading:false,connection:connection.getState()},sending=false,scrollBottom=true;
