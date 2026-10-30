@@ -1,21 +1,21 @@
-import {walletSnapshots} from './wallet-recovery.mjs?v=backup-chat-20261031';
-import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=backup-chat-20261031';
-import {attemptJournalRescue} from './storage-vault.mjs?v=backup-chat-20261031';
-import {storageFailure} from './storage-diagnostics.mjs?v=backup-chat-20261031';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=backup-chat-20261031';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=backup-chat-20261031';
-import {integrateAffinity} from './affinity-integration.mjs?v=backup-chat-20261031';
-import {settleAffinity} from './affinity-settlement.mjs?v=backup-chat-20261031';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=backup-chat-20261031';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=backup-chat-20261031';
-import {setOperationNotice} from './operation-notice.mjs?v=backup-chat-20261031';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=backup-chat-20261031';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=backup-chat-20261031';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=backup-chat-20261031';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=backup-chat-20261031';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=backup-chat-20261031';
-import { migrateImages } from './image-store.mjs?v=backup-chat-20261031';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=backup-chat-20261031';
+import {walletSnapshots} from './wallet-recovery.mjs?v=restore-images-20261031';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=restore-images-20261031';
+import {attemptJournalRescue} from './storage-vault.mjs?v=restore-images-20261031';
+import {storageFailure} from './storage-diagnostics.mjs?v=restore-images-20261031';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=restore-images-20261031';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=restore-images-20261031';
+import {integrateAffinity} from './affinity-integration.mjs?v=restore-images-20261031';
+import {settleAffinity} from './affinity-settlement.mjs?v=restore-images-20261031';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=restore-images-20261031';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=restore-images-20261031';
+import {setOperationNotice} from './operation-notice.mjs?v=restore-images-20261031';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=restore-images-20261031';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=restore-images-20261031';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=restore-images-20261031';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=restore-images-20261031';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=restore-images-20261031';
+import { migrateImages } from './image-store.mjs?v=restore-images-20261031';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=restore-images-20261031';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -155,7 +155,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=backup-chat-20261031');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=restore-images-20261031');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;
@@ -255,7 +255,7 @@ if (typeof window !== 'undefined') window.addEventListener('storage', e => { if 
 
 export function profileSummary(stats) {
   const shown = value => value > 0 ? String(value) : '—';
-  return `Exp ${visibleExperience(stats.experience) > 0 ? formatSI(visibleExperience(stats.experience)) : '—'} ｜ Lv ${shown(stats.level)} ｜ $${stats.currency}/${stats.currencyEarned}`;
+  return `Exp ${visibleExperience(stats.experience) > 0 ? formatSI(visibleExperience(stats.experience)) : '—'} ｜ Lv ${shown(stats.level)} ｜ $${formatSI(stats.currency)} / ${formatSI(stats.currencyEarned)}`;
 }
 export function abilityShares(abilities) {
   const total = abilities.reduce((sum,a) => sum + a.value, 0);

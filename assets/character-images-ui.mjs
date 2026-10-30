@@ -1,5 +1,5 @@
-import {EMOTIONS,imageLimitText,resolveCharacterImage} from './character-images-model.mjs?v=backup-chat-20261031';
-import {createCharacterImageView} from './character-image-view.mjs?v=backup-chat-20261031';
+import {EMOTIONS,imageLimitText,resolveCharacterImage} from './character-images-model.mjs?v=restore-images-20261031';
+import {createCharacterImageView} from './character-image-view.mjs?v=restore-images-20261031';
 export function mountCharacterImages(root,context,{getCharacter,getSettings,store,notify,onState}){
  const section=root.querySelector('#character-images-section'),grid=root.querySelector('#character-image-grid'),selector=root.querySelector('#character-image-transition');
  let editor=null,opening=false,suspended=false,last=null,chatEmotion='neutral';const cards=[];
@@ -24,7 +24,7 @@ export function mountCharacterImages(root,context,{getCharacter,getSettings,stor
   if(opening||editor?.open)return;opening=true;onState();
   try{
    if(document.querySelector('dialog[open]'))throw new Error('請先關閉目前視窗。');
-   const module=await import('./character-images-editor.mjs?v=backup-chat-20261031');
+   const module=await import('./character-images-editor.mjs?v=restore-images-20261031');
    if(!context.active)return;
    editor??=module.createCharacterImageEditor({root,store,getCharacter,notify,onState});await editor.show(emotion,trigger);
   }catch(error){notify(error.message);}finally{opening=false;onState();}

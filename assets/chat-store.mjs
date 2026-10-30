@@ -1,5 +1,5 @@
 // Separate short-lived database; exported only by explicit full backups.
-import {CHAT_TTL,CHAT_DOM_LIMIT,liveMessage} from './chat-model.mjs?v=backup-chat-20261031';
+import {CHAT_TTL,CHAT_DOM_LIMIT,liveMessage} from './chat-model.mjs?v=restore-images-20261031';
 export const CHAT_DATABASE='life-system.chat.v1';let database;
 const channel=typeof BroadcastChannel!=='undefined'?new BroadcastChannel('life-system.chat.changed.v1'):null,listeners=new Set();
 channel?.unref?.();

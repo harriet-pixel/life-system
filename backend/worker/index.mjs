@@ -1,4 +1,4 @@
-import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=backup-chat-20261031';
+import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=restore-images-20261031';
 import {configuration,jsonBody,json,validToken,edgeFetch} from './security.mjs';
 export {PersonalGate} from './gate.mjs';
 const cookieName='__Host-life-oauth';

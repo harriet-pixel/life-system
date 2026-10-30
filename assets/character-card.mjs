@@ -1,4 +1,4 @@
-import {CHARACTER_FIELDS,STYLE_FIELDS,PERSONA_GROUPS,RELATIONSHIP_STAGES} from './characters-model.mjs?v=backup-chat-20261031';
+import {CHARACTER_FIELDS,STYLE_FIELDS,PERSONA_GROUPS,RELATIONSHIP_STAGES} from './characters-model.mjs?v=restore-images-20261031';
 export const CARD_LIMIT=1024*1024;
 const check=(v,m='角色卡格式或欄位不正確，未修改資料。')=>{if(!v)throw new Error(m);};
 export function blankCard(){return {format:'life-system.character-card',version:2,settings:Object.fromEntries(Object.keys(CHARACTER_FIELDS).map(k=>[k,''])),stages:Object.fromEntries(RELATIONSHIP_STAGES.map(s=>[s.stage,Object.fromEntries(Object.keys(STYLE_FIELDS).map(k=>[k,'']))]))};}

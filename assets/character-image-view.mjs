@@ -1,5 +1,5 @@
-import {resolveCharacterImage} from './character-images-model.mjs?v=backup-chat-20261031';
-import {acquireImageURL} from './image-store.mjs?v=backup-chat-20261031';
+import {resolveCharacterImage} from './character-images-model.mjs?v=restore-images-20261031';
+import {acquireImageURL} from './image-store.mjs?v=restore-images-20261031';
 // A view owns at most two visible layers and one pending URL. No global cache.
 export function createCharacterImageView(target,{avatar=false,thumbnail=false,avatarPixels=0}={}){
  const placeholder=document.createElement('span');placeholder.className='character-image-placeholder';
@@ -17,7 +17,7 @@ export function createCharacterImageView(target,{avatar=false,thumbnail=false,av
   for(const candidate of item===neutral?[item]:[item,neutral].filter(Boolean)){
    let lease;
    try{
-    lease=avatar&&avatarPixels?await import('./daily-avatar.mjs?v=backup-chat-20261031').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
+    lease=avatar&&avatarPixels?await import('./daily-avatar.mjs?v=restore-images-20261031').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
     if(token!==sequence){lease.release();return;}pending=lease;
     const image=new Image();image.alt='';image.decoding='async';image.src=lease.url;await image.decode();
     if(token!==sequence){lease.release();return;}pending=null;

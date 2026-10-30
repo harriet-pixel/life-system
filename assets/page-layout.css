@@ -45,3 +45,6 @@
 @media(width < 1024px){.daily-header-stats .profile-summary{white-space:normal;overflow-wrap:anywhere;min-width:0}}
 
 @media(width>=1024px){[data-page-view=home] .intro{margin-top:calc(1em - var(--space-5));padding-top:0}}
+
+/* No dialogue means no bubble, padding, border or speech pointer. */
+#main:is([data-page-view=tasks],[data-page-view=habits],[data-page-view=wallet]) .dialogue-bubble:has(#companion-dialogue:empty){display:none}

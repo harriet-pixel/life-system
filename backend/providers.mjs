@@ -1,2 +1,2 @@
 // Shared browser-safe adapter logic; backend authentication/limits stay in server.mjs.
-export * from '../assets/ai-providers.mjs?v=backup-chat-20261031';
+export * from '../assets/ai-providers.mjs?v=restore-images-20261031';

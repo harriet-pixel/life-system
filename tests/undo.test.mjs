@@ -28,7 +28,7 @@ test('appearance, profile, image IDs and history settings participate in the sam
 });
 test('journal retains 15 recoveries while preserving all action metadata',()=>{const store=createDataStore(memory());for(let i=0;i<60;i++)activity(store,Boolean(i%2));assert.equal(store.get().history.length,60);assert.equal(store.get().undoHistory.length,15);});
 test('current route supports GitHub Pages subpaths',()=>{
- assert.equal(isCurrentRoute('https://a.test/life-system/','https://a.test/life-system/index.html?v=backup-chat-20261031#main'),true);
+ assert.equal(isCurrentRoute('https://a.test/life-system/','https://a.test/life-system/index.html?v=restore-images-20261031#main'),true);
  assert.equal(isCurrentRoute('https://a.test/life-system/settings.html','https://a.test/other/'),false);
 });
 test('restored revisions stay monotonic and preserve the order of a durable Redo branch',async()=>{
