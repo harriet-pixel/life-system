@@ -31,7 +31,7 @@
         <p><code>https://www.googleapis.com/auth/drive.appdata</code></p>
         <p>此權限允許在您 Google Drive 的應用程式專用資料夾（appDataFolder）中讀取、建立及管理本應用資料，不授予瀏覽您一般 Drive 文件的權限。網站會讀取備份清單、檔案 ID、名稱、大小、建立／修改時間及應用程式中繼資料，並於您要求還原時下載備份。</p>
         <p>目前程式不要求 openid、email 或 profile 權限，也不呼叫 Google 帳號個人資料 API 取得姓名、電子郵件、頭像或帳號識別碼。網站會接收授權結果、Access Token 及有效期限，用於向 Google Drive 驗證請求；Google 仍會自行處理登入、帳號選擇與授權程序。</p>
-        <p>Access Token 暫存於本分頁的 sessionStorage（<code>life-system.drive-auth.v1</code>）及執行記憶體，依 Google 回傳期限提前一分鐘失效，最長不超過一小時。另以 localStorage 保存「已連結 Google」狀態（life-system.drive-link.v1），不含帳號個資或 Token；除非自行中斷，重開網站仍保留連結。短期授權到期時，在您操作雲端功能時更新，Google 可能要求重新驗證。不保存 Refresh Token，不將憑證放入一般生活資料或備份。sessionStorage 不是加密保管庫；瀏覽器還原分頁或複製分頁可能影響其保存方式。</p>
+        <p>Access Token 保存在此瀏覽器的專用 localStorage（<code>life-system.drive-auth.v1</code>）及執行記憶體，讓有效授權在分頁或網站重開後仍可使用；依 Google 原回傳期限提前一分鐘失效，最長不超過一小時，不因重開延長。舊分頁的有效 sessionStorage 授權會保留原期限遷入，之後清除舊暫存。另以 localStorage 保存「已連結 Google」狀態（life-system.drive-link.v1），不含帳號個資或 Token；除非自行中斷，重開網站仍保留連結。短期授權到期時，在您操作雲端功能時更新，Google 可能要求重新驗證。不保存 Refresh Token，不將憑證放入一般生活資料或備份。localStorage 不是加密保管庫，同來源程式與可存取此瀏覽器資料的人可能讀取有效授權。</p>
       </section>
 
       <section aria-labelledby="cloud"><h2 id="cloud">三、雲端備份與還原</h2>
@@ -48,7 +48,8 @@
           <li><strong>IndexedDB 日常回覆：</strong><code>life-system.replies.v1</code> 保存手動／AI 產生的日常回覆、歷史版本及事件去重紀錄。角色頁可管理、清空回覆及清理歷史／孤立資產；一般回覆不因關閉分頁自動消失。</li>
           <li><strong>IndexedDB 短期聊天：</strong><code>life-system.chat.v1</code> 保存角色聊天全文及回合狀態。每則訊息以建立後 24 小時為有效期，過期後不再作為對話內容使用；實體清理由網站執行時分批進行，未開啟網站不保證準時抹除。好感度計分證據會另留在共用資料，但不含聊天全文。</li>
           <li><strong>IndexedDB 復原保護：</strong><code>life-system.recovery-vault.v1</code> 保存同步日誌及還原前的本機資料副本。目前沒有自動到期清除機制，也沒有逐筆刪除保護副本的介面。</li>
-          <li><strong>sessionStorage 與記憶體：</strong>Google 授權與未部署後端的認證，依各自連線規則保存；未儲存表單、聊天草稿與部分介面狀態保留於記憶體。站內切頁可能延續這些狀態。</li>
+          <li><strong>Google 授權暫存：</strong>專用 localStorage 保存有效期內的短期授權，重開不延長；到期、401或明確中斷後清除，不納入備份。</li>
+          <li><strong>sessionStorage 與記憶體：</strong>未部署後端的認證依其連線規則保存；未儲存表單、聊天草稿與部分介面狀態保留於記憶體。站內切頁可能延續這些狀態。</li>
         </ul>
         <p>一般生活資料及行動歷史沒有統一自動刪除期限。Undo／Redo 合計最多 15 次；基本資料、圖片／外觀的復原期限為 24 小時，待辦、打卡及數值為 7 天。這是復原期限，不代表正式紀錄或復原保護副本同時刪除。本機資料可能因瀏覽器清理、無痕模式或裝置故障而遺失。</p>
         <p>您可下載本機備份；密碼留白時不加密，設定有效密碼時依既有加密備份流程處理。下載檔由您自行保管，清除網站儲存空間不會刪除已下載檔案。</p>
@@ -74,7 +75,7 @@
 
       <section aria-labelledby="delete"><h2 id="delete">七、停止連線、撤銷授權與刪除資料</h2>
         <ol>
-          <li><strong>停止 Google 備份：</strong>目前沒有自動同步；不再手動上傳即可停止新增備份。在設定的 Google Drive 區按「中斷連接」會清除此分頁的授權暫存，不等同撤銷 Google 帳號授權，也不會刪除雲端備份。其他已開啟分頁可能仍有自己的授權，請一併關閉或中斷。</li>
+          <li><strong>停止 Google 備份：</strong>目前沒有自動同步；不再手動上傳即可停止新增備份。在設定的 Google Drive 區按「中斷連接」會清除此瀏覽器保存的 Google 授權，不等同撤銷 Google 帳號授權，也不會刪除雲端備份。其他已開啟分頁會收到中斷通知；不會刪除本機或雲端備份。</li>
           <li><strong>撤銷 Google 授權：</strong>至 <a href="https://myaccount.google.com/connections">Google 帳戶的第三方連線管理</a> 找到本應用並移除連線／存取權。本站目前未提供撤銷按鈕。撤銷後無法繼續使用原授權存取 Drive，不代表既有備份已刪除。</li>
           <li><strong>刪除 Google 雲端資料：</strong>至 Google Drive 網頁版的「設定 → 管理應用程式」，找到本應用，依 Google 當時提供的選項刪除隱藏的應用程式資料。appDataFolder 不會像一般檔案顯示在「我的雲端硬碟」。刪除前請確認所需備份已下載；刪除後若再次手動上傳，會重新建立資料。</li>
           <li><strong>刪除本機資料：</strong>先中斷 Google 與 AI 連線並關閉其他本站分頁，再使用瀏覽器的網站資料管理清除此網站來源的儲存空間，涵蓋 localStorage、IndexedDB 及分頁暫存。GitHub Pages 的網站資料依 <code>https://harriet-pixel.github.io</code> 來源共用，清除可能同時影響該來源的其他網站，請先備份。僅刪除畫面上的角色、項目或圖片，不代表歷史、保護副本及雲端版本同時消失。</li>

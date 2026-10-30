@@ -12,7 +12,7 @@ export function mountChat(root,context,{store,getCharacter,getSnapshot,images,on
  function controls(){const c=getCharacter(),connected=chatConnected(ui.connection),ready=eligibility();input.disabled=!ready;input.maxLength=CHAT_INPUT_LIMIT;input.placeholder=ready?'輸入訊息（最多 800 字元）':'先將此角色設為夥伴再開始聊天';
   send.disabled=!ready||!connected||ui.busy||ui.connection.busy||sending||!input.value.trim()||ui.turns.some(t=>t.phase==='ready');cancel.hidden=!ui.busy;cancel.disabled=!ui.busy;
   for(const button of area.querySelectorAll('[data-chat-retry]')){const turn=ui.turns.find(t=>t.chatTurnId===button.dataset.chatRetry),recover=Boolean(turn?.assistant)&&!turn?.invalid;button.disabled=!turn||ui.busy||sending||(!recover&&(!ready||!connected||ui.connection.busy))||(turn.phase==='generating'&&ui.activeTurnId===turn.chatTurnId);}
-  $('#chat-connection-help').textContent=!c?'請先新增或選擇角色。':!ready?'目前僅預覽；請先設為夥伴，未封存角色才能發起新聊天。':!connected?'請至「設定 → AI 連線」連接 AI 並選擇模型。聊天草稿會保留。':ui.busy?'正在生成；離開聊天室會取消，不會自動重送。':'透過目前共用 AI 連線生成；每次送出一次請求，訊息各自保留 24 小時且不備份。';
+  $('#chat-connection-help').textContent=!c?'請先新增或選擇角色。':!ready?'目前僅預覽；請先設為夥伴，未封存角色才能發起新聊天。':!connected?'請至「設定 → AI 連線」連接 AI 並選擇模型。聊天草稿會保留。':ui.busy?'正在生成；離開聊天室會取消，不會自動重送。':'透過目前共用 AI 連線生成；每次送出一次請求，訊息各自保留 24 小時且不備份。';$('#chat-connection-help').textContent+=' Enter 送出，Shift＋Enter 換行。';
  }
  function messageNode(m){let row=nodes.get(m.messageId);if(!row){row=document.createElement('article');row.className='chat-message '+(m.role==='assistant'?'chat-message-character':'chat-message-user');row.dataset.messageId=m.messageId;row.dataset.messageRole=m.role;
    if(m.role==='assistant'){const avatar=document.createElement('span');avatar.className='chat-message-avatar';avatar.dataset.avatarPurpose='message-emotion';avatar.dataset.emotionId=m.emotionId;avatar.setAttribute('role','img');avatar.setAttribute('aria-label','此訊息的情緒頭像');const icon=root.querySelector('[data-avatar-purpose=header-neutral] svg');if(icon)avatar.append(icon.cloneNode(true));row.append(avatar);}
@@ -36,7 +36,7 @@ export function mountChat(root,context,{store,getCharacter,getSnapshot,images,on
  async function run(work){if(sending)return;sending=true;status.textContent='';controls();try{await work();}catch(e){error(e.message);}finally{sending=false;render(ui);}}
  input.addEventListener('input',()=>{if(viewed)drafts.set(viewed,input.value);controls();onDraft();});
  send.onclick=()=>void run(()=>controller.send(input.value));
- input.addEventListener('keydown',event=>{if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)&&!send.disabled){event.preventDefault();send.click();}});
+ input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){event.preventDefault();if(!send.disabled)send.click();}});
  cancel.onclick=()=>controller.cancel();$('#chat-local-recover').onclick=()=>void run(()=>controller.retry($('#chat-local-recover').dataset.turnId,true));
  area.addEventListener('scroll',()=>{if(viewed)positions.set(viewed,area.scrollTop);},{passive:true});
  function activate(){if(!visible()){controller.suspend();active=false;saveView();subscription?.();subscription=null;return;}if(!active){active=true;subscription=controller.observe();controller.update(getSnapshot());void controller.resume();}else controller.update(getSnapshot());}

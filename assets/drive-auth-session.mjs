@@ -6,3 +6,13 @@ export function createDriveAuthSession(storage,clientId,{now=Date.now}={}){
 // Durable intent only. Access tokens retain their original short session TTL.
 export const DRIVE_LINK_KEY='life-system.drive-link.v1';
 export function createDriveLink(storage,clientId){const value=()=>{try{const v=JSON.parse(storage.getItem(DRIVE_LINK_KEY));return v?.version===1&&v.clientId===clientId?v:null;}catch{return null;}};return {read:()=>value()?.linked===true,isDisconnected:()=>value()?.linked===false,remember(){storage.setItem(DRIVE_LINK_KEY,JSON.stringify({version:1,clientId,linked:true}));},clear(){storage.setItem(DRIVE_LINK_KEY,JSON.stringify({version:1,clientId,linked:false}));}};}
+// Remember only an unexpired Google grant. Moving an old tab's cache preserves
+// issuedAt/expiresAt exactly; reopening never renews the OAuth lifetime.
+export function createRememberedDriveAuth(storage,legacyStorage,clientId,options={}){
+ const remembered=createDriveAuthSession(storage,clientId,options),legacy=createDriveAuthSession(legacyStorage,clientId,options);
+ return {
+  read(){const value=remembered.read();if(value){legacy.clear();return value;}const prior=legacy.read();if(!prior)return null;storage.setItem(DRIVE_AUTH_KEY,JSON.stringify(prior));legacy.clear();return remembered.read();},
+  write(token,seconds){remembered.write(token,seconds);legacy.clear();},
+  clear(){remembered.clear();legacy.clear();}
+ };
+}

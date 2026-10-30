@@ -5,10 +5,10 @@ export const navigationItems = Object.freeze([
   { id: 'home', label: '首頁', englishLabel: 'Home', href: new URL('../', import.meta.url).href, available: true },
   { id: 'tasks', label: '待辦事項', englishLabel:'Tasks', href: new URL('../tasks.html',import.meta.url).href, available: true },
   { id: 'habits', label: '習慣打卡', englishLabel:'Habits', href: new URL('../habits.html',import.meta.url).href, available: true },
+  { id: 'wallet', label: '錢包帳本', englishLabel:'Wallet Ledger', href:new URL('../wallet.html',import.meta.url).href, available:true },
   { id: 'companion', label: '夥伴', englishLabel:'Companion', href: new URL('../companion.html',import.meta.url).href, available: true },
   { id: 'profile', label: '我的資料', englishLabel: 'My Profile', href: new URL('../profile.html', import.meta.url).href, available: true },
   { id: 'settings', label: '設定', englishLabel:'Settings', href: new URL('../settings.html', import.meta.url).href, available: true },
-  { id: 'wallet', label: '錢包帳本', englishLabel:'Wallet Ledger', href:new URL('../wallet.html',import.meta.url).href, available:true },
   { id: 'reading', label: '陪讀系統', href: null, available: false },
 ].map(Object.freeze));
 
