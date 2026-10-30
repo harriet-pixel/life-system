@@ -37,7 +37,7 @@ wallet操作沿七天／全站最近15筆政策。wallet-recovery只保存單筆
 
 主文件讀取僅做錢包容器檢查；錢包UI按頁載入，首頁不建立帳本投影或逐筆掃描。錢包來源訊息以 `getFields(['walletRecord:<id>'])` 取得單筆，不複製帳本供AI。完整結構與扣款／退款／好感度交叉證據在錢包寫入及備份驗證。原本主文件JSON解析／共用復原仍屬唯一dataStore既有工作，不新增第二份儲存或高頻輪詢。
 
-明文／加密／Google Drive手動備份使用相同完整document驗證，包含wallet、累積量與來源證據。舊備份缺wallet補空容器、缺累積量用備份內餘額；先補舊復原快照再證明鏈。圖片、replyAssets、聊天保留政策、還原前vault、20筆手動雲端政策不變。Cloudflare維持暫停，沒有登入、後端、付費或自動同步。
+明文／加密／Google Drive手動備份使用相同完整document驗證，包含wallet、累積量與來源證據。舊備份缺wallet補空容器、缺累積量用備份內餘額；先補舊復原快照再證明鏈。圖片、replyAssets、聊天保留政策、還原前vault、5筆手動雲端政策不變。Cloudflare維持暫停，沒有登入、後端、付費或自動同步。
 
 ## 消費情境AI
 

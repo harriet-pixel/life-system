@@ -106,7 +106,7 @@ characters-page 仍由 app-shell 動態載入；characters.css 也只在該路�
 
 聊天室以Enter送出、Shift＋Enter換行；中文輸入法選字中的Enter不送出，忙碌與重複提交仍由正式controller阻擋。
 
-全文放獨立life-system.chat.v1/turns，按characterId／角色createdAt／chatEpoch隔離；每user／assistant各自24小時，進入、切換、前景、送出及最近到期單次timer排除過期，索引維護最多256筆／次。主文件只存text-free評估證據與交易，固定+1／0／-1，負向遵原總開關／chat來源／limit／最低0，無每日正向上限。chatTurnId跨重試穩定，neutral亦有receipt。ready短期結果先存，正式receipt次之，complete發布最後；中斷可重入，不用AI修復本機儲存。還原更新epoch，不延續舊本機聊天室；正式receipt照備份保留，聊天全文不進本機／加密／手動雲端備份及一般history。
+全文放獨立life-system.chat.v1/turns，按characterId／角色createdAt／chatEpoch隔離；每user／assistant各自24小時，進入、切換、前景、送出及最近到期單次timer排除過期，索引維護最多256筆／次。主文件只存text-free評估證據與交易，固定+1／0／-1，負向遵原總開關／chat來源／limit／最低0，無每日正向上限。chatTurnId跨重試穩定，neutral亦有receipt。ready短期結果先存，正式receipt次之，complete發布最後；中斷可重入，不用AI修復本機儲存。還原更新epoch，不延續舊本機聊天室；正式receipt照備份保留，有效聊天全文進本機／加密／手動雲端備份，不進一般history；還原以新epoch隔離且唯讀、不重新生成或計分、不延長原24小時期限。
 
 請求綁角色／建立身份／人格configVersion／送出階段／正式切換次數及連線版本；切換、封存、刪除、人格、斷線及離開取消舊請求。明確重試才產生費用，已成立回合不再生成或計分。prompt沿共用4000字元預算、output256 tokens；只當前階段、核心人格與界線、必要身份、臺灣日期時間及最近24則已完成同角色有效訊息，不讀全部生活資料，不作永久摘要。角色輸入／捲動僅目前文件記憶體；安全文字、每訊息情緒頭像、小縮圖、頂部neutral及桌面最新情緒立繪沿第四階段。詳細復原、效能與驗收見docs/COMPANION_STAGE5_VERIFICATION.md。
 
@@ -118,17 +118,17 @@ persona-prompt提供共用有界投影。聊天沿24小時／24則／4000字元�
 
 replyLibrary.version:2按角色／positive-negative／八情緒稀疏分類，每類總計最多10句，不再按事件或階段。沿life-system.replies.v1/categories及原雜湊引用、資產保護、revision與Web Locks；沒有新DB或新持久化系統。舊v1所有引用原樣搬至owner.legacyCategories，只讀／匯出／逐句手動確認轉入，不能自動啟用或丟棄手動原文，不複製資產快照。backup的replyAssets同時包含新舊正式引用並檢查scope／hash。新備援簽章涵蓋當前角色手動設定及關係風格，圖片或出場切換不改人格簽章。
 
-只有按「AI生成10句」才可生成備援；已有資料先確認，再一次結構化生成、驗證及預覽，確認保存才原子取代。取消／失敗／不滿10句都不自動補齊。唯一特定purpose=reply-library允許瀏覽器provider輸出上限1024；聊天及一般請求維持256。未部署的舊後端限制不因此啟用或部署。每句1–240字元，正規化／標點去重，唯一占位符{事件名稱}只以已驗證來源名稱替換（名稱100、替換後400字元上限）；缺名稱跳過，無可用句則固定備援。兩情緒池各至少一項，不在池內的分類仍可保留管理。
+只有按「AI生成10句」才可生成備援；已有資料先確認，再一次結構化生成、驗證及預覽，確認保存才原子取代。取消／失敗／不滿10句都不自動補齊。特定purpose=reply-library或greetings允許瀏覽器provider輸出上限1024；聊天及一般請求維持256。未部署的舊後端限制不因此啟用或部署。每句1–240字元，正規化／標點去重，唯一占位符{事件名稱}只以已驗證來源名稱替換（名稱100、替換後400字元上限）；缺名稱跳過，無可用句則固定備援。兩情緒池各至少一項，不在池內的分類仍可保留管理。
 
-角色卡在角色設定最上方常展開，僅進夥伴頁載入；備援庫仍展開才載入，首頁不預載兩者。空白角色卡CSV含UTF-8 BOM與37個正式欄位，只含分類、欄位名稱、填寫內容三欄，不含欄位說明。下載名稱為「下載空白角色卡」、「下載角色卡CSV」、「下載角色JSON」；人格卡只有人格及關係描述。CSV支援舊四欄、逗號／分號／Tab、可選metadata及尾端空白列；錯誤明確顯示在匯入區。匯入上限1MiB、JSON深度6、嚴格版本／欄位、CSV公式文字逃脫，先預覽與勾選文字差異，再用原服務及configVersion／身份／revision提交。新卡產生新ID；更新保留出場、好感度、最高階段、圖片、回覆庫、聊天與切換歷史，衝突保留預覽。不將HTML執行、不信任updatedAt。正式完整本機／加密／手動Drive備份涵蓋新舊人格、回覆庫與圖片，仍排除短期聊天／金鑰／登入；20筆手動雲端政策、vault保護與自動同步停用保持不變。驗證見docs/COMPANION_REFACTOR_VERIFICATION.md。
+角色卡在角色設定最上方常展開，僅進夥伴頁載入；備援庫仍展開才載入，首頁不預載兩者。空白角色卡CSV含UTF-8 BOM與37個正式欄位，只含分類、欄位名稱、填寫內容三欄，不含欄位說明。下載名稱為「下載空白角色卡」、「下載角色卡CSV」、「下載角色JSON」；人格卡只有人格及關係描述。CSV支援舊四欄、逗號／分號／Tab、可選metadata及尾端空白列；錯誤明確顯示在匯入區。匯入上限1MiB、JSON深度6、嚴格版本／欄位、CSV公式文字逃脫，先預覽與勾選文字差異，再用原服務及configVersion／身份／revision提交。新卡產生新ID；更新保留出場、好感度、最高階段、圖片、回覆庫、聊天與切換歷史，衝突保留預覽。不將HTML執行、不信任updatedAt。正式完整本機／加密／手動Drive備份涵蓋新舊人格、回覆庫與圖片，包含仍有效的短期聊天，排除金鑰／登入；5筆手動雲端政策、vault保護與自動同步停用保持不變。驗證見docs/COMPANION_REFACTOR_VERIFICATION.md。
 
 ## 手動首頁招呼與日常頁角色連動（2026-10-29）
 
-每角色選填greetings包含morning（臺灣05–11時）、afternoon（12–17時）、evening（18–21時）、night（22–04時）四句，留白使用既有預設。僅明確儲存透過角色服務／revision提交，核對createdAt與原greetings避免跨分頁覆蓋；不更動人格configVersion、好感度或出場歷史。星光icon明確操作才沿共用AI一次生成四句可編輯草稿，256輸出上限，不自動儲存、不自動重試；取消、人格／階段／招呼／還原身份變更會使結果失效。完整本機／加密／手動雲端備份保留；人格角色卡不包含招呼。activeCharacter為dataStore的輕量唯讀投影，不是第二份儲存；首頁及待辦只訂閱當前角色身份／名稱／招呼／圖片引用。首頁顯示正式角色招呼及neutral圖，待辦顯示同一角色並沿正式生活情境回應，不因預覽換出場；無新輪詢、後端或自動上傳。驗證見docs/COMPANION_PANEL_VERIFICATION.md。
+每角色選填greetings包含morning（臺灣05–11時）、afternoon（12–17時）、evening（18–21時）、night（22–04時）四組各三句，首頁依角色／時段以sessionStorage索引輪播，舊單句仍可讀取，留白使用既有預設。僅明確儲存透過角色服務／revision提交，核對createdAt與原greetings避免跨分頁覆蓋；不更動人格configVersion、好感度或出場歷史。星光icon明確操作才沿共用AI一次生成十二句可編輯草稿，greetings專用1024輸出上限，不自動儲存、不自動重試；取消、人格／階段／招呼／還原身份變更會使結果失效。完整本機／加密／手動雲端備份保留；人格角色卡不包含招呼。activeCharacter為dataStore的輕量唯讀投影，不是第二份儲存；首頁及待辦只訂閱當前角色身份／名稱／招呼／圖片引用。首頁顯示正式角色招呼及neutral圖，待辦顯示同一角色並沿正式生活情境回應，不因預覽換出場；無新輪詢、後端或自動上傳。驗證見docs/COMPANION_PANEL_VERIFICATION.md。
 
 ## AI首頁招呼與完整日常回應（2026-10-29）
 
-首頁招呼星光icon只在點選時延遲載入greeting-generation；共用getSharedAIConnection一次生成morning／afternoon／evening／night，僅當前人格與階段、輸出256 tokens，完整四句驗證後填草稿，可手動編輯並明確儲存。忙碌不搶占聊天、失敗不重試、不覆寫原文；提供取消及身份／人格／階段／還原epoch驗證。不送聊天或完整生活資料。
+首頁招呼星光icon只在點選時延遲載入greeting-generation；共用getSharedAIConnection一次生成morning／afternoon／evening／night各三句，僅當前人格與階段、greetings專用輸出1024 tokens，完整十二句驗證後填草稿，可手動編輯並明確儲存。忙碌不搶占聊天、失敗不重試、不覆寫原文；提供取消及身份／人格／階段／還原epoch驗證。不送聊天或完整生活資料。
 
 日常回應涵蓋正式待辦完成／取消／完成刪除、習慣升降級／撤回、加分打卡／取消與本機Undo／Redo造成的紀錄／數值變動。replay只在原交易成功後發送暫時life.undo／life.redo operation（唯一ID、前後生活快照與實際delta）；不新增長期history、不再次計分或重新獎勵。life.changed綁當前角色身份、人格、出場歷史、epoch及提交revision，數值或來源失效丟棄。撤回用calm中性、無連線固定「紀錄已調整，照現在的步調繼續就好。」，不抽取完成恭喜語句，不責備或改好感度。舊回應仍取消；背景結算／同步／重載不觸發生活生成。
 

@@ -1,6 +1,6 @@
-import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=wallet-20261031';
-import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=wallet-20261031';
-import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=wallet-20261031';
+import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=backup-chat-20261031';
+import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=backup-chat-20261031';
+import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=backup-chat-20261031';
 export const PROVIDERS = Object.freeze({
   gemini: {origin:'https://generativelanguage.googleapis.com', models:'/v1beta/models'},
   deepseek: {origin:'https://api.deepseek.com', models:'/models'},
@@ -57,7 +57,7 @@ export function createProviderAdapter(provider, apiKey, {fetcher=fetch, signal, 
       fail('model_limit', 502); // Never return a silently truncated or stale list.
     },
     async generate({model, text, maxOutputTokens=64, descriptor, prompt:providedPrompt,purpose}={}) {
-      if (typeof model !== 'string' || !MODEL_ID.test(model) || typeof text !== 'string' || !text.trim() || text.length > 4000 || !Number.isInteger(maxOutputTokens) || maxOutputTokens < 1 || maxOutputTokens > (purpose==='reply-library'?1024:256)) fail('input');
+      if (typeof model !== 'string' || !MODEL_ID.test(model) || typeof text !== 'string' || !text.trim() || text.length > 4000 || !Number.isInteger(maxOutputTokens) || maxOutputTokens < 1 || maxOutputTokens > (['reply-library','greetings'].includes(purpose)?1024:256)) fail('input');
       const prompt=providedPrompt?.system===AI_LANGUAGE_RULE&&providedPrompt.user===text?providedPrompt:assembleAIPrompt(text);
       const protocol=descriptor?.protocol;
       if(descriptor?.outputLimit)maxOutputTokens=Math.min(maxOutputTokens,descriptor.outputLimit);

@@ -1,6 +1,6 @@
-import {archivedReferences} from './storage-vault.mjs?v=wallet-20261031';
-import {digest,validateReplyRows} from './reply-model.mjs?v=wallet-20261031';
-import {replyRefs,validateReplyManifest} from './reply-manifest.mjs?v=wallet-20261031';
+import {archivedReferences} from './storage-vault.mjs?v=backup-chat-20261031';
+import {digest,validateReplyRows} from './reply-model.mjs?v=backup-chat-20261031';
+import {replyRefs,validateReplyManifest} from './reply-manifest.mjs?v=backup-chat-20261031';
 export const REPLY_DATABASE='life-system.replies.v1';let database;
 function open(){return database??=new Promise((resolve,reject)=>{const r=indexedDB.open(REPLY_DATABASE,1);r.onupgradeneeded=()=>{r.result.createObjectStore('categories',{keyPath:'id'});r.result.createObjectStore('events',{keyPath:'id'}).createIndex('expires','expiresAt');};r.onsuccess=()=>resolve(r.result);r.onerror=()=>{database=null;reject(new Error('回覆庫儲存空間無法開啟；生活資料未更動。'));};});}
 async function tx(store,mode,fn){const db=await open();return new Promise((resolve,reject)=>{const t=db.transaction(store,mode),s=t.objectStore(store);let value;const set=v=>value=v;try{fn(s,set);}catch(e){t.abort();reject(e);return;}t.oncomplete=()=>resolve(value);t.onerror=t.onabort=()=>reject(new Error('回覆庫儲存失敗，原資料已保留。'));});}

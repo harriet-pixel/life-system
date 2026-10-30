@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=wallet-20261031';
-import { holdDraft } from './coordination.mjs?v=wallet-20261031';
-import { createProfileImages } from './profile-images.mjs?v=wallet-20261031';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=wallet-20261031';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=wallet-20261031';
-import { undoManager } from './undo.mjs?v=wallet-20261031';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=wallet-20261031';
+import {bindProfileValidation} from './validation.mjs?v=backup-chat-20261031';
+import { holdDraft } from './coordination.mjs?v=backup-chat-20261031';
+import { createProfileImages } from './profile-images.mjs?v=backup-chat-20261031';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=backup-chat-20261031';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=backup-chat-20261031';
+import { undoManager } from './undo.mjs?v=backup-chat-20261031';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=backup-chat-20261031';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

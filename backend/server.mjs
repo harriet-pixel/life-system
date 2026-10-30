@@ -1,4 +1,4 @@
-import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=wallet-20261031';
+import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=backup-chat-20261031';
 import {createServer} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {createJWTVerifier} from './auth.mjs';

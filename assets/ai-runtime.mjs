@@ -1,10 +1,10 @@
-import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=wallet-20261031';
-import {createPersonalBackend} from './ai-worker-auth.mjs?v=wallet-20261031';
-import {AI_WORKER_URL} from './ai-worker-config.mjs?v=wallet-20261031';
-import {createPageAIConnection} from './ai-client.mjs?v=wallet-20261031';
-import {AI_BACKEND_URL} from './ai-config.mjs?v=wallet-20261031';
-import {getAIAccessToken} from './ai-auth.mjs?v=wallet-20261031';
-import {dataStore} from './data.mjs?v=wallet-20261031';
+import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=backup-chat-20261031';
+import {createPersonalBackend} from './ai-worker-auth.mjs?v=backup-chat-20261031';
+import {AI_WORKER_URL} from './ai-worker-config.mjs?v=backup-chat-20261031';
+import {createPageAIConnection} from './ai-client.mjs?v=backup-chat-20261031';
+import {AI_BACKEND_URL} from './ai-config.mjs?v=backup-chat-20261031';
+import {getAIAccessToken} from './ai-auth.mjs?v=backup-chat-20261031';
+import {dataStore} from './data.mjs?v=backup-chat-20261031';
 let shared;
 export function getSharedAIConnection(){
  if(!shared){

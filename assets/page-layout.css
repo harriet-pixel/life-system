@@ -43,3 +43,5 @@
 @supports not (scrollbar-gutter:stable){@media(width < 1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits],[data-page=wallet])){overflow-y:scroll}}}
 /* Keep exact currency totals readable at safe-integer and 200% text boundaries. */
 @media(width < 1024px){.daily-header-stats .profile-summary{white-space:normal;overflow-wrap:anywhere;min-width:0}}
+
+@media(width>=1024px){[data-page-view=home] .intro{margin-top:calc(1em - var(--space-5));padding-top:0}}

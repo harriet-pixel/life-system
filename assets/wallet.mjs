@@ -1,11 +1,11 @@
-import {dataStore,profileSummary} from './data.mjs?v=wallet-20261031';
-import {createWalletService} from './wallet-service.mjs?v=wallet-20261031';
-import {emptyWallet,localMonth,monthLedger} from './wallet-model.mjs?v=wallet-20261031';
-import {mountTaskCompanion} from './task-companion.mjs?v=wallet-20261031';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=wallet-20261031';
+import {dataStore,profileSummary} from './data.mjs?v=backup-chat-20261031';
+import {createWalletService} from './wallet-service.mjs?v=backup-chat-20261031';
+import {emptyWallet,localMonth,monthLedger} from './wallet-model.mjs?v=backup-chat-20261031';
+import {mountTaskCompanion} from './task-companion.mjs?v=backup-chat-20261031';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=backup-chat-20261031';
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 export function mountWallet(root,context){
- if(!document.querySelector('link[data-wallet-style]')&&!document.querySelector('link[href*="wallet.css"]')){const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('./wallet.css?v=wallet-polish-20261031',import.meta.url);css.dataset.walletStyle='';document.head.append(css);}
+ if(!document.querySelector('link[data-wallet-style]')&&!document.querySelector('link[href*="wallet.css"]')){const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('./wallet.css?v=backup-chat-20261031',import.meta.url);css.dataset.walletStyle='';document.head.append(css);}
  const $=s=>root.querySelector(s),service=createWalletService(dataStore),spend=$('#wallet-spend'),form=$('#wallet-spend-form'),items=$('#wallet-items'),editor=$('#wallet-item-editor'),itemForm=$('#wallet-item-form'),confirm=$('#wallet-confirm');let busy=false,submissionId=crypto.randomUUID(),editing=null,pending=null,trigger=null,returnTo=null,spendBaseline='',itemBaseline='',mode='repeat',managerOrigin=null,spendTrigger=null;
  const emptyDraft=()=>({sourceId:'',name:'',cost:''}),drafts={repeat:emptyDraft(),single:emptyDraft()};
  const fields=$('#wallet-spend-fields');

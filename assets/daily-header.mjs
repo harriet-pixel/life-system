@@ -1,4 +1,4 @@
-import {dataStore,profileSummary,visibleExperience} from './data.mjs?v=wallet-20261031';
+import {dataStore,profileSummary,visibleExperience} from './data.mjs?v=backup-chat-20261031';
 // Move the existing controls; keep their listeners, data source and desktop homes.
 export function mountDailyHeader(root,context,kind){
  const main=root.querySelector('#main'),media=matchMedia('(width < 1024px)'),header=document.createElement('header');header.className='daily-mobile-header';header.hidden=true;

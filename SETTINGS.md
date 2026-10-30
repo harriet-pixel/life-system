@@ -98,7 +98,7 @@ AI連接預設開啟，金鑰與模型保存在專用localStorage，手動中斷
 4. 僅選 `https://www.googleapis.com/auth/drive.appdata`，不選整個 Drive 的 scope。GIS token popup 模式不需要本站後端 callback、client secret、refresh token 或服務帳戶金鑰。
 5. 建置時提供公開環境變數 `GOOGLE_OAUTH_CLIENT_ID=...apps.googleusercontent.com npm run build`，發布 `work/build/`；若直接發布原始靜態檔，僅填入 `assets/google-config.mjs` 的公開 client ID。不要提交任何 client secret。
 6. 這個 scope 官方列為 non-sensitive，通常不因 scope 本身要求敏感／限制範圍驗證；公開 External／Published 的品牌資訊、名稱或 logo 仍須依 Google 當時規範完成品牌／網域驗證。個人、Internal、Testing 的例外依 Console 實際資格處理，不保證公開發布免驗證；確認有權驗證網站所用網域，並提供正式隱私權政策。
-7. 設定頁預先載入 GIS，載入期間停用連接；點擊「連接Google」才要求授權，同次點擊同步開啟登入視窗；短期 token 存專用 localStorage（最長一小時並提前一分鐘失效），重整／重開／新分頁可依原期限恢復，過期須在使用者操作時重新授權。直連 Google API，不經開發者伺服器；只有手動按下「上傳雲端」才備份最新快照，保留最近20筆。
+7. 設定頁預先載入 GIS，載入期間停用連接；點擊「連接Google」才要求授權，同次點擊同步開啟登入視窗；短期 token 存專用 localStorage（最長一小時並提前一分鐘失效），重整／重開／新分頁可依原期限恢復，過期須在使用者操作時重新授權。直連 Google API，不經開發者伺服器；只有手動按下「上傳雲端」才備份最新快照，保留最近5筆。
 8. `appDataFolder` 是專用隱藏空間，非使用者 Drive UI 可直接瀏覽的備份資料夾；隱藏不等於加密。中斷本頁連接／撤銷授權不會刪除備份。
 
 實作前查閱的 Google 官方文件（2026-10-22）：
@@ -146,11 +146,11 @@ Google上傳前比對本地資料時間與最新雲端資料時間；較舊或�
 
 2026-10-28 雲端視窗現為單一版本選擇、裝置／時間資訊、登入／上傳／還原三操作及右上關閉。還原先驗證後明確確認；待備份的本地修改必須先保存至雲端。連續上傳中可關窗但作業繼續，失敗保留資料。自動跨裝置同步尚未通過真實驗收，不顯示虛假的已同步時間。
 
-雲端正式僅手動操作，視窗名稱「雲端備份與還原」，無同步模式或同步狀態。手動新備份經雲端回讀逐字比對及正式驗證成功，才清理超額完整版本至20筆（含舊明文與加密完整備份，不含舊同步紀錄）；本次不批次刪既有資料。完整機制、儲存範圍及驗收界線以 docs/CLOUD_BACKUP.md 為準。
+雲端正式僅手動操作，視窗名稱「雲端備份與還原」，無同步模式或同步狀態。手動新備份經雲端回讀逐字比對及正式驗證成功，才清理超額完整版本至5筆（含舊明文與加密完整備份，不含舊同步紀錄）；本次不批次刪既有資料。完整機制、儲存範圍及驗收界線以 docs/CLOUD_BACKUP.md 為準。
 
 ## 錢包資料與累積貨幣
 
-本機明文／加密與Drive手動備份均包含wallet、stats.currencyEarned、長期扣款／退款及affinity來源。舊備份由備份內餘額初始化缺省累積量，保留有效舊Undo／Redo；不讀還原前裝置餘額。原20筆政策、vault及圖片／回覆資產保護不變。手動數值修改以貨幣淨差同步校正累積取得量；重新開始確認明示兩者歸零。詳見docs/WALLET.md。
+本機明文／加密與Drive手動備份均包含wallet、stats.currencyEarned、長期扣款／退款及affinity來源。舊備份由備份內餘額初始化缺省累積量，保留有效舊Undo／Redo；不讀還原前裝置餘額。原5筆政策、vault及圖片／回覆資產保護不變。手動數值修改以貨幣淨差同步校正累積取得量；重新開始確認明示兩者歸零。詳見docs/WALLET.md。
 
 ## Google登入保留與Redo驗證
 

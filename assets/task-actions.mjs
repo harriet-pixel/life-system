@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=wallet-20261031';
-import {getCompletionFlow} from './task-completion.mjs?v=wallet-20261031';
-import {dataStore} from './data.mjs?v=wallet-20261031';
-import {createTaskService} from './tasks-service.mjs?v=wallet-20261031';
-import {allocation,localDate} from './tasks-model.mjs?v=wallet-20261031';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=wallet-20261031';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=wallet-20261031';
+import {setOperationNotice} from './operation-notice.mjs?v=backup-chat-20261031';
+import {getCompletionFlow} from './task-completion.mjs?v=backup-chat-20261031';
+import {dataStore} from './data.mjs?v=backup-chat-20261031';
+import {createTaskService} from './tasks-service.mjs?v=backup-chat-20261031';
+import {allocation,localDate} from './tasks-model.mjs?v=backup-chat-20261031';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=backup-chat-20261031';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=backup-chat-20261031';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);
