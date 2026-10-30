@@ -26,7 +26,7 @@ export function mountCharacters(root,context){
  let snapshot,selected=null,base=null,draft=null,stage=1,current=null,readError=false;
  let roleDirty=false,policyDirty=false,policyBase=null,busy=false,release=null,held=null,draftToken=0,optionSignature='';
  let images,chat=null,chatImport=null,replies=null,replyImport=null,cards=null,cardImport=null,greetings=null;
- const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=wallet-20261031').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;$('#chat-status').textContent='聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。';throw error;});};
+ const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=wallet-polish-20261031').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;$('#chat-status').textContent='聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。';throw error;});};
  const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft())||Boolean(replies?.hasDraft())||Boolean(cards?.hasDraft())||Boolean(greetings?.hasDraft());
  const notify=message=>{$('#operation-status').textContent=message;};
  const policySignature=settings=>JSON.stringify(['enabled','chat','tasks','habits','limit'].map(k=>settings[k]));

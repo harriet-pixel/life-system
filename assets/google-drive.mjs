@@ -1,10 +1,10 @@
 import {backupDeviceName} from './cloud-backup-display.mjs?v=wallet-20261031';
-import {createDriveAuthSession,createDriveLink,DRIVE_LINK_KEY} from './drive-auth-session.mjs?v=wallet-20261031';
+import {createRememberedDriveAuth,createDriveLink,DRIVE_LINK_KEY,DRIVE_AUTH_KEY} from './drive-auth-session.mjs?v=wallet-polish-20261031';
 import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=wallet-20261031';
 import {MAX_FILE_BYTES,backupFilename,readBackup} from './backup.mjs?v=wallet-20261031';
 const SCOPE='https://www.googleapis.com/auth/drive.appdata';
 export const driveConfigured=Boolean(GOOGLE_CLIENT_ID);
-let token=null,expires=0,loading,sdkState='idle',sdkError='';const listeners=new Set();const session=createDriveAuthSession({getItem:k=>globalThis.sessionStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.sessionStorage.setItem(k,v),removeItem:k=>globalThis.sessionStorage?.removeItem(k)},GOOGLE_CLIENT_ID);
+let token=null,expires=0,loading,sdkState='idle',sdkError='';const listeners=new Set();const session=createRememberedDriveAuth({getItem:k=>globalThis.localStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.localStorage.setItem(k,v),removeItem:k=>globalThis.localStorage?.removeItem(k)},{getItem:k=>globalThis.sessionStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.sessionStorage.setItem(k,v),removeItem:k=>globalThis.sessionStorage?.removeItem(k)},GOOGLE_CLIENT_ID);
 const link=createDriveLink({getItem:k=>globalThis.localStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.localStorage?.setItem(k,v),removeItem:k=>globalThis.localStorage?.removeItem(k)},GOOGLE_CLIENT_ID);let connecting=null,authGeneration=0;
 
 export function getDriveState(){const wasConnected=Boolean(token);let value;try{value=session.read();}catch{value=null;}if(link.isDisconnected()){try{session.clear();}catch{}value=null;}token=value?.token??null;expires=value?.expiresAt??0;if(token&&!link.read())try{link.remember();}catch{}if(wasConnected&&!token)queueMicrotask(notify);return {configured:driveConfigured,connected:Boolean(token),linked:Boolean(token)||link.read(),needsReauth:!token&&link.read(),expiresAt:expires||null,sdkReady:Boolean(globalThis.google?.accounts?.oauth2),sdkState,sdkError};}
@@ -12,7 +12,7 @@ const notify=()=>listeners.forEach(fn=>fn(getDriveState()));
 export const driveAuth={getState:getDriveState,subscribe(fn){listeners.add(fn);fn(getDriveState());return()=>listeners.delete(fn);}};
 function expireDriveAccess(){token=null;expires=0;try{session.clear();}catch{}notify();}
 export function disconnectDrive(){authGeneration++;try{link.clear();}catch{}expireDriveAccess();}
-if(typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key===DRIVE_LINK_KEY&&!link.read()){authGeneration++;expireDriveAccess();}});
+if(typeof window!=='undefined')window.addEventListener('storage',event=>{if(event.key===DRIVE_LINK_KEY&&!link.read()){authGeneration++;expireDriveAccess();}else if(event.key===DRIVE_AUTH_KEY)notify();});
 export function revokeDrive(){
   getDriveState();if(!token)throw new Error('目前沒有可撤銷的有效授權；可至 Google 帳戶的第三方連線管理移除。');
   return new Promise((resolve,reject)=>{google.accounts.oauth2.revoke(token,result=>{disconnectDrive();if(result?.error)reject(new Error('撤銷失敗，已中斷本頁連接；請至 Google 帳戶移除授權。'));else resolve();});});
@@ -36,7 +36,7 @@ export async function connectDrive(){
       callback:response=>{
         if(generation!==authGeneration){reject(new Error('Google 連接已中斷，未採用先前授權。'));return;}
         if(response.error||!response.access_token||!google.accounts.oauth2.hasGrantedAllScopes(response,SCOPE)){expireDriveAccess();reject(new Error('Google 授權未完成或已取消；本機資料未更動。'));return;}
-        try{session.write(response.access_token,response.expires_in);try{link.remember();}catch{}getDriveState();notify();resolve({connected:true});}catch{expireDriveAccess();reject(new Error('無法保存本分頁 Google 授權，已停止連接。'));}
+        try{session.write(response.access_token,response.expires_in);try{link.remember();}catch{}getDriveState();notify();resolve({connected:true});}catch{expireDriveAccess();reject(new Error('無法保存此瀏覽器 Google 授權，已停止連接。'));}
       },error_callback:()=>reject(new Error('Google 授權視窗已關閉或無法開啟；本機資料未更動。'))});
     client.requestAccessToken({prompt:''});
   });try{return await connecting;}finally{connecting=null;}

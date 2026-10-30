@@ -1,5 +1,5 @@
-import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive,ensureDriveAccess} from './google-drive.mjs?v=wallet-20261031';
-import {getCloudBackup} from './cloud-backup.mjs?v=wallet-20261031';
+import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive,ensureDriveAccess} from './google-drive.mjs?v=wallet-polish-20261031';
+import {getCloudBackup} from './cloud-backup.mjs?v=wallet-polish-20261031';
 import {dataStore} from './data.mjs?v=wallet-20261031';
 import {readBackup} from './backup.mjs?v=wallet-20261031';
 import {backupDeviceName,displayDeviceName,cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs?v=wallet-20261031';

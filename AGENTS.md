@@ -137,7 +137,7 @@
 - 瀏覽器AI連接預設開啟，只呼叫官方HTTPS API；設定頁說明專用localStorage保存與同來源讀取風險，不再有開發模式開關或跨頁測試面板。
 - AI金鑰欄固定password且不提供顯示按鈕；blur、連線／重新整理／測試及離頁清空輸入框，不清除連線；返回或重載不回填，留白可輸入新金鑰替換。瀏覽器直連所需session仍沿既有規則保存，不宣稱可阻止DevTools讀取。
 - 一組provider/key/model存專用localStorage `life-system.ai-test.v1`，不自動到期；手動中斷或換商清除密鑰與模型，預設空連接仍開啟。有效舊sessionStorage設定可遷移；重整自動重連模型，同文件切頁不重查，storage事件取消其他分頁舊連接。
-- AI專用localStorage不是加密保管庫，不進一般設定、歷史、Undo／Redo、備份、URL或日誌；不改Google／後端原有sessionStorage。勿要求使用者把key貼到聊天或Git。
+- AI專用localStorage不是加密保管庫，不進一般設定、歷史、Undo／Redo、備份、URL或日誌；Google授權依現行短期持久規則，後端sessionStorage不變。勿要求使用者把key貼到聊天或Git。
 - `ai-runtime`／`ai-client`／`ai-session` 集中恢復與生命週期；`ai-service` 統一狀態、生成、取消與錯誤；`assets/ai-providers`／`ai-capabilities`／`ai-errors` 前後端共用，不另建重複系統。backend/ 的 server/auth/env 永不進 work/build。
 - 個人 Worker 金鑰只放 Cloudflare Secret，不回前端；GitHub access token 只用於 callback／user，不保存。本站 opaque session 最長一小時，專用 sessionStorage `life-system.ai-worker-session.v1`，DO 只存 hash、期限與限額，登出後端撤銷。CORS 不是認證，不混用 Drive／Cloudflare 管理 token。缺設定安全停用後端，直連不受影響。舊 Node BYOK 模式仍僅本頁 key＋JWT/scope，不與 Worker 模式混稱。測試金鑰不走一般 settings.ai；原非敏感 provider/model 偏好及備份白名單保留。
 - 四家模型 schema、能力、分頁、生成相容性及官方來源見 `docs/AI_PROVIDER_AUDIT.md`。DeepSeek 優先使用模態／API 能力 metadata，Gemini／OpenAI 精確規則需依官方來源維護；Claude deprecated 不等於 retired。介面區分暫存金鑰、查詢、選取與生成，安全診斷區分空清單和全部篩除。模型動態查詢與已知能力資訊／精確 ID 相容規則交集，可能排除新模型；失敗不以固定／過期清單代替。僅主動測選取模型，不附帶個人資料，限輸入／輸出、不重試；AI 輸出只當文字，不直接改數值。正式生活事件採情境AI與手動備援庫；一般首頁招呼使用出場角色手動四時段設定，各頁開發跨頁文字測試入口已移除。
@@ -240,7 +240,7 @@ M/P/E立即更新暫時aria-pressed／busy，不先重繪整頁；pending只留�
 
 新單次事件與重複事件均支援固定能力分配，總點數仍是使用者選定的1–3。新單次事件在儲存時若未手動設定，使用既有AI推薦並驗證總和後才保存；無效／不可用可改手動，不保存半成品。完成讀正式fixedAllocation，不再查能力分配AI；舊未設事件保留原相容流程。備份／還原與Undo／Redo驗證固定分配。事件日期icon旁提供今／明，以裝置今天／明天設定草稿，不直接保存，也不移動已完成事件。
 
-2026-10-29日常介面：手機整個主頁籤內容區塊（含事項名稱、一般按鈕、摘要及容器留白）支援水平滑動切換，不只頁籤列；辨識完成的水平滑動取消原本點擊，下一次真實點按不受影響。垂直捲動、內層橫向圖表、文字輸入控制與dialog不攔截。導覽｜為獨立無互動裝飾，不放於圖示色塊。習慣與加分正式增減使用待辦同一全域數值動畫佇列，正負號依實際delta，不重複播放頁面動畫；主交易通知不被緊接的關窗通知覆蓋。隱私權政策入口只放設定頁。Google以localStorage保存無憑證的連結意圖；Token仍在sessionStorage並遵守Google期限，到期／401不視為自行中斷，使用者操作雲端時更新授權；明確中斷會清除連結並通知其他分頁，不啟用自動同步或背景備份。
+2026-10-29日常介面：手機整個主頁籤內容區塊（含事項名稱、一般按鈕、摘要及容器留白）支援水平滑動切換，不只頁籤列；辨識完成的水平滑動取消原本點擊，下一次真實點按不受影響。垂直捲動、內層橫向圖表、文字輸入控制與dialog不攔截。導覽｜為獨立無互動裝飾，不放於圖示色塊。習慣與加分正式增減使用待辦同一全域數值動畫佇列，正負號依實際delta，不重複播放頁面動畫；主交易通知不被緊接的關窗通知覆蓋。隱私權政策入口只放設定頁。Google以localStorage保存無憑證的連結意圖；Token在專用localStorage保存至Google原期限，重開不延長；舊有效sessionStorage以原期限遷入並清除舊暫存，到期／401不視為自行中斷，使用者操作雲端時更新授權；明確中斷會清除連結並通知其他分頁，不啟用自動同步或背景備份。
 
 ## 手動首頁招呼與日常頁角色連動（2026-10-29）
 
@@ -265,3 +265,5 @@ M/P/E立即更新暫時aria-pressed／busy，不先重繪整頁；pending只留�
 錢包帳本是正式系統貨幣支出頁，沿習慣桌面布局／共用手機daily-header與浮窗，無圖表／第二套導覽。唯一dataStore wallet保存常用項目與不可改寫金額的逐筆快照；共用鎖與revision一次保存扣款／退款、帳目、history及affinity來源。取消長期可用，Undo／Redo為七天／最近15筆且只存單筆wallet patch。正式消費+1依原來源／credit防刷，不從UI加分；AI沿getSharedAIConnection且每筆最多一次，中性消費備援、不套待辦完成句。
 
 stats.currencyEarned缺省以文件自身餘額初始化一次，保留0；舊Undo／Redo快照同時遷移，不淘汰有效鏈。獎勵／撤回與手動校正按實際delta調整累積量，消費／退款不調整；restart兩者歸零。舊備份用備份本身餘額初始化，完整備份含錢包與證據。詳見[docs/WALLET.md](docs/WALLET.md)。
+
+錢包新增窗採重複性／單次頁籤，重複性直接點選常用項目，各頁保留草稿。內容區移除消費紀錄／Wallet Ledger及橫線；新增無備註欄、帳本無逐筆取消／刪除入口，既存備註與取消來源保留，使用者沿全站Undo。導覽錢包緊接習慣。Google有效token在專用localStorage保留原最長一小時期限；不加入備份，不背景登入／刷新／同步。聊天室Enter送出、Shift＋Enter換行，IME選字不送出；全文仍本機24小時且不備份。

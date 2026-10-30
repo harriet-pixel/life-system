@@ -2,7 +2,7 @@ import {mountColorField} from './color-field.mjs?v=wallet-20261031';
 import {documentTime} from './cloud-backup-policy.mjs?v=wallet-20261031';
 import {cloudBackupLabel} from './cloud-backup-display.mjs?v=wallet-20261031';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=wallet-20261031';
-import {getCloudBackup} from './cloud-backup.mjs?v=wallet-20261031';
+import {getCloudBackup} from './cloud-backup.mjs?v=wallet-polish-20261031';
 import {initializeAISettings} from './ai-settings.mjs?v=wallet-20261031';
 import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=wallet-20261031';
 import {dataStore,persistentUndo} from './data.mjs?v=wallet-20261031';
@@ -12,7 +12,7 @@ import {auditImages,deleteUnusedImages} from './image-references.mjs?v=wallet-20
 import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=wallet-20261031';
 import {holdDraft} from './coordination.mjs?v=wallet-20261031';
 import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=wallet-20261031';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=wallet-20261031';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=wallet-polish-20261031';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

@@ -4,7 +4,7 @@
 
 ## 登入與操作
 
-Google Identity Services 使用 OAuth token client，僅要求 `https://www.googleapis.com/auth/drive.appdata`，直接由瀏覽器存取使用者自己的 Drive `appDataFolder`。公開 Client ID 不是密鑰。token 僅在專用 sessionStorage，最長一小時並提前一分鐘失效；重整可恢復未過期授權，過期須手動登入，不使用 refresh token／背景登入。中斷連接清除本分頁 token，不刪本機或雲端資料，也不等同撤銷 Google 帳號授權。
+Google Identity Services 使用 OAuth token client，僅要求 `https://www.googleapis.com/auth/drive.appdata`，直接由瀏覽器存取使用者自己的 Drive `appDataFolder`。公開 Client ID 不是密鑰。token 在專用 localStorage 依 Google 原期限保存，最長一小時並提前一分鐘失效；重整／重開網站與新分頁可恢復未過期授權，過期須由使用者操作時重新授權，不使用 refresh token／背景登入。中斷連接清除持久與舊分頁 token，並通知其他分頁，不刪本機或雲端資料，也不等同撤銷 Google 帳號授權。
 
 設定頁預載 GIS；使用者點登入才要求授權。雲端視窗稱「雲端備份與還原」，保留登入／上傳／還原、一般平台裝置名稱、本地與雲端資料修改時間、備份建立時間及歷史版本。移除同步模式、同步狀態、衝突入口、最後同步時間、文字容量及還原前副本下載按鈕。
 
@@ -36,7 +36,7 @@ Google Identity Services 使用 OAuth token client，僅要求 `https://www.goog
 | IndexedDB `life-system.replies.v1` | 正式日常回覆庫內容，主文件保留引用。 |
 | IndexedDB `life-system.chat.v1` | 24小時短期聊天全文；不進雲端備份。正式無全文評估證據仍隨主文件備份。 |
 | IndexedDB `life-system.recovery-vault.v1` | 舊同步journal完整封存及還原前本機保護副本，不清除。localStorage原journal鍵可保留索引以減少配額。 |
-| sessionStorage | Google短期授權與未部署後端認證，不納入備份。AI金鑰／模型另存專用localStorage（依AI_CONNECTION.md），仍不納入正式文件或備份。 |
+| sessionStorage | 舊Google短期授權（有效者以原期限遷入專用localStorage並刪舊暫存）與未部署後端認證，不納入備份。AI金鑰／模型另存專用localStorage（依AI_CONNECTION.md），仍不納入正式文件或備份。 |
 | Google Drive appDataFolder | 手動完整備份，以及保留但不再啟動讀寫的舊同步紀錄／資產。 |
 
 完整備份包含正式主文件、全部必要引用圖片與裁切設定、正式角色及回覆庫資產。未提交草稿、無引用閒置圖片、短期聊天、認證及API密鑰不納入。不是整個瀏覽器儲存的鏡像；舊同步journal與vault在本機繼續保留，不塞入正式生活文件。
@@ -50,3 +50,7 @@ Google Identity Services 使用 OAuth token client，僅要求 `https://www.goog
 設定頁恢復有效session時會列metadata，開窗／登入／手動操作也會列metadata；GIS腳本預載是既有登入準備，不是備份同步。新手動上傳多一次必要回讀以確保刪除前可驗證。
 
 Google API／GIS以mock驗證，真實Blob、IndexedDB、鎖、資料服務、加解密與還原實際執行；不代表真實Google登入、Location CORS、帳號筆數或實體雙裝置驗收。發布SHA與本次檢查另依完成報告。
+
+## 上傳耗時說明
+
+手動備份會建立完整資料／有效復原／圖片及備援資產快照，計算canonical資料與圖片雜湊、Base64圖片（約增加三分之一內容量），先比較最新雲端版本，再建立resumable upload並傳送。上傳後另外列版本、下載完整新檔、逐位元組比較及readBackup完整資料／圖片／引用驗證，標記verified後再列版本並按20筆政策清理，設定頁最後刷新版本清單。這是多個順序網路與本機工作，不是單次上傳；圖片量、CPU、網路及授權更新都可能影響時間。此次未更動打包、上傳、回讀與保留政策，也未量測真實帳號各階段耗時。

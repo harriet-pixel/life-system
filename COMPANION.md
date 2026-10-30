@@ -104,6 +104,8 @@ characters-page 仍由 app-shell 動態載入；characters.css 也只在該路�
 
 沿既有兩頁籤與角色預覽，只正式未封存出場角色可發起新AI聊天；預覽可讀同角色有效訊息。使用getSharedAIConnection，無連線保留草稿及舊訊息，不切供應商、不自動重試、不新增後端。每次一次生成JSON文字／八情緒／positive-neutral-negative分類，程式驗證後才交共用正式入口計分。一般問候預設neutral；不因挫折、心情、不同意、拒絕建議或停止聊天扣分，不以好感度施壓／要求秘密。
 
+聊天室以Enter送出、Shift＋Enter換行；中文輸入法選字中的Enter不送出，忙碌與重複提交仍由正式controller阻擋。
+
 全文放獨立life-system.chat.v1/turns，按characterId／角色createdAt／chatEpoch隔離；每user／assistant各自24小時，進入、切換、前景、送出及最近到期單次timer排除過期，索引維護最多256筆／次。主文件只存text-free評估證據與交易，固定+1／0／-1，負向遵原總開關／chat來源／limit／最低0，無每日正向上限。chatTurnId跨重試穩定，neutral亦有receipt。ready短期結果先存，正式receipt次之，complete發布最後；中斷可重入，不用AI修復本機儲存。還原更新epoch，不延續舊本機聊天室；正式receipt照備份保留，聊天全文不進本機／加密／手動雲端備份及一般history。
 
 請求綁角色／建立身份／人格configVersion／送出階段／正式切換次數及連線版本；切換、封存、刪除、人格、斷線及離開取消舊請求。明確重試才產生費用，已成立回合不再生成或計分。prompt沿共用4000字元預算、output256 tokens；只當前階段、核心人格與界線、必要身份、臺灣日期時間及最近24則已完成同角色有效訊息，不讀全部生活資料，不作永久摘要。角色輸入／捲動僅目前文件記憶體；安全文字、每訊息情緒頭像、小縮圖、頂部neutral及桌面最新情緒立繪沿第四階段。詳細復原、效能與驗收見docs/COMPANION_STAGE5_VERIFICATION.md。

@@ -7,10 +7,10 @@ const validateReplyAssets=async(...args)=>(await replyStore()).validateReplyAsse
 const importReplyAssets=async(...args)=>(await replyStore()).importReplyAssets(...args);
 import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=wallet-20261031';
 import {createSyncEngine} from './cloud-sync-engine.mjs?v=wallet-20261031';
-import {createSyncDrive} from './cloud-sync-drive.mjs?v=wallet-20261031';
+import {createSyncDrive} from './cloud-sync-drive.mjs?v=wallet-polish-20261031';
 import {dataStore,isPristineDocument} from './data.mjs?v=wallet-20261031';
-import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=wallet-20261031';
-import {getCloudBackup} from './cloud-backup.mjs?v=wallet-20261031';
+import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=wallet-polish-20261031';
+import {getCloudBackup} from './cloud-backup.mjs?v=wallet-polish-20261031';
 import {maintenance} from './coordination.mjs?v=wallet-20261031';
 import {validateDocument} from './backup.mjs?v=wallet-20261031';
 import {maintainRecovery} from './recovery.mjs?v=wallet-20261031';

@@ -1,5 +1,7 @@
 # 錢包帳本驗證（2026-10-31，臺灣時間）
 
+本文件記錄錢包初版驗收；後續頁籤、備註欄及逐筆操作入口以[現行規範](WALLET.md)與[介面調整驗證](WALLET_POLISH_VERIFICATION.md)為準。
+
 ## 基準與發布保護
 
 開發前工作區乾淨，遠端為harriet-pixel/life-system。GitHub連接器與實際Git fetch確認最新main為a2048f6cf340cddcb21379a5b16ae40024e2ae18，與工作區HEAD相同；原gh-pages為caa9786557b863e92b109bb43a4baa818319c13d。既有HTML／assets內容一致，發布分支只有.nojekyll及原始碼／測試／文件排除差異，沒有未回收的獨有功能修改。原分支與發布歷史均保留。
