@@ -9,3 +9,5 @@
 驗證使用 npm test、tests/navigation.cjs、tests/home.cjs、tests/recovery-ui.cjs 及 tests/recovery-images.cjs。發布與公開網站驗證依 [DEPLOYMENT.md](DEPLOYMENT.md) 分別確認，不以本文件代替實測。
 
 第二階段生活操作附帶小型affinityPlan，Undo／Redo沿原來源與角色套用反向／重播，不快照整個companion或affinity。若獎勵已消耗，Redo只重發確實扣回的部分；不建立負債、不復活永久刪除角色，原生活數值的嚴格相依條件及期限維持。
+
+錢包wallet.html已啟用同風格SVG、Wallet Ledger與aria-current；History／直接網址／子路徑沿app shell。wallet.*操作為七天／最近15筆，單筆stateId patch核對相依，不在快照複製帳本。業務取消不受Undo到期限制；錢包Undo／Redo反向或重播原貨幣／好感來源，不生成消費訊息。見docs/WALLET.md。

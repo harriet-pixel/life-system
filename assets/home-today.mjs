@@ -1,7 +1,7 @@
-import {dataStore} from './data.mjs?v=companion-actions-20261029';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=daily-polish-20261029';
+import {dataStore} from './data.mjs?v=wallet-20261031';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=wallet-20261031';
 
-import {sortDay,listSettings} from './task-view-model.mjs?v=daily-polish-20261029';
+import {sortDay,listSettings} from './task-view-model.mjs?v=wallet-20261031';
 
 // One renderer and one validated store for early reading and interactive mounting.
 export function renderHomeToday(root,actions=null){

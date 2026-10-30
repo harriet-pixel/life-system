@@ -1,4 +1,4 @@
-import {floatingDialogue} from './floating-dialogue.mjs?v=companion-display-20261029';
+import {floatingDialogue} from './floating-dialogue.mjs?v=wallet-20261031';
 // Home-only presentation. Position/collapse state stays with this cached view;
 // mock dialogue, images and emotion continue to use the existing shared controller.
 export function mountHomeCompanionFloat(root,context,{selector='.companion',greeting=true,greetingText=()=>'歡迎回來，今天也一起慢慢前進。',onHide=()=>{}}={}){

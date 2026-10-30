@@ -1,12 +1,13 @@
-import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=daily-polish-20261029';
-import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=daily-polish-20261029';
-import {relationshipStage} from './characters-model.mjs?v=companion-panel-20261029';
-export const DAILY_OPERATIONS=Object.freeze(['task.completed','task.completed.batch','task.cancelled','task.deleted-completed','task.deleted','task.updated','task.batch','task.created','habit.check','habit.bonus','habit.bonus-cancel','habit.updated','life.undo','life.redo']);
+import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=wallet-20261031';
+import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=wallet-20261031';
+import {relationshipStage} from './characters-model.mjs?v=wallet-20261031';
+export const DAILY_OPERATIONS=Object.freeze(['wallet.spent','task.completed','task.completed.batch','task.cancelled','task.deleted-completed','task.deleted','task.updated','task.batch','task.created','habit.check','habit.bonus','habit.bonus-cancel','habit.updated','life.undo','life.redo']);
 export function formalDailyEvents(operation,state){
  if(!DAILY_OPERATIONS.includes(operation.type))return [];
 
  const c=state.companion?.characters.find(c=>c.characterId===state.companion.activeCharacterId&&!c.archived);if(!c)return [];
  const events=[],push=(eventType,id,domain)=>events.push({sourceEventId:operation.id+':'+eventType+':'+id,operationId:operation.id,characterId:c.characterId,characterCreatedAt:c.createdAt,configVersion:c.configVersion,stageId:relationshipStage(c.affinity).stage,eventType,sourceId:id,domain,switchCount:state.companion.switchHistory.length,epoch:state.replyLibrary?.epoch??null,character:c});
+ if(operation.type==='wallet.spent'){const r=operation.after.wallet?.value;if(r?.status==='active'&&r.id===operation.id&&r.debitId===operation.id)push('wallet.spent',r.id,'wallet');return events;}
  if(['task.completed','task.completed.batch'].includes(operation.type)){const before=new Set((operation.before.tasks?.completions??[]).filter(c=>!c.cancelledAt&&!c.retraction).map(c=>c.id));for(const r of operation.after.tasks?.completions??[])if(!before.has(r.id)&&!r.cancelledAt&&!r.retraction&&r.date===localDate())push('task.completed',r.id,'task');}
  if(operation.type==='habit.check'){const old=operation.before.habits,next=operation.after.habits;for(const r of next.records)if(r.date===taipeiDate()&&r.source==='normal'){const prior=old.records.find(p=>p.id===r.id);if(POINTS[r.state]>(POINTS[prior?.state]??0))push({'M':'habit.mini','P':'habit.plus','E':'habit.elite'}[r.state],r.id,'habit');}
   const known=new Set(old.periods.flatMap(p=>p.achievements.map(a=>p.id+':'+a.id)));for(const p of next.periods)for(const a of p.achievements)if(!known.has(p.id+':'+a.id)&&events.length)push('achievement.unlocked',p.id+':'+a.id,'achievement');
@@ -17,7 +18,8 @@ export function formalDailyEvents(operation,state){
  }
  return events;
 }
-export function validDailySource(state,e){const c=state.companion?.characters.find(c=>c.characterId===e.characterId);if(!c||c.archived||c.createdAt!==e.characterCreatedAt||state.companion.activeCharacterId!==e.characterId||state.companion.switchHistory.length!==e.switchCount||(state.replyLibrary?.epoch??null)!==e.epoch)return false;
+export function validDailySource(state,e){const c=state.companion?.characters.find(c=>c.characterId===e.characterId);if(!c||c.archived||c.createdAt!==e.characterCreatedAt||c.configVersion!==e.configVersion||relationshipStage(c.affinity).stage!==e.stageId||state.companion.activeCharacterId!==e.characterId||state.companion.switchHistory.length!==e.switchCount||(state.replyLibrary?.epoch??null)!==e.epoch)return false;
+ if(e.domain==='wallet'){const r=state['walletRecord:'+e.sourceId]??state.wallet?.records[e.sourceId];return r?.status==='active'&&r.debitId===e.operationId;}
  if(e.domain==='change')return state.revision===e.revision;
  if(e.domain==='task-reminder'&&e.eventType==='task.incomplete'){const date=e.date??localDate();return validDate(date)&&date<=localDate()&&rowsForDate(state.tasks,date).some(r=>r.occurrence.id===e.sourceId&&r.occurrence.status==='pending');}
  if(e.domain==='habit-reminder'&&e.eventType==='habit.incomplete'){const [periodId,date,index]=e.sourceId.split('|');return date===taipeiDate()&&/^[0-2]$/.test(index)&&activePeriod(state.habits,date)?.id===periodId&&!state.habits.records.some(r=>r.periodId===periodId&&r.date===date&&r.habitIndex===Number(index)&&r.state!=='-');}
@@ -29,6 +31,7 @@ export function validDailySource(state,e){const c=state.companion?.characters.fi
 // Text comes only from persisted source records, not UI labels or arbitrary placeholders.
 export function dailyContext(state,e){
  if(!validDailySource(state,e))return {names:[]};if(e.domain==='change')return {names:e.names.map(n=>String(n).slice(0,100)),result:e.result};let name='',result='';
+ if(e.domain==='wallet'){const r=state['walletRecord:'+e.sourceId]??state.wallet?.records[e.sourceId];return {names:[r.name.slice(0,100)],result:'使用系統貨幣兌換，實際花費 '+r.cost+'。不是完成待辦，不恭喜完成任務。'};}
  if(e.domain==='task'){const r=state.tasks.completions.find(r=>r.id===e.sourceId);name=r?.name??'';result='已完成';}
  if(e.domain==='habit'){const r=state.habits.records.find(r=>r.id===e.sourceId);name=r?.name??'';result=[({'M':'Mini','P':'Plus','E':'Elite'})[r?.state],String(r?.target??'').slice(0,80)].filter(Boolean).join('：');}
  if(e.domain==='bonus'){name=state.habits.bonusRecords.find(r=>r.id===e.sourceId)?.name??'';result='已完成加分打卡';}

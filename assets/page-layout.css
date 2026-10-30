@@ -1,14 +1,14 @@
 /* One desktop frame for the three daily pages, including non-overlay scrollbars. */
 .home-page-heading{display:none}
 @media(width>=1024px){
- html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits])){scrollbar-gutter:stable}
- :is([data-page-view=home],[data-page-view=tasks],[data-page-view=habits]) #current-page-name{display:flex;align-items:center;min-height:44px;margin:0;font-size:1.375rem;line-height:var(--line-height);padding:0}
+ html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits],[data-page=wallet])){scrollbar-gutter:stable}
+ :is([data-page-view=home],[data-page-view=tasks],:is([data-page-view=habits],[data-page-view=wallet])) #current-page-name{display:flex;align-items:center;min-height:44px;margin:0;font-size:1.375rem;line-height:var(--line-height);padding:0}
  .home-page-heading,.habits-page .habit-page-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;margin:0;padding:0}
  .habits-page .habits-workspace{width:100%;max-width:none;margin:0;padding-top:0}
  .habits-page .habit-page-heading{margin-bottom:var(--space-5)}
- :is([data-page-view=tasks],[data-page-view=habits]) .tasks-dashboard{border-top:1px solid var(--color-border);padding-top:var(--space-5);column-gap:var(--space-6)}
+ :is([data-page-view=tasks],:is([data-page-view=habits],[data-page-view=wallet])) .tasks-dashboard{border-top:1px solid var(--color-border);padding-top:var(--space-5);column-gap:var(--space-6)}
 }
-@supports not (scrollbar-gutter:stable){@media(width>=1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits])){overflow-y:scroll}}}
+@supports not (scrollbar-gutter:stable){@media(width>=1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits],[data-page=wallet])){overflow-y:scroll}}}
 @media(width>=1024px){[data-page-view=home] .welcome-copy{padding-inline-start:1em;min-width:0}}
 
 /* Equal mobile date / two-line information / stats / tabs geometry on daily views. */
@@ -39,5 +39,7 @@
 }
 .navigation-icon-item[aria-current=page]{background:var(--color-primary);color:#fff}
 .navigation-icon-item[aria-current=page] svg{color:#fff}
-@media(width < 1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits])){scrollbar-gutter:stable}}
-@supports not (scrollbar-gutter:stable){@media(width < 1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits])){overflow-y:scroll}}}
+@media(width < 1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits],[data-page=wallet])){scrollbar-gutter:stable}}
+@supports not (scrollbar-gutter:stable){@media(width < 1024px){html:has(body:is([data-page=home],[data-page=tasks],[data-page=habits],[data-page=wallet])){overflow-y:scroll}}}
+/* Keep exact currency totals readable at safe-integer and 200% text boundaries. */
+@media(width < 1024px){.daily-header-stats .profile-summary{white-space:normal;overflow-wrap:anywhere;min-width:0}}

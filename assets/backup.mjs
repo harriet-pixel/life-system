@@ -1,18 +1,21 @@
+import {validateWalletSnapshot} from './wallet-recovery.mjs?v=wallet-20261031';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=wallet-20261031';
+import {normalizeStats} from './abilities.mjs?v=wallet-20261031';
 // JSON object member order is not part of the schema (Drive records are canonicalized).
 const sortedJSON=value=>JSON.stringify((function sort(v){return Array.isArray(v)?v.map(sort):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sort(v[k])])):v;})(value));
-import {validateReplyManifest} from './characters-model.mjs?v=companion-panel-20261029';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=daily-polish-20261029';
-import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=companion-panel-20261029';
-import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=companion-panel-20261029';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=daily-polish-20261029';
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=daily-polish-20261029';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=companion-panel-20261029';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=daily-polish-20261029';
-import {ABILITIES} from './abilities.mjs?v=daily-polish-20261029';
-import {maintenance} from './coordination.mjs?v=daily-polish-20261029';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=companion-panel-20261029';
-import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=daily-polish-20261029';
-import {normalizeSettings} from './settings-model.mjs?v=daily-polish-20261029';
+import {validateReplyManifest} from './characters-model.mjs?v=wallet-20261031';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=wallet-20261031';
+import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=wallet-20261031';
+import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=wallet-20261031';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=wallet-20261031';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=wallet-20261031';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=wallet-20261031';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=wallet-20261031';
+import {ABILITIES} from './abilities.mjs?v=wallet-20261031';
+import {maintenance} from './coordination.mjs?v=wallet-20261031';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=wallet-20261031';
+import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=wallet-20261031';
+import {normalizeSettings} from './settings-model.mjs?v=wallet-20261031';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -27,7 +30,7 @@ function unb64(text,max=MAX_FILE_BYTES) {
 }
 function check(condition,message='備份結構驗證失敗。'){if(!condition)throw Object.assign(new Error(message),{code:'schema'});}
 const topKeys=['revision','statsRulesVersion','profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','stats','history','settings'];
-const legacyKeys=[...topKeys,'tasks','habits','companion','affinity','replyLibrary'];topKeys.push('historyVersion','undoHistory','tasks','habits','companion','affinity','replyLibrary');
+const legacyKeys=[...topKeys,'tasks','habits','companion','affinity','replyLibrary','wallet'];topKeys.push('historyVersion','undoHistory','tasks','habits','companion','affinity','replyLibrary','wallet');
 const editKeys=legacyKeys.filter(k=>!['revision','history','statsRulesVersion'].includes(k));
 function safeObject(value,depth=0) {
   check(depth<40,'備份結構過深。');
@@ -39,10 +42,10 @@ function validCrop(crop){return crop&&typeof crop==='object'&&['left','top','wid
 function validateFields(value,full=false,legacy=false) {
   check(value&&typeof value==='object'&&!Array.isArray(value),'完整資料／復原快照必須是物件。');
   check(Object.keys(value).every(k=>(full?(legacy?legacyKeys:topKeys):editKeys).includes(k)),'備份含未知資料欄位，請使用相符版本。');
-  if(full){const missing=(legacy?legacyKeys:topKeys).filter(k=>!['tasks','habits','companion','affinity','replyLibrary'].includes(k)&&!Object.hasOwn(value,k));check(!missing.length,'完整資料缺少必要欄位：'+missing.join('、')); check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
+  if(full){const missing=(legacy?legacyKeys:topKeys).filter(k=>!['tasks','habits','companion','affinity','replyLibrary','wallet'].includes(k)&&!Object.hasOwn(value,k));check(!missing.length,'完整資料缺少必要欄位：'+missing.join('、')); check(value.statsRulesVersion===2,'不支援的數值規則版本。');}
   if(Object.hasOwn(value,'profile')){validateProfileFields(value.profile,undefined,{reading:true});check(value.profile&&['name','age','gender','bio','boundaries','motto'].every(k=>typeof value.profile[k]==='string'));check(value.profile.age===''||(/^\d+$/.test(value.profile.age)&&Number.isSafeInteger(Number(value.profile.age))));}
   if(Object.hasOwn(value,'stats')){
-    const s=value.stats;check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5,'數值資料的等級、經驗、貨幣或五項能力格式不正確。');
+    const s=value.stats;if(Object.hasOwn(s,'currencyEarned'))check(Number.isSafeInteger(s.currencyEarned)&&s.currencyEarned>=0,'累積貨幣格式不正確。');check(s&&['experience','currency','level'].every(k=>Number.isSafeInteger(s[k])&&s[k]>=(k==='experience'?100:k==='level'?1:0))&&Array.isArray(s.abilities)&&s.abilities.length===5,'數值資料的等級、經驗、貨幣或五項能力格式不正確。');
     check(s.abilities.every((a,i)=>a.id===ABILITIES[i].id&&a.name===ABILITIES[i].name&&Number.isSafeInteger(a.value)&&a.value>=0),'備份結構：五項能力的ID、名稱、順序或整數值不正確。');
     check(new Set(s.abilities.map(a=>a.id)).size===5);
   }
@@ -51,6 +54,7 @@ function validateFields(value,full=false,legacy=false) {
   if(Object.hasOwn(value,'companion'))validateCharacters(value.companion);
   if(Object.hasOwn(value,'habits'))validateHabits(value.habits);
   if(Object.hasOwn(value,'tasks'))validateTasks(value.tasks);
+  if(Object.hasOwn(value,'wallet')){if(!full&&value.wallet?.snapshotVersion===1){const s=validateWalletSnapshot(value.wallet);validateWallet({...emptyWallet(),stateId:s.stateId,lastChange:s.lastChange,[s.collection]:s.value===null?{}:{[s.id]:s.value}});}else validateWallet(value.wallet);}
   if(Object.hasOwn(value,'activities'))check(value.activities&&typeof value.activities==='object'&&!Array.isArray(value.activities)&&Object.values(value.activities).every(v=>typeof v==='boolean'));
   if(Object.hasOwn(value,'portraits'))check(Array.isArray(value.portraits)&&value.portraits.length<=6&&new Set(value.portraits.map(p=>p.id)).size===value.portraits.length&&value.portraits.every(p=>typeof p.id==='string'&&isImageReference(p.image)&&(p.source===undefined||p.source===null||isImageReference(p.source))&&(p.crop===undefined||p.crop===null||validCrop(p.crop))));
   for(const key of ['photo','avatar'])if(Object.hasOwn(value,key))check(value[key]===null||isImageReference(value[key]));
@@ -71,6 +75,7 @@ function validateRecord(r,doc,{snapshot=false,legacy=false}={}){
 }
 export function validateDocument(doc,{legacy=false}={}){
  safeObject(doc);validateFields(doc,true,legacy);
+ if(doc.wallet)validateWalletEvidence(doc);
  check(Number.isSafeInteger(doc.revision)&&doc.revision>=0&&Array.isArray(doc.history),'完整資料的版本或行動紀錄格式不正確。');
  check(new Set(doc.history.map(r=>r.id)).size===doc.history.length);
  if(legacy){check(doc.history.length<=50);doc.history.forEach(r=>validateRecord(r,doc,{snapshot:true,legacy:true}));}
@@ -84,7 +89,7 @@ export function validateDocument(doc,{legacy=false}={}){
 
  return doc;
 }
-export const dataCount=doc=>(doc.affinity?doc.affinity.transactions.length+Object.keys(doc.affinity.penalties).length:0)+(doc.companion?doc.companion.characters.length+doc.companion.switchHistory.length+doc.companion.deletedCharacterIds.length:0)+(doc.habits?doc.habits.periods.length+doc.habits.records.length+doc.habits.bonusItems.length+doc.habits.bonusRecords.length:0)+3+doc.portraits.length+Object.keys(doc.activities).length+doc.history.length+(doc.tasks?doc.tasks.definitions.length+doc.tasks.occurrences.length+doc.tasks.completions.length+doc.tasks.categories.length:0);
+export const dataCount=doc=>(doc.wallet?Object.keys(doc.wallet.items).length+Object.keys(doc.wallet.records).length:0)+(doc.affinity?doc.affinity.transactions.length+Object.keys(doc.affinity.penalties).length:0)+(doc.companion?doc.companion.characters.length+doc.companion.switchHistory.length+doc.companion.deletedCharacterIds.length:0)+(doc.habits?doc.habits.periods.length+doc.habits.records.length+doc.habits.bonusItems.length+doc.habits.bonusRecords.length:0)+3+doc.portraits.length+Object.keys(doc.activities).length+doc.history.length+(doc.tasks?doc.tasks.definitions.length+doc.tasks.occurrences.length+doc.tasks.completions.length+doc.tasks.categories.length:0);
 async function passwordKey(password,salt,usage) {
   check(typeof password==='string'&&password.length>0&&password.length<=1024,'請輸入備份密碼。');
   const key=await crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveKey']);
@@ -109,7 +114,7 @@ export async function withBackup(store,password,consume,{snapshot}={}) {
     const ownRefs=documentImageReferences(document,{raw:true});check(ownRefs.size<=MAX_IMAGES);let size=0;
     const images=[];
     for(const asset of assets.filter(a=>ownRefs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
-    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=companion-actions-20261029')).exportReplyAssets(document.replyLibrary):undefined;
+    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=wallet-20261031')).exportReplyAssets(document.replyLibrary):undefined;
     const payload={...(replyAssets?{replyAssets}:{}),formatVersion:VERSION,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
     return consume(await encodeBackup(payload,password),payload);
   });
@@ -159,8 +164,9 @@ export async function readBackup(file,password='') {
   const refs=documentImageReferences(payload.document,{legacy:payload.dataVersion===2,raw:true});check([...refs].every(id=>ids.has(id)),'備份缺少必要圖片。');check(ids.size===refs.size,'備份含不在範圍內的圖片。');
   // Verify the original inventory before discarding expired legacy snapshots.
   // Never renew timestamps. Import only images still required at restore time.
-  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=companion-actions-20261029')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
-  const document=maintainRecovery(payload.document).document;document.settings=normalizeSettings(document.settings);
+  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=wallet-20261031')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
+  const source=structuredClone(payload.document);source.stats=normalizeStats(source.stats);source.wallet??=emptyWallet();for(const r of source.undoHistory??source.history)for(const snap of [r.before,r.after])if(snap?.stats)snap.stats=normalizeStats(snap.stats);
+  const document=maintainRecovery(source).document;document.settings=normalizeSettings(document.settings);
   for(const r of document.undoHistory)for(const snapshot of [r.before,r.after])if(snapshot.settings)snapshot.settings=normalizeSettings(snapshot.settings);
   document.companion ??= emptyCharacters();document.affinity ??= emptyAffinity();
   document.tasks ??= emptyTasks();
@@ -181,7 +187,7 @@ export async function restoreBackup(store,prepared,expectedRevision,{beforeRepla
     check([...required].every(id=>available.has(id)),'還原缺少必要圖片，原資料已保留。');
     for(const asset of prepared.assets)check(asset.blob instanceof Blob&&'asset:'+await hash(await asset.blob.arrayBuffer())===asset.id,'還原圖片完整性不正確，原資料已保留。');
     await validateRoleImageAssets(prepared.payload.document,[...existing,...prepared.assets]);await beforeReplace?.();
-    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=companion-actions-20261029')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
+    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=wallet-20261031')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
     await stageImageAssets(prepared.assets);
     const document=maintainRecovery(prepared.payload.document).document;if(replaceDocument)await replaceDocument(document);else store.replace(document);await afterReplace?.();
   });

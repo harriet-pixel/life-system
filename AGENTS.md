@@ -1,6 +1,6 @@
 # 專案協作規範
 
-本文件整理至2026-10-29，本次重構基準為 `9054afb`。這是現行規則，不是歷次需求追加紀錄；後續修改請更新對應章節，避免追加互相衝突的「最新規則」。
+本文件整理至2026-10-31；錢包帳本開發基準為遠端main `a2048f6`。這是現行規則，不是歷次需求追加紀錄；後續修改請更新對應章節，避免追加互相衝突的「最新規則」。
 
 ## 目標與優先順序
 
@@ -21,6 +21,7 @@
 | `profile.html`、`assets/profile.mjs` | 我的資料、使用者設定與雷達圖 |
 | `settings.html`、`assets/settings.mjs` | 儲存空間、歷史、備份、外觀、AI 連線 |
 | `habits.html`、`assets/habits*.mjs`、`assets/habit-*.mjs` | 正式習慣、額外加分與共用交易；詳見 `docs/HABITS.md` |
+| `wallet.html`、`assets/wallet*.mjs` | 系統貨幣支出、常用項目、取消及單筆復原；詳見 `docs/WALLET.md` |
 | `assets/data.mjs` | 唯一共用持久資料來源及資料交易 |
 | `assets/recovery.mjs` | 集中式復原期限、筆數、相依鏈與遷移 |
 | `assets/abilities.mjs` | 五項能力、初始值與數值規則 |
@@ -28,7 +29,7 @@
 | `assets/image-store.mjs`、`assets/image-references.mjs` | IndexedDB 圖片資產及集中引用檢查 |
 | `assets/coordination.mjs` | 寫入與維護操作的跨分頁協調 |
 | `assets/page-layout.css` | 首頁／待辦／習慣桌面共用標題列、捲軸及內容起點 |
-| `assets/app-shell.mjs`、`assets/page-lifecycle.mjs` | 三頁共用外框、History 路由、有界草稿 DOM 與暫停／恢復 |
+| `assets/app-shell.mjs`、`assets/page-lifecycle.mjs` | 全站共用外框、History 路由、有界草稿 DOM 與暫停／恢復 |
 | `assets/navigation.mjs`、`assets/navigation-size.mjs`、`assets/tab-position.mjs` | 常駐導覽、鍵盤／高度避讓與手機頁籤定位 |
 | `assets/appearance-core.js`、`assets/appearance.css` | 全站外觀與初次繪製前套用 |
 | `scripts/build.mjs` | 產生 `work/build/` 靜態發布成果 |
@@ -42,7 +43,7 @@
 - 首頁日期使用裝置當地時間，日期、星期與今日待辦一致；首頁初始解析即填日期，跨日每分鐘及回到前景／站內返回更新。桌面歡迎文案仍為「慢慢成長，慢慢變好」及「A little space for everyday life」。
 - 小於1024px：日期、數值列與待辦／打卡頁籤；首頁「新增事件」靠右，直接開共用當日事件表單，不切頁。夥伴為可拖移的限時浮窗，預設頁面最上方；初次／重新整理／切回首頁招呼，首頁成功行動依正式生活事件回應，顯示10秒後收起，桌面不變。
 - 1024px 起：頂部共用導覽；歡迎文字左、日期右；主內容左側直立夥伴槽及內下方對話，右側數值列與行動頁籤。桌面也切換待辦／打卡，不恢復舊版兩清單同時並排。
-- 數值列為等級、畫面經驗、貨幣，無稱呼；讀取共用資料，不在首頁另存數值。
+- 數值列為等級、畫面經驗、貨幣（`$目前/累積取得`），無稱呼；讀取共用資料，不在首頁另存數值。
 - 待辦為正式今日資料，與待辦頁共用完成、獎勵及復原；習慣與正式習慣頁共用服務，首頁只提供今日快捷操作。舊示意活動鍵保留，不灌入正式待辦。
 - 首頁今日清單可在完整外框模組就緒前先顯示，但必須先等待同一 dataStore 的遷移、寫入鎖及復原期限檢查；共用同一渲染函式，不直接另讀 localStorage。操作模組未就緒前停用勾選與新增，正式掛載時接管並移除預覽訂閱；失敗顯示明確錯誤，不永久停在載入中。詳見 docs/LOAD_AND_DATE.md。
 - 兩面板以當前較高者同步高度，避免切換與手機定位跳動；保留共用 DOM、勾選與對話狀態。
@@ -99,7 +100,7 @@
 - 使用者資料屬於瀏覽器與網站來源，不屬於 Git 分支；不清空儲存解決遷移問題，不擅自重跑一次性數值遷移。
 - 所有保存、復原及還原走共用交易與跨分頁協調；維護時遇未儲存草稿提供具體提示。
 - 長期 `history` 保存操作中繼資料與數值差額，不保留個人資料／圖片快照；短期 `undoHistory` 保存復原快照，兩者不可一起裁切。
-- 基本資料、外觀、立繪、頭像及最愛可復原 24 小時；待辦、打卡與手動數值修改可復原 7 天；全站最多最近 15 次操作，任一限制先達者生效。
+- 基本資料、外觀、立繪、頭像及最愛可復原 24 小時；待辦、打卡、錢包與手動數值修改可復原 7 天；全站最多最近 15 次操作，任一限制先達者生效。
 - 同次交易含不同期限時採短期限；Undo／Redo 不延長原始期限、不另新增歷史。原操作時間、分支與相依鏈由 recovery service 統一檢查，無法證明安全時停止。
 - 不再有「記錄所有動作／記錄操作歷史」開關。歷史系統自身維護不新增使用者紀錄。
 - 復原資料到期不刪目前資料或有效行動紀錄；長期紀錄目前不是已完成的統計事件模型。習慣 mini／plus／elite 與統計依 `docs/HABITS.md`；不得因統計而刪除明細。
@@ -151,7 +152,7 @@
 
 - 從最新遠端 `main` 接續，不從舊 `codex/homepage-preview` 開始。保護其他任務與未提交修改；使用目前隔離 checkout，未要求不另建 worktree。
 - 發布前比較 `main` 與 `gh-pages`；發布分支有獨有功能修正時先安全整合回來源。
-- `npm run build` 產生 `work/build/`，發布四頁與完整 assets；保留 .nojekyll、CNAME 等既有設定及 gh-pages 歷史，不將發布分支直接指向原始碼 commit，不強制推送。
+- `npm run build` 產生 `work/build/`，發布全部正式HTML頁面與完整 assets；保留 .nojekyll、CNAME 等既有設定及 gh-pages 歷史，不將發布分支直接指向原始碼 commit，不強制推送。
 - 只有文件修改不需重新部署網站；使用者要求完成並發布時才完成相應建置與發布。
 - 回報分開列出程式／測試、main 推送、發布推送、Pages workflow 與公開網站實測。確認 workflow 對應發布 commit，不能以推送成功代替部署成功。
 - 網路受阻時區分命令網路權限、環境代理、網域白名單與認證；不移除強制代理或要求修改使用者電腦。具體回報未驗證項目。
@@ -258,3 +259,9 @@ M/P/E立即更新暫時aria-pressed／busy，不先重繪整頁；pending只留�
 日常圖片層使用帶#main與擁有者層級的CSS選擇器，固定position:absolute／inset:0與滿框尺寸；不受角色設定頁character-image-view的position:relative覆蓋。桌面3:4滿框、手機原crop頭像；同文件手機／桌面切換時移除不再適用的avatar class。來源Blob、裁切、圖片備份及正式資料不變。
 
 手機浮窗顯示10秒，獨立44px觸控關閉按鈕位於圓形頭像右上方，錨定頭像而非較高對話框；關閉不觸發拖曳／收合或資料交易。僅首頁進入／返回顯示招呼，待辦／習慣僅正式操作回應。浮窗最多40個可見字元（省略號計入、保留組合emoji），以顯示層處理；原招呼／AI回覆／角色及備援文字不截短，切至桌面還原完整文字。詳見docs/COMPANION_DISPLAY_VERIFICATION.md。
+
+## 錢包與累積貨幣
+
+錢包帳本是正式系統貨幣支出頁，沿習慣桌面布局／共用手機daily-header與浮窗，無圖表／第二套導覽。唯一dataStore wallet保存常用項目與不可改寫金額的逐筆快照；共用鎖與revision一次保存扣款／退款、帳目、history及affinity來源。取消長期可用，Undo／Redo為七天／最近15筆且只存單筆wallet patch。正式消費+1依原來源／credit防刷，不從UI加分；AI沿getSharedAIConnection且每筆最多一次，中性消費備援、不套待辦完成句。
+
+stats.currencyEarned缺省以文件自身餘額初始化一次，保留0；舊Undo／Redo快照同時遷移，不淘汰有效鏈。獎勵／撤回與手動校正按實際delta調整累積量，消費／退款不調整；restart兩者歸零。舊備份用備份本身餘額初始化，完整備份含錢包與證據。詳見[docs/WALLET.md](docs/WALLET.md)。

@@ -1,6 +1,6 @@
-import {compactPersona} from './persona-prompt.mjs?v=companion-actions-20261029';
-import {emotionId} from './character-images-model.mjs?v=daily-polish-20261029';
-import {relationshipStage,RELATIONSHIP_STAGES,STYLE_FIELDS} from './characters-model.mjs?v=companion-panel-20261029';
+import {compactPersona} from './persona-prompt.mjs?v=wallet-20261031';
+import {emotionId} from './character-images-model.mjs?v=wallet-20261031';
+import {relationshipStage,RELATIONSHIP_STAGES,STYLE_FIELDS} from './characters-model.mjs?v=wallet-20261031';
 export const CHAT_TTL=86400000,CHAT_INPUT_LIMIT=800,CHAT_DOM_LIMIT=120,CHAT_CONTEXT_LIMIT=24;
 export const chatHash=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(value)))),v=>v.toString(16).padStart(2,'0')).join('');
 export const liveMessage=(m,now=Date.now())=>Number.isFinite(m.createdAt)&&m.expiresAt===m.createdAt+CHAT_TTL&&m.createdAt<=now+300000&&m.expiresAt>now;

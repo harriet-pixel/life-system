@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261029';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=companion-actions-20261029';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=companion-actions-20261029';
-import {createTaskService} from './tasks-service.mjs?v=companion-panel-20261029';
-import {allocation,allocationContext} from './tasks-model.mjs?v=daily-polish-20261029';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=daily-polish-20261029';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-actions-20261029';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=daily-polish-20261029';
+import {setOperationNotice} from './operation-notice.mjs?v=wallet-20261031';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=wallet-20261031';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=wallet-20261031';
+import {dataStore} from './data.mjs?v=wallet-20261031';
+import {createTaskService} from './tasks-service.mjs?v=wallet-20261031';
+import {allocation,allocationContext} from './tasks-model.mjs?v=wallet-20261031';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=wallet-20261031';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=wallet-20261031';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=wallet-20261031';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}

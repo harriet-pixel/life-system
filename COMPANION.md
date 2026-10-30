@@ -137,3 +137,7 @@ replyLibrary.version:2按角色／positive-negative／八情緒稀疏分類，�
 日常圖片層使用帶#main與擁有者層級的CSS選擇器，固定position:absolute／inset:0與滿框尺寸；不受角色設定頁character-image-view的position:relative覆蓋。桌面3:4滿框、手機原crop頭像；同文件手機／桌面切換時移除不再適用的avatar class。來源Blob、裁切、圖片備份及正式資料不變。
 
 手機浮窗顯示10秒，獨立44px觸控關閉按鈕位於圓形頭像右上方，錨定頭像而非較高對話框；關閉不觸發拖曳／收合或資料交易。僅首頁進入／返回顯示招呼，待辦／習慣僅正式操作回應。浮窗最多40個可見字元（省略號計入、保留組合emoji），以顯示層處理；原招呼／AI回覆／角色及備援文字不截短，切至桌面還原完整文字。詳見docs/COMPANION_DISPLAY_VERIFICATION.md。
+
+## 錢包消費來源
+
+每筆正式wallet.spent原子保存wallet:<receiptId>好感來源+1，無有效角色保存actual0且不補發。取消／Undo／Redo沿原受獎角色、最低0與credit／ceiling；不直接修改好感餘額、不給新出場角色。正式消費情境沿共用AI與人格／階段；只傳本次名稱／實際花費，busy／無連線／失敗使用專屬中性消費備援，不套完成待辦句。管理、純查看、還原及取消不生成。來源／人格／階段／出場／epoch／離頁失效拒絕遲到回覆。見docs/WALLET.md。

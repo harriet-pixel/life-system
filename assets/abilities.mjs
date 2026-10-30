@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=daily-polish-20261029';
+import {integerValue} from './validation.mjs?v=wallet-20261031';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([
@@ -20,6 +20,7 @@ export const levelFromExperience = experience => Math.max(VALUE_RULES.initialLev
 export const visibleExperience = experience => Math.max(0, (experience ?? VALUE_RULES.minimumExperience) - VALUE_RULES.minimumExperience);
 // Old rule versions are reset once by the store, not reinterpreted here.
 export function normalizeStats(stats = {}) {
+  if(Object.hasOwn(stats,'currencyEarned')&&(!Number.isSafeInteger(stats.currencyEarned)||stats.currencyEarned<0))throw new Error('累積取得貨幣須為非負安全整數。');
   const experience = Math.max(VALUE_RULES.minimumExperience, stats.experience ?? VALUE_RULES.minimumExperience);
   const previous = stats.abilities ?? [];
   const abilities = ABILITIES.map(a => ({ id: a.id, name: a.name, value: previous.find(x => x.id === a.id || x.name === a.name)?.value ?? 0 }));
@@ -27,7 +28,7 @@ export function normalizeStats(stats = {}) {
   // Current-version loads preserve snapshots; only actual edits recalculate levels.
   // Extra offset data is inert and removed when experience or abilities change.
   const level = Number.isSafeInteger(stats.level) && stats.level >= VALUE_RULES.initialLevel ? stats.level : levelFromExperience(experience);
-  const result = { ...stats, experience, level, currency: stats.currency ?? 0, abilities };
+  const result = { ...stats, experience, level, currency: stats.currency ?? 0, currencyEarned: stats.currencyEarned ?? stats.currency ?? 0, abilities };
   if (unknown.length) result.legacyAbilities = [...(stats.legacyAbilities ?? []), ...unknown];
   return result;
 }
@@ -38,7 +39,7 @@ export function validateStats(value, current) {
   integerValue(value.level ?? VALUE_RULES.initialLevel, 'level');
   if(value.level<VALUE_RULES.initialLevel||value.experience<VALUE_RULES.minimumExperience)throw new Error('等級最低為 1，內部經驗最低為 100。');
   const stats = normalizeStats(value);
-  integerValue(stats.experience, 'experience'); integerValue(stats.currency, 'currency'); integerValue(stats.level, 'level');
+  integerValue(stats.currencyEarned, 'currencyEarned'); integerValue(stats.experience, 'experience'); integerValue(stats.currency, 'currency'); integerValue(stats.level, 'level');
   if (current && stats.experience !== current.experience) {
     stats.level = levelFromExperience(stats.experience);
     delete stats.levelOffset;

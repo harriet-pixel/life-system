@@ -1,7 +1,7 @@
-import {AI_TEST_TEXT} from './ai-prompts.mjs?v=daily-polish-20261029';
-import {createAIConnection} from './ai-service.mjs?v=daily-polish-20261029';
-import {createAISession} from './ai-session.mjs?v=daily-polish-20261029';
-import {createProviderAdapter} from './ai-providers.mjs?v=daily-polish-20261029';
+import {AI_TEST_TEXT} from './ai-prompts.mjs?v=wallet-20261031';
+import {createAIConnection} from './ai-service.mjs?v=wallet-20261031';
+import {createAISession} from './ai-session.mjs?v=wallet-20261031';
+import {createProviderAdapter} from './ai-providers.mjs?v=wallet-20261031';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null,defaultBrowser=false}={}){
  const session=createAISession(storage,{now}),listeners=new Set();

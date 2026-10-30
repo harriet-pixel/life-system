@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
 import {DAY,maintainRecovery,recoveryLifetime} from '../assets/recovery.mjs';
-import {documentImageReferences} from '../assets/image-references.mjs?v=daily-polish-20261029';
+import {documentImageReferences} from '../assets/image-references.mjs?v=wallet-20261031';
 import {encodeBackup,readBackup,dataCount} from '../assets/backup.mjs';
 const memory=()=>{let raw=null;return {getItem:()=>raw,setItem:(_,v)=>raw=v};};
 const fixture=()=>{let time=Date.now()-10*DAY;const storage=memory(),store=createDataStore(storage,{now:()=>time});return {store,storage,get time(){return time;},advance:n=>time+=n};};
@@ -9,7 +9,7 @@ const edit=(s,changes,type='settings.update')=>s.transact({type,label:'測試操
 test('24h and 7d exact boundaries, mixed transactions take the shorter lifetime',async()=>{
  for(const [category,duration]of [['profile',DAY],['stats',7*DAY],['mixed',DAY],['activities',7*DAY]]){
  const f=fixture(),s=f.store;const changes=category==='stats'?{stats:{...s.get().stats,currency:20}}:category==='activities'?{activities:{task:true}}:{profile:{...s.get().profile,name:'修改'},...(category==='mixed'?{stats:{...s.get().stats,currency:20}}:{})};
- edit(s,changes);assert.equal(recoveryLifetime(s.get().undoHistory[0]),duration);f.advance(duration-1);assert.equal(s.getState().available,true);f.advance(1);assert.equal(s.getState().available,false);assert.equal((await s.undo()).ok,false);assert.equal(s.get().history.length,1);s.maintain();assert.equal(JSON.parse(f.storage.getItem(STORAGE_KEY)).undoHistory.length,0);for(const [key,value]of Object.entries(changes))assert.deepEqual(s.get()[key],value);
+ edit(s,changes);assert.equal(recoveryLifetime(s.get().undoHistory[0]),duration);f.advance(duration-1);assert.equal(s.getState().available,true);f.advance(1);assert.equal(s.getState().available,false);assert.equal((await s.undo()).ok,false);assert.equal(s.get().history.length,1);s.maintain();assert.equal(JSON.parse(f.storage.getItem(STORAGE_KEY)).undoHistory.length,0);for(const [key,value]of Object.entries(changes))assert.deepEqual(s.get()[key],key==='stats'?{...value,currencyEarned:20}:value);
  }
 });
 test('Undo and Redo never renew original timestamps and their combined cap is 15',async()=>{

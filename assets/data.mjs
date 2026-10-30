@@ -1,19 +1,21 @@
-import {attemptJournalRescue} from './storage-vault.mjs?v=daily-polish-20261029';
-import {storageFailure} from './storage-diagnostics.mjs?v=daily-polish-20261029';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=companion-panel-20261029';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=companion-panel-20261029';
-import {integrateAffinity} from './affinity-integration.mjs?v=companion-panel-20261029';
-import {settleAffinity} from './affinity-settlement.mjs?v=companion-panel-20261029';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=companion-panel-20261029';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=daily-polish-20261029';
-import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261029';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=daily-polish-20261029';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=companion-panel-20261029';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=daily-polish-20261029';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=daily-polish-20261029';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=daily-polish-20261029';
-import { migrateImages } from './image-store.mjs?v=daily-polish-20261029';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=daily-polish-20261029';
+import {walletSnapshots} from './wallet-recovery.mjs?v=wallet-20261031';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=wallet-20261031';
+import {attemptJournalRescue} from './storage-vault.mjs?v=wallet-20261031';
+import {storageFailure} from './storage-diagnostics.mjs?v=wallet-20261031';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=wallet-20261031';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=wallet-20261031';
+import {integrateAffinity} from './affinity-integration.mjs?v=wallet-20261031';
+import {settleAffinity} from './affinity-settlement.mjs?v=wallet-20261031';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=wallet-20261031';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=wallet-20261031';
+import {setOperationNotice} from './operation-notice.mjs?v=wallet-20261031';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=wallet-20261031';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=wallet-20261031';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=wallet-20261031';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=wallet-20261031';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=wallet-20261031';
+import { migrateImages } from './image-store.mjs?v=wallet-20261031';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=wallet-20261031';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -22,7 +24,7 @@ export const STORAGE_KEY = 'life-system.data.v1';
 const copy = value => structuredClone(value);
 const undoRecord = undoCandidate;
 const redoRecord = redoCandidate;
-const initial = () => ({ revision: 0, companion: emptyCharacters(), affinity: emptyAffinity(), statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, tasks: emptyTasks(), habits: emptyHabits(), stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
+const initial = () => ({ revision: 0, companion: emptyCharacters(), affinity: emptyAffinity(), statsRulesVersion: STATS_RULES_VERSION, profile: { name: '', age: '', gender: '', bio: '', boundaries: '', motto: '' }, photo: null, avatar: null, photoEdit: null, avatarEdit: null, portraits: [], currentPortraitId: null, activities: {}, wallet: emptyWallet(), tasks: emptyTasks(), habits: emptyHabits(), stats: createInitialStats(), settings: structuredClone(DEFAULT_SETTINGS), historyVersion:1, undoHistory:[], history: [] });
 // Preserve the published one-time legacy restart, but perform the write only
 // under the shared write lock; existing v2 progress and settings are untouched.
 // Only a genuinely empty device may adopt a cloud root without a choice.
@@ -53,6 +55,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
     value.companion ??= emptyCharacters();if(value.companion.version===1){try{value.companion=validateCharacters(value.companion);}catch{recoveryNotice='角色格式遷移暫停，原始內容已保留；其他本機資料仍可讀取。';}}
     value.affinity ??= emptyAffinity();
+    value.wallet=validateWallet(value.wallet??emptyWallet(),{shallow:true});
     value.habits = validateHabits(value.habits ?? emptyHabits());
     value.tasks = validateTasks(value.tasks ?? emptyTasks());
     value.settings = normalizeSettings(value.settings);
@@ -76,7 +79,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
   function cacheRecovery(result,time){const deadline=Math.min(Infinity,...result.document.undoHistory.map(expiresAt));recoveryCache={state,result,time,deadline};if(result.blocked)recoveryNotice='復原鏈已無法安全延續，相關復原已停止；目前資料與行動紀錄保留。';return result;}
   function currentRecovery(){const time=now();if(!recoveryCache||recoveryCache.state!==state||time<recoveryCache.time||time>=recoveryCache.deadline)return cacheRecovery(maintainRecovery(state,time),time);return recoveryCache.result;}
   const effective=()=>{const result=currentRecovery();return {...result,document:copy(result.document)};};
-  const project=(document,keys)=>keys===null?document:Object.fromEntries(keys.map(key=>{if(key==='activeCharacter'){const c=document.companion?.characters?.find(c=>c.characterId===document.companion.activeCharacterId&&!c.archived);return [key,c?{characterId:c.characterId,createdAt:c.createdAt,settings:{name:c.settings?.name??''},greetings:c.greetings,imageSettings:c.imageSettings}:null];}return [key,Object.hasOwn(document,key)?document[key]:undefined];}));
+  const project=(document,keys)=>keys===null?document:Object.fromEntries(keys.map(key=>{if(key.startsWith('walletRecord:'))return [key,document.wallet?.records[key.slice(13)]??null];if(key==='activeCharacter'){const c=document.companion?.characters?.find(c=>c.characterId===document.companion.activeCharacterId&&!c.archived);return [key,c?{characterId:c.characterId,createdAt:c.createdAt,settings:{name:c.settings?.name??''},greetings:c.greetings,imageSettings:c.imageSettings}:null];}return [key,Object.hasOwn(document,key)?document[key]:undefined];}));
   const notify = ({statusOnly=false}={}) => {const current=currentRecovery().document;listeners.forEach(entry=>{if(!statusOnly||!entry.changesOnly){const value=project(current,entry.keys),signature=entry.distinct?JSON.stringify(value):null;if(entry.distinct&&signature===entry.signature)return;entry.signature=signature;entry.fn(copy(value));}});};
   const persist = (next,timing=null,operation=null) => {const readAt=performance.now();
     const current = load();timing?.phase('storage-read-check',readAt);
@@ -96,7 +99,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     setBusy(value) {busy=value;notify({statusOnly:true});},
     // Dormant sync capability: callers must hold maintenance locks and validate the full document.
     replaceSynchronized(value,expectedRevision) {if(state.revision!==expectedRevision)throw new Error('同步期間本地資料已更新。');const checked=maintainRecovery(copy(value),now());if(checked.blocked)throw new Error('同步復原鏈無法安全延續。');persist(checked.document);},
-    replace(value) { const next=copy(value);next.companion=validateCharacters(next.companion);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}next.replyLibrary??=emptyReplyLibrary();next.replyLibrary.epoch=crypto.randomUUID();next.revision=Math.max(value.revision,state.revision+1);persist(next); },
+    replace(value) { const next=copy(value);next.stats=normalizeStats(next.stats);next.wallet=validateWallet(next.wallet??emptyWallet());next.companion=validateCharacters(next.companion);if(state.affinity?.chatEpoch||next.affinity?.chatEpoch){next.affinity??=emptyAffinity();next.affinity.chatEpoch=crypto.randomUUID();}next.replyLibrary??=emptyReplyLibrary();next.replyLibrary.epoch=crypto.randomUUID();next.revision=Math.max(value.revision,state.revision+1);persist(next); },
     subscribe(fn,{changesOnly=false,keys=null,distinct=false}={}) {const value=project(currentRecovery().document,keys),entry={fn,changesOnly,keys,distinct,signature:distinct?JSON.stringify(value):null};listeners.add(entry);fn(copy(value));return()=>listeners.delete(entry);},
     refresh() {if(storage.getItem(STORAGE_KEY)===loadedRaw){const previous=recoveryCache?.result.document;if(currentRecovery().document!==previous)notify();return;}state = load();notify();},
     transact({ type, label, target, changes, fields = [], expectedRevision, id, timing, reversible = true }) {const validateAt=performance.now();
@@ -111,14 +114,18 @@ export function createDataStore(storage,{now=Date.now}={}) {
         if(key==='replyLibrary')value=validateReplyManifest(rawValue);
         if(key==='habits')value=validateHabits(rawValue);
         if(key==='tasks')value=validateTasks(rawValue);
+        if(key==='wallet')value=validateWallet(rawValue);
         if(key==='activities')value=validateActivities(rawValue);
         if (key === 'stats') {
-          value = validateStats(rawValue, state.stats);
+          const delta=BigInt(rawValue.currency)-BigInt(state.stats.currency);
+          const earned=type==='stats.restart'?0n:BigInt(state.stats.currencyEarned)+(type?.startsWith('wallet.')?0n:delta);
+          if(earned<0n||earned>BigInt(Number.MAX_SAFE_INTEGER))throw new Error('累積取得貨幣超出安全範圍，整筆操作未儲存。');
+          value = validateStats({...rawValue,currencyEarned:Number(earned)}, state.stats);
         }
-        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'tasks', 'habits', 'stats', 'settings', 'companion', 'affinity', 'replyLibrary'].includes(key)) throw new Error('不支援的資料類型');
+        if (!['profile', 'photo', 'avatar', 'photoEdit', 'avatarEdit', 'portraits', 'currentPortraitId', 'activities', 'wallet', 'tasks', 'habits', 'stats', 'settings', 'companion', 'affinity', 'replyLibrary'].includes(key)) throw new Error('不支援的資料類型');
         if (key === 'portraits' && (!Array.isArray(value) || value.length>6 || new Set(value.map(item=>item.id)).size!==value.length)) throw new Error('最多保存 6 個立繪，請先刪除或更換既有項目。');
         if (JSON.stringify(state[key]) === JSON.stringify(value)) continue;
-        before[key] = copy(state[key]); after[key] = copy(value); next[key] = copy(value);
+        if(key==='wallet'){const snapshots=walletSnapshots(state.wallet,value);before[key]=snapshots.before;after[key]=snapshots.after;}else{before[key] = copy(state[key]); after[key] = copy(value);} next[key] = copy(value);
       }
       if (!Object.keys(after).length) return false;
       next.undoHistory=next.undoHistory.filter(record=>!record.undone);
@@ -129,7 +136,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
         const transactionId=id??crypto.randomUUID();committedId=transactionId;const time=new Date(now()).toISOString();
         const affinityPlan=integrateAffinity(state,next,{type:type??'data.update',operationId:transactionId,time});
         const record={id:transactionId,time,...(affinityPlan.length?{affinityPlan}:{}),type:type??'data.update',label:label??'已更新資料',target:target??'user',fields,before,after,delta,undone:false,undoneAt:null};
-        next.history.push(actionMetadata(record));if(reversible)next.undoHistory.push(record);
+        next.history.push(actionMetadata(record));if(type?.startsWith('wallet.'))validateWalletEvidence(next);if(reversible)next.undoHistory.push(record);
       }
       timing?.phase('transaction-validate',validateAt);persist(next,timing,{id:committedId,type:type??'data.update',label:label??'已更新資料',delta,before,after});return true;
     },
@@ -148,7 +155,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=companion-panel-20261029');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=wallet-20261031');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;
@@ -248,7 +255,7 @@ if (typeof window !== 'undefined') window.addEventListener('storage', e => { if 
 
 export function profileSummary(stats) {
   const shown = value => value > 0 ? String(value) : '—';
-  return `Exp ${visibleExperience(stats.experience) > 0 ? formatSI(visibleExperience(stats.experience)) : '—'} ｜ Lv ${shown(stats.level)} ｜ $ ${shown(stats.currency)}`;
+  return `Exp ${visibleExperience(stats.experience) > 0 ? formatSI(visibleExperience(stats.experience)) : '—'} ｜ Lv ${shown(stats.level)} ｜ $${stats.currency}/${stats.currencyEarned}`;
 }
 export function abilityShares(abilities) {
   const total = abilities.reduce((sum,a) => sum + a.value, 0);

@@ -1,11 +1,11 @@
-import {preserveBeforeRestore,listArchives} from './storage-vault.mjs?v=daily-polish-20261029';
-import {getSyncRuntime} from './cloud-sync-status.mjs?v=daily-polish-20261029';
-import {dataStore} from './data.mjs?v=companion-actions-20261029';
-import {withBackup,restoreBackup,downloadBlob,yieldBackupWork} from './backup.mjs?v=companion-actions-20261029';
-import {registerImageReferenceSource,documentImageReferences} from './image-references.mjs?v=companion-panel-20261029';
-import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=companion-actions-20261029';
-import {backupWarning,confirmOlderBackup,validTime} from './cloud-backup-policy.mjs?v=daily-polish-20261029';
-import {cloudBackupIdentity} from './cloud-backup-display.mjs?v=daily-polish-20261029';
+import {preserveBeforeRestore,listArchives} from './storage-vault.mjs?v=wallet-20261031';
+import {getSyncRuntime} from './cloud-sync-status.mjs?v=wallet-20261031';
+import {dataStore} from './data.mjs?v=wallet-20261031';
+import {withBackup,restoreBackup,downloadBlob,yieldBackupWork} from './backup.mjs?v=wallet-20261031';
+import {registerImageReferenceSource,documentImageReferences} from './image-references.mjs?v=wallet-20261031';
+import {driveAuth,getDriveState,uploadDriveBackup,listDriveBackups,downloadDriveBackup,deleteDriveBackup} from './google-drive.mjs?v=wallet-20261031';
+import {backupWarning,confirmOlderBackup,validTime} from './cloud-backup-policy.mjs?v=wallet-20261031';
+import {cloudBackupIdentity} from './cloud-backup-display.mjs?v=wallet-20261031';
 export const BACKUP_LIMIT=20;
 export const newestBackups=files=>[...files].sort((a,b)=>(Date.parse(b.createdTime??b.appProperties?.backupTime)||0)-(Date.parse(a.createdTime??a.appProperties?.backupTime)||0)||b.id.localeCompare(a.id));
 export function obsoleteBackups(files){files=files.filter(f=>!f.appProperties?.lifeSystemSyncVersion&&f.appProperties?.backupStatus!=='pending');if(files.some(f=>!Number.isFinite(Date.parse(f.createdTime??f.appProperties?.backupTime))))throw new Error('無法確認雲端備份時間，已停止清理較舊版本。');return newestBackups(files).slice(BACKUP_LIMIT);}

@@ -1,6 +1,6 @@
 // Versioned, immutable sync protocol. No clocks/revisions elect a winning branch.
 export const SYNC_VERSION=1,MAX_OPERATIONS=512,MAX_EPOCHS=64,MAX_RECEIPTS=32768;
-export const DATA_KEYS=['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','tasks','habits','stats','settings','companion','affinity','replyLibrary','statsRulesVersion','historyVersion'];
+export const DATA_KEYS=['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','activities','wallet','tasks','habits','stats','settings','companion','affinity','replyLibrary','statsRulesVersion','historyVersion'];
 export const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;
 export const same=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
 export const digest=async value=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(value)))))].map(n=>n.toString(16).padStart(2,'0')).join('');
