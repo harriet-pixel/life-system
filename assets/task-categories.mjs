@@ -1,7 +1,7 @@
-import {mountColorField} from './color-field.mjs?v=wallet-20261031';
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=wallet-20261031';
-import {dataStore} from './data.mjs?v=wallet-20261031';
-import {holdDraft} from './coordination.mjs?v=wallet-20261031';
+import {mountColorField} from './color-field.mjs?v=backup-chat-20261031';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=backup-chat-20261031';
+import {dataStore} from './data.mjs?v=backup-chat-20261031';
+import {holdDraft} from './coordination.mjs?v=backup-chat-20261031';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

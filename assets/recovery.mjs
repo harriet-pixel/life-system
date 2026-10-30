@@ -1,5 +1,5 @@
-import {walletMatches,applyWalletSnapshot} from './wallet-recovery.mjs?v=wallet-20261031';
-import {applyAffinityPlan} from './affinity-model.mjs?v=wallet-20261031';
+import {walletMatches,applyWalletSnapshot} from './wallet-recovery.mjs?v=backup-chat-20261031';
+import {applyAffinityPlan} from './affinity-model.mjs?v=backup-chat-20261031';
 // One policy for startup, replay, mutations, image references and backups.
 export const RECOVERY_LIMIT=15, DAY=86400000, HISTORY_VERSION=1;
 const shortKeys=new Set(['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','settings']);

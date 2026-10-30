@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=wallet-20261031';
+import {ABILITIES} from './abilities.mjs?v=backup-chat-20261031';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;

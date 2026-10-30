@@ -1,4 +1,4 @@
-import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=wallet-20261031';
+import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=backup-chat-20261031';
 // Manual character settings; image metadata is validated separately.
 export const RELATIONSHIP_STAGES=Object.freeze([
  ['初識',0],['熟悉',50],['友好',150],['信任',350],['默契',500],['深厚情誼',700],['長久羈絆',1000]
@@ -46,8 +46,12 @@ export function activeCharacterOnDate(raw,date){check(/^\d{4}-\d{2}-\d{2}$/.test
 export function validatePersonaInput(settings,stages){textFields(settings,CHARACTER_FIELDS);check(settings.name.trim(),'請填寫角色名稱。');for(const [key,value]of Object.entries(settings))check([...value].length<=(key==='name'?100:key==='background'?50:4000),'角色欄位過長。');check(object(stages)&&Object.keys(stages).length===7);for(const def of RELATIONSHIP_STAGES){const fields=textFields(stages[def.stage],STYLE_FIELDS);for(const value of Object.values(fields))check([...value].length<=4000,'階段欄位限4000字。');}return true;}
 export const GREETING_SLOTS=Object.freeze({morning:'早晨（05–11時）',afternoon:'午後（12–17時）',evening:'晚間（18–21時）',night:'深夜（22–04時）'});
 export const emptyGreetings=()=>Object.fromEntries(Object.keys(GREETING_SLOTS).map(k=>[k,'']));
-export function validateGreetings(raw){check(object(raw)&&Object.keys(raw).length===4&&Object.keys(raw).every(k=>Object.hasOwn(GREETING_SLOTS,k)),'首頁招呼格式不正確。');for(const v of Object.values(raw))check(typeof v==='string'&&[...v].length<=240,'首頁招呼過長，請縮短後再儲存。');return {...raw};}
-export function homeGreeting(character,now=new Date()){const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Taipei',hour:'2-digit',hourCycle:'h23'}).format(now)),slot=hour>=5&&hour<12?'morning':hour>=12&&hour<18?'afternoon':hour>=18&&hour<22?'evening':'night';try{return character&&!character.archived?validateGreetings(character.greetings??emptyGreetings())[slot].trim()||'歡迎回來，今天也一起慢慢前進。':'歡迎回來，今天也一起慢慢前進。';}catch{return '歡迎回來，今天也一起慢慢前進。';}}
+// Legacy strings remain readable; new editors save three variants per period.
+export function greetingVariants(value){return Array.isArray(value)?value:[value??''];}
+export function validateGreetings(raw){check(object(raw)&&Object.keys(raw).length===4&&Object.keys(raw).every(k=>Object.hasOwn(GREETING_SLOTS,k)),'首頁招呼格式不正確。');for(const v of Object.values(raw)){check(typeof v==='string'||Array.isArray(v)&&v.length===3,'每時段請設定三句招呼。');for(const line of greetingVariants(v))check(typeof line==='string'&&[...line].length<=240,'首頁招呼過長，請縮短後再儲存。');}return structuredClone(raw);}
+export function greetingSlot(now=new Date()){const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Taipei',hour:'2-digit',hourCycle:'h23'}).format(now));return hour>=5&&hour<12?'morning':hour>=12&&hour<18?'afternoon':hour>=18&&hour<22?'evening':'night';}
+export function homeGreeting(character,now=new Date(),index=0){try{const lines=character&&!character.archived?greetingVariants(validateGreetings(character.greetings??emptyGreetings())[greetingSlot(now)]).map(s=>s.trim()).filter(Boolean):[];return lines[index%lines.length]||'歡迎回來，今天也一起慢慢前進。';}catch{return '歡迎回來，今天也一起慢慢前進。';}}
+export function nextHomeGreeting(character,now=new Date(),storage=globalThis.sessionStorage){const slot=greetingSlot(now),key='life-system.greeting-rotation.'+(character?.characterId??'none')+'.'+slot;let index=0;try{const saved=Number(storage?.getItem(key));if(Number.isSafeInteger(saved)&&saved>=0)index=saved;storage?.setItem(key,String((index+1)%3));}catch{}return homeGreeting(character,now,index);}
 export function changeCharacters(raw,action,{now=Date.now(),id=()=>crypto.randomUUID()}={}){
  const d=validateCharacters(raw),time=new Date(Math.max(now,Date.parse(d.switchHistory.at(-1)?.time)||0)).toISOString();
  const find=key=>{const c=d.characters.find(c=>c.characterId===key);check(c,'角色已不存在，請重新選擇。');return c;};

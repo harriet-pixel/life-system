@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=wallet-20261031';
+import {integerValue} from './validation.mjs?v=backup-chat-20261031';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

@@ -1,7 +1,7 @@
-import {AI_TEST_TEXT} from './ai-prompts.mjs?v=wallet-20261031';
-import {createAIConnection} from './ai-service.mjs?v=wallet-20261031';
-import {createAISession} from './ai-session.mjs?v=wallet-20261031';
-import {createProviderAdapter} from './ai-providers.mjs?v=wallet-20261031';
+import {AI_TEST_TEXT} from './ai-prompts.mjs?v=backup-chat-20261031';
+import {createAIConnection} from './ai-service.mjs?v=backup-chat-20261031';
+import {createAISession} from './ai-session.mjs?v=backup-chat-20261031';
+import {createProviderAdapter} from './ai-providers.mjs?v=backup-chat-20261031';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null,defaultBrowser=false}={}){
  const session=createAISession(storage,{now}),listeners=new Set();

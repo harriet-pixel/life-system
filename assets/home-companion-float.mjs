@@ -1,4 +1,4 @@
-import {floatingDialogue} from './floating-dialogue.mjs?v=wallet-20261031';
+import {floatingDialogue} from './floating-dialogue.mjs?v=backup-chat-20261031';
 // Home-only presentation. Position/collapse state stays with this cached view;
 // mock dialogue, images and emotion continue to use the existing shared controller.
 export function mountHomeCompanionFloat(root,context,{selector='.companion',greeting=true,greetingText=()=>'歡迎回來，今天也一起慢慢前進。',onHide=()=>{}}={}){
@@ -31,5 +31,5 @@ export function mountHomeCompanionFloat(root,context,{selector='.companion',gree
  const changes=new MutationObserver(schedule),resize=new ResizeObserver(schedule),observe=()=>{resize.observe(companion);resize.observe(document.documentElement);changes.observe(document.documentElement,{attributes:true,attributeFilter:['data-keyboard','style']});changes.observe(document.body,{subtree:true,attributes:true,attributeFilter:['open']});};observe();context.listen(mobile,'change',sync);context.listen(window,'resize',schedule);context.listen(document.fonts,'loadingdone',schedule);
  if(window.visualViewport){context.listen(visualViewport,'resize',schedule);context.listen(visualViewport,'scroll',schedule);}
  context.onSuspend(()=>{clearTimeout(timer);dismissed=true;cancelAnimationFrame(frame);resize.disconnect();changes.disconnect();drag=null;});const show=()=>{if(!context.active||!mobile.matches||document.querySelector('dialog[open]'))return;clearTimeout(timer);dismissed=false;expanded=true;sync();startTimer();};
- const greet=()=>{if(!greeting||!mobile.matches)return;const text=root.querySelector('#companion-dialogue');text.textContent=greetingText();show();};context.onResume(()=>{observe();greet();sync();});context.listen(document,'life-system:recovery-succeeded',()=>{clearTimeout(timer);dismissed=true;sync();});sync();greet();return {reply:show,hide(){clearTimeout(timer);if(dismissed)return;dismissed=true;sync();}};
+ const greet=()=>{if(!greeting||!mobile.matches)return;const text=root.querySelector('#companion-dialogue');text.textContent=greetingText();show();};context.onResume(()=>{observe();queueMicrotask(greet);sync();});context.listen(document,'life-system:recovery-succeeded',()=>{clearTimeout(timer);dismissed=true;sync();});sync();greet();return {reply:show,hide(){clearTimeout(timer);if(dismissed)return;dismissed=true;sync();}};
 }

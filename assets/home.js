@@ -1,21 +1,22 @@
-import {homeGreeting} from './characters-model.mjs?v=wallet-20261031';
-import {mountHabitQuick} from './habit-quick.mjs?v=wallet-20261031';
-import {renderHomeToday} from './home-today.mjs?v=wallet-20261031';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=wallet-20261031';
-import {createTaskEditor} from './task-editor.mjs?v=wallet-20261031';
-import {createCategoryManager} from './task-categories.mjs?v=wallet-20261031';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=wallet-20261031';
-import {taskActions} from './task-actions.mjs?v=wallet-20261031';
-import {localDate} from './tasks-model.mjs?v=wallet-20261031';
-import { createMobileTabPositioner } from './tab-position.mjs?v=wallet-20261031';
-import { createActivityHeightSync } from './activity-height.mjs?v=wallet-20261031';
-import { undoManager } from './undo.mjs?v=wallet-20261031';
-import {createSharedCompanionView} from './companion-events.mjs?v=wallet-20261031';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=wallet-20261031';
+import {nextHomeGreeting} from './characters-model.mjs?v=backup-chat-20261031';
+import {mountHabitQuick} from './habit-quick.mjs?v=backup-chat-20261031';
+import {renderHomeToday} from './home-today.mjs?v=backup-chat-20261031';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=backup-chat-20261031';
+import {createTaskEditor} from './task-editor.mjs?v=backup-chat-20261031';
+import {createCategoryManager} from './task-categories.mjs?v=backup-chat-20261031';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=backup-chat-20261031';
+import {taskActions} from './task-actions.mjs?v=backup-chat-20261031';
+import {localDate} from './tasks-model.mjs?v=backup-chat-20261031';
+import { createMobileTabPositioner } from './tab-position.mjs?v=backup-chat-20261031';
+import { createActivityHeightSync } from './activity-height.mjs?v=backup-chat-20261031';
+import { undoManager } from './undo.mjs?v=backup-chat-20261031';
+import {createSharedCompanionView} from './companion-events.mjs?v=backup-chat-20261031';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=backup-chat-20261031';
 
 
 export function mountHome(root,context){
-const floating=mountHomeCompanionFloat(root,context,{greetingText:()=>homeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter)});
+let currentGreeting=nextHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter);
+const floating=mountHomeCompanionFloat(root,context,{greetingText:()=>currentGreeting});
 const refreshDate=()=>{globalThis.LifeHomeDate?.render(root);renderToday();};
 context.listen(window,'focus',refreshDate);context.listen(document,'visibilitychange',()=>{if(!document.hidden)refreshDate();});context.onResume(refreshDate);
 let dateTimer;const startDateTimer=()=>{clearInterval(dateTimer);dateTimer=setInterval(refreshDate,60000);};startDateTimer();context.onSuspend(()=>clearInterval(dateTimer));context.onResume(startDateTimer);
@@ -38,11 +39,11 @@ function showPlaceholder(label) {
 }
 let dailyVisual=null,visualRequest=0;
 let greetingIdentity='';
-function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=wallet-20261031').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=backup-chat-20261031').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
 context.onSuspend(()=>visualRequest++);
-function showHomeGreeting(actor){dialogue.textContent=homeGreeting(actor);if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
-context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
-context.onResume(()=>showHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter));
+function showHomeGreeting(actor){dialogue.textContent=currentGreeting;if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
+context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){if(greetingIdentity)currentGreeting=nextHomeGreeting(c);greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
+context.onResume(()=>{currentGreeting=nextHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter);showHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter);});
 const companion = createSharedCompanionView({
   getContext: () => ({ character: null, affinity: null }),
   render(reply,actions,meta) {

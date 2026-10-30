@@ -1,19 +1,19 @@
-import {backupStatus} from './cloud-sync-status.mjs?v=wallet-20261031';
-import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=wallet-polish-20261031';
-import {createCloudRestore} from './cloud-restore.mjs?v=wallet-polish-20261031';
-import {getCloudBackup} from './cloud-backup.mjs?v=wallet-polish-20261031';
-import {setOperationNotice} from './operation-notice.mjs?v=wallet-20261031';
-import {initializeUIFeedback} from './ui-feedback.mjs?v=wallet-20261031';
-import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=wallet-20261031';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=wallet-polish-20261031';
-import {persistentUndo,dataStore} from './data.mjs?v=wallet-20261031';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=wallet-20261031';
-import {initializeNavigationSize} from './navigation-size.mjs?v=wallet-20261031';
-import {mountDailyHeader} from './daily-header.mjs?v=wallet-20261031';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=wallet-20261031';
-const routes={wallet:{mount:()=>import('./wallet.mjs?v=wallet-polish-20261031'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=wallet-polish-20261031'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=wallet-20261031'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=wallet-20261031'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=wallet-20261031'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=wallet-20261031'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=wallet-polish-20261031'),export:'mountSettings'}};
+import {backupStatus} from './cloud-sync-status.mjs?v=backup-chat-20261031';
+import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=backup-chat-20261031';
+import {createCloudRestore} from './cloud-restore.mjs?v=backup-chat-20261031';
+import {getCloudBackup} from './cloud-backup.mjs?v=backup-chat-20261031';
+import {setOperationNotice} from './operation-notice.mjs?v=backup-chat-20261031';
+import {initializeUIFeedback} from './ui-feedback.mjs?v=backup-chat-20261031';
+import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=backup-chat-20261031';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=backup-chat-20261031';
+import {persistentUndo,dataStore} from './data.mjs?v=backup-chat-20261031';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=backup-chat-20261031';
+import {initializeNavigationSize} from './navigation-size.mjs?v=backup-chat-20261031';
+import {mountDailyHeader} from './daily-header.mjs?v=backup-chat-20261031';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=backup-chat-20261031';
+const routes={wallet:{mount:()=>import('./wallet.mjs?v=backup-chat-20261031'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=backup-chat-20261031'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=backup-chat-20261031'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=backup-chat-20261031'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=backup-chat-20261031'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=backup-chat-20261031'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=backup-chat-20261031'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map(),prefetchedPages=new Map();
-async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'wallet-20261031'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'backup-chat-20261031'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
@@ -105,7 +105,7 @@ getCloudBackup();
 if(getDriveState().linked)void prepareDriveAuth().catch(()=>{});
 
 // Do not put settlement on the first-paint dependency path.
-const startAffinity=()=>import('./affinity-runtime.mjs?v=wallet-20261031').catch(()=>{});
+const startAffinity=()=>import('./affinity-runtime.mjs?v=backup-chat-20261031').catch(()=>{});
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
 
 // Local successful actions announce only after the authoritative commit.

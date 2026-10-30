@@ -7,10 +7,10 @@
   <meta name="description" content="Life system 隱私權政策：說明本機資料、Google Drive 手動備份、AI 服務與資料刪除方式。">
   <title>Life system｜隱私權政策</title>
   <link rel="icon" href="data:,">
-  <script src="assets/appearance-core.js?v=wallet-20261031" data-appearance-core></script>
-  <link rel="stylesheet" href="assets/styles.css?v=wallet-20261031">
-  <link rel="stylesheet" href="assets/appearance.css?v=wallet-20261031">
-  <link rel="stylesheet" href="assets/privacy.css?v=wallet-20261031">
+  <script src="assets/appearance-core.js?v=backup-chat-20261031" data-appearance-core></script>
+  <link rel="stylesheet" href="assets/styles.css?v=backup-chat-20261031">
+  <link rel="stylesheet" href="assets/appearance.css?v=backup-chat-20261031">
+  <link rel="stylesheet" href="assets/privacy.css?v=backup-chat-20261031">
 </head>
 <body class="privacy-page">
   <a class="skip-link" href="#main">跳至主要內容</a>
@@ -36,7 +36,7 @@
 
       <section aria-labelledby="cloud"><h2 id="cloud">三、雲端備份與還原</h2>
         <p>本站使用手動備份與還原。連接 Google 不會自動上傳生活資料、合併其他裝置的變更或自動還原。只有您手動按下「上傳雲端」或「備份至雲端」才建立備份；開啟備份／還原管理時會讀取雲端版本清單。</p>
-        <p>手動備份包含共用生活資料、角色設定與好感度等正式紀錄、歷史與可復原資料、所需個人／角色圖片，以及日常回覆庫資產。備份另附時間、資料雜湊及一般裝置類型（例如 iPhone、Windows 電腦），用於辨識版本與核對完整性，不上傳原始 User-Agent 作為備份標籤。短期角色聊天全文與 AI 金鑰、Google Token 不納入備份。</p>
+        <p>手動備份包含共用生活資料、角色設定與好感度等正式紀錄、歷史與可復原資料、所需個人／角色圖片，以及日常回覆庫資產。備份另附時間、資料雜湊及一般裝置類型（例如 iPhone、Windows 電腦），用於辨識版本與核對完整性，不上傳原始 User-Agent 作為備份標籤。仍在原24小時期限內的角色聊天全文納入本機明文／加密及手動雲端備份；還原不延長期限，也不重新生成或計分。備份檔中的文字快照不會在24小時後自動抹除，會保留至該檔被刪除或依5筆版本政策淘汰；可自行下載加密本機備份。AI金鑰與Google Token不納入備份。</p>
         <p>新雲端備份為未加密 JSON；應用程式專用資料夾不是端對端加密保管庫。上傳流程會建立檔案，再寫入備份內容。新備份上傳後須下載回讀、比對內容並通過完整驗證，才依實際建立時間保留最近 20 筆完整備份，刪除超額舊完整備份；舊明文與加密完整備份一併計算。失敗、驗證未完成或時間不明時不清理。開啟網站、登入及查看版本不會清理，也不主動刪除舊同步紀錄或圖檔。</p>
         <p>還原須下載、驗證及由您確認，才取代目前本機資料；還原前會在本機保留保護副本。既有同步日誌也可能移存本機 IndexedDB，以保護待處理資料，不因此上傳雲端。</p>
       </section>

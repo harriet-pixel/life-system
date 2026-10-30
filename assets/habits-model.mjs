@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=wallet-20261031';
+import {ABILITIES} from './abilities.mjs?v=backup-chat-20261031';
 export const LEVELS=['-','M','P','E'],POINTS={'-':0,M:1,P:2,E:3};
 export const ACHIEVEMENTS={streak2:1,streak3:3,streak7:5,streak10:3,total15:3,total23:10,triple:2,attendance:20};
 export const emptyHabits=()=>({version:1,periods:[],records:[],bonusItems:[],bonusRecords:[],specialUsed:[],corrections:[]});
