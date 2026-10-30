@@ -14,14 +14,15 @@ export function mountWallet(root,context){
  mountTaskCompanion(root,context,{kind:'wallet',selector:'#habit-companion'});initializeTaskDialogs(root,context);
  $('#wallet-month').value=localMonth(new Date());
  const open=(d,from=document.activeElement)=>{trigger=from;d.showModal();};
- const close=d=>{d.close();if(d===editor&&returnTo===items){returnTo=null;items.showModal();$('#wallet-new-item').focus();}else if(trigger?.isConnected)trigger.focus({preventScroll:true});};
+ const restoreFocus=()=>{(trigger?.isConnected?trigger:$('#wallet-add')).focus({preventScroll:true});};
+ const close=d=>{d.close();if(d===editor&&returnTo===items){returnTo=null;items.showModal();$('#wallet-new-item').focus();}else restoreFocus();};
  function ask(text,action,parent=null){if(parent)parent.close();pending={action,parent};$('#wallet-confirm-text').textContent=text;$('#wallet-confirm-error').textContent='';confirm.showModal();}
  function requestClose(d){if(busy)return;if(dirty(d)){ask('捨棄尚未儲存的輸入？',()=>{if(d===spend){form.reset();spendBaseline=values(form);submissionId=crypto.randomUUID();}else{itemForm.reset();itemBaseline=values(itemForm);}close(d);},d);}else close(d);}
  for(const d of [spend,items,editor]){d.addEventListener('cancel',e=>{e.preventDefault();requestClose(d);});d.querySelector('[data-close]').onclick=()=>requestClose(d);d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)requestClose(d);});}
- const backConfirm=()=>{if(busy)return;const parent=pending?.parent;pending=null;confirm.close();if(parent)parent.showModal();else trigger?.focus({preventScroll:true});};
+ const backConfirm=()=>{if(busy)return;const parent=pending?.parent;pending=null;confirm.close();if(parent)parent.showModal();else restoreFocus();};
  $('#wallet-confirm-no').onclick=backConfirm;confirm.addEventListener('cancel',e=>{e.preventDefault();backConfirm();});
  async function run(action,error){if(busy)return false;busy=true;context.notify();root.querySelectorAll('dialog button[type=submit],#wallet-confirm-yes').forEach(b=>b.disabled=true);try{await action();return true;}catch(e){$(error).textContent=e.message;say(e.message);return false;}finally{busy=false;context.notify();root.querySelectorAll('dialog button[type=submit],#wallet-confirm-yes').forEach(b=>b.disabled=false);}}
- $('#wallet-confirm-yes').onclick=()=>run(async()=>{const action=pending?.action;if(!action)return;await action();pending=null;confirm.close();if(trigger?.isConnected)trigger.focus({preventScroll:true});},'#wallet-confirm-error');
+ $('#wallet-confirm-yes').onclick=()=>run(async()=>{const action=pending?.action;if(!action)return;await action();pending=null;confirm.close();restoreFocus();},'#wallet-confirm-error');
  function populateSources(){const selected=form.elements.sourceId.value,w=dataStore.getFields(['wallet']).wallet??emptyWallet(),options=[new Option('單次消費',''),...Object.values(w.items).map(i=>new Option('常用：'+i.name,i.id))];if(selected&&!Object.values(w.items).some(i=>i.id===selected))options.push(new Option('原常用項目已刪除（可改單次）',selected));form.elements.sourceId.replaceChildren(...options);form.elements.sourceId.value=selected;}
  $('#wallet-add').onclick=()=>{if(busy)return;populateSources();$('#wallet-spend-error').textContent='';open(spend);};
  form.elements.sourceId.onchange=()=>{const item=dataStore.getFields(['wallet']).wallet.items[form.elements.sourceId.value];if(item){form.elements.name.value=item.name;form.elements.cost.value=item.defaultCost??'';}};
