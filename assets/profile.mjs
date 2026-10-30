@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=backup-chat-20261031';
-import { holdDraft } from './coordination.mjs?v=backup-chat-20261031';
-import { createProfileImages } from './profile-images.mjs?v=backup-chat-20261031';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=backup-chat-20261031';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=backup-chat-20261031';
-import { undoManager } from './undo.mjs?v=backup-chat-20261031';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=backup-chat-20261031';
+import {bindProfileValidation} from './validation.mjs?v=restore-images-20261031';
+import { holdDraft } from './coordination.mjs?v=restore-images-20261031';
+import { createProfileImages } from './profile-images.mjs?v=restore-images-20261031';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=restore-images-20261031';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=restore-images-20261031';
+import { undoManager } from './undo.mjs?v=restore-images-20261031';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=restore-images-20261031';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);
@@ -87,8 +87,8 @@ function render(state = dataStore.getFields(['profile','stats','photo','avatar']
   const [experienceText,levelText,currencyText]=profileSummary(state.stats).split(' ｜ ');
   const levelLabel=element('span',levelText);levelLabel.id='profile-level';
   $('#profile-stats').replaceChildren(levelLabel,element('span',` ｜ ${experienceText}｜ ${currencyText}`));
-  $('#profile-stats').setAttribute('aria-label', `等級：${level}，累積總經驗值：${visibleExperience(experience)}，貨幣：${currency}`);
-  $('#profile-stats').title = `等級：${level}，累積總經驗值：${visibleExperience(experience)}，貨幣：${currency}`;
+  $('#profile-stats').setAttribute('aria-label', `等級：${level}，累積總經驗值：${visibleExperience(experience)}，目前貨幣：${currency}，累積取得貨幣：${state.stats.currencyEarned}`);
+  $('#profile-stats').title = `等級：${level}，累積總經驗值：${visibleExperience(experience)}，目前貨幣：${currency}，累積取得貨幣：${state.stats.currencyEarned}`;
   const missing=ABILITIES.filter(def=>!abilities.some(a=>a.id===def.id&&a.name===def.name&&Number.isSafeInteger(a.value)&&a.value>=0));
   const valid = ABILITIES.length===5&&missing.length===0;
   $('#abilities-missing').textContent=valid?'':`能力資料不完整：${missing.map(a=>a.name).join('、')||'能力定義'}，請檢查已保存資料。`;

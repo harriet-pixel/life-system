@@ -1,5 +1,5 @@
-import {driveRequest} from './google-drive.mjs?v=backup-chat-20261031';
-import {digest} from './cloud-sync-model.mjs?v=backup-chat-20261031';
+import {driveRequest} from './google-drive.mjs?v=restore-images-20261031';
+import {digest} from './cloud-sync-model.mjs?v=restore-images-20261031';
 const URL='https://www.googleapis.com/drive/v3/files';
 const bytesHash=async blob=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))].map(n=>n.toString(16).padStart(2,'0')).join('');
 export function createSyncDrive(){let catalog=null;
