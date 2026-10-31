@@ -1,4 +1,4 @@
-import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=amount-images-20261031';
+import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=stats-affinity-20261031';
 import {createServer} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {createJWTVerifier} from './auth.mjs';

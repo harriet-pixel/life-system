@@ -1,5 +1,5 @@
 // Compact, durable evidence only; no personality or task text snapshots.
-import {relationshipStage} from './characters-model.mjs?v=amount-images-20261031';
+import {relationshipStage} from './characters-model.mjs?v=stats-affinity-20261031';
 export const AFFINITY_POLICY=1;
 export const DEFAULT_PENALTIES=Object.freeze({enabled:false,chat:true,tasks:true,habits:true,limit:1});
 const check=(ok,message='好感度資料無法安全核對，已停止操作並保留原資料。')=>{if(!ok)throw new Error(message);};

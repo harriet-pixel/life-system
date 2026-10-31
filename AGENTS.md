@@ -244,7 +244,7 @@ M/P/E立即更新暫時aria-pressed／busy，不先重繪整頁；pending只留�
 
 ## 手動首頁招呼與日常頁角色連動（2026-10-29）
 
-每角色選填greetings包含morning（臺灣05–11時）、afternoon（12–17時）、evening（18–21時）、night（22–04時）四組各三句，首頁依角色／時段以sessionStorage索引輪播，舊單句仍可讀取，留白使用既有預設。僅明確儲存透過角色服務／revision提交，核對createdAt與原greetings避免跨分頁覆蓋；不更動人格configVersion、好感度或出場歷史。星光icon明確操作才沿共用AI一次生成十二句可編輯草稿，greetings專用1024輸出上限，不自動儲存、不自動重試；取消、人格／階段／招呼／還原身份變更會使結果失效。完整本機／加密／手動雲端備份保留；人格角色卡不包含招呼。activeCharacter為dataStore的輕量唯讀投影，不是第二份儲存；首頁及待辦只訂閱當前角色身份／名稱／招呼／圖片引用。首頁顯示正式角色招呼及neutral圖，待辦顯示同一角色並沿正式生活情境回應，不因預覽換出場；無新輪詢、後端或自動上傳。驗證見docs/COMPANION_PANEL_VERIFICATION.md。
+每角色選填greetings包含morning（臺灣05–11時）、afternoon（12–17時）、evening（18–21時）、night（22–04時）四組各三句，首頁依角色／時段以sessionStorage索引輪播，舊單句仍可讀取，留白使用既有預設。僅明確儲存透過角色服務／revision提交，核對createdAt與原greetings避免跨分頁覆蓋；不更動人格configVersion、好感度或出場歷史。星光icon明確操作才沿共用AI一次生成十二句可編輯草稿，greetings專用1024輸出上限，不自動儲存、不自動重試；取消、人格／階段／招呼／還原身份變更會使結果失效。完整本機／加密／手動雲端備份保留；人格角色卡不包含招呼。activeCharacter為dataStore的輕量唯讀投影，不是第二份儲存；首頁及待辦使用當前角色身份／名稱／招呼／圖片引用的輕量投影，數據列另讀同一投影的正式affinity。首頁顯示正式角色招呼及neutral圖，待辦顯示同一角色並沿正式生活情境回應，不因預覽換出場；無新輪詢、後端或自動上傳。驗證見docs/COMPANION_PANEL_VERIFICATION.md。
 
 ## AI首頁招呼與完整日常回應（2026-10-29）
 

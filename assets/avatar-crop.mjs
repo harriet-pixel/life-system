@@ -1,4 +1,4 @@
-import {validateZoom} from './validation.mjs?v=amount-images-20261031';
+import {validateZoom} from './validation.mjs?v=stats-affinity-20261031';
 export const RAW_IMAGE_LIMIT = 20 * 1024 * 1024;
 export const IMAGE_LIMIT = 1024 * 1024;
 export const AVATAR_LIMIT = 200 * 1024;

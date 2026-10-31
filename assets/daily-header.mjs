@@ -1,4 +1,5 @@
-import {dataStore,profileSummary,visibleExperience} from './data.mjs?v=amount-images-20261031';
+import {appendStatsAffinity} from './stats-affinity.mjs?v=stats-affinity-20261031';
+import {dataStore,profileSummary,visibleExperience} from './data.mjs?v=stats-affinity-20261031';
 // Move the existing controls; keep their listeners, data source and desktop homes.
 export function mountDailyHeader(root,context,kind){
  const main=root.querySelector('#main'),media=matchMedia('(width < 1024px)'),header=document.createElement('header');header.className='daily-mobile-header';header.hidden=true;
@@ -11,7 +12,7 @@ export function mountDailyHeader(root,context,kind){
  const summary=kind==='tasks'?find('.task-notice-group'):['habits','wallet'].includes(kind)?find('#monthly-mobile'):notice;
  const controls=kind==='tasks'?[find('#toggle-calendar'),find('#task-settings')]:kind==='habits'?[find('#open-habit-settings'),find('#add-bonus')]:kind==='wallet'?[find('#wallet-manage'),find('#wallet-add')]:[];
  if(['habits','wallet'].includes(kind)){remember(summary);remember(notice);}controls.forEach(remember);
- if(kind!=='home')context.subscribe(dataStore,({stats:data})=>{const [experience,level,currency]=profileSummary(data).split(' ｜ ');stats.textContent=`${level} ｜ ${experience}｜ ${currency}`;stats.setAttribute('aria-label',`累積總經驗值：${visibleExperience(data.experience)}，等級：${data.level}，目前貨幣：${data.currency}，累積取得貨幣：${data.currencyEarned}`);stats.title=stats.getAttribute('aria-label');},{changesOnly:true,keys:['stats'],distinct:true});
+ if(kind!=='home')context.subscribe(dataStore,({stats:data,activeCharacter})=>{const [experience,level,currency]=profileSummary(data).split(' ｜ ');stats.textContent=`${level} ｜ ${experience}｜ ${currency}`;stats.setAttribute('aria-label',`累積總經驗值：${visibleExperience(data.experience)}，等級：${data.level}，目前貨幣：${data.currency}，累積取得貨幣：${data.currencyEarned}`);appendStatsAffinity(stats,activeCharacter);},{changesOnly:true,keys:['stats','activeCharacter'],distinct:true});
  let raw=notice.textContent,shown=raw,frame;
  function clamp(){cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(!context.active)return;if(notice.textContent!==shown)raw=notice.textContent;let text=raw;notice.textContent=text;
   if(media.matches&&notice.scrollHeight>notice.clientHeight+1){const chars=[...raw];let low=0,high=chars.length;while(low<high){const mid=Math.ceil((low+high)/2);notice.textContent=chars.slice(0,mid).join('')+'....';if(notice.scrollHeight<=notice.clientHeight+1&&notice.scrollWidth<=notice.clientWidth+1)low=mid;else high=mid-1;}text=chars.slice(0,low).join('')+'....';}

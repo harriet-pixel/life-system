@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=amount-images-20261031';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=amount-images-20261031';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=amount-images-20261031';
-import {dataStore} from './data.mjs?v=amount-images-20261031';
-import {createTaskService} from './tasks-service.mjs?v=amount-images-20261031';
-import {allocation,allocationContext} from './tasks-model.mjs?v=amount-images-20261031';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=amount-images-20261031';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=amount-images-20261031';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=amount-images-20261031';
+import {setOperationNotice} from './operation-notice.mjs?v=stats-affinity-20261031';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=stats-affinity-20261031';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=stats-affinity-20261031';
+import {dataStore} from './data.mjs?v=stats-affinity-20261031';
+import {createTaskService} from './tasks-service.mjs?v=stats-affinity-20261031';
+import {allocation,allocationContext} from './tasks-model.mjs?v=stats-affinity-20261031';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=stats-affinity-20261031';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=stats-affinity-20261031';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=stats-affinity-20261031';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}

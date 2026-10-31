@@ -52,3 +52,5 @@ wallet操作沿七天／全站最近15筆政策。wallet-recovery只保存單筆
 帳本項目名稱為無框、透明底的文字按鈕，滑鼠狀態亦不出現方框；保留44px觸控高度、點擊編輯與鍵盤focus-visible提示。
 
 帳本列表僅呈現有效紀錄；已取消紀錄保留唯一dataStore、來源證據與Undo／Redo，不加入列表DOM。只有已取消紀錄的月份顯示「尚無有效消費紀錄」，有效合計不變。
+
+首次站內進入錢包須等正式wallet.css樣式表載入完成，preload不視為已套用CSS；詳見[WALLET_STYLE_AFFINITY.md](WALLET_STYLE_AFFINITY.md)。

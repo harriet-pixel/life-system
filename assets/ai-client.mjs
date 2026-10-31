@@ -1,7 +1,7 @@
-import {AI_TEST_TEXT} from './ai-prompts.mjs?v=amount-images-20261031';
-import {createAIConnection} from './ai-service.mjs?v=amount-images-20261031';
-import {createAISession} from './ai-session.mjs?v=amount-images-20261031';
-import {createProviderAdapter} from './ai-providers.mjs?v=amount-images-20261031';
+import {AI_TEST_TEXT} from './ai-prompts.mjs?v=stats-affinity-20261031';
+import {createAIConnection} from './ai-service.mjs?v=stats-affinity-20261031';
+import {createAISession} from './ai-session.mjs?v=stats-affinity-20261031';
+import {createProviderAdapter} from './ai-providers.mjs?v=stats-affinity-20261031';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null,defaultBrowser=false}={}){
  const session=createAISession(storage,{now}),listeners=new Set();

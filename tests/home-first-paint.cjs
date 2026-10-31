@@ -8,20 +8,20 @@ const ready=p=>p.waitForSelector('body[data-shell=ready]');
    const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce',timezoneId:'Asia/Taipei'});
    const writer=await context.newPage();await writer.goto(base);await ready(writer);
    await writer.evaluate(async({font,width})=>{
-    const {dataStore}=await import('./assets/data.mjs?v=amount-images-20261031'),{createTaskService}=await import('./assets/tasks-service.mjs?v=amount-images-20261031'),{localDate}=await import('./assets/tasks-model.mjs?v=amount-images-20261031');
+    const {dataStore}=await import('./assets/data.mjs?v=stats-affinity-20261031'),{createTaskService}=await import('./assets/tasks-service.mjs?v=stats-affinity-20261031'),{localDate}=await import('./assets/tasks-model.mjs?v=stats-affinity-20261031');
     const service=createTaskService(dataStore);await service.edit({name:'先顯示本機今日事件',categoryId:null,points:1,kind:'once',date:localDate(),start:localDate(),end:null,days:[],overdue:'keep'});
     await dataStore.transact({type:'appearance.update',changes:{settings:{...dataStore.get().settings,appearance:{font,color:width===375?'#ffeedd':'#104a7a'}}}});
    },{font,width});
    const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    let release;const gate=new Promise(r=>release=r);
    // Hold a dependency unrelated to reading local tasks; shell cannot mount yet.
-   await page.route('**/assets/cloud-restore.mjs?v=amount-images-20261031',async route=>{await gate;await route.continue();});
+   await page.route('**/assets/cloud-restore.mjs?v=stats-affinity-20261031',async route=>{await gate;await route.continue();});
    await page.goto(base,{waitUntil:'commit'});
    await page.waitForFunction(()=>document.querySelector('.task-list')?.textContent.includes('先顯示本機今日事件'));
    assert.equal(await page.locator('body').getAttribute('data-shell'),null);
    assert.ok(await page.locator('.task-list input').isDisabled());assert.ok(await page.locator('#home-new-event').isDisabled());
    const before=await page.evaluate(()=>localStorage.getItem('life-system.data.v1'));
-   await writer.evaluate(async()=>{const {dataStore}=await import('./assets/data.mjs?v=amount-images-20261031'),{createTaskService}=await import('./assets/tasks-service.mjs?v=amount-images-20261031'),{localDate}=await import('./assets/tasks-model.mjs?v=amount-images-20261031');await createTaskService(dataStore).edit({name:'其他分頁新增',categoryId:null,points:1,kind:'once',date:localDate(),start:localDate(),end:null,days:[],overdue:'keep'});});
+   await writer.evaluate(async()=>{const {dataStore}=await import('./assets/data.mjs?v=stats-affinity-20261031'),{createTaskService}=await import('./assets/tasks-service.mjs?v=stats-affinity-20261031'),{localDate}=await import('./assets/tasks-model.mjs?v=stats-affinity-20261031');await createTaskService(dataStore).edit({name:'其他分頁新增',categoryId:null,points:1,kind:'once',date:localDate(),start:localDate(),end:null,days:[],overdue:'keep'});});
    await page.waitForFunction(()=>document.querySelector('.task-list')?.textContent.includes('其他分頁新增'));
    assert.notEqual(await page.evaluate(()=>localStorage.getItem('life-system.data.v1')),before);
    const latest=await page.evaluate(()=>localStorage.getItem('life-system.data.v1'));

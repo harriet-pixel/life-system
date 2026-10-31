@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=amount-images-20261031';
+import {ABILITIES} from './abilities.mjs?v=stats-affinity-20261031';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;
