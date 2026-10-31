@@ -45,4 +45,6 @@ wallet操作沿七天／全站最近15筆政策。wallet-recovery只保存單筆
 
 角色身份、configVersion、階段、switchHistory、還原epoch與receipt active／debitId皆須仍有效。取消、Undo、換人、封存／刪除、人格變更、還原、離頁使遲到結果失效。純讀取、同步、管理常用項目、取消及錢包Undo／Redo不生成消費回應，也不補發好感。
 
-帳本名稱可點選人工更正，金額不可改寫；新增wallet.edited沿原鎖／revision及單筆Undo證據，不生成消費AI或計分。常用項目修改仍不回推舊帳。日期僅顯示當地日期且與名稱同列，原時間仍保存；手機月份下花費摘要隱藏，頁首摘要保留。管理窗返回時即時重繪，新增為標題右側44px加號。詳見docs/WALLET_LAYOUT_POLISH.md。
+帳本名稱可點選人工更正，金額可透過差額更正鏈調整；新增wallet.edited沿原鎖／revision及單筆Undo證據，不生成消費AI或計分。常用項目修改仍不回推舊帳。日期僅顯示當地日期且與名稱同列，原時間仍保存；手機月份下花費摘要隱藏，頁首摘要保留。管理窗返回時即時重繪，新增為標題右側44px加號。詳見docs/WALLET_LAYOUT_POLISH.md。
+
+金額更正鏈、缺圖清單及還原規則見[AMOUNT_MISSING_IMAGES.md](AMOUNT_MISSING_IMAGES.md)。

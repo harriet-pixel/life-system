@@ -1,9 +1,9 @@
-import {archivedReferences} from './storage-vault.mjs?v=restore-images-20261031';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=restore-images-20261031';
-import {validateCharacterImages} from './character-images-model.mjs?v=restore-images-20261031';
-import {maintainRecovery} from './recovery.mjs?v=restore-images-20261031';
-import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=restore-images-20261031';
-import {maintenance} from './coordination.mjs?v=restore-images-20261031';
+import {archivedReferences} from './storage-vault.mjs?v=amount-images-20261031';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=amount-images-20261031';
+import {validateCharacterImages} from './character-images-model.mjs?v=amount-images-20261031';
+import {maintainRecovery} from './recovery.mjs?v=amount-images-20261031';
+import {isImageReference,listImageAssets,openDatabase,revokeImageURL} from './image-store.mjs?v=amount-images-20261031';
+import {maintenance} from './coordination.mjs?v=amount-images-20261031';
 const providers=new Map();
 // Always protect the durable outbox, including after reverting to manual mode.
 providers.set('跨裝置同步待處理',{transient:false,read:async()=>{const local=new Set((await listImageAssets()).map(a=>a.id));try{return (await archivedReferences('asset:')).filter(id=>local.has(id));}catch{return [...local];}} });
@@ -36,7 +36,7 @@ export function documentImageReferences(state,{legacy=false,raw=false}={}) {
   }
   return refs;
 }
-export async function inspectImages(state,{maintained=false}={}) {
+export async function inspectImages(state,{maintained=false,allowMissing=false}={}) {
   if(!state?.profile||!Array.isArray(state.history)||!Array.isArray(state.portraits)) throw new Error('資料尚未完整載入，無法安全檢查圖片。');
   // A backup may reuse its already maintained, isolated snapshot. Deletion
   // and every other caller still recheck the live recovery chain by default.
@@ -45,9 +45,9 @@ export async function inspectImages(state,{maintained=false}={}) {
     const value=await read();if(value===undefined)throw new Error('圖片引用來源尚未就緒：'+name);const found=collectReferences(value);if(transient&&[...found].some(id=>!persistedRefs.has(id)))transientSources.push(name);found.forEach(id=>refs.add(id));
   }
   const assets=await listImageAssets();
-  if([...refs].some(id=>!assets.some(a=>a.id===id&&a.blob instanceof Blob)))throw new Error('有圖片引用缺少原始檔案，已停止清理。');
+  if(!allowMissing&&[...refs].some(id=>!assets.some(a=>a.id===id&&a.blob instanceof Blob)))throw new Error('有圖片引用缺少原始檔案，已停止清理。');
   if(assets.some(a=>!(a.blob instanceof Blob)||!isImageReference(a.id)))throw new Error('有無法辨識的圖片資產，已停止清理。');
-  await validateRoleImageAssets(state,assets);
+  await validateRoleImageAssets(state,assets,{allowMissing});
   const unused=assets.filter(a=>!refs.has(a.id)&&!(a.protectedUntil>Date.now()));
   return {refs,assets,unused,transientSources};
 }

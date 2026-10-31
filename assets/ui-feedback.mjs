@@ -1,4 +1,4 @@
-import {initializeTabSwipe} from './tab-swipe.mjs?v=restore-images-20261031';
+import {initializeTabSwipe} from './tab-swipe.mjs?v=amount-images-20261031';
 // One document controller for geometric tab indicators. Press feedback is CSS only.
 let controller;
 export function initializeUIFeedback(){

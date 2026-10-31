@@ -1,3 +1,5 @@
+目前金額及缺圖行為以[AMOUNT_MISSING_IMAGES.md](AMOUNT_MISSING_IMAGES.md)為準；以下保留前版驗證背景。
+
 # 還原圖片選項、數據列與空白對話（2026-10-31）
 
 基準：最新遠端main 685b250，gh-pages c50539d；原始碼工作區原為乾淨狀態。保留唯一dataStore、現有圖片DB、共用鎖／revision、5筆手動雲端政策與還原vault，未啟用後端或同步。

@@ -1,4 +1,4 @@
-import {emptyWallet,validateWallet,validateWalletEvidence,walletName,walletAmount,walletNote} from './wallet-model.mjs?v=restore-images-20261031';
+import {emptyWallet,validateWallet,validateWalletEvidence,walletName,walletAmount,walletNote} from './wallet-model.mjs?v=amount-images-20261031';
 export function createWalletService(store,{now=()=>new Date(),id=()=>crypto.randomUUID()}={}){
  const snapshot=()=>store.getFields?store.getFields(['revision','wallet','stats','history','affinity']):store.get();
  async function save(base,wallet,stats,type,transactionId,label){wallet.stateId=transactionId;return store.transact({id:transactionId,expectedRevision:base.revision,type,label,target:'wallet',changes:{wallet:validateWallet(wallet),...(stats?{stats}:{})}});}
@@ -12,7 +12,7 @@ export function createWalletService(store,{now=()=>new Date(),id=()=>crypto.rand
    wallet.lastChange={collection:'records',id:submissionId};wallet.records[submissionId]={id:submissionId,debitId:submissionId,time:now().toISOString(),name,cost,note,sourceId,status:'active',cancelledAt:null,refundId:null};
    return save(base,wallet,{...base.stats,currency:base.stats.currency-cost},'wallet.spent',submissionId,'兌換「'+name+'」');
   },
-  async editRecord(recordId,name,expected){const base=snapshot(),wallet=validateWallet(base.wallet??emptyWallet()),record=wallet.records[recordId];if(!record||JSON.stringify(record)!==expected)throw new Error('此筆紀錄已變更，請重新開啟編輯；草稿已保留。');record.name=walletName(name);wallet.lastChange={collection:'records',id:recordId};return save(base,wallet,null,'wallet.edited',id(),'編輯消費項目名稱');},
+  async editRecord(recordId,name,expected,cost){const base=snapshot(),wallet=validateWallet(base.wallet??emptyWallet()),record=wallet.records[recordId];if(!record||JSON.stringify(record)!==expected)throw new Error('此筆紀錄已變更，請重新開啟編輯；草稿已保留。');const nextCost=walletAmount(cost??record.cost),changed=nextCost!==record.cost,transactionId=id();if(changed&&record.status!=='active')throw new Error('已取消紀錄不可調整金額。');const balance=BigInt(base.stats.currency)+BigInt(record.cost)-BigInt(nextCost);if(balance<0n)throw new Error('系統貨幣餘額不足，輸入已保留。');if(balance>BigInt(Number.MAX_SAFE_INTEGER))throw new Error('調整後貨幣超出安全範圍，原資料已保留。');if(changed){(record.adjustments??=[]).push({id:transactionId,from:record.cost,to:nextCost,time:now().toISOString()});record.cost=nextCost;}record.name=walletName(name);wallet.lastChange={collection:'records',id:recordId};return save(base,wallet,changed?{...base.stats,currency:Number(balance)}:null,changed?'wallet.adjusted':'wallet.edited',transactionId,'編輯消費項目');},
   async cancel(recordId,submissionId=id()){
    const base=snapshot(),wallet=validateWallet(base.wallet??emptyWallet()),r=wallet.records[recordId];
    if(!r||r.status!=='active')throw new Error('此筆已取消或不存在，未重複退款。');validateWalletEvidence({...base,wallet});

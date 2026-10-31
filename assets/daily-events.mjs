@@ -1,13 +1,13 @@
-import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=restore-images-20261031';
-import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=restore-images-20261031';
-import {relationshipStage} from './characters-model.mjs?v=restore-images-20261031';
+import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=amount-images-20261031';
+import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=amount-images-20261031';
+import {relationshipStage} from './characters-model.mjs?v=amount-images-20261031';
 export const DAILY_OPERATIONS=Object.freeze(['wallet.spent','task.completed','task.completed.batch','task.cancelled','task.deleted-completed','task.deleted','task.updated','task.batch','task.created','habit.check','habit.bonus','habit.bonus-cancel','habit.updated','life.undo','life.redo']);
 export function formalDailyEvents(operation,state){
  if(!DAILY_OPERATIONS.includes(operation.type))return [];
 
  const c=state.companion?.characters.find(c=>c.characterId===state.companion.activeCharacterId&&!c.archived);if(!c)return [];
  const events=[],push=(eventType,id,domain)=>events.push({sourceEventId:operation.id+':'+eventType+':'+id,operationId:operation.id,characterId:c.characterId,characterCreatedAt:c.createdAt,configVersion:c.configVersion,stageId:relationshipStage(c.affinity).stage,eventType,sourceId:id,domain,switchCount:state.companion.switchHistory.length,epoch:state.replyLibrary?.epoch??null,character:c});
- if(operation.type==='wallet.spent'){const r=operation.after.wallet?.value;if(r?.status==='active'&&r.id===operation.id&&r.debitId===operation.id)push('wallet.spent',r.id,'wallet');return events;}
+ if(operation.type==='wallet.spent'){const r=operation.after.wallet?.value;if(r?.status==='active'&&r.id===operation.id&&r.debitId===operation.id){push('wallet.spent',r.id,'wallet');events.at(-1).walletSnapshot=JSON.stringify([r.name,r.cost]);}return events;}
  if(['task.completed','task.completed.batch'].includes(operation.type)){const before=new Set((operation.before.tasks?.completions??[]).filter(c=>!c.cancelledAt&&!c.retraction).map(c=>c.id));for(const r of operation.after.tasks?.completions??[])if(!before.has(r.id)&&!r.cancelledAt&&!r.retraction&&r.date===localDate())push('task.completed',r.id,'task');}
  if(operation.type==='habit.check'){const old=operation.before.habits,next=operation.after.habits;for(const r of next.records)if(r.date===taipeiDate()&&r.source==='normal'){const prior=old.records.find(p=>p.id===r.id);if(POINTS[r.state]>(POINTS[prior?.state]??0))push({'M':'habit.mini','P':'habit.plus','E':'habit.elite'}[r.state],r.id,'habit');}
   const known=new Set(old.periods.flatMap(p=>p.achievements.map(a=>p.id+':'+a.id)));for(const p of next.periods)for(const a of p.achievements)if(!known.has(p.id+':'+a.id)&&events.length)push('achievement.unlocked',p.id+':'+a.id,'achievement');
@@ -19,7 +19,7 @@ export function formalDailyEvents(operation,state){
  return events;
 }
 export function validDailySource(state,e){const c=state.companion?.characters.find(c=>c.characterId===e.characterId);if(!c||c.archived||c.createdAt!==e.characterCreatedAt||c.configVersion!==e.configVersion||relationshipStage(c.affinity).stage!==e.stageId||state.companion.activeCharacterId!==e.characterId||state.companion.switchHistory.length!==e.switchCount||(state.replyLibrary?.epoch??null)!==e.epoch)return false;
- if(e.domain==='wallet'){const r=state['walletRecord:'+e.sourceId]??state.wallet?.records[e.sourceId];return r?.status==='active'&&r.debitId===e.operationId;}
+ if(e.domain==='wallet'){const r=state['walletRecord:'+e.sourceId]??state.wallet?.records[e.sourceId];return r?.status==='active'&&r.debitId===e.operationId&&(!e.walletSnapshot||e.walletSnapshot===JSON.stringify([r.name,r.cost]));}
  if(e.domain==='change')return state.revision===e.revision;
  if(e.domain==='task-reminder'&&e.eventType==='task.incomplete'){const date=e.date??localDate();return validDate(date)&&date<=localDate()&&rowsForDate(state.tasks,date).some(r=>r.occurrence.id===e.sourceId&&r.occurrence.status==='pending');}
  if(e.domain==='habit-reminder'&&e.eventType==='habit.incomplete'){const [periodId,date,index]=e.sourceId.split('|');return date===taipeiDate()&&/^[0-2]$/.test(index)&&activePeriod(state.habits,date)?.id===periodId&&!state.habits.records.some(r=>r.periodId===periodId&&r.date===date&&r.habitIndex===Number(index)&&r.state!=='-');}

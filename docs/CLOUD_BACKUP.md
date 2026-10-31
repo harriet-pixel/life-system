@@ -25,7 +25,7 @@ Google Identity Services 使用 OAuth token client，僅要求 `https://www.goog
 
 開窗只列 metadata；選擇歷史版本或預設最新，按還原才下載、驗證／解密、比較及明確確認。確認後重查檔案身份與本機 revision；最新模式另檢查最新 ID，指定版本不因新增其他版本失效。草稿鎖及跨分頁維護鎖保護原子取代，不合併兩部裝置資料。
 
-手動還原先在同一維護鎖內逐字保存原 primary 與完整舊 journal 至本機 vault，讀回核對後才提交目標。保護失敗、缺圖、損毀、取消或競態不取代原文件。舊圖片與回覆庫引用持續受保護；關窗不取消已提交上傳，未提交還原以 epoch 失效。還原不自動上傳。
+手動還原先在同一維護鎖內逐字保存原 primary 與完整舊 journal 至本機 vault，讀回核對後才提交目標。保護失敗、損毀、取消或競態不取代原文件。舊圖片與回覆庫引用持續受保護；關窗不取消已提交上傳，未提交還原以 epoch 失效。還原不自動上傳。
 
 ## 儲存與備份範圍
 
@@ -57,6 +57,8 @@ Google API／GIS以mock驗證，真實Blob、IndexedDB、鎖、資料服務、�
 
 聊天全文備份、還原時的epoch／唯讀／期限及分類排除評估，見[CHAT_BACKUP_GREETINGS.md](CHAT_BACKUP_GREETINGS.md)。備份檔內文字快照會持續至檔案刪除，不會在24小時後自動抹除。
 
-還原視窗每次預設不勾「此次匯入備份圖片」；只重用本機同ID必要圖片，缺圖完整阻擋，可勾選重試。圖片選用設定仍依所選備份還原；不提供任意本機／備份選圖合併。全部備份依舊自包含圖片，仍整檔下載／驗證，不會因此縮短上傳。驗收見[RESTORE_IMAGES_DISPLAY.md](RESTORE_IMAGES_DISPLAY.md)。
+還原視窗每次預設不勾「此次匯入備份圖片」；只重用本機同ID必要圖片，缺圖保留引用並還原資料，在圖片位置提醒；可另勾選匯入。圖片選用設定仍依所選備份還原；不提供任意本機／備份選圖合併。備份包含本機可取得的圖片及明列缺圖清單，仍整檔下載／驗證，不會因此縮短上傳。驗收見[RESTORE_IMAGES_DISPLAY.md](RESTORE_IMAGES_DISPLAY.md)。
 
 雲端視窗文案／排列簡化與文字備份可行性評估見[WALLET_LAYOUT_POLISH.md](WALLET_LAYOUT_POLISH.md)；本次不變更備份格式。
+
+金額更正鏈、缺圖清單及還原規則見[AMOUNT_MISSING_IMAGES.md](AMOUNT_MISSING_IMAGES.md)。

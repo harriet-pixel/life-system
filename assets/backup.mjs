@@ -1,21 +1,21 @@
-import {validateWalletSnapshot} from './wallet-recovery.mjs?v=restore-images-20261031';
-import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=restore-images-20261031';
-import {normalizeStats} from './abilities.mjs?v=restore-images-20261031';
+import {validateWalletSnapshot} from './wallet-recovery.mjs?v=amount-images-20261031';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=amount-images-20261031';
+import {normalizeStats} from './abilities.mjs?v=amount-images-20261031';
 // JSON object member order is not part of the schema (Drive records are canonicalized).
 const sortedJSON=value=>JSON.stringify((function sort(v){return Array.isArray(v)?v.map(sort):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sort(v[k])])):v;})(value));
-import {validateReplyManifest} from './characters-model.mjs?v=restore-images-20261031';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=restore-images-20261031';
-import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=restore-images-20261031';
-import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=restore-images-20261031';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=restore-images-20261031';
-import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=restore-images-20261031';
-import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=restore-images-20261031';
-import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=restore-images-20261031';
-import {ABILITIES} from './abilities.mjs?v=restore-images-20261031';
-import {maintenance} from './coordination.mjs?v=restore-images-20261031';
-import {inspectImages,documentImageReferences} from './image-references.mjs?v=restore-images-20261031';
-import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=restore-images-20261031';
-import {normalizeSettings} from './settings-model.mjs?v=restore-images-20261031';
+import {validateReplyManifest} from './characters-model.mjs?v=amount-images-20261031';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=amount-images-20261031';
+import {validateAffinity,emptyAffinity} from './affinity-model.mjs?v=amount-images-20261031';
+import {validateCharacters,emptyCharacters} from './characters-model.mjs?v=amount-images-20261031';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=amount-images-20261031';
+import {emptyTasks,validateTasks,deletionEvidence} from './tasks-model.mjs?v=amount-images-20261031';
+import {maintainRecovery,RECOVERY_LIMIT,actionMetadata} from './recovery.mjs?v=amount-images-20261031';
+import {validateNewPassword,validateRestorePassword,validateProfileFields} from './validation.mjs?v=amount-images-20261031';
+import {ABILITIES} from './abilities.mjs?v=amount-images-20261031';
+import {maintenance} from './coordination.mjs?v=amount-images-20261031';
+import {inspectImages,documentImageReferences} from './image-references.mjs?v=amount-images-20261031';
+import {stageImageAssets,isImageReference,listImageAssets} from './image-store.mjs?v=amount-images-20261031';
+import {normalizeSettings} from './settings-model.mjs?v=amount-images-20261031';
 export const MAX_FILE_BYTES=150*1024*1024, MAX_CONTENT_BYTES=100*1024*1024, MAX_IMAGES=2000;
 const encoder=new TextEncoder(), decoder=new TextDecoder('utf-8',{fatal:true});
 const FORMAT='Life system backup', VERSION=1;
@@ -109,14 +109,15 @@ export async function withBackup(store,password,consume,{snapshot,chatSnapshot}=
     store.refresh();store.maintain();await yieldBackupWork();
     const document=snapshot?maintainRecovery(snapshot).document:store.get();await yieldBackupWork();
     validateDocument(document);check(encoder.encode(JSON.stringify(document)).length<=10*1024*1024,'資料文件超過 10 MiB 備份上限；目前資料與行動紀錄均保留。');await yieldBackupWork();
-    const {assets,refs,transientSources}=await inspectImages(document,{maintained:true});
+    const {assets,refs,transientSources}=await inspectImages(document,{maintained:true,allowMissing:true});
     check(!transientSources.length,'請先儲存或取消以下圖片操作再備份：'+transientSources.join('、'));
     const ownRefs=documentImageReferences(document,{raw:true});check(ownRefs.size<=MAX_IMAGES);let size=0;
     const images=[];
     for(const asset of assets.filter(a=>ownRefs.has(a.id))){size+=asset.blob.size;check(size<=MAX_CONTENT_BYTES,'圖片總容量超過 100 MiB。');const bytes=new Uint8Array(await asset.blob.arrayBuffer());check(asset.id==='asset:'+await hash(bytes),'本機圖片完整性驗證失敗。');images.push({id:asset.id,mime:asset.blob.type,size:asset.blob.size,createdAt:asset.createdAt??null,name:asset.name??null,sha256:await hash(bytes),data:b64(bytes)});}
-    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=restore-images-20261031')).exportReplyAssets(document.replyLibrary):undefined;
-    const chatBackup=await import('./chat-backup.mjs?v=restore-images-20261031');const chats=chatSnapshot===undefined?await chatBackup.exportChatBackup(document):chatBackup.validateChatBackup(chatSnapshot,document);
-    const payload={chats,...(replyAssets?{replyAssets}:{}),formatVersion:VERSION,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
+    const replyAssets=document.replyLibrary?await (await import('./reply-store.mjs?v=amount-images-20261031')).exportReplyAssets(document.replyLibrary):undefined;
+    const chatBackup=await import('./chat-backup.mjs?v=amount-images-20261031');const chats=chatSnapshot===undefined?await chatBackup.exportChatBackup(document):chatBackup.validateChatBackup(chatSnapshot,document);
+    const missingImages=[...ownRefs].filter(id=>!images.some(a=>a.id===id));
+    const payload={...(missingImages.length?{missingImages}:{}),chats,...(replyAssets?{replyAssets}:{}),formatVersion:VERSION,dataVersion:3,createdAt:new Date().toISOString(),dataCount:dataCount(document),imageCount:images.length,document,images};
     return consume(await encodeBackup(payload,password),payload);
   });
 }
@@ -147,7 +148,7 @@ export async function readBackup(file,password='') {
   check(Number.isFinite(Date.parse(payload.createdAt))&&Array.isArray(payload.images)&&payload.images.length<=MAX_IMAGES);
   check(encoder.encode(JSON.stringify(payload.document)).length<=10*1024*1024,'資料文件超過 10 MiB。');
   validateDocument(payload.document,{legacy:payload.dataVersion===2});
-  if(payload.chats!==undefined)(await import('./chat-backup.mjs?v=restore-images-20261031')).validateChatBackup(payload.chats,payload.document);
+  if(payload.chats!==undefined)(await import('./chat-backup.mjs?v=amount-images-20261031')).validateChatBackup(payload.chats,payload.document);
   check(payload.dataCount===dataCount(payload.document)&&payload.imageCount===payload.images.length);
   const ids=new Set(),assets=[];let total=0;
   for(const item of payload.images){
@@ -162,11 +163,11 @@ export async function readBackup(file,password='') {
     const blob=new Blob([bytes],{type:item.mime});if(globalThis.createImageBitmap){let image;try{image=await createImageBitmap(blob);}catch{throw new Error('圖片內容無法解碼，原資料未更動。');}finally{image?.close();}}
     assets.push({id:item.id,blob,name:item.name,createdAt:item.createdAt,protectedUntil:0});
   }
-  await validateRoleImageAssets(payload.document,assets);
-  const refs=documentImageReferences(payload.document,{legacy:payload.dataVersion===2,raw:true});check([...refs].every(id=>ids.has(id)),'備份缺少必要圖片。');check(ids.size===refs.size,'備份含不在範圍內的圖片。');
+  const missing=payload.missingImages??[];check(Array.isArray(missing)&&missing.length+assets.length<=MAX_IMAGES&&new Set(missing).size===missing.length&&missing.every(id=>isImageReference(id)&&!ids.has(id)),'缺圖清單格式不正確。');await validateRoleImageAssets(payload.document,assets,{allowMissing:missing.length>0});
+  const refs=documentImageReferences(payload.document,{legacy:payload.dataVersion===2,raw:true});check([...refs].every(id=>ids.has(id)||missing.includes(id)),'備份缺少必要圖片。');check(ids.size+missing.length===refs.size&&missing.every(id=>refs.has(id)),'備份含不在範圍內的圖片。');
   // Verify the original inventory before discarding expired legacy snapshots.
   // Never renew timestamps. Import only images still required at restore time.
-  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=restore-images-20261031')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
+  if(payload.document.replyLibrary||payload.replyAssets)await (await import('./reply-store.mjs?v=amount-images-20261031')).validateReplyAssets(payload.document.replyLibrary,payload.replyAssets??[],payload.document.companion);
   const source=structuredClone(payload.document);source.stats=normalizeStats(source.stats);source.wallet??=emptyWallet();for(const r of source.undoHistory??source.history)for(const snap of [r.before,r.after])if(snap?.stats)snap.stats=normalizeStats(snap.stats);
   const document=maintainRecovery(source).document;document.settings=normalizeSettings(document.settings);
   for(const r of document.undoHistory)for(const snapshot of [r.before,r.after])if(snapshot.settings)snapshot.settings=normalizeSettings(snapshot.settings);
@@ -185,12 +186,11 @@ export async function restoreBackup(store,prepared,expectedRevision,{beforeRepla
     // retained until a single atomic localStorage write publishes the new state.
     const existing=await listImageAssets(),byId=new Map(existing.map(a=>[a.id,a])),incoming=includeImages?prepared.assets.filter(a=>!byId.has(a.id)):[];
     const required=documentImageReferences(prepared.payload.document),available=new Map([...incoming,...existing].map(a=>[a.id,a]));
-    check([...required].every(id=>available.has(id)),includeImages?'還原缺少必要圖片，原資料已保留。':'本機缺少備份所需的圖片；請勾選「此次匯入備份圖片」後再還原。原資料已保留。');
-    for(const id of required){const asset=available.get(id);check(asset.blob instanceof Blob&&['image/png','image/jpeg','image/webp'].includes(asset.blob.type)&&'asset:'+await hash(await asset.blob.arrayBuffer())===id,'本機或備份圖片完整性異常，已停止還原並保留原資料。');}
-    await validateRoleImageAssets(prepared.payload.document,[...existing,...incoming]);await beforeReplace?.();
-    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=restore-images-20261031')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
+    for(const id of required){const asset=available.get(id);if(!asset)continue;check(asset.blob instanceof Blob&&['image/png','image/jpeg','image/webp'].includes(asset.blob.type)&&'asset:'+await hash(await asset.blob.arrayBuffer())===id,'本機或備份圖片完整性異常，已停止還原並保留原資料。');}
+    await validateRoleImageAssets(prepared.payload.document,[...existing,...incoming],{allowMissing:true});await beforeReplace?.();
+    if(prepared.payload.document.replyLibrary||prepared.payload.replyAssets)await (await import('./reply-store.mjs?v=amount-images-20261031')).importReplyAssets(prepared.payload.document.replyLibrary,prepared.payload.replyAssets??[],prepared.payload.document.companion);
     if(incoming.length)await stageImageAssets(incoming);
-    const document=maintainRecovery(prepared.payload.document).document;let chatEpoch;if(prepared.payload.chats!==undefined){check(!replaceDocument,'聊天還原不支援舊自動同步流程。');chatEpoch=crypto.randomUUID();await (await import('./chat-backup.mjs?v=restore-images-20261031')).stageChatBackup(prepared.payload.chats,document,chatEpoch);}if(replaceDocument)await replaceDocument(document);else store.replace(document,{chatEpoch});await afterReplace?.();
+    const document=maintainRecovery(prepared.payload.document).document;let chatEpoch;if(prepared.payload.chats!==undefined){check(!replaceDocument,'聊天還原不支援舊自動同步流程。');chatEpoch=crypto.randomUUID();await (await import('./chat-backup.mjs?v=amount-images-20261031')).stageChatBackup(prepared.payload.chats,document,chatEpoch);}if(replaceDocument)await replaceDocument(document);else store.replace(document,{chatEpoch});await afterReplace?.();
   });
 }
 export function backupFilename(){return 'Life system '+new Date().toISOString().replace(/[:.]/g,'-')+'.life-backup.json';}
