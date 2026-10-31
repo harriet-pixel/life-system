@@ -1,19 +1,19 @@
-import {backupStatus} from './cloud-sync-status.mjs?v=amount-images-20261031';
-import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=amount-images-20261031';
-import {createCloudRestore} from './cloud-restore.mjs?v=amount-images-20261031';
-import {getCloudBackup} from './cloud-backup.mjs?v=amount-images-20261031';
-import {setOperationNotice} from './operation-notice.mjs?v=amount-images-20261031';
-import {initializeUIFeedback} from './ui-feedback.mjs?v=amount-images-20261031';
-import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=amount-images-20261031';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=amount-images-20261031';
-import {persistentUndo,dataStore} from './data.mjs?v=amount-images-20261031';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=amount-images-20261031';
-import {initializeNavigationSize} from './navigation-size.mjs?v=amount-images-20261031';
-import {mountDailyHeader} from './daily-header.mjs?v=amount-images-20261031';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=amount-images-20261031';
-const routes={wallet:{mount:()=>import('./wallet.mjs?v=idle-wallet-20261031'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=amount-images-20261031'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=amount-images-20261031'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=amount-images-20261031'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=amount-images-20261031'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=amount-images-20261031'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=amount-images-20261031'),export:'mountSettings'}};
+import {backupStatus} from './cloud-sync-status.mjs?v=stats-affinity-20261031';
+import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=stats-affinity-20261031';
+import {createCloudRestore} from './cloud-restore.mjs?v=stats-affinity-20261031';
+import {getCloudBackup} from './cloud-backup.mjs?v=stats-affinity-20261031';
+import {setOperationNotice} from './operation-notice.mjs?v=stats-affinity-20261031';
+import {initializeUIFeedback} from './ui-feedback.mjs?v=stats-affinity-20261031';
+import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=stats-affinity-20261031';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=stats-affinity-20261031';
+import {persistentUndo,dataStore} from './data.mjs?v=stats-affinity-20261031';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=stats-affinity-20261031';
+import {initializeNavigationSize} from './navigation-size.mjs?v=stats-affinity-20261031';
+import {mountDailyHeader} from './daily-header.mjs?v=stats-affinity-20261031';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=stats-affinity-20261031';
+const routes={wallet:{mount:()=>import('./wallet.mjs?v=stats-affinity-20261031'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=stats-affinity-20261031'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=stats-affinity-20261031'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=stats-affinity-20261031'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=stats-affinity-20261031'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=stats-affinity-20261031'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=stats-affinity-20261031'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map(),prefetchedPages=new Map();
-async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'amount-images-20261031'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'stats-affinity-20261031'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
@@ -105,7 +105,7 @@ getCloudBackup();
 if(getDriveState().linked)void prepareDriveAuth().catch(()=>{});
 
 // Do not put settlement on the first-paint dependency path.
-const startAffinity=()=>import('./affinity-runtime.mjs?v=amount-images-20261031').catch(()=>{});
+const startAffinity=()=>import('./affinity-runtime.mjs?v=stats-affinity-20261031').catch(()=>{});
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
 
 // Local successful actions announce only after the authoritative commit.
@@ -126,7 +126,7 @@ function prefetchPage(id,href){
  if(prefetchedPages.has(id))return prefetchedPages.get(id);
  const ready=fetch(href,{credentials:'same-origin',cache:'no-cache',priority:'low'}).then(async response=>{if(!response.ok)throw new Error('Page unavailable');const html=await response.text(),doc=new DOMParser().parseFromString(html,'text/html');if(doc.querySelector('meta[name=life-system-shell]')?.content!==document.querySelector('meta[name=life-system-shell]')?.content)throw new Error('Version mismatch');
   // modulepreload fetches module dependencies without evaluating page code.
-  const file={wallet:'wallet.mjs?v=idle-wallet-20261031',companion:'characters-page.mjs?v=amount-images-20261031',habits:'habits.mjs?v=amount-images-20261031',tasks:'tasks.mjs?v=amount-images-20261031',home:'home.js?v=amount-images-20261031',profile:'profile.mjs?v=amount-images-20261031',settings:'settings.mjs?v=amount-images-20261031'}[id];hint(new URL('./'+file,import.meta.url).href,'modulepreload');
+  const file={wallet:'wallet.mjs?v=stats-affinity-20261031',companion:'characters-page.mjs?v=stats-affinity-20261031',habits:'habits.mjs?v=stats-affinity-20261031',tasks:'tasks.mjs?v=stats-affinity-20261031',home:'home.js?v=stats-affinity-20261031',profile:'profile.mjs?v=stats-affinity-20261031',settings:'settings.mjs?v=stats-affinity-20261031'}[id];hint(new URL('./'+file,import.meta.url).href,'modulepreload');
   for(const sheet of doc.querySelectorAll('link[rel=stylesheet][href]')){const url=new URL(sheet.getAttribute('href'),href);if(url.origin===location.origin&&![...document.styleSheets].some(sheet=>sheet.href===url.href))hint(url.href,'preload','style');}return html;});
  prefetchedPages.set(id,ready);ready.catch(()=>{if(prefetchedPages.get(id)===ready)prefetchedPages.delete(id);});return ready;
 }

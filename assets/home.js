@@ -1,17 +1,18 @@
-import {nextHomeGreeting} from './characters-model.mjs?v=amount-images-20261031';
-import {mountHabitQuick} from './habit-quick.mjs?v=amount-images-20261031';
-import {renderHomeToday} from './home-today.mjs?v=amount-images-20261031';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=amount-images-20261031';
-import {createTaskEditor} from './task-editor.mjs?v=amount-images-20261031';
-import {createCategoryManager} from './task-categories.mjs?v=amount-images-20261031';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=amount-images-20261031';
-import {taskActions} from './task-actions.mjs?v=amount-images-20261031';
-import {localDate} from './tasks-model.mjs?v=amount-images-20261031';
-import { createMobileTabPositioner } from './tab-position.mjs?v=amount-images-20261031';
-import { createActivityHeightSync } from './activity-height.mjs?v=amount-images-20261031';
-import { undoManager } from './undo.mjs?v=amount-images-20261031';
-import {createSharedCompanionView} from './companion-events.mjs?v=amount-images-20261031';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=amount-images-20261031';
+import {appendStatsAffinity} from './stats-affinity.mjs?v=stats-affinity-20261031';
+import {nextHomeGreeting} from './characters-model.mjs?v=stats-affinity-20261031';
+import {mountHabitQuick} from './habit-quick.mjs?v=stats-affinity-20261031';
+import {renderHomeToday} from './home-today.mjs?v=stats-affinity-20261031';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=stats-affinity-20261031';
+import {createTaskEditor} from './task-editor.mjs?v=stats-affinity-20261031';
+import {createCategoryManager} from './task-categories.mjs?v=stats-affinity-20261031';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=stats-affinity-20261031';
+import {taskActions} from './task-actions.mjs?v=stats-affinity-20261031';
+import {localDate} from './tasks-model.mjs?v=stats-affinity-20261031';
+import { createMobileTabPositioner } from './tab-position.mjs?v=stats-affinity-20261031';
+import { createActivityHeightSync } from './activity-height.mjs?v=stats-affinity-20261031';
+import { undoManager } from './undo.mjs?v=stats-affinity-20261031';
+import {createSharedCompanionView} from './companion-events.mjs?v=stats-affinity-20261031';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=stats-affinity-20261031';
 
 
 export function mountHome(root,context){
@@ -39,7 +40,7 @@ function showPlaceholder(label) {
 }
 let dailyVisual=null,visualRequest=0;
 let greetingIdentity='';
-function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=amount-images-20261031').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=stats-affinity-20261031').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
 context.onSuspend(()=>visualRequest++);
 function showHomeGreeting(actor){dialogue.textContent=currentGreeting;if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
 context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){if(greetingIdentity)currentGreeting=nextHomeGreeting(c);greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
@@ -102,14 +103,14 @@ context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=
 function renderToday(){renderHomeToday(root,tasks);}
 context.subscribe(tasks.completions,renderToday);
 mountHabitQuick(root,context,{beforeRender:()=>noticeAnchor.after(homeNotice),afterRender:syncHomeNotice});
-context.subscribe(dataStore,({stats}) => {
+context.subscribe(dataStore,({stats,activeCharacter}) => {
   renderToday();
   const summary = root.querySelector('#home-stats');
   const [experience, level, currency] = profileSummary(stats).split(' ｜ ');
   summary.textContent = `${level} ｜ ${experience}｜ ${currency}`;
   summary.setAttribute('aria-label', `累積總經驗值：${visibleExperience(stats.experience)}，等級：${stats.level}，目前貨幣：${stats.currency}，累積取得貨幣：${stats.currencyEarned}`);summary.title=summary.getAttribute('aria-label');
-  summary.title = summary.getAttribute('aria-label');
-},{changesOnly:true,keys:['stats']});
+  appendStatsAffinity(summary,activeCharacter);
+},{changesOnly:true,keys:['stats','activeCharacter']});
 
 // Responsive tabs share the existing DOM, so switching never resets selections
 // and never emits a successful-action event or triggers companion generation.

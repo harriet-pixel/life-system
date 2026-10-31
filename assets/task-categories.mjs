@@ -1,7 +1,7 @@
-import {mountColorField} from './color-field.mjs?v=amount-images-20261031';
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=amount-images-20261031';
-import {dataStore} from './data.mjs?v=amount-images-20261031';
-import {holdDraft} from './coordination.mjs?v=amount-images-20261031';
+import {mountColorField} from './color-field.mjs?v=stats-affinity-20261031';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=stats-affinity-20261031';
+import {dataStore} from './data.mjs?v=stats-affinity-20261031';
+import {holdDraft} from './coordination.mjs?v=stats-affinity-20261031';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

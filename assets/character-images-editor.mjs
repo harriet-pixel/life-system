@@ -1,8 +1,8 @@
-import {EMOTIONS,defaultAvatarCrop,validateAvatarCrop,imageSignature,imageLimitText} from './character-images-model.mjs?v=amount-images-20261031';
-import {holdDraft} from './coordination.mjs?v=amount-images-20261031';
-import {registerImageReferenceSource} from './image-references.mjs?v=amount-images-20261031';
-import {acquireImageURL,storeImageBlob} from './image-store.mjs?v=amount-images-20261031';
-import {saveCharacterImage} from './character-images-service.mjs?v=amount-images-20261031';
+import {EMOTIONS,defaultAvatarCrop,validateAvatarCrop,imageSignature,imageLimitText} from './character-images-model.mjs?v=stats-affinity-20261031';
+import {holdDraft} from './coordination.mjs?v=stats-affinity-20261031';
+import {registerImageReferenceSource} from './image-references.mjs?v=stats-affinity-20261031';
+import {acquireImageURL,storeImageBlob} from './image-store.mjs?v=stats-affinity-20261031';
+import {saveCharacterImage} from './character-images-service.mjs?v=stats-affinity-20261031';
 export function createCharacterImageEditor({root,store,getCharacter,notify,onState}){
  const dialog=document.createElement('dialog');dialog.id='character-image-dialog';dialog.setAttribute('aria-labelledby','character-image-title');
  // Static local markup only; all user values use textContent/property assignment.
@@ -27,7 +27,7 @@ export function createCharacterImageEditor({root,store,getCharacter,notify,onSta
  $('#ci-square').onpointermove=event=>{if(!drag)return;const width=$('#ci-avatar-source').getBoundingClientRect().width,dx=(event.clientX-drag.x)/width,dy=(event.clientY-drag.y)/width;changeCrop(drag.resize?{...drag.crop,size:Math.max(.05,Math.min(1,drag.crop.size+Math.max(dx,dy)))}:{...drag.crop,x:drag.crop.x+dx,y:drag.crop.y+dy});};
  for(const type of ['pointerup','pointercancel','lostpointercapture'])$('#ci-square').addEventListener(type,()=>drag=null);
  async function loadResult(url,token){const value=new Image();value.src=url;await value.decode();if(!active(token))return false;image=value;$('#ci-portrait-result').src=url;$('#ci-avatar-editor').hidden=false;$('#ci-empty').hidden=true;paintCrop();return true;}
- async function processing(){processor??=await import('./character-image-process.mjs?v=amount-images-20261031');portraitEditor??=processor.createImageCropper({canvas:$('#ci-portrait-canvas'),zoomInput:$('#ci-portrait-zoom'),aspectRatio:3/4,onChange:()=>{changed=true;status();}});return processor;}
+ async function processing(){processor??=await import('./character-image-process.mjs?v=stats-affinity-20261031');portraitEditor??=processor.createImageCropper({canvas:$('#ci-portrait-canvas'),zoomInput:$('#ci-portrait-zoom'),aspectRatio:3/4,onChange:()=>{changed=true;status();}});return processor;}
  $('#ci-file').onchange=()=>{const file=$('#ci-file').files[0];if(!file)return;const priorChanged=changed;changed=true;$('#ci-error').textContent='';void job(async token=>{const p=await processing(),source=await p.readCharacterImage(file);if(!active(token))return;cropBefore={crop:{...crop},changed:priorChanged};uploadSource=source;portraitEditor.setImage(source);$('#ci-portrait-editor').hidden=false;$('#ci-avatar-editor').hidden=true;$('#ci-empty').hidden=true;});$('#ci-file').value='';};
  $('#ci-apply-portrait').onclick=()=>void job(async token=>{const url=await processor.croppedPortrait(uploadSource,portraitEditor.crop);if(!active(token))return;crop=defaultAvatarCrop();if(!await loadResult(url,token))return;replacement=url;deleted=false;changed=true;$('#ci-portrait-editor').hidden=true;uploadSource=null;portraitEditor.clear();$('#ci-portrait-canvas').width=300;$('#ci-portrait-canvas').height=400;});
  $('#ci-cancel-portrait').onclick=()=>{uploadSource=null;portraitEditor.clear();$('#ci-portrait-editor').hidden=true;$('#ci-avatar-editor').hidden=!image;$('#ci-empty').hidden=Boolean(image);crop=cropBefore?.crop??crop;changed=cropBefore?.changed??false;if(image)paintCrop();status();};
