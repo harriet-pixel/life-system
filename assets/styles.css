@@ -285,3 +285,5 @@ body[data-navigation="ready"] .page-shell {padding-bottom:calc(var(--bottom-nav-
 @media(width<1024px){.navigation-separator{display:none}}
 
 .restore-image-choice{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer}.restore-image-choice input[type=checkbox]{width:20px;min-width:20px;height:20px;min-height:20px;margin:0;flex:none;accent-color:var(--color-primary)}
+
+.cloud-restore-dialog .cloud-image-choice{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;text-align:left;width:100%}.cloud-restore-dialog [data-cloud-summary]{font-size:.875rem;color:var(--color-muted)}

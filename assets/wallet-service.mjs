@@ -12,6 +12,7 @@ export function createWalletService(store,{now=()=>new Date(),id=()=>crypto.rand
    wallet.lastChange={collection:'records',id:submissionId};wallet.records[submissionId]={id:submissionId,debitId:submissionId,time:now().toISOString(),name,cost,note,sourceId,status:'active',cancelledAt:null,refundId:null};
    return save(base,wallet,{...base.stats,currency:base.stats.currency-cost},'wallet.spent',submissionId,'兌換「'+name+'」');
   },
+  async editRecord(recordId,name,expected){const base=snapshot(),wallet=validateWallet(base.wallet??emptyWallet()),record=wallet.records[recordId];if(!record||JSON.stringify(record)!==expected)throw new Error('此筆紀錄已變更，請重新開啟編輯；草稿已保留。');record.name=walletName(name);wallet.lastChange={collection:'records',id:recordId};return save(base,wallet,null,'wallet.edited',id(),'編輯消費項目名稱');},
   async cancel(recordId,submissionId=id()){
    const base=snapshot(),wallet=validateWallet(base.wallet??emptyWallet()),r=wallet.records[recordId];
    if(!r||r.status!=='active')throw new Error('此筆已取消或不存在，未重複退款。');validateWalletEvidence({...base,wallet});

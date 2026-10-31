@@ -267,3 +267,5 @@ M/P/E立即更新暫時aria-pressed／busy，不先重繪整頁；pending只留�
 stats.currencyEarned缺省以文件自身餘額初始化一次，保留0；舊Undo／Redo快照同時遷移，不淘汰有效鏈。獎勵／撤回與手動校正按實際delta調整累積量，消費／退款不調整；restart兩者歸零。舊備份用備份本身餘額初始化，完整備份含錢包與證據。詳見[docs/WALLET.md](docs/WALLET.md)。
 
 錢包新增窗採重複性／單次頁籤，重複性直接點選常用項目，各頁保留草稿。內容區移除消費紀錄／Wallet Ledger及橫線；新增無備註欄、帳本無逐筆取消／刪除入口，既存備註與取消來源保留，使用者沿全站Undo。導覽錢包緊接習慣。Google有效token在專用localStorage保留原最長一小時期限；不加入備份，不背景登入／刷新／同步。聊天室Enter送出、Shift＋Enter換行，IME選字不送出；全文本機24小時，有效全文納入本機明文／加密及手動雲端備份。
+
+帳本名稱可點選人工更正，金額不可改寫；新增wallet.edited沿原鎖／revision及單筆Undo證據，不生成消費AI或計分。常用項目修改仍不回推舊帳。日期僅顯示當地日期且與名稱同列，原時間仍保存；手機月份下花費摘要隱藏，頁首摘要保留。管理窗返回時即時重繪，新增為標題右側44px加號。詳見docs/WALLET_LAYOUT_POLISH.md。

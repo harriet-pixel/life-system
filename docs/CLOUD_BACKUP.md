@@ -58,3 +58,5 @@ Google API／GIS以mock驗證，真實Blob、IndexedDB、鎖、資料服務、�
 聊天全文備份、還原時的epoch／唯讀／期限及分類排除評估，見[CHAT_BACKUP_GREETINGS.md](CHAT_BACKUP_GREETINGS.md)。備份檔內文字快照會持續至檔案刪除，不會在24小時後自動抹除。
 
 還原視窗每次預設不勾「此次匯入備份圖片」；只重用本機同ID必要圖片，缺圖完整阻擋，可勾選重試。圖片選用設定仍依所選備份還原；不提供任意本機／備份選圖合併。全部備份依舊自包含圖片，仍整檔下載／驗證，不會因此縮短上傳。驗收見[RESTORE_IMAGES_DISPLAY.md](RESTORE_IMAGES_DISPLAY.md)。
+
+雲端視窗文案／排列簡化與文字備份可行性評估見[WALLET_LAYOUT_POLISH.md](WALLET_LAYOUT_POLISH.md)；本次不變更備份格式。

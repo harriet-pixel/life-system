@@ -1,6 +1,6 @@
 import {backupStatus} from './cloud-sync-status.mjs?v=restore-images-20261031';
 import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=restore-images-20261031';
-import {createCloudRestore} from './cloud-restore.mjs?v=restore-images-20261031';
+import {createCloudRestore} from './cloud-restore.mjs?v=wallet-layout-20261031';
 import {getCloudBackup} from './cloud-backup.mjs?v=restore-images-20261031';
 import {setOperationNotice} from './operation-notice.mjs?v=restore-images-20261031';
 import {initializeUIFeedback} from './ui-feedback.mjs?v=restore-images-20261031';
@@ -11,7 +11,7 @@ import {createPageLifecycle} from './page-lifecycle.mjs?v=restore-images-2026103
 import {initializeNavigationSize} from './navigation-size.mjs?v=restore-images-20261031';
 import {mountDailyHeader} from './daily-header.mjs?v=restore-images-20261031';
 import {getSharedAIConnection} from './ai-runtime.mjs?v=restore-images-20261031';
-const routes={wallet:{mount:()=>import('./wallet.mjs?v=restore-images-20261031'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=restore-images-20261031'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=restore-images-20261031'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=restore-images-20261031'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=restore-images-20261031'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=restore-images-20261031'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=restore-images-20261031'),export:'mountSettings'}};
+const routes={wallet:{mount:()=>import('./wallet.mjs?v=wallet-layout-20261031'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=restore-images-20261031'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=wallet-layout-20261031'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=restore-images-20261031'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=restore-images-20261031'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=restore-images-20261031'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=restore-images-20261031'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map(),prefetchedPages=new Map();
 async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'restore-images-20261031'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}

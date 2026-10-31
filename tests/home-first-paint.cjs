@@ -15,7 +15,7 @@ const ready=p=>p.waitForSelector('body[data-shell=ready]');
    const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    let release;const gate=new Promise(r=>release=r);
    // Hold a dependency unrelated to reading local tasks; shell cannot mount yet.
-   await page.route('**/assets/cloud-restore.mjs?v=restore-images-20261031',async route=>{await gate;await route.continue();});
+   await page.route('**/assets/cloud-restore.mjs?v=wallet-layout-20261031',async route=>{await gate;await route.continue();});
    await page.goto(base,{waitUntil:'commit'});
    await page.waitForFunction(()=>document.querySelector('.task-list')?.textContent.includes('先顯示本機今日事件'));
    assert.equal(await page.locator('body').getAttribute('data-shell'),null);
