@@ -1,8 +1,8 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=restore-images-20261031';
-import {readReplyCategory} from './reply-service.mjs?v=restore-images-20261031';
-import {validateCategoryKey} from './reply-manifest.mjs?v=restore-images-20261031';
-import {libraryPrompt,parseLibraryReply} from './reply-model.mjs?v=restore-images-20261031';
-import {relationshipStage} from './characters-model.mjs?v=restore-images-20261031';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=amount-images-20261031';
+import {readReplyCategory} from './reply-service.mjs?v=amount-images-20261031';
+import {validateCategoryKey} from './reply-manifest.mjs?v=amount-images-20261031';
+import {libraryPrompt,parseLibraryReply} from './reply-model.mjs?v=amount-images-20261031';
+import {relationshipStage} from './characters-model.mjs?v=amount-images-20261031';
 export async function generateLibraryPreview(store,id,key,{connection=getSharedAIConnection(),valid=()=>true,onCancel=()=>{}}={}){
  const base=await readReplyCategory(store,id,key),scope=validateCategoryKey(key),stage=relationshipStage(base.character.affinity).stage;if(scope.legacy||base.character.archived)throw new Error('此角色或分類無法生成。');
  const current=connection.getState();if(current.busy)throw new Error('共用AI忙碌，沒有排隊或取消其他聊天。');if(!current.configured||!(current.model||current.sessionModel||current.restorableModel||current.restorableBackendModel))throw new Error('請先設定共用AI連線；原回覆保留。');

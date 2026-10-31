@@ -1,9 +1,9 @@
-import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive,ensureDriveAccess} from './google-drive.mjs?v=restore-images-20261031';
-import {getCloudBackup} from './cloud-backup.mjs?v=restore-images-20261031';
-import {dataStore} from './data.mjs?v=restore-images-20261031';
-import {readBackup} from './backup.mjs?v=restore-images-20261031';
-import {backupDeviceName,displayDeviceName,cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs?v=restore-images-20261031';
-import {backupStatus,taiwanTime} from './cloud-sync-status.mjs?v=restore-images-20261031';
+import {getDriveState,driveAuth,driveConfigured,prepareDriveAuth,connectDrive,ensureDriveAccess} from './google-drive.mjs?v=amount-images-20261031';
+import {getCloudBackup} from './cloud-backup.mjs?v=amount-images-20261031';
+import {dataStore} from './data.mjs?v=amount-images-20261031';
+import {readBackup} from './backup.mjs?v=amount-images-20261031';
+import {backupDeviceName,displayDeviceName,cloudBackupLabel,cloudBackupIdentity} from './cloud-backup-display.mjs?v=amount-images-20261031';
+import {backupStatus,taiwanTime} from './cloud-sync-status.mjs?v=amount-images-20261031';
 export function createCloudRestore(){
  const service=getCloudBackup(),dialog=document.createElement('dialog');dialog.className='task-dialog cloud-restore-dialog';dialog.dataset.shellDialog='true';dialog.setAttribute('aria-labelledby','latest-cloud-title');
  dialog.innerHTML='<header class="cloud-window-heading"><h2 id="latest-cloud-title">雲端備份與還原</h2><button type="button" class="cloud-window-close" data-cloud-close aria-label="關閉雲端視窗">×</button></header><p data-cloud-state role="status"></p><p class="small-note" data-sync-gate></p><dl class="cloud-source-times"><dt>本地裝置</dt><dd data-local-device></dd><dt>本地最後修改時間</dt><dd data-local-time></dd><dt>雲端裝置</dt><dd data-remote-device></dd><dt>雲端最後修改時間</dt><dd data-remote-time></dd><dt>備份建立時間</dt><dd data-backup-time></dd></dl><label class="cloud-version-row">歷史版本<select data-cloud-version aria-label="雲端歷史版本"><option value="">最新備份</option></select></label><p class="small-note" data-cloud-summary role="status"></p><label class="restore-image-choice cloud-image-choice"><input type="checkbox" data-cloud-include-images>此次匯入備份圖片</label><div data-cloud-unlock hidden><label>還原密碼<input type="password" data-cloud-password autocomplete="off"></label><button type="button" data-cloud-verify>解密與驗證</button></div><p data-cloud-error role="alert"></p><footer class="cloud-window-actions"><button type="button" data-cloud-login>登入</button><button type="button" data-cloud-backup>上傳</button><button type="button" data-cloud-confirm>還原</button></footer>';

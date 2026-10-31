@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=restore-images-20261031';
-import { holdDraft } from './coordination.mjs?v=restore-images-20261031';
-import { createProfileImages } from './profile-images.mjs?v=restore-images-20261031';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=restore-images-20261031';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=restore-images-20261031';
-import { undoManager } from './undo.mjs?v=restore-images-20261031';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=restore-images-20261031';
+import {bindProfileValidation} from './validation.mjs?v=amount-images-20261031';
+import { holdDraft } from './coordination.mjs?v=amount-images-20261031';
+import { createProfileImages } from './profile-images.mjs?v=amount-images-20261031';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=amount-images-20261031';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=amount-images-20261031';
+import { undoManager } from './undo.mjs?v=amount-images-20261031';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=amount-images-20261031';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);
@@ -18,8 +18,7 @@ async function renderPhoto() {
   const version=++renderedImageVersion;
   const current=dataStore.getFields(['photo','avatar']);
   let photo,avatar;
-  try { [photo,avatar]=await Promise.all([imageURL(current.photo),imageURL(current.avatar)]); }
-  catch(error) { notice(error.message);return; }
+  [photo,avatar]=await Promise.all([imageURL(current.photo).catch(()=>null),imageURL(current.avatar).catch(()=>null)]);
   if(version!==renderedImageVersion)return;
   const avatarFrame = $('.user-avatar-frame');
   if (avatar) { avatarImage.removeAttribute('hidden'); if (avatarImage.getAttribute('src') !== avatar) avatarImage.src = avatar; avatarFrame.replaceChildren(avatarImage); }
@@ -33,7 +32,7 @@ async function renderPhoto() {
   } else {
     photoImage.removeAttribute('src');
     defaultAvatar.removeAttribute('hidden');
-    photoFrame.replaceChildren(defaultAvatar);
+    if(current.photo){const missing=document.createElement('span');missing.textContent='此裝置缺少圖片，可重新選擇或匯入圖片備份。';photoFrame.replaceChildren(missing);}else photoFrame.replaceChildren(defaultAvatar);
   }
 }
 function element(tag, text) { const el = document.createElement(tag); el.textContent = text; return el; }

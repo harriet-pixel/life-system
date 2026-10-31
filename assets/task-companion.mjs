@@ -1,12 +1,12 @@
-import {dataStore} from './data.mjs?v=restore-images-20261031';
-import {createMobileTaskResponse} from './task-mobile-response.mjs?v=restore-images-20261031';
-import {createSharedCompanionView} from './companion-events.mjs?v=restore-images-20261031';
+import {dataStore} from './data.mjs?v=amount-images-20261031';
+import {createMobileTaskResponse} from './task-mobile-response.mjs?v=amount-images-20261031';
+import {createSharedCompanionView} from './companion-events.mjs?v=amount-images-20261031';
 export function mountTaskCompanion(root,context,options={}){
  const floating=createMobileTaskResponse(root,context,options);
  const sync=()=>{root.querySelector('#portrait-placeholder').firstElementChild.textContent=matchMedia('(min-width:1024px)').matches?'立繪佔位':'頭像佔位';};context.listen(matchMedia('(min-width:1024px)'),'change',sync);sync();
  let dailyVisual=null,visualRequest=0;
  let actorIdentity=null,actorSignature='';
- function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=restore-images-20261031').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+ function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=amount-images-20261031').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
  context.onSuspend(()=>visualRequest++);
  function showActor(c){if(c)showDaily({characterId:c.characterId,characterCreatedAt:c.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
  context.subscribe(dataStore,({activeCharacter:c})=>{const id=c?c.characterId+':'+c.createdAt:null,signature=JSON.stringify(c);if(signature===actorSignature)return;actorSignature=signature;const previous=actorIdentity;actorIdentity=id;if(previous&&previous!==id)root.querySelector('#companion-dialogue').textContent=c?'已切換出場夥伴：'+c.settings.name:'請先設定出場夥伴。';showActor(c);},{changesOnly:true,keys:['activeCharacter'],distinct:true});

@@ -1,5 +1,5 @@
-import {resolveCharacterImage} from './character-images-model.mjs?v=restore-images-20261031';
-import {acquireImageURL} from './image-store.mjs?v=restore-images-20261031';
+import {resolveCharacterImage} from './character-images-model.mjs?v=amount-images-20261031';
+import {acquireImageURL} from './image-store.mjs?v=amount-images-20261031';
 // A view owns at most two visible layers and one pending URL. No global cache.
 export function createCharacterImageView(target,{avatar=false,thumbnail=false,avatarPixels=0}={}){
  const placeholder=document.createElement('span');placeholder.className='character-image-placeholder';
@@ -11,13 +11,13 @@ export function createCharacterImageView(target,{avatar=false,thumbnail=false,av
  function clear(){sequence++;signature='';pending?.release();pending=null;clearTimeout(timer);layers.forEach(clean);layers=[];placeholder.hidden=false;}
  async function show(character,emotion='neutral',transition='fade'){
   const item=resolveCharacterImage(character,emotion),neutral=resolveCharacterImage(character,'neutral');
-  const key=JSON.stringify([character?.characterId,item,neutral,transition]);if(key===signature)return;signature=key;const token=++sequence;
+  const key=JSON.stringify([character?.characterId,item,neutral,transition]);if(key===signature&&layers.length)return;signature=key;const token=++sequence;
   pending?.release();pending=null;clearTimeout(timer);while(layers.length>1)clean(layers.shift());for(const layer of layers)layer.image.style.opacity='1';
-  if(!item){layers.forEach(clean);layers=[];placeholder.hidden=false;return;}
+  if(!item){layers.forEach(clean);layers=[];placeholder.textContent='尚未設定立繪';placeholder.hidden=false;return;}
   for(const candidate of item===neutral?[item]:[item,neutral].filter(Boolean)){
    let lease;
    try{
-    lease=avatar&&avatarPixels?await import('./daily-avatar.mjs?v=restore-images-20261031').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
+    lease=avatar&&avatarPixels?await import('./daily-avatar.mjs?v=amount-images-20261031').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
     if(token!==sequence){lease.release();return;}pending=lease;
     const image=new Image();image.alt='';image.decoding='async';image.src=lease.url;await image.decode();
     if(token!==sequence){lease.release();return;}pending=null;
@@ -29,7 +29,7 @@ export function createCharacterImageView(target,{avatar=false,thumbnail=false,av
     else{while(layers.length>1)clean(layers.shift());}return;
    }catch{lease?.release();if(token!==sequence)return;pending=null;}
   }
-  if(token===sequence){layers.forEach(clean);layers=[];placeholder.hidden=false;}
+  if(token===sequence){layers.forEach(clean);layers=[];placeholder.textContent='此裝置缺少圖片，可重新匯入圖片備份或設定立繪。';placeholder.hidden=false;}
  }
  return {show,clear};
 }

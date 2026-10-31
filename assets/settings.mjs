@@ -1,18 +1,18 @@
-import {mountColorField} from './color-field.mjs?v=restore-images-20261031';
-import {documentTime} from './cloud-backup-policy.mjs?v=restore-images-20261031';
-import {cloudBackupLabel} from './cloud-backup-display.mjs?v=restore-images-20261031';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=restore-images-20261031';
-import {getCloudBackup} from './cloud-backup.mjs?v=restore-images-20261031';
-import {initializeAISettings} from './ai-settings.mjs?v=restore-images-20261031';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=restore-images-20261031';
-import {dataStore,persistentUndo} from './data.mjs?v=restore-images-20261031';
-import {createMobileTabPositioner} from './tab-position.mjs?v=restore-images-20261031';
-import {createHistoryView} from './history-view.mjs?v=restore-images-20261031';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=restore-images-20261031';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=restore-images-20261031';
-import {holdDraft} from './coordination.mjs?v=restore-images-20261031';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=restore-images-20261031';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=restore-images-20261031';
+import {mountColorField} from './color-field.mjs?v=amount-images-20261031';
+import {documentTime} from './cloud-backup-policy.mjs?v=amount-images-20261031';
+import {cloudBackupLabel} from './cloud-backup-display.mjs?v=amount-images-20261031';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=amount-images-20261031';
+import {getCloudBackup} from './cloud-backup.mjs?v=amount-images-20261031';
+import {initializeAISettings} from './ai-settings.mjs?v=amount-images-20261031';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=amount-images-20261031';
+import {dataStore,persistentUndo} from './data.mjs?v=amount-images-20261031';
+import {createMobileTabPositioner} from './tab-position.mjs?v=amount-images-20261031';
+import {createHistoryView} from './history-view.mjs?v=amount-images-20261031';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=amount-images-20261031';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=amount-images-20261031';
+import {holdDraft} from './coordination.mjs?v=amount-images-20261031';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=amount-images-20261031';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=amount-images-20261031';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);
@@ -177,7 +177,7 @@ $('#restore-confirm').addEventListener('close',()=>{if(!$('#restore-confirm').op
 $('#confirm-restore').addEventListener('click',()=>run(async()=>{
   if(!prepared)throw new Error('請先解密並完成備份驗證。');
   await restoreBackup(dataStore,prepared,restoreRevision,{includeImages:$('#restore-include-images').checked});cloudBackup.setLocalDataTime(documentTime(prepared.payload.document)??prepared.payload.createdAt);$('#restore-confirm').close();$('#restore-file').value='';cancelAppearance();
-  notice('完整還原已完成，資料、設定、圖片與歷史已重新載入；不包含還原前的歷史。');if(selectedTab===0)await refreshStorage();
+  notice('資料還原已完成；缺少的圖片會在圖片位置提醒。本機同ID圖片保留。');if(selectedTab===0)await refreshStorage();
 }));
 const cloudBackup=getCloudBackup();let versionsLoading=false,versionsGeneration=0,listedAt=0,connectedBefore=false;
 function driveNotice(message){$('#cloud-backup-status').textContent=String(message??'');}
