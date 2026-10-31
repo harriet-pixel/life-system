@@ -9,7 +9,7 @@ import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relatio
 
 // The shared shell keeps this module lazy. Its CSS is loaded only on this route.
 if(typeof document!=='undefined'){
- const url=new URL('./characters.css?v=stats-affinity-20261031',import.meta.url).href;
+ const url=new URL('./characters.css?v=chat-height-20261031',import.meta.url).href;
  const existing=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===url);
  if(!existing?.sheet){
   existing?.remove();
@@ -57,9 +57,12 @@ export function mountCharacters(root,context){
  function sizeChat(){
   if($('#chat-panel').hidden||innerWidth>=1024)return;
   const height=window.visualViewport?.height??innerHeight;
-  const top=$('#chat-panel').getBoundingClientRect().top+scrollY;
   const navigation=document.querySelector('.mobile-navigation')?.getBoundingClientRect().height??64;
-  $('.chat-room').style.setProperty('--chat-room-space',Math.max(0,height-top-navigation-24)+'px');
+  const room=$('.chat-room'),chrome=$('.chat-heading').getBoundingClientRect().height+$('.chat-composer').getBoundingClientRect().height;
+  const messages=Math.max(200,Math.min(360,height*.45));
+  // The toolbar above may scroll away. Do not subtract its document position
+  // from the conversation, which used to collapse the message region.
+  room.style.setProperty('--chat-room-space',Math.ceil(Math.max(height-navigation-24,chrome+messages+2))+'px');
  }
 
  function fields(container,definitions,values,prefix,inputs){
@@ -228,5 +231,6 @@ export function mountCharacters(root,context){
  context.listen(window,'resize',()=>{fitVisible();sizeChat();},{passive:true});
  if(window.visualViewport)context.listen(window.visualViewport,'resize',sizeChat,{passive:true});
  if(document.fonts)context.listen(document.fonts,'loadingdone',()=>{fitVisible();sizeChat();});
+ const chatSizeObserver=new ResizeObserver(sizeChat);context.observe(chatSizeObserver,[$('.chat-heading'),$('.chat-composer'),document.querySelector('.mobile-navigation')].filter(Boolean));
  context.onResume(()=>{fitVisible();sizeChat();});
 }

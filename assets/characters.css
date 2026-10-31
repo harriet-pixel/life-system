@@ -33,3 +33,5 @@
 @media(min-width:1024px){#character-image-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
 #greeting-generate svg{width:24px;height:24px}#greeting-generate{flex:0 0 44px;min-width:44px;min-height:44px;display:inline-grid;place-items:center}
+
+@media(width<1024px){.chat-room{height:var(--chat-room-space,calc(100svh - var(--bottom-nav-height,64px) - 24px));max-height:none}.chat-messages{min-height:0}}
