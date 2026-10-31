@@ -230,7 +230,7 @@ replyLibrary.version:2按角色／positive-negative／八情緒稀疏分類，�
 
 首頁／待辦／習慣在小於1024px共用daily-header：日期→兩行資訊區→數據列→主頁籤，各區1em間距、三頁相同捲軸預留寬度。首頁資訊區兩行通知；待辦為任務看板N則＋一行通知，月曆／設定在右側同一資訊列；習慣為當月上下半月點數＋一行通知，保留設定／新增圖示。通知依可用寬度截為....，完整文字留title與aria-description，取代舊十字／內捲規則。不動桌面布局與正式獎勵。
 
-看板／懸而未決安排使用同一task-multi-schedule日曆的單日模式，原移動規則保留；常駐仍可跨月多選。導航當前圖示主題色底白線，已知路由HTML／模組平行讀取並在hover／focus／touch意圖預取，不mount背景頁、不執行AI／資料操作。
+看板／懸而未決安排使用同一task-multi-schedule日曆的單日模式，原移動規則保留；常駐仍可跨月多選。導航當前圖示主題色底白線，已知路由HTML／模組平行讀取並在hover／focus／touch意圖預取；初始頁load後另於閒置時逐頁預取HTML、樣式及modulepreload（不evaluate），省流量／2G／離線／背景分頁暫停。不mount背景頁、不執行AI／資料操作。
 
 ## 行動回饋與預分配（2026-10-28）
 
