@@ -4,8 +4,8 @@ import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHI
 import {createMobileTabPositioner} from './tab-position.mjs?v=stats-affinity-20261031';
 import {dataStore} from './data.mjs?v=stats-affinity-20261031';
 import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=stats-affinity-20261031';
-import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=stats-affinity-20261031';
-import {statusButtons} from './habit-quick.mjs?v=stats-affinity-20261031';
+import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=habit-carry-20261101';
+import {statusButtons} from './habit-quick.mjs?v=habit-carry-20261101';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=stats-affinity-20261031';
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 export function mountHabits(root,context){
@@ -42,8 +42,8 @@ export function mountHabits(root,context){
  const settingTabs=[$('#settings-habits-tab'),$('#settings-achievements-tab')];settingTabs.forEach((tab,i)=>{tab.onclick=()=>selectSettingsSection(i?'achievements':'habits');tab.onkeydown=e=>{const next=({ArrowRight:1-i,ArrowLeft:1-i,Home:0,End:1})[e.key];if(next===undefined)return;e.preventDefault();selectSettingsSection(next?'achievements':'habits');settingTabs[next].focus({preventScroll:true});};});
  $('#open-habit-settings').onclick=()=>openSettings();
  const changePeriod=()=>{if(dirty()){say('請先儲存或放棄目前設定，再切換週期。');$('#setting-month').value=editingPeriod.slice(0,7);$('#setting-half').value=editingPeriod.slice(-1);return;}showPeriod($('#setting-month').value+'-'+$('#setting-half').value);};$('#setting-month').onchange=changePeriod;$('#setting-half').onchange=changePeriod;
- function previousPeriod(){const info=infoForId(editingPeriod),date=new Date(info.start+'T00:00:00Z');date.setUTCDate(date.getUTCDate()-1);return dataStore.getFields(['habits']).habits.periods.find(p=>p.id===periodInfo(date.toISOString().slice(0,10)).id)?.versions.at(-1)?.habits;}
- $('[data-copy]').onclick=()=>{const previous=previousPeriod();if(!previous){say('上一期尚無設定。');return;}loadEditors(previous);};$('[data-reset]').onclick=()=>loadEditors(null);
+ function previousPeriod(){const info=infoForId(editingPeriod),date=new Date(info.start+'T00:00:00Z');date.setUTCDate(date.getUTCDate()-1);return dataStore.getFields(['habits']).habits.periods.find(p=>p.id===periodInfo(date.toISOString().slice(0,10)).id);}
+ $('[data-copy]').onclick=()=>{const previous=previousPeriod(),version=previous?.versions.at(-1);if(!version){say('上一期尚無設定。');return;}loadEditors(version.habits);const allocations=Object.fromEntries(Object.keys(ACHIEVEMENTS).map(k=>[k,previous.versions[0].achievementAllocations[k]??version.achievementAllocations[k]??null])),current=dataStore.getFields(['habits']).habits.periods.find(p=>p.id===editingPeriod);for(const award of current?.achievements??[])allocations[award.type]=current.versions[0].achievementAllocations[award.type]??award.reward.abilities;loadAchievementEditors(allocations);};$('[data-reset]').onclick=()=>loadEditors(null);
  function loadAchievementEditors(values={}){const container=$('#achievement-manual');container.replaceChildren(...Object.entries(ACHIEVEMENTS).map(([kind,n])=>allocationFields(kind,n,values?.[kind])));}
  const achievementValues=()=>Object.fromEntries([...$('#achievement-manual').querySelectorAll('[data-allocation]')].map(field=>[field.dataset.allocation,readAllocation(field)]));
  form.onsubmit=e=>{e.preventDefault();void run(async()=>{if(settingRevision!==dataStore.getFields(['revision']).revision)throw new Error('設定開啟後資料已更新，草稿已保留。');await habitService.saveLivePeriod(editingPeriod,periodValues(),{achievementAllocations:achievementValues()});settingRevision=dataStore.getFields(['revision']).revision;formBase=content();say('設定已儲存');closeAfterSave=false;closeSettings();});};

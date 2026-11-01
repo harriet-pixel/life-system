@@ -1,6 +1,6 @@
 import {appendStatsAffinity} from './stats-affinity.mjs?v=stats-affinity-20261031';
 import {nextHomeGreeting} from './characters-model.mjs?v=stats-affinity-20261031';
-import {mountHabitQuick} from './habit-quick.mjs?v=stats-affinity-20261031';
+import {mountHabitQuick} from './habit-quick.mjs?v=habit-carry-20261101';
 import {renderHomeToday} from './home-today.mjs?v=stats-affinity-20261031';
 import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=stats-affinity-20261031';
 import {createTaskEditor} from './task-editor.mjs?v=stats-affinity-20261031';
