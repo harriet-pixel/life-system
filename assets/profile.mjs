@@ -1,4 +1,3 @@
-import {appendStatsAffinity} from './stats-affinity.mjs?v=stats-affinity-20261031';
 import {bindProfileValidation} from './validation.mjs?v=stats-affinity-20261031';
 import { holdDraft } from './coordination.mjs?v=stats-affinity-20261031';
 import { createProfileImages } from './profile-images.mjs?v=stats-affinity-20261031';
@@ -78,7 +77,7 @@ function renderRadar() {
 }
 context.observe(new ResizeObserver(renderRadar),[$('#ability-radar')]);
 document.fonts.ready.then(renderRadar);
-function render(state = dataStore.getFields(['profile','stats','photo','avatar','activeCharacter'])) {
+function render(state = dataStore.getFields(['profile','stats','photo','avatar'])) {
   $('#profile-name').textContent = state.profile.name || '尚未設定稱呼';
   const motto=(state.profile.motto ?? '').trim();
   $('#profile-motto').textContent=motto;$('#profile-motto').hidden=!motto;
@@ -89,7 +88,6 @@ function render(state = dataStore.getFields(['profile','stats','photo','avatar',
   $('#profile-stats').replaceChildren(levelLabel,element('span',` ｜ ${experienceText}｜ ${currencyText}`));
   $('#profile-stats').setAttribute('aria-label', `等級：${level}，累積總經驗值：${visibleExperience(experience)}，目前貨幣：${currency}，累積取得貨幣：${state.stats.currencyEarned}`);
   $('#profile-stats').title = `等級：${level}，累積總經驗值：${visibleExperience(experience)}，目前貨幣：${currency}，累積取得貨幣：${state.stats.currencyEarned}`;
-  appendStatsAffinity($('#profile-stats'),state.activeCharacter);
   const missing=ABILITIES.filter(def=>!abilities.some(a=>a.id===def.id&&a.name===def.name&&Number.isSafeInteger(a.value)&&a.value>=0));
   const valid = ABILITIES.length===5&&missing.length===0;
   $('#abilities-missing').textContent=valid?'':`能力資料不完整：${missing.map(a=>a.name).join('、')||'能力定義'}，請檢查已保存資料。`;
@@ -244,7 +242,7 @@ form.addEventListener('submit',async event=>{
   finally{if(version===saveVersion)lockSave(false);}
 });
 
-context.subscribe(dataStore,render,{changesOnly:true,keys:['profile','stats','photo','avatar','activeCharacter']});
+context.subscribe(dataStore,render,{changesOnly:true,keys:['profile','stats','photo','avatar']});
 
 context.setHooks({hasDraft:()=>dialog.open&&hasUnsavedChanges(),busy:()=>saving||imageBusy||restarting});
 
