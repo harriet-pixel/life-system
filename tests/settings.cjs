@@ -25,7 +25,7 @@ try{
  console.log('PASS appearance: preview/save/reload/cross-page/cross-tab/Undo/Redo');
  // Recovery is fixed by the system; no history recording toggle remains.
  await openSettingsSection(page,'history');assert.equal(await page.locator('#history-record-all').count(),0);
- await home.evaluate(async()=>{const{habitService}=await import('./assets/habit-actions.mjs?v=stats-affinity-20261031');const id=await habitService.saveBonus({name:'測試額外行動',description:'',points:1});await habitService.evaluateBonus(id,async()=>({physique:1,wisdom:0,charisma:0,resilience:0,perception:0}));});
+ await home.evaluate(async()=>{const{habitService}=await import('./assets/habit-actions.mjs?v=habit-carry-20261101');const id=await habitService.saveBonus({name:'測試額外行動',description:'',points:1});await habitService.evaluateBonus(id,async()=>({physique:1,wisdom:0,charisma:0,resilience:0,perception:0}));});
  const count=await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length);
  await home.locator('#habits-tab').click();await home.locator('#habits-panel').getByRole('button',{name:'加分打卡',exact:true}).click();await home.locator('#home-bonus-picker [data-home-bonus-items] button').first().click();await home.waitForTimeout(200);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.length),count+1,JSON.stringify(await page.evaluate(()=>JSON.parse(localStorage.getItem('life-system.data.v1')).history.map(r=>r.type))));

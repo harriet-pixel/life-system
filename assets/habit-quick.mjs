@@ -2,7 +2,7 @@ import {setOperationNotice} from './operation-notice.mjs?v=stats-affinity-202610
 import {todayBonusTotals} from './habit-bonus-summary.mjs?v=stats-affinity-20261031';
 import {dataStore} from './data.mjs?v=stats-affinity-20261031';
 import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=stats-affinity-20261031';
-import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=stats-affinity-20261031';
+import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=habit-carry-20261101';
 const pendingChoices=new Map();
 export function statusButtons(current,action,disabled=false,identity=null){
  const pending=identity&&pendingChoices.get(identity),group=document.createElement('div');group.className='habit-statuses';group.setAttribute('role','group');group.setAttribute('aria-label','完成程度');
