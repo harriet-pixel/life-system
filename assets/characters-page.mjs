@@ -1,15 +1,15 @@
-import {mountGreetings} from './character-greetings-page.mjs?v=home-ai-20261102';
-import {guardedDialog} from './companion-dialog.mjs?v=home-ai-20261102';
-import {mountCharacterImages} from './character-images-ui.mjs?v=home-ai-20261102';
-import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=home-ai-20261102';
-import {dataStore} from './data.mjs?v=home-ai-20261102';
-import {holdDraft} from './coordination.mjs?v=home-ai-20261102';
-import {createCharacterService} from './characters-service.mjs?v=home-ai-20261102';
-import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter} from './characters-model.mjs?v=home-ai-20261102';
+import {mountGreetings} from './character-greetings-page.mjs?v=chat-layout-20261102';
+import {guardedDialog} from './companion-dialog.mjs?v=chat-layout-20261102';
+import {mountCharacterImages} from './character-images-ui.mjs?v=chat-layout-20261102';
+import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=chat-layout-20261102';
+import {dataStore} from './data.mjs?v=chat-layout-20261102';
+import {holdDraft} from './coordination.mjs?v=chat-layout-20261102';
+import {createCharacterService} from './characters-service.mjs?v=chat-layout-20261102';
+import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter} from './characters-model.mjs?v=chat-layout-20261102';
 
 // The shared shell keeps this module lazy. Its CSS is loaded only on this route.
 if(typeof document!=='undefined'){
- const url=new URL('./characters.css?v=home-ai-20261102',import.meta.url).href;
+ const url=new URL('./characters.css?v=chat-layout-20261102',import.meta.url).href;
  const existing=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===url);
  if(!existing?.sheet){
   existing?.remove();
@@ -26,10 +26,11 @@ export function mountCharacters(root,context){
  let snapshot,selected=null,base=null,draft=null,stage=1,current=null,readError=false;
  let roleDirty=false,policyDirty=false,policyBase=null,busy=false,release=null,held=null,draftToken=0,optionSignature='';
  let images,chat=null,chatImport=null,replies=null,replyImport=null,cards=null,cardImport=null,greetings=null;
- const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=home-ai-20261102').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;$('#chat-status').textContent='聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。';throw error;});};
+ const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=chat-layout-20261102').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,notify,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;notify('聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。');throw error;});};
  const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft())||Boolean(replies?.hasDraft())||Boolean(cards?.hasDraft())||Boolean(greetings?.hasDraft());
  const notify=message=>{$('#operation-status').textContent=message;$('#operation-status').title=message;};
- const notice=$('#operation-status'),noticeAnchor=document.createComment('desktop companion notice'),mobileHeader=matchMedia('(width < 1024px)');notice.before(noticeAnchor);const headerActions=['#character-create','#character-activate'].map(selector=>{const button=$(selector),anchor=document.createComment('desktop companion action');button.before(anchor);return {button,anchor};});const placeNotice=()=>{if(mobileHeader.matches){$('[data-companion-notice]').append(notice);$('[data-companion-actions]').append(...headerActions.map(a=>a.button));}else{noticeAnchor.after(notice);headerActions.forEach(({button,anchor})=>anchor.after(button));}};context.listen(mobileHeader,'change',placeNotice);context.onResume(placeNotice);placeNotice();
+ const notice=$('#operation-status'),mobileHeader=matchMedia('(width < 1024px)');const headerActions=['#character-create','#character-activate'].map(selector=>{const button=$(selector),anchor=document.createComment('desktop companion action');button.before(anchor);return {button,anchor};});const placeNotice=()=>{if(mobileHeader.matches){$('[data-companion-notice]').append(notice);$('[data-companion-actions]').append(...headerActions.map(a=>a.button));}else{$('[data-companion-desktop-notice]').append(notice);headerActions.forEach(({button,anchor})=>anchor.after(button));}};context.listen(mobileHeader,'change',placeNotice);context.onResume(placeNotice);placeNotice();
+ const forwarded=new Map();const forwardNotices=()=>{for(const node of root.querySelectorAll('[role=status],#card-import-status')){if(node===notice||node.id==='reply-count'||node.closest('dialog')||node.hasAttribute('data-stats-affinity'))continue;const text=node.textContent.trim();if(forwarded.get(node)===text)continue;forwarded.set(node,text);node.hidden=true;if(text)notify(text);}};const noticeObserver=new MutationObserver(forwardNotices);const watchNotices=()=>noticeObserver.observe(root,{subtree:true,childList:true,characterData:true});watchNotices();context.onSuspend(()=>noticeObserver.disconnect());context.onResume(()=>{watchNotices();forwardNotices();});
  const policySignature=settings=>JSON.stringify(['enabled','chat','tasks','habits','limit'].map(k=>settings[k]));
  function draftNotice(){
   $('#character-draft').textContent=dirty()?'尚未儲存：'+[roleDirty?'角色設定':'',policyDirty?'全站扣分設定':''].filter(Boolean).join('、')+'。站內切頁會保留草稿。':'';
@@ -189,7 +190,7 @@ export function mountCharacters(root,context){
  select.addEventListener('change',()=>{if(greetings&&!greetings.beforeSelection()){select.value=selected??'';return;}if(cards&&!cards.beforeSelection()){select.value=selected??'';return;}const next=select.value;if(next===selected)return;if(replies&&!replies.beforeSelection()){select.value=selected??'';return;}if(!images.beforeSelection()){select.value=selected??'';return;}if(!discardRole()){select.value=selected??'';return;}selected=next;base=null;draft=null;render(snapshot);});
  $('#character-create').onclick=()=>{
   if((greetings&&!greetings.beforeSelection())||(cards&&!cards.beforeSelection())||(replies&&!replies.beforeSelection())||!images.beforeSelection()||!discardRole())return;
-  void run(async()=>{const before=new Set(snapshot.companion.characters.map(c=>c.characterId));await service.act({type:'create'});selected=snapshot.companion.characters.find(c=>!before.has(c.characterId))?.characterId??selected;base=null;draft=null;tab(1);notify('已新增角色。');alert('已建立角色，請點選「角色設定」填寫內容。');});
+  void run(async()=>{const before=new Set(snapshot.companion.characters.map(c=>c.characterId));await service.act({type:'create'});selected=snapshot.companion.characters.find(c=>!before.has(c.characterId))?.characterId??selected;base=null;draft=null;tab(1);notify('已建立角色，請點選「角色設定」填寫內容。');});
  };
  form.onsubmit=event=>{
   event.preventDefault();if(!base||!draft)return;capture();
@@ -201,9 +202,11 @@ export function mountCharacters(root,context){
  function replacement(){if(snapshot.companion.activeCharacterId!==selected)return {};return confirm('這是目前出場角色。繼續會先取消出場；之後可另選角色設為夥伴。')?{replacementId:null}:null;}
  $('#character-archive').onclick=()=>{if(!current)return;const archived=current.archived,extra=archived?{}:replacement();if(!extra)return;void run(async()=>{await service.act({type:archived?'unarchive':'archive',characterId:selected,...extra});$('#character-danger-dialog').close();notify(archived?'已取消封存。':'已封存，設定及歷史保留。');});};
  $('#character-delete').onclick=()=>{
-  if(!current||!confirm('永久刪除將移除這位角色的全部設定與好感度，無法復原；出場歷史只保留匿名角色 ID，既有備份不會一併刪除。'))return;
-  const extra=replacement();if(!extra)return;if(prompt('再次確認：請輸入角色名稱「'+current.settings.name+'」')!==current.settings.name){notify('未刪除角色。');return;}
-  void run(async()=>{await service.act({type:'delete',characterId:selected,...extra});free('role');base=null;draft=null;$('#character-danger-dialog').close();notify('角色已永久刪除。');});
+  const character=current;if(!character)return;
+  if(!confirm('永久刪除「'+character.settings.name+'」將移除這位角色的全部設定與好感度，無法復原；出場角色會先取消出場，出場歷史保留匿名ID，既有備份不會一併刪除。')){notify('未刪除角色。');return;}
+  if(!confirm('再次確認：永久刪除角色「'+character.settings.name+'」？此操作無法復原。')){notify('未刪除角色。');return;}
+  const extra=snapshot.companion.activeCharacterId===character.characterId?{replacementId:null}:{};
+  void run(async()=>{await service.act({type:'delete',characterId:character.characterId,...extra});free('role');base=null;draft=null;$('#character-danger-dialog').close();notify('角色已永久刪除。');});
  };
  policyForm.addEventListener('input',()=>void protect('policy'));
  policyForm.onsubmit=event=>{
@@ -227,8 +230,8 @@ export function mountCharacters(root,context){
  greetings=mountGreetings(root,{context,store:dataStore,getCharacter:()=>readError?null:current,onState:()=>{controls();draftNotice();}});
  images=mountCharacterImages(root,context,{getCharacter:()=>readError?null:current,getSettings:()=>snapshot?.settings,store:dataStore,notify,onState:()=>{draftNotice();}});
  context.setHooks({hasDraft:()=>dirty()||Boolean(chat?.hasDraft()),busy:()=>busy||images.busy()||Boolean(replies?.busy())||Boolean(cards?.busy())||Boolean(greetings?.busy())});
- void import('./character-card-page.mjs?v=home-ai-20261102').then(m=>{cards=m.mountCharacterCards(root,context,{store:dataStore,getCharacter:()=>readError?null:current,hasRoleDraft:()=>roleDirty,notify,onState:draftNotice});cards.update();}).catch(e=>notify(e.message));
- $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=home-ai-20261102').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
+ void import('./character-card-page.mjs?v=chat-layout-20261102').then(m=>{cards=m.mountCharacterCards(root,context,{store:dataStore,getCharacter:()=>readError?null:current,hasRoleDraft:()=>roleDirty,notify,onState:draftNotice});cards.update();}).catch(e=>notify(e.message));
+ $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=chat-layout-20261102').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
  context.subscribe(dataStore,render,{changesOnly:true,keys:['revision','companion','affinity','replyLibrary','settings']});
  context.listen(window,'resize',()=>{fitVisible();sizeChat();},{passive:true});
  if(window.visualViewport)context.listen(window.visualViewport,'resize',sizeChat,{passive:true});
