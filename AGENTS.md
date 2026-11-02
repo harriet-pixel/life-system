@@ -176,7 +176,7 @@
 
 ## 夥伴第二階段
 
-`affinity-model.mjs` 負責來源與交易證據，`affinity-integration.mjs` 由 dataStore 正式交易推導生活差異，`affinity-settlement.mjs` 負責兩套日期語意及七日補算，`affinity-runtime.mjs` 在首屏後初始化／前景檢查。原數值唯一來源為 companion 角色；同一文件新增 affinity version:1，無第二份餘額。恢復用小型 affinityPlan，不快照整份人格或帳本。永久刪除不復活；角色管理仍不進Undo。已消耗獎勵取消後僅重發確實扣回部分，無負債；詳見COMPANION.md。新來源須同時驗證正常、返還、取消、Redo及跨角色去重，不從畫面事件入帳。
+`affinity-model.mjs` 負責來源與交易證據，`affinity-integration.mjs` 由 dataStore 正式交易推導生活差異，`affinity-settlement.mjs` 負責兩套日期語意及七日補算，`affinity-runtime.mjs` 在首屏後初始化／前景檢查。個別數值來源為 companion 角色；同一文件 affinity version:1 保存交易證據。2026-11-02起選填 companion.affinitySharing 保存 enabled／value／highestStage／revision；啟用時取個別最高值與保留共用值的較高者，之後共用計分，不覆寫個別餘額。關閉恢復個別計分，共用進度保留。交易與復原plan標記shared目的，跨模式撤銷、補回仍回原餘額；顯示與AI採effectiveCharacter唯讀投影，角色卡不包含共用設定，完整備份包含。恢復用小型 affinityPlan，不快照整份人格或帳本。永久刪除不復活；角色管理仍不進Undo。已消耗獎勵取消後僅重發確實扣回部分，無負債；詳見COMPANION.md。新來源須同時驗證正常、返還、取消、Redo及跨角色去重，不從畫面事件入帳。
 
 ## 夥伴第三階段介面
 

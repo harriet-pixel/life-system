@@ -1,7 +1,7 @@
-import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=single-points-20261102';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=single-points-20261102';
-import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate,taskForOccurrence} from './tasks-model.mjs?v=single-points-20261102';
-import {expiresAt} from './recovery.mjs?v=single-points-20261102';
+import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=shared-affinity-20261102';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=shared-affinity-20261102';
+import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate,taskForOccurrence} from './tasks-model.mjs?v=shared-affinity-20261102';
+import {expiresAt} from './recovery.mjs?v=shared-affinity-20261102';
 export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.randomUUID(),emit=()=>{}}={}){
  const snapshot=()=>store.get();
  let viewQueue=Promise.resolve();

@@ -1,10 +1,10 @@
-import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=single-points-20261102';
-import {createPersonalBackend} from './ai-worker-auth.mjs?v=single-points-20261102';
-import {AI_WORKER_URL} from './ai-worker-config.mjs?v=single-points-20261102';
-import {createPageAIConnection} from './ai-client.mjs?v=single-points-20261102';
-import {AI_BACKEND_URL} from './ai-config.mjs?v=single-points-20261102';
-import {getAIAccessToken} from './ai-auth.mjs?v=single-points-20261102';
-import {dataStore} from './data.mjs?v=single-points-20261102';
+import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=shared-affinity-20261102';
+import {createPersonalBackend} from './ai-worker-auth.mjs?v=shared-affinity-20261102';
+import {AI_WORKER_URL} from './ai-worker-config.mjs?v=shared-affinity-20261102';
+import {createPageAIConnection} from './ai-client.mjs?v=shared-affinity-20261102';
+import {AI_BACKEND_URL} from './ai-config.mjs?v=shared-affinity-20261102';
+import {getAIAccessToken} from './ai-auth.mjs?v=shared-affinity-20261102';
+import {dataStore} from './data.mjs?v=shared-affinity-20261102';
 let shared;
 export function getSharedAIConnection(){
  if(!shared){

@@ -1,8 +1,8 @@
 // Durable, text-free chat receipts. Existing life reward/reversal rules are untouched.
-import {initializeAffinity,affinityTransaction,validateAffinity} from './affinity-model.mjs?v=single-points-20261102';
-import {relationshipStage} from './characters-model.mjs?v=single-points-20261102';
-export function chatRoleSnapshot(doc,characterId){const c=doc.companion?.characters.find(c=>c.characterId===characterId);if(!c||c.archived||doc.companion.activeCharacterId!==characterId)throw new Error('請先將未封存的角色設為夥伴。');return {characterId,characterCreatedAt:c.createdAt,configVersion:c.configVersion,stage:relationshipStage(c.affinity).stage,switchCount:doc.companion.switchHistory.length,epoch:doc.affinity.chatEpoch};}
-export function validChatRole(doc,snapshot){try{const current=chatRoleSnapshot(doc,snapshot.characterId);return ['characterId','characterCreatedAt','configVersion','switchCount','epoch'].every(k=>current[k]===snapshot[k]);}catch{return false;}}
+import {initializeAffinity,affinityTransaction,validateAffinity} from './affinity-model.mjs?v=shared-affinity-20261102';
+import {relationshipStage,effectiveCharacter} from './characters-model.mjs?v=shared-affinity-20261102';
+export function chatRoleSnapshot(doc,characterId){const c=effectiveCharacter(doc.companion,doc.companion?.characters.find(c=>c.characterId===characterId));if(!c||c.archived||doc.companion.activeCharacterId!==characterId)throw new Error('請先將未封存的角色設為夥伴。');return {characterId,characterCreatedAt:c.createdAt,configVersion:c.configVersion,stage:relationshipStage(c.affinity).stage,switchCount:doc.companion.switchHistory.length,sharingRevision:doc.companion.affinitySharing?.revision??0,epoch:doc.affinity.chatEpoch};}
+export function validChatRole(doc,snapshot){try{const current=chatRoleSnapshot(doc,snapshot.characterId);return ['characterId','characterCreatedAt','configVersion','switchCount','epoch'].every(k=>current[k]===snapshot[k])&&current.sharingRevision===(snapshot.sharingRevision??0);}catch{return false;}}
 export function commitChat(doc,turn,time){
  const {chatTurnId,snapshot,assessment,responseHash}=turn;
  if(typeof chatTurnId!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(chatTurnId)||!['positive','neutral','negative'].includes(assessment)||!/^([a-f0-9]{64})$/.test(responseHash))throw new Error('聊天評估無法驗證。');

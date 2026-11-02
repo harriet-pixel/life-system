@@ -1,4 +1,4 @@
-import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=single-points-20261102';
+import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=shared-affinity-20261102';
 // Manual character settings; image metadata is validated separately.
 export const RELATIONSHIP_STAGES=Object.freeze([
  ['初識',0],['熟悉',50],['友好',150],['信任',350],['默契',500],['深厚情誼',700],['長久羈絆',1000]
@@ -15,6 +15,11 @@ const stamp=v=>typeof v==='string'&&Number.isFinite(Date.parse(v));
 export const emptyCharacters=()=>({version:2,characters:[],activeCharacterId:null,switchHistory:[],deletedCharacterIds:[]});
 export function relationshipStage(affinity){check(Number.isSafeInteger(affinity)&&affinity>=0,'好感度必須為非負安全整數。');return RELATIONSHIP_STAGES.findLast(s=>affinity>=s.min);}
 function textFields(value,fields){check(object(value));const result={};check(Object.keys(value).every(k=>Object.hasOwn(fields,k)));for(const key of Object.keys(fields)){check(value[key]===undefined||typeof value[key]==='string');result[key]=value[key]??'';}return result;}
+// Shared affinity is a separate balance; individual balances remain intact.
+export function effectiveCharacter(companion,character){
+ if(!character||!companion?.affinitySharing?.enabled)return character;
+ const shared=companion.affinitySharing;return {...character,affinity:shared.value,highestStage:Math.max(character.highestStage,shared.highestStage)};
+}
 export function normalizeCharacter(c){
  check(object(c)&&validId(c.characterId)&&stamp(c.createdAt)&&stamp(c.updatedAt)&&typeof c.archived==='boolean'&&Number.isSafeInteger(c.configVersion)&&c.configVersion>=1);
  const current=relationshipStage(c.affinity);check(Number.isInteger(c.highestStage)&&c.highestStage>=current.stage&&c.highestStage<=7);
@@ -33,8 +38,8 @@ export function normalizeCharacter(c){
 }
 export function validateCharacters(raw){
  if(raw===undefined)return emptyCharacters();check(object(raw)&&[1,2].includes(raw.version)&&Array.isArray(raw.characters)&&Array.isArray(raw.switchHistory)&&Array.isArray(raw.deletedCharacterIds));
- check(Object.keys(raw).every(k=>['version','characters','activeCharacterId','switchHistory','deletedCharacterIds'].includes(k)));
- const result=structuredClone(raw);result.version=2;result.characters=result.characters.map(normalizeCharacter);const ids=new Set(result.characters.map(c=>c.characterId)),deleted=new Set(result.deletedCharacterIds);
+ check(Object.keys(raw).every(k=>['version','characters','activeCharacterId','switchHistory','deletedCharacterIds','affinitySharing'].includes(k)));
+ const result=structuredClone(raw);if(result.affinitySharing!==undefined){const v=result.affinitySharing;check(object(v)&&Object.keys(v).length===4&&typeof v.enabled==='boolean'&&Number.isSafeInteger(v.value)&&v.value>=0&&Number.isInteger(v.highestStage)&&v.highestStage>=relationshipStage(v.value).stage&&v.highestStage<=7&&Number.isSafeInteger(v.revision)&&v.revision>=1,'共用好感度設定無法讀取。');}result.version=2;result.characters=result.characters.map(normalizeCharacter);const ids=new Set(result.characters.map(c=>c.characterId)),deleted=new Set(result.deletedCharacterIds);
  check(ids.size===result.characters.length&&deleted.size===result.deletedCharacterIds.length&&[...deleted].every(id=>validId(id)&&!ids.has(id)));
  check(result.activeCharacterId===null||result.characters.some(c=>c.characterId===result.activeCharacterId&&!c.archived));
  let previous=-Infinity;for(const item of result.switchHistory){check(object(item)&&Object.keys(item).length===2&&stamp(item.time)&&(item.characterId===null||ids.has(item.characterId)||deleted.has(item.characterId)));const time=Date.parse(item.time);check(time>=previous);previous=time;}
@@ -56,7 +61,8 @@ export function changeCharacters(raw,action,{now=Date.now(),id=()=>crypto.random
  const d=validateCharacters(raw),time=new Date(Math.max(now,Date.parse(d.switchHistory.at(-1)?.time)||0)).toISOString();
  const find=key=>{const c=d.characters.find(c=>c.characterId===key);check(c,'角色已不存在，請重新選擇。');return c;};
  const switchTo=key=>{if(key!==null)check(!find(key).archived,'無法選擇已封存的角色。');if(d.activeCharacterId===key)return;d.activeCharacterId=key;d.switchHistory.push({time,characterId:key});};
- if(action.type==='create'){const key=id();check(!d.deletedCharacterIds.includes(key)&&!d.characters.some(c=>c.characterId===key));const c=newCharacter(key,time);c.settings.name='新角色';if(action.settings){const settings=textFields(action.settings,CHARACTER_FIELDS);validatePersonaInput(settings,action.stages);c.settings=settings;c.stages=normalizeCharacter({...c,stages:action.stages}).stages;}d.characters.push(c);}
+ if(action.type==='sharing'){check(typeof action.enabled==='boolean');check((action.expectedRevision??0)===(d.affinitySharing?.revision??0),'好感度模式已在其他分頁變更，請重試。');if(Boolean(d.affinitySharing?.enabled)!==action.enabled){const prior=d.affinitySharing,value=action.enabled?Math.max(prior?.value??0,...d.characters.map(c=>c.affinity)):prior?.value??0;d.affinitySharing={enabled:action.enabled,value,highestStage:Math.max(prior?.highestStage??1,relationshipStage(value).stage),revision:(prior?.revision??0)+1};}}
+ else if(action.type==='create'){const key=id();check(!d.deletedCharacterIds.includes(key)&&!d.characters.some(c=>c.characterId===key));const c=newCharacter(key,time);c.settings.name='新角色';if(action.settings){const settings=textFields(action.settings,CHARACTER_FIELDS);validatePersonaInput(settings,action.stages);c.settings=settings;c.stages=normalizeCharacter({...c,stages:action.stages}).stages;}d.characters.push(c);}
  else if(action.type==='switch')switchTo(action.characterId);
  else {const c=find(action.characterId);
   if(action.type==='greetings'){check(action.expectedCreatedAt===c.createdAt&&action.expectedGreetings===JSON.stringify(c.greetings??emptyGreetings()),'首頁招呼已在其他分頁修改；草稿保留。');c.greetings=validateGreetings(action.greetings);c.updatedAt=time;}else if(action.type==='edit'){

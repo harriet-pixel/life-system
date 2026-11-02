@@ -11,9 +11,11 @@ export function initializeNavigationSize(bar){
   const inset=keyboard?Math.max(0,height-(viewport?.offsetTop??0)-visualHeight):0;
   document.documentElement.style.setProperty('--keyboard-inset',inset+'px');
   document.documentElement.dataset.keyboard=keyboard?'open':'closed';
+  const hideChatNavigation=keyboard&&width<1024&&document.activeElement?.id==='chat-input';
+  bar.classList.toggle('chat-keyboard-hidden',hideChatNavigation);bar.inert=hideChatNavigation;bar.setAttribute('aria-hidden',String(hideChatNavigation));
   if(keyboard&&!document.activeElement?.closest('dialog.task-dialog[open]')){const input=document.activeElement,rect=input?.getBoundingClientRect(),bottom=(viewport?.offsetTop??0)+visualHeight-bar.getBoundingClientRect().height-12;if(rect&&rect.bottom>bottom)window.scrollBy({top:rect.bottom-bottom,behavior:'instant'});}
  }
  const schedule=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(update);};
  window.addEventListener('resize',schedule);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);document.addEventListener('focusin',schedule);document.addEventListener('focusout',schedule);update();
- return()=>{cancelAnimationFrame(frame);window.removeEventListener('resize',schedule);window.visualViewport?.removeEventListener('resize',schedule);window.visualViewport?.removeEventListener('scroll',schedule);document.removeEventListener('focusin',schedule);document.removeEventListener('focusout',schedule);};
+ return()=>{bar.classList.remove('chat-keyboard-hidden');bar.inert=false;bar.removeAttribute('aria-hidden');cancelAnimationFrame(frame);window.removeEventListener('resize',schedule);window.visualViewport?.removeEventListener('resize',schedule);window.visualViewport?.removeEventListener('scroll',schedule);document.removeEventListener('focusin',schedule);document.removeEventListener('focusout',schedule);};
 }

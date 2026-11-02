@@ -1,4 +1,4 @@
-import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=single-points-20261102';
+import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=shared-affinity-20261102';
 import {createServer} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {createJWTVerifier} from './auth.mjs';

@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=single-points-20261102';
+import {ABILITIES} from './abilities.mjs?v=shared-affinity-20261102';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;

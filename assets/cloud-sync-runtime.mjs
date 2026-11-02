@@ -1,23 +1,23 @@
-import {backupDeviceName} from './cloud-backup-display.mjs?v=single-points-20261102';
-import {replyRefs} from './reply-manifest.mjs?v=single-points-20261102';
+import {backupDeviceName} from './cloud-backup-display.mjs?v=shared-affinity-20261102';
+import {replyRefs} from './reply-manifest.mjs?v=shared-affinity-20261102';
 // Load the reusable reply asset store only when a manifest actually references it.
-const replyStore=()=>import('./reply-store.mjs?v=single-points-20261102');
+const replyStore=()=>import('./reply-store.mjs?v=shared-affinity-20261102');
 const readReplyRows=async(...args)=>(await replyStore()).readReplyRows(...args);
 const validateReplyAssets=async(...args)=>(await replyStore()).validateReplyAssets(...args);
 const importReplyAssets=async(...args)=>(await replyStore()).importReplyAssets(...args);
-import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=single-points-20261102';
-import {createSyncEngine} from './cloud-sync-engine.mjs?v=single-points-20261102';
-import {createSyncDrive} from './cloud-sync-drive.mjs?v=single-points-20261102';
-import {dataStore,isPristineDocument} from './data.mjs?v=single-points-20261102';
-import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=single-points-20261102';
-import {getCloudBackup} from './cloud-backup.mjs?v=single-points-20261102';
-import {maintenance} from './coordination.mjs?v=single-points-20261102';
-import {validateDocument} from './backup.mjs?v=single-points-20261102';
-import {maintainRecovery} from './recovery.mjs?v=single-points-20261102';
-import {documentImageReferences} from './image-references.mjs?v=single-points-20261102';
-import {readImageBlob,listImageAssets,stageImageAssets} from './image-store.mjs?v=single-points-20261102';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=single-points-20261102';
-import {same,logicalDocument} from './cloud-sync-model.mjs?v=single-points-20261102';
+import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=shared-affinity-20261102';
+import {createSyncEngine} from './cloud-sync-engine.mjs?v=shared-affinity-20261102';
+import {createSyncDrive} from './cloud-sync-drive.mjs?v=shared-affinity-20261102';
+import {dataStore,isPristineDocument} from './data.mjs?v=shared-affinity-20261102';
+import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=shared-affinity-20261102';
+import {getCloudBackup} from './cloud-backup.mjs?v=shared-affinity-20261102';
+import {maintenance} from './coordination.mjs?v=shared-affinity-20261102';
+import {validateDocument} from './backup.mjs?v=shared-affinity-20261102';
+import {maintainRecovery} from './recovery.mjs?v=shared-affinity-20261102';
+import {documentImageReferences} from './image-references.mjs?v=shared-affinity-20261102';
+import {readImageBlob,listImageAssets,stageImageAssets} from './image-store.mjs?v=shared-affinity-20261102';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=shared-affinity-20261102';
+import {same,logicalDocument} from './cloud-sync-model.mjs?v=shared-affinity-20261102';
 // Explicitly feature gated. A false gate performs no Drive reads, writes or local applies.
 export async function startCloudSync({enabled=autoSyncEnabled(),store=dataStore,storage=localStorage,remote=createSyncDrive(),onState=()=>{}}={}){
  if(!enabled||!AUTO_SYNC_ENABLED)return {enabled:false,close(){},getState:()=>({state:'待同步',pending:0,checked:false,confirmed:false,message:'目前使用手動備份模式。'})};
