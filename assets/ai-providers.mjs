@@ -1,6 +1,6 @@
-import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=greetings-pages-20261102';
-import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=greetings-pages-20261102';
-import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=greetings-pages-20261102';
+import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=chat-layout-20261102';
+import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=chat-layout-20261102';
+import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=chat-layout-20261102';
 export const PROVIDERS = Object.freeze({
   gemini: {origin:'https://generativelanguage.googleapis.com', models:'/v1beta/models'},
   deepseek: {origin:'https://api.deepseek.com', models:'/models'},

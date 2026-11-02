@@ -13,7 +13,7 @@ export function initializeNavigationSize(bar){
   document.documentElement.dataset.keyboard=keyboard?'open':'closed';
   const hideChatNavigation=keyboard&&width<1024&&document.activeElement?.id==='chat-input';
   bar.classList.toggle('chat-keyboard-hidden',hideChatNavigation);bar.inert=hideChatNavigation;bar.setAttribute('aria-hidden',String(hideChatNavigation));
-  if(keyboard&&!document.activeElement?.closest('dialog.task-dialog[open]')){const input=document.activeElement,rect=input?.getBoundingClientRect(),bottom=(viewport?.offsetTop??0)+visualHeight-bar.getBoundingClientRect().height-12;if(rect&&rect.bottom>bottom)window.scrollBy({top:rect.bottom-bottom,behavior:'instant'});}
+  if(keyboard&&document.activeElement?.id!=='chat-input'&&!document.activeElement?.closest('dialog.task-dialog[open]')){const input=document.activeElement,rect=input?.getBoundingClientRect(),bottom=(viewport?.offsetTop??0)+visualHeight-bar.getBoundingClientRect().height-12;if(rect&&rect.bottom>bottom)window.scrollBy({top:rect.bottom-bottom,behavior:'instant'});}
  }
  const schedule=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(update);};
  window.addEventListener('resize',schedule);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);document.addEventListener('focusin',schedule);document.addEventListener('focusout',schedule);update();

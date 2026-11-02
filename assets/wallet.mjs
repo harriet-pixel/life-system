@@ -1,12 +1,12 @@
-import {appendStatsAffinity} from './stats-affinity.mjs?v=greetings-pages-20261102';
-import {dataStore,profileSummary} from './data.mjs?v=greetings-pages-20261102';
-import {createWalletService} from './wallet-service.mjs?v=greetings-pages-20261102';
-import {emptyWallet,localMonth,monthLedger} from './wallet-model.mjs?v=greetings-pages-20261102';
-import {mountTaskCompanion} from './task-companion.mjs?v=greetings-pages-20261102';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=greetings-pages-20261102';
+import {appendStatsAffinity} from './stats-affinity.mjs?v=chat-layout-20261102';
+import {dataStore,profileSummary} from './data.mjs?v=chat-layout-20261102';
+import {createWalletService} from './wallet-service.mjs?v=chat-layout-20261102';
+import {emptyWallet,localMonth,monthLedger} from './wallet-model.mjs?v=chat-layout-20261102';
+import {mountTaskCompanion} from './task-companion.mjs?v=chat-layout-20261102';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=chat-layout-20261102';
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 // A preload link only downloads CSS; it does not apply it. Gate first mount on load.
-if(typeof document!=='undefined')await new Promise((resolve,reject)=>{const href=new URL('./wallet.css?v=greetings-pages-20261102',import.meta.url).href;let css=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===href);if(css?.sheet){resolve();return;}const fresh=!css;if(!css){css=document.createElement('link');css.rel='stylesheet';css.href=href;css.dataset.walletStyle='';}css.addEventListener('load',resolve,{once:true});css.addEventListener('error',()=>{css.remove();reject(new Error('錢包樣式載入失敗，請重新切換頁面。'));},{once:true});if(fresh)document.head.append(css);});
+if(typeof document!=='undefined')await new Promise((resolve,reject)=>{const href=new URL('./wallet.css?v=chat-layout-20261102',import.meta.url).href;let css=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===href);if(css?.sheet){resolve();return;}const fresh=!css;if(!css){css=document.createElement('link');css.rel='stylesheet';css.href=href;css.dataset.walletStyle='';}css.addEventListener('load',resolve,{once:true});css.addEventListener('error',()=>{css.remove();reject(new Error('錢包樣式載入失敗，請重新切換頁面。'));},{once:true});if(fresh)document.head.append(css);});
 export function mountWallet(root,context){
  const $=s=>root.querySelector(s),service=createWalletService(dataStore),spend=$('#wallet-spend'),form=$('#wallet-spend-form'),items=$('#wallet-items'),editor=$('#wallet-item-editor'),itemForm=$('#wallet-item-form'),confirm=$('#wallet-confirm');let busy=false,submissionId=crypto.randomUUID(),editing=null,recordEditing=null,pending=null,trigger=null,returnTo=null,spendBaseline='',itemBaseline='',mode='repeat',managerOrigin=null,spendTrigger=null;
  const emptyDraft=()=>({sourceId:'',name:'',cost:''}),drafts={repeat:emptyDraft(),single:emptyDraft()};
