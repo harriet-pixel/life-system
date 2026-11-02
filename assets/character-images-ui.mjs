@@ -1,10 +1,10 @@
 import {EMOTIONS,imageLimitText,resolveCharacterImage} from './character-images-model.mjs?v=batch-wallet-20261103';
-import {createCharacterImageView} from './character-image-view.mjs?v=batch-wallet-20261103';
+import {createCharacterImageView} from './character-image-view.mjs?v=chat-avatar-20261103';
 export function mountCharacterImages(root,context,{getCharacter,getSettings,store,notify,onState}){
  const section=root.querySelector('#character-images-section'),grid=root.querySelector('#character-image-grid'),selector=root.querySelector('#character-image-transition');
  let editor=null,opening=false,suspended=false,last=null,chatEmotion='neutral';const cards=[];
  const portrait=createCharacterImageView(root.querySelector('.chat-portrait-frame'));
- const header=createCharacterImageView(root.querySelector('[data-avatar-purpose=header-neutral]'),{avatar:true,thumbnail:true});
+ const header=createCharacterImageView(root.querySelector('[data-avatar-purpose=header-neutral]'),{avatar:true,chatAvatar:true});
  const messages=new Map();
  function updateChat(){
   if(suspended||root.querySelector('#chat-panel').hidden)return;
@@ -13,7 +13,7 @@ export function mountCharacterImages(root,context,{getCharacter,getSettings,stor
   void header.show(c,'neutral',transition);
   const nodes=[...root.querySelectorAll('[data-avatar-purpose=message-emotion]')];
   for(const [node,view]of messages)if(!nodes.includes(node)){view.clear();messages.delete(node);}
-  for(const node of nodes){if(!messages.has(node))messages.set(node,createCharacterImageView(node,{avatar:true,thumbnail:true}));void messages.get(node).show(c,node.dataset.emotionId??'neutral',transition);}
+  for(const node of nodes){if(!messages.has(node))messages.set(node,createCharacterImageView(node,{avatar:true,chatAvatar:true}));void messages.get(node).show(c,node.dataset.emotionId??'neutral',transition);}
  }
  function updateCards(){
   if(suspended||(section.matches('details')&&!section.open)||root.querySelector('#character-panel').hidden){for(const card of cards)card.view.clear();return;}

@@ -1,7 +1,8 @@
+import {acquireChatAvatar,chatAvatarPixels} from './chat-avatar.mjs?v=chat-avatar-20261103';
 import {resolveCharacterImage} from './character-images-model.mjs?v=batch-wallet-20261103';
 import {acquireImageURL} from './image-store.mjs?v=batch-wallet-20261103';
-// A view owns at most two visible layers and one pending URL. No global cache.
-export function createCharacterImageView(target,{avatar=false,thumbnail=false,avatarPixels=0}={}){
+// A view owns at most two layers and one pending lease; chat crops share ref-counted leases.
+export function createCharacterImageView(target,{avatar=false,thumbnail=false,avatarPixels=0,chatAvatar=false}={}){
  const placeholder=document.createElement('span');placeholder.className='character-image-placeholder';
  // Clone the site's existing neutral icon, without creating another asset.
  const icon=target.querySelector('svg');if(icon)placeholder.append(icon.cloneNode(true));else placeholder.textContent='尚無圖片';
@@ -11,13 +12,14 @@ export function createCharacterImageView(target,{avatar=false,thumbnail=false,av
  function clear(){sequence++;signature='';pending?.release();pending=null;clearTimeout(timer);layers.forEach(clean);layers=[];placeholder.hidden=false;}
  async function show(character,emotion='neutral',transition='fade'){
   const item=resolveCharacterImage(character,emotion),neutral=resolveCharacterImage(character,'neutral');
-  const key=JSON.stringify([character?.characterId,item,neutral,transition]);if(key===signature&&layers.length)return;signature=key;const token=++sequence;
+  const chatResolution=chatAvatar?chatAvatarPixels(target.getBoundingClientRect().width,window.devicePixelRatio):0;
+  const key=JSON.stringify([character?.characterId,item,neutral,transition,chatResolution]);if(key===signature&&layers.length)return;signature=key;const token=++sequence;
   pending?.release();pending=null;clearTimeout(timer);while(layers.length>1)clean(layers.shift());for(const layer of layers)layer.image.style.opacity='1';
   if(!item){layers.forEach(clean);layers=[];placeholder.textContent='尚未設定立繪';placeholder.hidden=false;return;}
   for(const candidate of item===neutral?[item]:[item,neutral].filter(Boolean)){
    let lease;
    try{
-    lease=avatar&&avatarPixels?await import('./daily-avatar.mjs?v=batch-wallet-20261103').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
+    lease=chatAvatar?await acquireChatAvatar(candidate,chatResolution):avatar&&avatarPixels?await import('./daily-avatar.mjs?v=batch-wallet-20261103').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
     if(token!==sequence){lease.release();return;}pending=lease;
     const image=new Image();image.alt='';image.decoding='async';image.src=lease.url;await image.decode();
     if(token!==sequence){lease.release();return;}pending=null;
