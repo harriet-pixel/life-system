@@ -1,4 +1,4 @@
-import {validateZoom} from './validation.mjs?v=companion-controls-20261102';
+import {validateZoom} from './validation.mjs?v=home-ai-20261102';
 export const RAW_IMAGE_LIMIT = 20 * 1024 * 1024;
 export const IMAGE_LIMIT = 1024 * 1024;
 export const AVATAR_LIMIT = 200 * 1024;

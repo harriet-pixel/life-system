@@ -1,23 +1,25 @@
-import {appendStatsAffinity} from './stats-affinity.mjs?v=companion-controls-20261102';
-import {nextHomeGreeting} from './characters-model.mjs?v=companion-controls-20261102';
-import {mountHabitQuick} from './habit-quick.mjs?v=companion-controls-20261102';
-import {renderHomeToday} from './home-today.mjs?v=companion-controls-20261102';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=companion-controls-20261102';
-import {createTaskEditor} from './task-editor.mjs?v=companion-controls-20261102';
-import {createCategoryManager} from './task-categories.mjs?v=companion-controls-20261102';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=companion-controls-20261102';
-import {taskActions} from './task-actions.mjs?v=companion-controls-20261102';
-import {localDate} from './tasks-model.mjs?v=companion-controls-20261102';
-import { createMobileTabPositioner } from './tab-position.mjs?v=companion-controls-20261102';
-import { createActivityHeightSync } from './activity-height.mjs?v=companion-controls-20261102';
-import { undoManager } from './undo.mjs?v=companion-controls-20261102';
-import {createSharedCompanionView} from './companion-events.mjs?v=companion-controls-20261102';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=companion-controls-20261102';
+import {generateHomeGreeting,HOME_GREETING_OFFLINE} from './home-greeting.mjs?v=home-ai-20261102';
+import {appendStatsAffinity} from './stats-affinity.mjs?v=home-ai-20261102';
+import {nextHomeGreeting} from './characters-model.mjs?v=home-ai-20261102';
+import {mountHabitQuick} from './habit-quick.mjs?v=home-ai-20261102';
+import {renderHomeToday} from './home-today.mjs?v=home-ai-20261102';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=home-ai-20261102';
+import {createTaskEditor} from './task-editor.mjs?v=home-ai-20261102';
+import {createCategoryManager} from './task-categories.mjs?v=home-ai-20261102';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=home-ai-20261102';
+import {taskActions} from './task-actions.mjs?v=home-ai-20261102';
+import {localDate} from './tasks-model.mjs?v=home-ai-20261102';
+import { createMobileTabPositioner } from './tab-position.mjs?v=home-ai-20261102';
+import { createActivityHeightSync } from './activity-height.mjs?v=home-ai-20261102';
+import { undoManager } from './undo.mjs?v=home-ai-20261102';
+import {createSharedCompanionView} from './companion-events.mjs?v=home-ai-20261102';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=home-ai-20261102';
 
 
 export function mountHome(root,context){
-let currentGreeting=nextHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter);
-const floating=mountHomeCompanionFloat(root,context,{greetingText:()=>currentGreeting});
+let currentGreeting='',greetingRequest=0,cancelGreeting=null,greetingFallback=true;
+function invalidateGreeting(){greetingRequest++;cancelGreeting?.();cancelGreeting=null;}
+const floating=mountHomeCompanionFloat(root,context,{greetingText:()=>currentGreeting,onHide:invalidateGreeting});
 const refreshDate=()=>{globalThis.LifeHomeDate?.render(root);renderToday();};
 context.listen(window,'focus',refreshDate);context.listen(document,'visibilitychange',()=>{if(!document.hidden)refreshDate();});context.onResume(refreshDate);
 let dateTimer;const startDateTimer=()=>{clearInterval(dateTimer);dateTimer=setInterval(refreshDate,60000);};startDateTimer();context.onSuspend(()=>clearInterval(dateTimer));context.onResume(startDateTimer);
@@ -39,15 +41,24 @@ function showPlaceholder(label) {
   portrait.setAttribute('aria-label', `夥伴頭像佔位：${label}，尚未提供情緒立繪`);
 }
 let dailyVisual=null,visualRequest=0;
-let greetingIdentity='';
-function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=companion-controls-20261102').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+let greetingIdentity='',greetingActorIdentity='',greeted=false;
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=home-ai-20261102').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
 context.onSuspend(()=>visualRequest++);
 function showHomeGreeting(actor){dialogue.textContent=currentGreeting;if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
-context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){if(greetingIdentity)currentGreeting=nextHomeGreeting(c);greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
-context.onResume(()=>{currentGreeting=nextHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter);showHomeGreeting(dataStore.getFields(['activeCharacter']).activeCharacter);});
+let greetingScheduled=false;
+function scheduleGreeting(){if(greetingScheduled)return;greetingScheduled=true;queueMicrotask(()=>{greetingScheduled=false;if(context.active)void greetHome();});}
+async function greetHome(){
+ invalidateGreeting();const request=greetingRequest,doc=dataStore.getFields(['companion']).companion,actor=doc.characters.find(c=>c.characterId===doc.activeCharacterId&&!c.archived);
+ currentGreeting=nextHomeGreeting(actor)+HOME_GREETING_OFFLINE;greetingFallback=true;showHomeGreeting(actor);floating.reply();
+ const text=await generateHomeGreeting(dataStore,actor,{valid:()=>context.active&&request===greetingRequest,onCancel:cancel=>{if(request===greetingRequest)cancelGreeting=cancel;else cancel?.();}}).catch(()=>null);
+ if(!text||!context.active||request!==greetingRequest)return;currentGreeting=text;greetingFallback=false;showHomeGreeting(actor);floating.reply();
+}
+context.subscribe(dataStore,({activeCharacter:c})=>{const identity=JSON.stringify([c?.characterId,c?.createdAt]),signature=JSON.stringify([identity,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature===greetingIdentity)return;greetingIdentity=signature;if(!greeted||identity!==greetingActorIdentity){greeted=true;greetingActorIdentity=identity;scheduleGreeting();}else if(greetingFallback){currentGreeting=nextHomeGreeting(c)+HOME_GREETING_OFFLINE;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
+context.onResume(scheduleGreeting);context.onSuspend(invalidateGreeting);context.listen(document,'life-system:recovery-succeeded',invalidateGreeting);
 const companion = createSharedCompanionView({
   getContext: () => ({ character: null, affinity: null }),
   render(reply,actions,meta) {
+    invalidateGreeting();
     if(!meta?.replayed)floating.reply();
     if(reply.daily){portrait.dataset.emotion=reply.emotion;dialogue.textContent=reply.dialogue;showDaily(reply);return;}
     const asset = emotionPortraits[reply.emotion];
@@ -71,6 +82,7 @@ const companion = createSharedCompanionView({
     }
   },
   onStateChange(state) {
+    if(state==='queued')invalidateGreeting();
     const messages = {
       cancelled: '已撤銷操作，保留原對話。',
       queued: '正在合併正式生活事件；保留上一則對話。',

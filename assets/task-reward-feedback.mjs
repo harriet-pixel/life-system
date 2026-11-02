@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=companion-controls-20261102';
+import {ABILITIES} from './abilities.mjs?v=home-ai-20261102';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;
@@ -6,7 +6,7 @@ export function createRewardFeedback(root,context){
  context.onSuspend(clear);document.addEventListener('life-system:route-ready',clear);
  const resize=()=>layoutCurrent?.();window.addEventListener('resize',resize);document.fonts.addEventListener('loadingdone',resize);window.visualViewport?.addEventListener('resize',resize);window.visualViewport?.addEventListener('scroll',resize);
  function play(){if(playing||!queue.length)return;playing=true;const lines=queue.shift(),reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  nodes=lines.map((line,i)=>{const n=document.createElement('span'),label=document.createElement('span'),amount=document.createElement('strong');n.className='task-reward-text'+(reduced?' is-static':'');n.dataset.rewardKind=line.kind;n.rewardLine=line;n.setAttribute('aria-hidden','true');label.className='task-reward-label';label.textContent=line.name+' ';amount.className='task-reward-amount';amount.textContent=line.display??((line.value>0?'+':'−')+Math.abs(line.value));n.append(label,amount);n.style.animationDelay=i*100+'ms';
+  nodes=lines.map((line,i)=>{const n=document.createElement('span'),label=document.createElement('span'),amount=document.createElement('strong');n.className='task-reward-text'+(reduced?' is-static':'');n.dataset.rewardKind=line.kind;n.rewardLine=line;n.setAttribute('aria-hidden','true');label.className='task-reward-label';label.textContent=line.name+(line.joined?'':' ');amount.className='task-reward-amount';amount.textContent=line.display??((line.value>0?'+':'−')+Math.abs(line.value));n.append(label,amount);n.style.animationDelay=i*100+'ms';
    if(!reduced){for(let j=0;j<3;j++){const spark=document.createElement('i');spark.className='task-reward-spark';spark.style.setProperty('--spark-angle',j*120+25+'deg');spark.style.animationDelay=i*100+'ms';n.append(spark);}}
    root.append(n);return n;});
   layoutCurrent=()=>{const current=getComputedStyle(document.querySelector('#current-page-name')??document.body);nodes.forEach(n=>n.style.fontFamily=current.fontFamily);const v=window.visualViewport,w=v?.width??innerWidth,h=v?.height??innerHeight,x=v?.offsetLeft??0,y=v?.offsetTop??0;
