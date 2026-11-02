@@ -1,7 +1,7 @@
-import {dataStore} from './data.mjs?v=shared-affinity-20261102';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=shared-affinity-20261102';
+import {dataStore} from './data.mjs?v=greetings-pages-20261102';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=greetings-pages-20261102';
 
-import {sortDay,listSettings} from './task-view-model.mjs?v=shared-affinity-20261102';
+import {sortDay,listSettings} from './task-view-model.mjs?v=greetings-pages-20261102';
 
 // One renderer and one validated store for early reading and interactive mounting.
 export function renderHomeToday(root,actions=null){

@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=shared-affinity-20261102';
-import { holdDraft } from './coordination.mjs?v=shared-affinity-20261102';
-import { createProfileImages } from './profile-images.mjs?v=shared-affinity-20261102';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=shared-affinity-20261102';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=shared-affinity-20261102';
-import { undoManager } from './undo.mjs?v=shared-affinity-20261102';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=shared-affinity-20261102';
+import {bindProfileValidation} from './validation.mjs?v=greetings-pages-20261102';
+import { holdDraft } from './coordination.mjs?v=greetings-pages-20261102';
+import { createProfileImages } from './profile-images.mjs?v=greetings-pages-20261102';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=greetings-pages-20261102';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=greetings-pages-20261102';
+import { undoManager } from './undo.mjs?v=greetings-pages-20261102';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=greetings-pages-20261102';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

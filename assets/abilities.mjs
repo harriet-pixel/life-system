@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=shared-affinity-20261102';
+import {integerValue} from './validation.mjs?v=greetings-pages-20261102';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

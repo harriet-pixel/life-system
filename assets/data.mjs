@@ -1,21 +1,21 @@
-import {walletSnapshots} from './wallet-recovery.mjs?v=shared-affinity-20261102';
-import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=shared-affinity-20261102';
-import {attemptJournalRescue} from './storage-vault.mjs?v=shared-affinity-20261102';
-import {storageFailure} from './storage-diagnostics.mjs?v=shared-affinity-20261102';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=shared-affinity-20261102';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=shared-affinity-20261102';
-import {integrateAffinity} from './affinity-integration.mjs?v=shared-affinity-20261102';
-import {settleAffinity} from './affinity-settlement.mjs?v=shared-affinity-20261102';
-import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=shared-affinity-20261102';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=shared-affinity-20261102';
-import {setOperationNotice} from './operation-notice.mjs?v=shared-affinity-20261102';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=shared-affinity-20261102';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=shared-affinity-20261102';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=shared-affinity-20261102';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=shared-affinity-20261102';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=shared-affinity-20261102';
-import { migrateImages } from './image-store.mjs?v=shared-affinity-20261102';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=shared-affinity-20261102';
+import {walletSnapshots} from './wallet-recovery.mjs?v=greetings-pages-20261102';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=greetings-pages-20261102';
+import {attemptJournalRescue} from './storage-vault.mjs?v=greetings-pages-20261102';
+import {storageFailure} from './storage-diagnostics.mjs?v=greetings-pages-20261102';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=greetings-pages-20261102';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=greetings-pages-20261102';
+import {integrateAffinity} from './affinity-integration.mjs?v=greetings-pages-20261102';
+import {settleAffinity} from './affinity-settlement.mjs?v=greetings-pages-20261102';
+import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=greetings-pages-20261102';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=greetings-pages-20261102';
+import {setOperationNotice} from './operation-notice.mjs?v=greetings-pages-20261102';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=greetings-pages-20261102';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=greetings-pages-20261102';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=greetings-pages-20261102';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=greetings-pages-20261102';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=greetings-pages-20261102';
+import { migrateImages } from './image-store.mjs?v=greetings-pages-20261102';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=greetings-pages-20261102';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -79,7 +79,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
   function cacheRecovery(result,time){const deadline=Math.min(Infinity,...result.document.undoHistory.map(expiresAt));recoveryCache={state,result,time,deadline};if(result.blocked)recoveryNotice='復原鏈已無法安全延續，相關復原已停止；目前資料與行動紀錄保留。';return result;}
   function currentRecovery(){const time=now();if(!recoveryCache||recoveryCache.state!==state||time<recoveryCache.time||time>=recoveryCache.deadline)return cacheRecovery(maintainRecovery(state,time),time);return recoveryCache.result;}
   const effective=()=>{const result=currentRecovery();return {...result,document:copy(result.document)};};
-  const project=(document,keys)=>keys===null?document:Object.fromEntries(keys.map(key=>{if(key.startsWith('walletRecord:'))return [key,document.wallet?.records[key.slice(13)]??null];if(key==='activeCharacter'){const c=effectiveCharacter(document.companion,document.companion?.characters?.find(c=>c.characterId===document.companion.activeCharacterId&&!c.archived));return [key,c?{characterId:c.characterId,createdAt:c.createdAt,affinity:c.affinity,settings:{name:c.settings?.name??''},greetings:c.greetings,imageSettings:c.imageSettings}:null];}return [key,Object.hasOwn(document,key)?document[key]:undefined];}));
+  const project=(document,keys)=>keys===null?document:Object.fromEntries(keys.map(key=>{if(key.startsWith('walletRecord:'))return [key,document.wallet?.records[key.slice(13)]??null];if(key==='activeCharacter'){const c=effectiveCharacter(document.companion,document.companion?.characters?.find(c=>c.characterId===document.companion.activeCharacterId&&!c.archived));return [key,c?{characterId:c.characterId,createdAt:c.createdAt,affinity:c.affinity,settings:{name:c.settings?.name??''},greetings:c.greetings,pageGreetings:c.pageGreetings,imageSettings:c.imageSettings}:null];}return [key,Object.hasOwn(document,key)?document[key]:undefined];}));
   const notify = ({statusOnly=false}={}) => {const current=currentRecovery().document;listeners.forEach(entry=>{if(!statusOnly||!entry.changesOnly){const value=project(current,entry.keys),signature=entry.distinct?JSON.stringify(value):null;if(entry.distinct&&signature===entry.signature)return;entry.signature=signature;entry.fn(copy(value));}});};
   const persist = (next,timing=null,operation=null) => {const readAt=performance.now();
     const current = load();timing?.phase('storage-read-check',readAt);
@@ -157,7 +157,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=shared-affinity-20261102');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=greetings-pages-20261102');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;

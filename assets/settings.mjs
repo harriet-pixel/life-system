@@ -1,18 +1,18 @@
-import {mountColorField} from './color-field.mjs?v=shared-affinity-20261102';
-import {documentTime} from './cloud-backup-policy.mjs?v=shared-affinity-20261102';
-import {cloudBackupLabel} from './cloud-backup-display.mjs?v=shared-affinity-20261102';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=shared-affinity-20261102';
-import {getCloudBackup} from './cloud-backup.mjs?v=shared-affinity-20261102';
-import {initializeAISettings} from './ai-settings.mjs?v=shared-affinity-20261102';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=shared-affinity-20261102';
-import {dataStore,persistentUndo} from './data.mjs?v=shared-affinity-20261102';
-import {createMobileTabPositioner} from './tab-position.mjs?v=shared-affinity-20261102';
-import {createHistoryView} from './history-view.mjs?v=shared-affinity-20261102';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=shared-affinity-20261102';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=shared-affinity-20261102';
-import {holdDraft} from './coordination.mjs?v=shared-affinity-20261102';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=shared-affinity-20261102';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=shared-affinity-20261102';
+import {mountColorField} from './color-field.mjs?v=greetings-pages-20261102';
+import {documentTime} from './cloud-backup-policy.mjs?v=greetings-pages-20261102';
+import {cloudBackupLabel} from './cloud-backup-display.mjs?v=greetings-pages-20261102';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=greetings-pages-20261102';
+import {getCloudBackup} from './cloud-backup.mjs?v=greetings-pages-20261102';
+import {initializeAISettings} from './ai-settings.mjs?v=greetings-pages-20261102';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=greetings-pages-20261102';
+import {dataStore,persistentUndo} from './data.mjs?v=greetings-pages-20261102';
+import {createMobileTabPositioner} from './tab-position.mjs?v=greetings-pages-20261102';
+import {createHistoryView} from './history-view.mjs?v=greetings-pages-20261102';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=greetings-pages-20261102';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=greetings-pages-20261102';
+import {holdDraft} from './coordination.mjs?v=greetings-pages-20261102';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=greetings-pages-20261102';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=greetings-pages-20261102';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

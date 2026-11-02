@@ -1,4 +1,4 @@
-import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=shared-affinity-20261102';
+import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=greetings-pages-20261102';
 // Manual character settings; image metadata is validated separately.
 export const RELATIONSHIP_STAGES=Object.freeze([
  ['初識',0],['熟悉',50],['友好',150],['信任',350],['默契',500],['深厚情誼',700],['長久羈絆',1000]
@@ -33,8 +33,8 @@ export function normalizeCharacter(c){
  if(c.legacyPersona!==undefined){const l=c.legacyPersona;check(object(l)&&l.version===1&&Object.keys(l).length===3);textFields(l.settings,LEGACY_CHARACTER_FIELDS);check(object(l.stages)&&Object.keys(l.stages).length===7);for(const s of RELATIONSHIP_STAGES)textFields(l.stages[s.stage],LEGACY_STYLE_FIELDS);}
  const settings=textFields(c.settings??{},CHARACTER_FIELDS);check(object(c.stages??{}));check(Object.keys(c.stages??{}).every(k=>/^[1-7]$/.test(k)));
  const stages=Object.fromEntries(RELATIONSHIP_STAGES.map(s=>[s.stage,textFields(c.stages?.[s.stage]??{},STYLE_FIELDS)]));
- check(Object.keys(c).every(k=>['characterId','createdAt','updatedAt','archived','configVersion','affinity','highestStage','settings','stages','imageSettings','personaVersion','legacyPersona','greetings'].includes(k)));
- if(c.greetings!==undefined)validateGreetings(c.greetings);return {...c,settings,stages,...(c.imageSettings===undefined?{}:{imageSettings:validateCharacterImages(c.imageSettings)})};
+ check(Object.keys(c).every(k=>['characterId','createdAt','updatedAt','archived','configVersion','affinity','highestStage','settings','stages','imageSettings','personaVersion','legacyPersona','greetings','pageGreetings'].includes(k)));
+ if(c.greetings!==undefined)validateGreetings(c.greetings);if(c.pageGreetings!==undefined)validatePageGreetings(c.pageGreetings);return {...c,settings,stages,...(c.imageSettings===undefined?{}:{imageSettings:validateCharacterImages(c.imageSettings)})};
 }
 export function validateCharacters(raw){
  if(raw===undefined)return emptyCharacters();check(object(raw)&&[1,2].includes(raw.version)&&Array.isArray(raw.characters)&&Array.isArray(raw.switchHistory)&&Array.isArray(raw.deletedCharacterIds));
@@ -49,6 +49,10 @@ export function newCharacter(characterId,time){return normalizeCharacter({person
 export function activeCharacterAt(raw,instant){const d=validateCharacters(raw),time=typeof instant==='number'?instant:Date.parse(instant);check(Number.isFinite(time),'截止時間不正確。');let low=0,high=d.switchHistory.length;while(low<high){const mid=(low+high)>>>1;if(Date.parse(d.switchHistory[mid].time)<=time)low=mid+1;else high=mid;}return d.switchHistory[low-1]?.characterId??null;}
 export function activeCharacterOnDate(raw,date){check(/^\d{4}-\d{2}-\d{2}$/.test(date),'日期不正確。');const end=Date.parse(date+'T23:59:59.999+08:00');check(new Date(end+8*3600000).toISOString().slice(0,10)===date,'日期不正確。');return activeCharacterAt(raw,end);}
 export function validatePersonaInput(settings,stages){textFields(settings,CHARACTER_FIELDS);check(settings.name.trim(),'請填寫角色名稱。');for(const [key,value]of Object.entries(settings))check([...value].length<=(key==='name'?100:key==='background'?50:4000),'角色欄位過長。');check(object(stages)&&Object.keys(stages).length===7);for(const def of RELATIONSHIP_STAGES){const fields=textFields(stages[def.stage],STYLE_FIELDS);for(const value of Object.values(fields))check([...value].length<=4000,'階段欄位限4000字。');}return true;}
+export const PAGE_GREETING_LABELS=Object.freeze({tasks:'待辦頁面招呼',habits:'習慣打卡招呼',wallet:'帳本頁面招呼'});
+export const emptyPageGreetings=()=>Object.fromEntries(Object.keys(PAGE_GREETING_LABELS).map(k=>[k,Array(8).fill('')]));
+export function validatePageGreetings(raw){check(object(raw)&&Object.keys(raw).length===3&&Object.keys(raw).every(k=>Object.hasOwn(PAGE_GREETING_LABELS,k)),'頁面招呼格式不正確。');for(const lines of Object.values(raw)){check(Array.isArray(lines)&&lines.length===8,'每個頁面請設定八句招呼。');for(const line of lines)check(typeof line==='string'&&[...line].length<=240,'招呼限240字。');}return structuredClone(raw);}
+export function nextPageGreeting(character,page,storage=globalThis.sessionStorage){const fallback={tasks:'一起整理今天的待辦，照自己的步調前進。',habits:'一點一滴累積，今天也照自己的步調開始。',wallet:'一起記下生活中的花費，留點空間給自己。'};try{const lines=character&&!character.archived?(validatePageGreetings(character.pageGreetings??emptyPageGreetings())[page]??[]).map(s=>s.trim()).filter(Boolean):[];if(!lines.length)return fallback[page]??'';const key='life-system.page-greeting.'+character.characterId+':'+character.createdAt+':'+page;let index=0;try{const saved=Number(storage?.getItem(key));if(Number.isSafeInteger(saved)&&saved>=0)index=saved;storage?.setItem(key,String((index+1)%lines.length));}catch{}return lines[index%lines.length];}catch{return fallback[page]??'';}}
 export const GREETING_SLOTS=Object.freeze({morning:'早晨（05–11時）',afternoon:'午後（12–17時）',evening:'晚間（18–21時）',night:'深夜（22–04時）'});
 export const emptyGreetings=()=>Object.fromEntries(Object.keys(GREETING_SLOTS).map(k=>[k,'']));
 // Legacy strings remain readable; new editors save three variants per period.
@@ -65,7 +69,7 @@ export function changeCharacters(raw,action,{now=Date.now(),id=()=>crypto.random
  else if(action.type==='create'){const key=id();check(!d.deletedCharacterIds.includes(key)&&!d.characters.some(c=>c.characterId===key));const c=newCharacter(key,time);c.settings.name='新角色';if(action.settings){const settings=textFields(action.settings,CHARACTER_FIELDS);validatePersonaInput(settings,action.stages);c.settings=settings;c.stages=normalizeCharacter({...c,stages:action.stages}).stages;}d.characters.push(c);}
  else if(action.type==='switch')switchTo(action.characterId);
  else {const c=find(action.characterId);
-  if(action.type==='greetings'){check(action.expectedCreatedAt===c.createdAt&&action.expectedGreetings===JSON.stringify(c.greetings??emptyGreetings()),'首頁招呼已在其他分頁修改；草稿保留。');c.greetings=validateGreetings(action.greetings);c.updatedAt=time;}else if(action.type==='edit'){
+  if(action.type==='page-greetings'){check(Object.hasOwn(PAGE_GREETING_LABELS,action.page),'招呼頁面不正確。');const all=validatePageGreetings(c.pageGreetings??emptyPageGreetings());check(action.expectedCreatedAt===c.createdAt&&action.expectedGreetings===JSON.stringify(all[action.page]),'此頁招呼已在其他分頁修改；草稿保留。');all[action.page]=action.greetings;c.pageGreetings=validatePageGreetings(all);c.updatedAt=time;}else if(action.type==='greetings'){check(action.expectedCreatedAt===c.createdAt&&action.expectedGreetings===JSON.stringify(c.greetings??emptyGreetings()),'首頁招呼已在其他分頁修改；草稿保留。');c.greetings=validateGreetings(action.greetings);c.updatedAt=time;}else if(action.type==='edit'){
    check(action.expectedVersion===c.configVersion&&(action.expectedConfig===undefined||action.expectedConfig===JSON.stringify([c.createdAt,c.settings,c.stages])),'此角色已在其他分頁修改；草稿保留，請取消草稿後重新讀取。');
    const settings=textFields(action.settings,CHARACTER_FIELDS),stages=normalizeCharacter({...c,settings,stages:action.stages}).stages;
    for(const [key,value]of Object.entries(settings))if(value!==c.settings[key])check([...value].length<=(key==='name'?100:key==='background'?50:4000),'角色欄位過長（名稱100字、背景50字，其餘4000字）。');

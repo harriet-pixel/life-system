@@ -1,4 +1,4 @@
-import {initializeTabSwipe} from './tab-swipe.mjs?v=shared-affinity-20261102';
+import {initializeTabSwipe} from './tab-swipe.mjs?v=greetings-pages-20261102';
 // One document controller for geometric tab indicators. Press feedback is CSS only.
 let controller;
 export function initializeUIFeedback(){
