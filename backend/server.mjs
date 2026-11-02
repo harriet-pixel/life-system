@@ -1,4 +1,4 @@
-import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=daily-polish-20261102';
+import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=companion-controls-20261102';
 import {createServer} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {createJWTVerifier} from './auth.mjs';

@@ -1,19 +1,19 @@
-import {backupStatus} from './cloud-sync-status.mjs?v=daily-polish-20261102';
-import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=daily-polish-20261102';
-import {createCloudRestore} from './cloud-restore.mjs?v=daily-polish-20261102';
-import {getCloudBackup} from './cloud-backup.mjs?v=daily-polish-20261102';
-import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261102';
-import {initializeUIFeedback} from './ui-feedback.mjs?v=daily-polish-20261102';
-import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=daily-polish-20261102';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=daily-polish-20261102';
-import {persistentUndo,dataStore} from './data.mjs?v=daily-polish-20261102';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=daily-polish-20261102';
-import {initializeNavigationSize} from './navigation-size.mjs?v=daily-polish-20261102';
-import {mountDailyHeader} from './daily-header.mjs?v=daily-polish-20261102';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=daily-polish-20261102';
-const routes={wallet:{mount:()=>import('./wallet.mjs?v=daily-polish-20261102'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=daily-polish-20261102'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=daily-polish-20261102'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=daily-polish-20261102'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=daily-polish-20261102'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=daily-polish-20261102'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=daily-polish-20261102'),export:'mountSettings'}};
+import {backupStatus} from './cloud-sync-status.mjs?v=companion-controls-20261102';
+import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=companion-controls-20261102';
+import {createCloudRestore} from './cloud-restore.mjs?v=companion-controls-20261102';
+import {getCloudBackup} from './cloud-backup.mjs?v=companion-controls-20261102';
+import {setOperationNotice} from './operation-notice.mjs?v=companion-controls-20261102';
+import {initializeUIFeedback} from './ui-feedback.mjs?v=companion-controls-20261102';
+import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=companion-controls-20261102';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=companion-controls-20261102';
+import {persistentUndo,dataStore} from './data.mjs?v=companion-controls-20261102';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=companion-controls-20261102';
+import {initializeNavigationSize} from './navigation-size.mjs?v=companion-controls-20261102';
+import {mountDailyHeader} from './daily-header.mjs?v=companion-controls-20261102';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-controls-20261102';
+const routes={wallet:{mount:()=>import('./wallet.mjs?v=companion-controls-20261102'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=companion-controls-20261102'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=companion-controls-20261102'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=companion-controls-20261102'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=companion-controls-20261102'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=companion-controls-20261102'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=companion-controls-20261102'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map(),prefetchedPages=new Map();
-async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'daily-polish-20261102'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ 'companion-controls-20261102'+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
@@ -105,7 +105,7 @@ getCloudBackup();
 if(getDriveState().linked)void prepareDriveAuth().catch(()=>{});
 
 // Do not put settlement on the first-paint dependency path.
-const startAffinity=()=>import('./affinity-runtime.mjs?v=daily-polish-20261102').catch(()=>{});
+const startAffinity=()=>import('./affinity-runtime.mjs?v=companion-controls-20261102').catch(()=>{});
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
 
 // Local successful actions announce only after the authoritative commit.
@@ -126,7 +126,7 @@ function prefetchPage(id,href){
  if(prefetchedPages.has(id))return prefetchedPages.get(id);
  const ready=fetch(href,{credentials:'same-origin',cache:'no-cache',priority:'low'}).then(async response=>{if(!response.ok)throw new Error('Page unavailable');const html=await response.text(),doc=new DOMParser().parseFromString(html,'text/html');if(doc.querySelector('meta[name=life-system-shell]')?.content!==document.querySelector('meta[name=life-system-shell]')?.content)throw new Error('Version mismatch');
   // modulepreload fetches module dependencies without evaluating page code.
-  const file={wallet:'wallet.mjs?v=daily-polish-20261102',companion:'characters-page.mjs?v=daily-polish-20261102',habits:'habits.mjs?v=daily-polish-20261102',tasks:'tasks.mjs?v=daily-polish-20261102',home:'home.js?v=daily-polish-20261102',profile:'profile.mjs?v=daily-polish-20261102',settings:'settings.mjs?v=daily-polish-20261102'}[id];hint(new URL('./'+file,import.meta.url).href,'modulepreload');
+  const file={wallet:'wallet.mjs?v=companion-controls-20261102',companion:'characters-page.mjs?v=companion-controls-20261102',habits:'habits.mjs?v=companion-controls-20261102',tasks:'tasks.mjs?v=companion-controls-20261102',home:'home.js?v=companion-controls-20261102',profile:'profile.mjs?v=companion-controls-20261102',settings:'settings.mjs?v=companion-controls-20261102'}[id];hint(new URL('./'+file,import.meta.url).href,'modulepreload');
   for(const sheet of doc.querySelectorAll('link[rel=stylesheet][href]')){const url=new URL(sheet.getAttribute('href'),href);if(url.origin===location.origin&&![...document.styleSheets].some(sheet=>sheet.href===url.href))hint(url.href,'preload','style');}return html;});
  prefetchedPages.set(id,ready);ready.catch(()=>{if(prefetchedPages.get(id)===ready)prefetchedPages.delete(id);});return ready;
 }
@@ -141,4 +141,4 @@ if(document.readyState==='complete')scheduleIdleNavigation();else window.addEven
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopIdleNavigation();else scheduleIdleNavigation();});window.addEventListener('online',scheduleIdleNavigation);navigator.connection?.addEventListener?.('change',scheduleIdleNavigation);window.addEventListener('pagehide',()=>{idleDisposed=true;stopIdleNavigation();},{once:true});
 
 const growthStatus=document.createElement('p');growthStatus.className='sr-only';growthStatus.setAttribute('role','status');document.body.append(growthStatus);
-dataStore.subscribeCommits((_,operation)=>{const growth=operation?.growth;if(!growth)return;const specials=[];if(growth.level>0)specials.push({name:'升級！',kind:'level',value:growth.level,display:'Lv '+growth.levelTo});for(const a of growth.affinity)specials.push({name:a.name+' 好感度',kind:'affinity',value:a.amount});if(!specials.length)return;growthStatus.textContent=specials.map(x=>x.name+' '+(x.display??'+'+x.value)).join('，');getCompletionFlow().showReward({id:operation.id+':growth',reward:{currency:0,experience:0,abilities:{physique:0,wisdom:0,charisma:0,resilience:0,perception:0},specials}});},{metadataOnly:true});
+dataStore.subscribeCommits((_,operation)=>{const growth=operation?.growth;if(!growth)return;const specials=[];if(growth.level>0)specials.push({name:'升級！',kind:'level',value:growth.level,display:'Lv '+growth.levelTo});for(const a of growth.affinity)specials.push({name:a.name+' 好感度升級！',kind:'affinity',value:a.amount,display:'Lv '+a.stage+' '+a.stageName});if(!specials.length)return;growthStatus.textContent=specials.map(x=>x.name+' '+(x.display??'+'+x.value)).join('，');getCompletionFlow().showReward({id:operation.id+':growth',reward:{currency:0,experience:0,abilities:{physique:0,wisdom:0,charisma:0,resilience:0,perception:0},specials}});},{metadataOnly:true});

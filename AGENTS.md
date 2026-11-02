@@ -135,7 +135,7 @@
 
 - 沿用同一 AI service 與四家 provider。新增 Cloudflare Workers 個人後端（GitHub OAuth 本人 numeric ID、Worker Secret、SQLite DO 限額），部署指南與免費界線見 `docs/CLOUDFLARE_PERSONAL_AI.md`；原 Node BYOK 後端保留，不是本次部署目標。Cloudflare 建置依使用者要求暫停，待網頁完成後再處理；本次不得建立或部署服務。控制台未部署前如實尚未設定，不購買網域、不搬 DNS、不升級付費。瀏覽器直連保留作手動備用，不自動切換／重送。
 - 瀏覽器AI連接預設開啟，只呼叫官方HTTPS API；設定頁說明專用localStorage保存與同來源讀取風險，不再有開發模式開關或跨頁測試面板。
-- AI金鑰欄固定password且不提供顯示按鈕；blur、連線／重新整理／測試及離頁清空輸入框，不清除連線；返回或重載不回填，留白可輸入新金鑰替換。瀏覽器直連所需session仍沿既有規則保存，不宣稱可阻止DevTools讀取。
+- AI金鑰欄固定password且不提供顯示按鈕；blur、連線／測試及離頁清空輸入框，不清除連線；返回或重載不回填，留白可輸入新金鑰替換。瀏覽器直連所需session仍沿既有規則保存，不宣稱可阻止DevTools讀取。
 - 一組provider/key/model存專用localStorage `life-system.ai-test.v1`，不自動到期；手動中斷或換商清除密鑰與模型，預設空連接仍開啟。有效舊sessionStorage設定可遷移；重整自動重連模型，同文件切頁不重查，storage事件取消其他分頁舊連接。
 - AI專用localStorage不是加密保管庫，不進一般設定、歷史、Undo／Redo、備份、URL或日誌；Google授權依現行短期持久規則，後端sessionStorage不變。勿要求使用者把key貼到聊天或Git。
 - `ai-runtime`／`ai-client`／`ai-session` 集中恢復與生命週期；`ai-service` 統一狀態、生成、取消與錯誤；`assets/ai-providers`／`ai-capabilities`／`ai-errors` 前後端共用，不另建重複系統。backend/ 的 server/auth/env 永不進 work/build。
@@ -272,4 +272,4 @@ stats.currencyEarned缺省以文件自身餘額初始化一次，保留0；舊Un
 
 目前金額差額更正與缺圖不中斷還原規則見[AMOUNT_MISSING_IMAGES.md](docs/AMOUNT_MISSING_IMAGES.md)。
 
-導覽icon每次點擊固定選取待辦事項／彈性習慣／聊天室；瀏覽器上一頁與下一頁仍沿原頁面狀態，不刪草稿。安排日期提供今、明快捷選取，月份箭頭無框。已完成待辦可更正名稱及今天或更早的日期，不重發獎勵或好感度；完成更正原始快照與正式來源長期保留，仍受revision、相依復原與備份驗證保護。升級及好感度實際增加在本機成功提交後，沿共用獎勵動畫佇列提示；同步、還原及重載不重播。手機夥伴頁首以當前出場者的關係等級／好感度取代日期，第一通知為角色名稱．出場中，第二行沿現有操作通知；預覽不改當前出場資訊。角色選擇label保留給輔助工具，移除可見的目前出場／正在查看及選擇說明。細節與驗證見docs/DAILY_INTERACTIONS.md。
+導覽icon每次點擊固定選取待辦事項／彈性習慣／聊天室；瀏覽器上一頁與下一頁仍沿原頁面狀態，不刪草稿。安排日期提供今、明快捷選取，月份箭頭無框。已完成待辦可更正名稱及今天或更早的日期，不重發獎勵或好感度；完成更正原始快照與正式來源長期保留，仍受revision、相依復原與備份驗證保護。使用者升級及角色好感度跨越關係等級門檻在本機成功提交後，沿共用獎勵動畫佇列提示；一般好感度增減只更新數值，不播放動畫；同步、還原及重載不重播。手機夥伴頁首以當前出場者的關係等級／好感度取代日期，第一通知為角色名稱．出場中，第二行沿現有操作通知；預覽不改當前出場資訊。角色選擇label保留給輔助工具，移除可見的目前出場／正在查看及選擇說明。細節與驗證見docs/DAILY_INTERACTIONS.md。

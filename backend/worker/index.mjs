@@ -1,4 +1,4 @@
-import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=daily-polish-20261102';
+import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=companion-controls-20261102';
 import {configuration,jsonBody,json,validToken,edgeFetch} from './security.mjs';
 export {PersonalGate} from './gate.mjs';
 const cookieName='__Host-life-oauth';

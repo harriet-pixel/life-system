@@ -1,4 +1,4 @@
-import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=daily-polish-20261102';
+import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=companion-controls-20261102';
 // Manual character settings; image metadata is validated separately.
 export const RELATIONSHIP_STAGES=Object.freeze([
  ['初識',0],['熟悉',50],['友好',150],['信任',350],['默契',500],['深厚情誼',700],['長久羈絆',1000]
