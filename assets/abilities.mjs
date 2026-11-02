@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=batch-wallet-20261103';
+import {integerValue} from './validation.mjs?v=chat-edge-20261103';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

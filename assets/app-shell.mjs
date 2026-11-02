@@ -1,19 +1,19 @@
-import {backupStatus} from './cloud-sync-status.mjs?v=batch-wallet-20261103';
-import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=batch-wallet-20261103';
-import {createCloudRestore} from './cloud-restore.mjs?v=batch-wallet-20261103';
-import {getCloudBackup} from './cloud-backup.mjs?v=batch-wallet-20261103';
-import {setOperationNotice} from './operation-notice.mjs?v=batch-wallet-20261103';
-import {initializeUIFeedback} from './ui-feedback.mjs?v=batch-wallet-20261103';
-import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=batch-wallet-20261103';
-import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=batch-wallet-20261103';
-import {persistentUndo,dataStore} from './data.mjs?v=batch-wallet-20261103';
-import {createPageLifecycle} from './page-lifecycle.mjs?v=batch-wallet-20261103';
-import {initializeNavigationSize} from './navigation-size.mjs?v=batch-wallet-20261103';
-import {mountDailyHeader} from './daily-header.mjs?v=batch-wallet-20261103';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=batch-wallet-20261103';
-const routes={wallet:{mount:()=>import('./wallet.mjs?v=batch-wallet-20261103'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=chat-avatar-20261103'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=batch-wallet-20261103'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=batch-wallet-20261103'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=batch-wallet-20261103'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=batch-wallet-20261103'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=batch-wallet-20261103'),export:'mountSettings'}};
+import {backupStatus} from './cloud-sync-status.mjs?v=chat-edge-20261103';
+import {getDriveState,driveAuth,prepareDriveAuth} from './google-drive.mjs?v=chat-edge-20261103';
+import {createCloudRestore} from './cloud-restore.mjs?v=chat-edge-20261103';
+import {getCloudBackup} from './cloud-backup.mjs?v=chat-edge-20261103';
+import {setOperationNotice} from './operation-notice.mjs?v=chat-edge-20261103';
+import {initializeUIFeedback} from './ui-feedback.mjs?v=chat-edge-20261103';
+import {ownsCompletionAI,getCompletionFlow} from './task-completion.mjs?v=chat-edge-20261103';
+import {navigationItems,isCurrentRoute,initializeNavigation} from './navigation.mjs?v=chat-edge-20261103';
+import {persistentUndo,dataStore} from './data.mjs?v=chat-edge-20261103';
+import {createPageLifecycle} from './page-lifecycle.mjs?v=chat-edge-20261103';
+import {initializeNavigationSize} from './navigation-size.mjs?v=chat-edge-20261103';
+import {mountDailyHeader} from './daily-header.mjs?v=chat-edge-20261103';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-edge-20261103';
+const routes={wallet:{mount:()=>import('./wallet.mjs?v=chat-edge-20261103'),export:'mountWallet'},companion:{mount:()=>import('./characters-page.mjs?v=chat-edge-20261103'),export:'mountCharacters'},habits:{mount:()=>import('./habits.mjs?v=chat-edge-20261103'),export:'mountHabits'},tasks:{mount:()=>import('./tasks.mjs?v=chat-edge-20261103'),export:'mountTasks'},home:{mount:()=>import('./home.js?v=chat-edge-20261103'),export:'mountHome'},profile:{mount:()=>import('./profile.mjs?v=chat-edge-20261103'),export:'mountProfile'},settings:{mount:()=>import('./settings.mjs?v=chat-edge-20261103'),export:'mountSettings'}};
 const moduleRetries=new Map(),loadedModules=new Map(),prefetchedPages=new Map();
-async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='companion'?'chat-avatar-20261103':'batch-wallet-20261103')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
+async function importPage(id){if(loadedModules.has(id))return loadedModules.get(id);let module;try{module=await routes[id].mount();}catch(error){const attempt=(moduleRetries.get(id)??0)+1;moduleRetries.set(id,attempt);const file={wallet:'wallet.mjs',companion:'characters-page.mjs',habits:'habits.mjs',home:'home.js',tasks:'tasks.mjs',profile:'profile.mjs',settings:'settings.mjs'}[id];try{module=await import('./'+file+'?v='+ (id==='companion'?'chat-edge-20261103':'chat-edge-20261103')+'&retry='+attempt);}catch(retryError){if(/dynamically imported module|module script|loading dynamically imported/i.test(retryError.message))retryError.code='module';throw retryError;}}loadedModules.set(id,module);return module;}
 const refreshURL=new URL(location.href);if(refreshURL.searchParams.has('__life_reload')){refreshURL.searchParams.delete('__life_reload');history.replaceState(history.state,'',refreshURL.href);}
 const pageFor=url=>navigationItems.find(item=>item.available&&isCurrentRoute(item.href,url))?.id;
 const shell=document.querySelector('.page-shell'),desktop=document.querySelector('.desktop-navigation'),views=new Map(),positions=new Map();
@@ -105,7 +105,7 @@ getCloudBackup();
 if(getDriveState().linked)void prepareDriveAuth().catch(()=>{});
 
 // Do not put settlement on the first-paint dependency path.
-const startAffinity=()=>import('./affinity-runtime.mjs?v=batch-wallet-20261103').catch(()=>{});
+const startAffinity=()=>import('./affinity-runtime.mjs?v=chat-edge-20261103').catch(()=>{});
 if(globalThis.requestIdleCallback)requestIdleCallback(startAffinity,{timeout:2000});else setTimeout(startAffinity,0);
 
 // Local successful actions announce only after the authoritative commit.
@@ -126,7 +126,7 @@ function prefetchPage(id,href){
  if(prefetchedPages.has(id))return prefetchedPages.get(id);
  const ready=fetch(href,{credentials:'same-origin',cache:'no-cache',priority:'low'}).then(async response=>{if(!response.ok)throw new Error('Page unavailable');const html=await response.text(),doc=new DOMParser().parseFromString(html,'text/html');if(doc.querySelector('meta[name=life-system-shell]')?.content!==document.querySelector('meta[name=life-system-shell]')?.content)throw new Error('Version mismatch');
   // modulepreload fetches module dependencies without evaluating page code.
-  const file={wallet:'wallet.mjs?v=batch-wallet-20261103',companion:'characters-page.mjs?v=chat-avatar-20261103',habits:'habits.mjs?v=batch-wallet-20261103',tasks:'tasks.mjs?v=batch-wallet-20261103',home:'home.js?v=batch-wallet-20261103',profile:'profile.mjs?v=batch-wallet-20261103',settings:'settings.mjs?v=batch-wallet-20261103'}[id];hint(new URL('./'+file,import.meta.url).href,'modulepreload');
+  const file={wallet:'wallet.mjs?v=chat-edge-20261103',companion:'characters-page.mjs?v=chat-edge-20261103',habits:'habits.mjs?v=chat-edge-20261103',tasks:'tasks.mjs?v=chat-edge-20261103',home:'home.js?v=chat-edge-20261103',profile:'profile.mjs?v=chat-edge-20261103',settings:'settings.mjs?v=chat-edge-20261103'}[id];hint(new URL('./'+file,import.meta.url).href,'modulepreload');
   for(const sheet of doc.querySelectorAll('link[rel=stylesheet][href]')){const url=new URL(sheet.getAttribute('href'),href);if(url.origin===location.origin&&![...document.styleSheets].some(sheet=>sheet.href===url.href))hint(url.href,'preload','style');}return html;});
  prefetchedPages.set(id,ready);ready.catch(()=>{if(prefetchedPages.get(id)===ready)prefetchedPages.delete(id);});return ready;
 }

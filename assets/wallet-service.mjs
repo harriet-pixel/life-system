@@ -1,4 +1,4 @@
-import {emptyWallet,validateWallet,validateWalletEvidence,walletName,walletAmount,walletNote} from './wallet-model.mjs?v=batch-wallet-20261103';
+import {emptyWallet,validateWallet,validateWalletEvidence,walletName,walletAmount,walletNote} from './wallet-model.mjs?v=chat-edge-20261103';
 export function createWalletService(store,{now=()=>new Date(),id=()=>crypto.randomUUID()}={}){
  const snapshot=()=>store.getFields?store.getFields(['revision','wallet','stats','history','affinity']):store.get();
  async function save(base,wallet,stats,type,transactionId,label){wallet.stateId=transactionId;return store.transact({id:transactionId,expectedRevision:base.revision,type,label,target:'wallet',changes:{wallet:validateWallet(wallet),...(stats?{stats}:{})}});}

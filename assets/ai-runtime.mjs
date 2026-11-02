@@ -1,10 +1,10 @@
-import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=batch-wallet-20261103';
-import {createPersonalBackend} from './ai-worker-auth.mjs?v=batch-wallet-20261103';
-import {AI_WORKER_URL} from './ai-worker-config.mjs?v=batch-wallet-20261103';
-import {createPageAIConnection} from './ai-client.mjs?v=batch-wallet-20261103';
-import {AI_BACKEND_URL} from './ai-config.mjs?v=batch-wallet-20261103';
-import {getAIAccessToken} from './ai-auth.mjs?v=batch-wallet-20261103';
-import {dataStore} from './data.mjs?v=batch-wallet-20261103';
+import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=chat-edge-20261103';
+import {createPersonalBackend} from './ai-worker-auth.mjs?v=chat-edge-20261103';
+import {AI_WORKER_URL} from './ai-worker-config.mjs?v=chat-edge-20261103';
+import {createPageAIConnection} from './ai-client.mjs?v=chat-edge-20261103';
+import {AI_BACKEND_URL} from './ai-config.mjs?v=chat-edge-20261103';
+import {getAIAccessToken} from './ai-auth.mjs?v=chat-edge-20261103';
+import {dataStore} from './data.mjs?v=chat-edge-20261103';
 let shared;
 export function getSharedAIConnection(){
  if(!shared){

@@ -292,7 +292,7 @@ stats.currencyEarned缺省以文件自身餘額初始化一次，保留0；舊Un
 
 每次點選聊天室／夥伴導覽進入或路由返回，訊息區到最新；正在閱讀時的新訊息仍保留原錨點。訊息區overscroll-y改auto，在訊息底部後的後續捲動由原生瀏覽器接續捲整頁。移除標頭短期聊天文字，右上改無框設定icon。
 
-settings.companionDisplay選填{floatingAvatarSize,chatAvatarSize}：懸浮頭像0表示原響應式72–96px或48–160px自訂，訊息頭像24–320px預設32。設定原生dialog明確儲存、取消、同欄位跨分頁衝突檢查；僅外觀不進Undo。根CSS變數統一四頁懸浮與聊天室訊息頭像，初始繪製及settings訂閱皆套用。完整明文／加密／手動備份保留；不改角色、裁切或原圖資產。
+settings.companionDisplay選填{floatingAvatarSize,chatAvatarSize,greetingPages?}：懸浮頭像0表示原響應式72–96px或48–160px自訂，訊息頭像24–320px預設32。設定原生dialog明確儲存、取消、同欄位跨分頁衝突檢查；僅外觀不進Undo。根CSS變數統一四頁懸浮與聊天室訊息頭像，初始繪製及settings訂閱皆套用。完整明文／加密／手動備份保留；不改角色、裁切或原圖資產。
 
 ## 招呼批量操作與帳本表單（2026-11-03）
 
@@ -301,3 +301,11 @@ settings.companionDisplay選填{floatingAvatarSize,chatAvatarSize}：懸浮頭�
 聊天頭像設定上限320px；requested尺寸大於目前chat-room.clientWidth的1/3時，角色訊息改上下排：頭像獨立置中、回覆在下，圖片寬度不超過訊息區。ResizeObserver與settings訂閱同步切換；小於等於1/3維持左右排。標頭頭像不變。
 
 新增消費dialog固定為640px或可用視窗高度減24px（取較小），標題與footer固定、內文捲動，切換重複／單次不改高度。重複項目選擇及已選名稱無框，新增項目右側提供管理icon。新增按鈕沿既有常用項目editor／返回流程。常用項目選填note最多1000字，舊資料缺省空白，編輯／Undo／備份保留，顯示以文字及換行；不回推既存消費備註、不新增消費備註輸入。
+
+## 聊天室底部與招呼頁面開關（2026-11-03）
+
+共用viewport meta宣告interactive-widget=resizes-content，支援的Android Chromium鍵盤開啟時縮小內容視窗。chat-viewport依visualViewport建立固定框，再用getBoundingClientRect與computed height核對實際縮放比例、校正top／left／width／height；保留原位置佔位與訊息／整頁閱讀位置。鍵盤模式composer底部padding為0，輸入列最後排列，本機恢復提交按鈕在輸入列上方；輸入框底部只留外框1px，沒有額外頁面留白。原鍵盤收起／切頁復原與短視窗內捲維持。
+
+夥伴兩主頁籤共用待辦task-content-tabs樣式，桌面有英文副標、行動版20px及相同底線。HTML初始與mount結束都預設聊天室，重新整理不先顯示角色設定；History返回仍沿既有DOM草稿。頭像顯示設定入口改筆，checkbox label固定同一flex row。
+
+companionDisplay選填greetingPages={home,tasks,habits,wallet}，四個boolean，缺省全部啟用以相容舊設定。頭像顯示窗提供勾選各頁自動招呼並隨原設定儲存／取消、同欄位衝突保留。只控制進入／返回時的招呼（桌面文字及行動浮窗），不阻擋正式完成事件、打卡、消費等回應；不自動生成AI或改變正式數值。完整備份保留選擇。

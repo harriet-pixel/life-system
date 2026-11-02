@@ -201,3 +201,11 @@ nov3-model與nov3-ui測試驗證批量全有或全無、頁面指令差異、375
 聊天室標頭與訊息頭像不再使用120×160縮圖，改以正式原圖及既有crop產生暫時方形PNG。解析度依實際頭像寬度×devicePixelRatio向上取64倍數，64～1024px；大小／密度改變會更新顯示來源。相同原圖、crop與解析度共用一份promise／Blob URL，依顯示層引用計數，最後一份離頁／替換時釋放。仍沿原視圖序號拒絕遲到解碼結果、情緒一般備援與兩層淡入淡出。不新增IndexedDB資產，不更動原圖、縮圖、crop或備份引用；缺少createImageBitmap時退回正式原圖與CSS裁切。
 
 chat-avatar-sharp.cjs在375／1280px及2倍像素密度，以1200×1600棋盤格原圖與刻意模糊／紅色120×160縮圖驗證顯示採原圖、576／640px方形輸出、八則訊息共用URL、資料不變及離頁釋放；chat-avatar-sharp.test.mjs涵蓋尺寸／密度與上限。393項單元測試通過。
+
+## 鍵盤留白及顯示偏好補正（2026-11-03）
+
+依使用者手機截圖修正輸入框與鍵盤間留白：viewport meta採interactive-widget=resizes-content；固定框依實際渲染幾何修正縮放／位移，以可見視窗底緣為準。保留正常布局佔位，composer取消底部padding、把本機恢復按鈕排到輸入列之前，輸入框與鍵盤只差1px外框。未以scrollIntoView將整頁跳至底部。
+
+夥伴主頁籤使用待辦相同樣式，初始HTML與程式預設聊天室。右上設定圖示為筆，勾選框與自動尺寸文字同排。新增home／tasks／habits／wallet四頁的自動招呼開關，存在settings.companionDisplay.greetingPages；缺省全開，僅控制進入／返回時的歡迎文字／浮窗，正式生活操作回應保留，備份包含選擇。
+
+chat-edge-preferences.cjs驗證375／1280px的預設頁籤、樣式一致、筆圖示、label同排、四頁關閉招呼與完成事件仍回應；一般／75%縮放、visualViewport與Android內容視窗縮小情境，檢查輸入框底部貼齊、整頁位置不變。單元驗證舊設定相容、頁面map型別及完整備份。395項單元測試及chat-layout-controls、chat-keyboard-navigation、chat-height、chat-avatar-sharp、page-greetings與settings-cache回歸均通過；鍵盤情境為瀏覽器模擬，尚未實機驗收。

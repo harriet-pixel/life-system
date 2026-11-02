@@ -1,6 +1,6 @@
-import {acquireChatAvatar,chatAvatarPixels} from './chat-avatar.mjs?v=chat-avatar-20261103';
-import {resolveCharacterImage} from './character-images-model.mjs?v=batch-wallet-20261103';
-import {acquireImageURL} from './image-store.mjs?v=batch-wallet-20261103';
+import {acquireChatAvatar,chatAvatarPixels} from './chat-avatar.mjs?v=chat-edge-20261103';
+import {resolveCharacterImage} from './character-images-model.mjs?v=chat-edge-20261103';
+import {acquireImageURL} from './image-store.mjs?v=chat-edge-20261103';
 // A view owns at most two layers and one pending lease; chat crops share ref-counted leases.
 export function createCharacterImageView(target,{avatar=false,thumbnail=false,avatarPixels=0,chatAvatar=false}={}){
  const placeholder=document.createElement('span');placeholder.className='character-image-placeholder';
@@ -19,7 +19,7 @@ export function createCharacterImageView(target,{avatar=false,thumbnail=false,av
   for(const candidate of item===neutral?[item]:[item,neutral].filter(Boolean)){
    let lease;
    try{
-    lease=chatAvatar?await acquireChatAvatar(candidate,chatResolution):avatar&&avatarPixels?await import('./daily-avatar.mjs?v=batch-wallet-20261103').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
+    lease=chatAvatar?await acquireChatAvatar(candidate,chatResolution):avatar&&avatarPixels?await import('./daily-avatar.mjs?v=chat-edge-20261103').then(m=>m.acquireAvatarURL(candidate,avatarPixels)):await acquireImageURL(thumbnail?candidate.thumbnail:candidate.image);
     if(token!==sequence){lease.release();return;}pending=lease;
     const image=new Image();image.alt='';image.decoding='async';image.src=lease.url;await image.decode();
     if(token!==sequence){lease.release();return;}pending=null;
