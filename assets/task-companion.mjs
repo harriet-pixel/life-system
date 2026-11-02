@@ -1,14 +1,14 @@
-import {nextPageGreeting} from './characters-model.mjs?v=chat-layout-20261102';
-import {dataStore} from './data.mjs?v=chat-layout-20261102';
-import {createMobileTaskResponse} from './task-mobile-response.mjs?v=chat-layout-20261102';
-import {createSharedCompanionView} from './companion-events.mjs?v=chat-layout-20261102';
+import {nextPageGreeting} from './characters-model.mjs?v=batch-wallet-20261103';
+import {dataStore} from './data.mjs?v=batch-wallet-20261103';
+import {createMobileTaskResponse} from './task-mobile-response.mjs?v=batch-wallet-20261103';
+import {createSharedCompanionView} from './companion-events.mjs?v=batch-wallet-20261103';
 export function mountTaskCompanion(root,context,options={}){
  const floating=createMobileTaskResponse(root,context,options);
  const sync=()=>{root.querySelector('#portrait-placeholder').firstElementChild.textContent=matchMedia('(min-width:1024px)').matches?'立繪佔位':'頭像佔位';};context.listen(matchMedia('(min-width:1024px)'),'change',sync);sync();
  let dailyVisual=null,visualRequest=0;
  let actorIdentity=null,actorSignature='';
  const greet=()=>{const c=dataStore.getFields(['activeCharacter']).activeCharacter;if(c)floating.greet(nextPageGreeting(c,options.kind??'tasks'));};
- function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=chat-layout-20261102').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+ function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=batch-wallet-20261103').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
  context.onSuspend(()=>visualRequest++);
  function showActor(c){if(c)showDaily({characterId:c.characterId,characterCreatedAt:c.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
  context.subscribe(dataStore,({activeCharacter:c})=>{const id=c?c.characterId+':'+c.createdAt:null,signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings,c?.imageSettings]);if(signature===actorSignature)return;actorSignature=signature;const previous=actorIdentity;actorIdentity=id;if(previous&&previous!==id)root.querySelector('#companion-dialogue').textContent=c?'已切換出場夥伴：'+c.settings.name:'請先設定出場夥伴。';showActor(c);if(id!==previous)greet();},{changesOnly:true,keys:['activeCharacter'],distinct:true});

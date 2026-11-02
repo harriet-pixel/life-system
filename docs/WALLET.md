@@ -54,3 +54,9 @@ wallet操作沿七天／全站最近15筆政策。wallet-recovery只保存單筆
 帳本列表僅呈現有效紀錄；已取消紀錄保留唯一dataStore、來源證據與Undo／Redo，不加入列表DOM。只有已取消紀錄的月份顯示「尚無有效消費紀錄」，有效合計不變。
 
 首次站內進入錢包須等正式wallet.css樣式表載入完成，preload不視為已套用CSS；詳見[WALLET_STYLE_AFFINITY.md](WALLET_STYLE_AFFINITY.md)。
+
+## 新增消費與常用項目備註（2026-11-03）
+
+新增消費外框使用固定640px或visualViewport可用高度減24px，切換重複／單次不改外框，內容可內捲。重複選項及唯讀名稱無方框，新增項目右側是無框管理icon，沿原editor與返回流程保留消費草稿。
+
+wallet.items每筆選填note（0～1000字），服務正規化trim、驗證保存；舊無note資料可讀，舊呼叫未傳note不抹掉既有備註。常用清單顯示純文字備註、保留換行。item版本衝突、單筆Undo／Redo與完整備份沿既有機制，修改常用備註不改消費收據note，消費提交窗不新增備註欄位。nov3-model測試含欄位界線、舊呼叫保留、Undo及備份；nov3-ui含375／1280與200%文字、選項無框、icon位置及切頁高度。

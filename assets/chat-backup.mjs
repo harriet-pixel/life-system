@@ -1,5 +1,5 @@
-import {allChatTurns,stageRestoredChats,turnMessages} from './chat-store.mjs?v=chat-layout-20261102';
-import {liveMessage,CHAT_TTL} from './chat-model.mjs?v=chat-layout-20261102';
+import {allChatTurns,stageRestoredChats,turnMessages} from './chat-store.mjs?v=batch-wallet-20261103';
+import {liveMessage,CHAT_TTL} from './chat-model.mjs?v=batch-wallet-20261103';
 const check=(ok)=>{if(!ok)throw new Error('短期聊天備份格式或角色關聯無法驗證。');};
 export function validateChatBackup(rows,document,now=Date.now()){
  check(Array.isArray(rows)&&rows.length<=10000);const identities=new Set();

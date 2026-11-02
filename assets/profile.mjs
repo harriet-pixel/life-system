@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=chat-layout-20261102';
-import { holdDraft } from './coordination.mjs?v=chat-layout-20261102';
-import { createProfileImages } from './profile-images.mjs?v=chat-layout-20261102';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=chat-layout-20261102';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=chat-layout-20261102';
-import { undoManager } from './undo.mjs?v=chat-layout-20261102';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=chat-layout-20261102';
+import {bindProfileValidation} from './validation.mjs?v=batch-wallet-20261103';
+import { holdDraft } from './coordination.mjs?v=batch-wallet-20261103';
+import { createProfileImages } from './profile-images.mjs?v=batch-wallet-20261103';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=batch-wallet-20261103';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=batch-wallet-20261103';
+import { undoManager } from './undo.mjs?v=batch-wallet-20261103';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=batch-wallet-20261103';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

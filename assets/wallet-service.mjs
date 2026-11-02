@@ -1,4 +1,4 @@
-import {emptyWallet,validateWallet,validateWalletEvidence,walletName,walletAmount,walletNote} from './wallet-model.mjs?v=chat-layout-20261102';
+import {emptyWallet,validateWallet,validateWalletEvidence,walletName,walletAmount,walletNote} from './wallet-model.mjs?v=batch-wallet-20261103';
 export function createWalletService(store,{now=()=>new Date(),id=()=>crypto.randomUUID()}={}){
  const snapshot=()=>store.getFields?store.getFields(['revision','wallet','stats','history','affinity']):store.get();
  async function save(base,wallet,stats,type,transactionId,label){wallet.stateId=transactionId;return store.transact({id:transactionId,expectedRevision:base.revision,type,label,target:'wallet',changes:{wallet:validateWallet(wallet),...(stats?{stats}:{})}});}
@@ -23,7 +23,7 @@ export function createWalletService(store,{now=()=>new Date(),id=()=>crypto.rand
   async item(values,itemId=null,expectedVersion=null){
    const base=snapshot(),wallet=validateWallet(base.wallet??emptyWallet()),name=walletName(values.name),defaultCost=values.defaultCost===null?null:walletAmount(values.defaultCost),time=now().toISOString();let item=wallet.items[itemId];
    if(itemId&&(!item||item.version!==expectedVersion))throw new Error('常用項目已變更，草稿已保留，請重新確認。');
-   if(item)Object.assign(item,{name,defaultCost,version:item.version+1,updatedAt:time});else{item={id:id(),name,defaultCost,version:1,createdAt:time,updatedAt:time};wallet.items[item.id]=item;}wallet.lastChange={collection:'items',id:item.id};
+   if(item)Object.assign(item,{name,defaultCost,version:item.version+1,updatedAt:time});else{item={id:id(),name,defaultCost,version:1,createdAt:time,updatedAt:time};wallet.items[item.id]=item;}if(values.note!==undefined)item.note=walletNote(values.note);wallet.lastChange={collection:'items',id:item.id};
    return save(base,wallet,null,'wallet.item',id(),itemId?'修改常用兌換項目':'新增常用兌換項目');
   },
   async removeItem(itemId,expectedVersion){const base=snapshot(),wallet=validateWallet(base.wallet??emptyWallet()),item=wallet.items[itemId];if(!item||item.version!==expectedVersion)throw new Error('常用項目已變更，請重新確認。');delete wallet.items[itemId];wallet.lastChange={collection:'items',id:itemId};return save(base,wallet,null,'wallet.item',id(),'刪除常用兌換項目');}

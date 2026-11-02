@@ -1,12 +1,13 @@
-import {mountChatViewport} from './chat-viewport.mjs?v=chat-layout-20261102';
-import {mountChatDisplaySettings} from './chat-display-settings.mjs?v=chat-layout-20261102';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-layout-20261102';
-import {createChatController,chatConnected} from './chat-controller.mjs?v=chat-layout-20261102';
-import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=chat-layout-20261102';
+import {mountChatViewport} from './chat-viewport.mjs?v=batch-wallet-20261103';
+import {mountChatDisplaySettings} from './chat-display-settings.mjs?v=batch-wallet-20261103';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=batch-wallet-20261103';
+import {createChatController,chatConnected} from './chat-controller.mjs?v=batch-wallet-20261103';
+import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=batch-wallet-20261103';
 export function mountChat(root,context,{store,getCharacter,getSnapshot,images,notify,onDraft}){
  const $=s=>root.querySelector(s),input=$('#chat-input'),send=$('#chat-send'),area=$('#chat-messages');
  const connection=getSharedAIConnection(),drafts=new Map(),nodes=new Map();let viewed=null,rendered=null,subscription=null,active=false,ui={turns:[],messages:[],busy:false,loading:false,connection:connection.getState()},sending=false,scrollBottom=true;
  const viewport=mountChatViewport(root,context),displaySettings=mountChatDisplaySettings(root,context,store,notify);
+ const avatarLayout=()=>{const room=$('.chat-room'),size=parseFloat(getComputedStyle(room).getPropertyValue('--chat-avatar-size'))||32;if(room.clientWidth)room.classList.toggle('chat-avatar-stacked',size>room.clientWidth/3);};const avatarObserver=new ResizeObserver(avatarLayout);context.observe(avatarObserver,[$('.chat-room')]);context.subscribe(store,avatarLayout,{keys:['settings'],changesOnly:true});context.onResume(avatarLayout);
  const visible=()=>context.active&&!$('#chat-panel').hidden;
  const error=message=>notify(message);let lastHelp='';
  function saveView(){if(viewed){drafts.set(viewed,input.value);}}
