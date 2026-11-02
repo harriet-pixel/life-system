@@ -1,6 +1,6 @@
 // Durable, text-free chat receipts. Existing life reward/reversal rules are untouched.
-import {initializeAffinity,affinityTransaction,validateAffinity} from './affinity-model.mjs?v=batch-wallet-20261103';
-import {relationshipStage,effectiveCharacter} from './characters-model.mjs?v=batch-wallet-20261103';
+import {initializeAffinity,affinityTransaction,validateAffinity} from './affinity-model.mjs?v=chat-edge-20261103';
+import {relationshipStage,effectiveCharacter} from './characters-model.mjs?v=chat-edge-20261103';
 export function chatRoleSnapshot(doc,characterId){const c=effectiveCharacter(doc.companion,doc.companion?.characters.find(c=>c.characterId===characterId));if(!c||c.archived||doc.companion.activeCharacterId!==characterId)throw new Error('請先將未封存的角色設為夥伴。');return {characterId,characterCreatedAt:c.createdAt,configVersion:c.configVersion,stage:relationshipStage(c.affinity).stage,switchCount:doc.companion.switchHistory.length,sharingRevision:doc.companion.affinitySharing?.revision??0,epoch:doc.affinity.chatEpoch};}
 export function validChatRole(doc,snapshot){try{const current=chatRoleSnapshot(doc,snapshot.characterId);return ['characterId','characterCreatedAt','configVersion','switchCount','epoch'].every(k=>current[k]===snapshot[k])&&current.sharingRevision===(snapshot.sharingRevision??0);}catch{return false;}}
 export function commitChat(doc,turn,time){

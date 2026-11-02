@@ -1,18 +1,18 @@
-import {mountColorField} from './color-field.mjs?v=batch-wallet-20261103';
-import {documentTime} from './cloud-backup-policy.mjs?v=batch-wallet-20261103';
-import {cloudBackupLabel} from './cloud-backup-display.mjs?v=batch-wallet-20261103';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=batch-wallet-20261103';
-import {getCloudBackup} from './cloud-backup.mjs?v=batch-wallet-20261103';
-import {initializeAISettings} from './ai-settings.mjs?v=batch-wallet-20261103';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=batch-wallet-20261103';
-import {dataStore,persistentUndo} from './data.mjs?v=batch-wallet-20261103';
-import {createMobileTabPositioner} from './tab-position.mjs?v=batch-wallet-20261103';
-import {createHistoryView} from './history-view.mjs?v=batch-wallet-20261103';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=batch-wallet-20261103';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=batch-wallet-20261103';
-import {holdDraft} from './coordination.mjs?v=batch-wallet-20261103';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=batch-wallet-20261103';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=batch-wallet-20261103';
+import {mountColorField} from './color-field.mjs?v=chat-edge-20261103';
+import {documentTime} from './cloud-backup-policy.mjs?v=chat-edge-20261103';
+import {cloudBackupLabel} from './cloud-backup-display.mjs?v=chat-edge-20261103';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=chat-edge-20261103';
+import {getCloudBackup} from './cloud-backup.mjs?v=chat-edge-20261103';
+import {initializeAISettings} from './ai-settings.mjs?v=chat-edge-20261103';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=chat-edge-20261103';
+import {dataStore,persistentUndo} from './data.mjs?v=chat-edge-20261103';
+import {createMobileTabPositioner} from './tab-position.mjs?v=chat-edge-20261103';
+import {createHistoryView} from './history-view.mjs?v=chat-edge-20261103';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=chat-edge-20261103';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=chat-edge-20261103';
+import {holdDraft} from './coordination.mjs?v=chat-edge-20261103';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=chat-edge-20261103';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=chat-edge-20261103';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

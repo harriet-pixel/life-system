@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=batch-wallet-20261103';
-import {getCompletionFlow} from './task-completion.mjs?v=batch-wallet-20261103';
-import {dataStore} from './data.mjs?v=batch-wallet-20261103';
-import {createTaskService} from './tasks-service.mjs?v=batch-wallet-20261103';
-import {allocation,localDate} from './tasks-model.mjs?v=batch-wallet-20261103';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=batch-wallet-20261103';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=batch-wallet-20261103';
+import {setOperationNotice} from './operation-notice.mjs?v=chat-edge-20261103';
+import {getCompletionFlow} from './task-completion.mjs?v=chat-edge-20261103';
+import {dataStore} from './data.mjs?v=chat-edge-20261103';
+import {createTaskService} from './tasks-service.mjs?v=chat-edge-20261103';
+import {allocation,localDate} from './tasks-model.mjs?v=chat-edge-20261103';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=chat-edge-20261103';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-edge-20261103';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);

@@ -64,3 +64,6 @@ html.chat-input-active{overflow-anchor:none}
 @media(width<1024px){.chat-room.is-keyboard-docked .chat-heading{max-height:calc(var(--chat-dock-height)*.35);overflow:auto;box-sizing:border-box;min-height:0}.chat-room.is-keyboard-docked .chat-composer{max-height:calc(var(--chat-dock-height)*.65);overflow:auto;box-sizing:border-box;min-height:0}}
 
 #main .greeting-actions{justify-content:flex-start}#main .greeting-actions button{flex:0 0 auto}#main .chat-avatar-stacked .chat-message-character{flex-direction:column;align-items:center}#main .chat-avatar-stacked .chat-message-character .chat-message-avatar{width:min(var(--chat-avatar-size,32px),100%);height:auto;aspect-ratio:1;min-width:0;flex:none;align-self:center}#main .chat-avatar-stacked .chat-message-character .chat-message-stack{max-width:100%;align-self:stretch}
+
+@media(width<1024px){#main .chat-room.is-keyboard-docked .chat-composer{display:flex;flex-direction:column;padding-bottom:0}#main .chat-room.is-keyboard-docked .chat-composer>div{order:2;margin-bottom:0}#main .chat-room.is-keyboard-docked .chat-composer>button{order:1}}
+#chat-display-settings .chat-checkbox-option{display:flex;flex-direction:row;align-items:center;gap:8px;min-height:44px}#chat-display-settings .chat-checkbox-option input{flex:0 0 20px;width:20px;margin:0}#chat-display-settings fieldset{min-width:0}

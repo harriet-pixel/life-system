@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=batch-wallet-20261103';
+import {ABILITIES} from './abilities.mjs?v=chat-edge-20261103';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;

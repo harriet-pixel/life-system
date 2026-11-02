@@ -1,8 +1,8 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=batch-wallet-20261103';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=batch-wallet-20261103';
-import {dataStore} from './data.mjs?v=batch-wallet-20261103';
-import {localDate,addDays,occurrence,taskForOccurrence} from './tasks-model.mjs?v=batch-wallet-20261103';
-import {holdDraft} from './coordination.mjs?v=batch-wallet-20261103';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=chat-edge-20261103';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=chat-edge-20261103';
+import {dataStore} from './data.mjs?v=chat-edge-20261103';
+import {localDate,addDays,occurrence,taskForOccurrence} from './tasks-model.mjs?v=chat-edge-20261103';
+import {holdDraft} from './coordination.mjs?v=chat-edge-20261103';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){
