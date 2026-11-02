@@ -1,7 +1,7 @@
-import {AI_TEST_TEXT} from './ai-prompts.mjs?v=companion-controls-20261102';
-import {createAIConnection} from './ai-service.mjs?v=companion-controls-20261102';
-import {createAISession} from './ai-session.mjs?v=companion-controls-20261102';
-import {createProviderAdapter} from './ai-providers.mjs?v=companion-controls-20261102';
+import {AI_TEST_TEXT} from './ai-prompts.mjs?v=home-ai-20261102';
+import {createAIConnection} from './ai-service.mjs?v=home-ai-20261102';
+import {createAISession} from './ai-session.mjs?v=home-ai-20261102';
+import {createProviderAdapter} from './ai-providers.mjs?v=home-ai-20261102';
 // One controller for formal backend and explicitly enabled browser testing.
 export function createPageAIConnection({storage,now=Date.now,fetcher=fetch,endpoint='',getAccessToken,preference={},savePreference,timeoutMs,personalBackend=null,defaultBrowser=false}={}){
  const session=createAISession(storage,{now}),listeners=new Set();

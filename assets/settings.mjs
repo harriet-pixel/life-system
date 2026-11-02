@@ -1,18 +1,18 @@
-import {mountColorField} from './color-field.mjs?v=companion-controls-20261102';
-import {documentTime} from './cloud-backup-policy.mjs?v=companion-controls-20261102';
-import {cloudBackupLabel} from './cloud-backup-display.mjs?v=companion-controls-20261102';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=companion-controls-20261102';
-import {getCloudBackup} from './cloud-backup.mjs?v=companion-controls-20261102';
-import {initializeAISettings} from './ai-settings.mjs?v=companion-controls-20261102';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=companion-controls-20261102';
-import {dataStore,persistentUndo} from './data.mjs?v=companion-controls-20261102';
-import {createMobileTabPositioner} from './tab-position.mjs?v=companion-controls-20261102';
-import {createHistoryView} from './history-view.mjs?v=companion-controls-20261102';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=companion-controls-20261102';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=companion-controls-20261102';
-import {holdDraft} from './coordination.mjs?v=companion-controls-20261102';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=companion-controls-20261102';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=companion-controls-20261102';
+import {mountColorField} from './color-field.mjs?v=home-ai-20261102';
+import {documentTime} from './cloud-backup-policy.mjs?v=home-ai-20261102';
+import {cloudBackupLabel} from './cloud-backup-display.mjs?v=home-ai-20261102';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=home-ai-20261102';
+import {getCloudBackup} from './cloud-backup.mjs?v=home-ai-20261102';
+import {initializeAISettings} from './ai-settings.mjs?v=home-ai-20261102';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=home-ai-20261102';
+import {dataStore,persistentUndo} from './data.mjs?v=home-ai-20261102';
+import {createMobileTabPositioner} from './tab-position.mjs?v=home-ai-20261102';
+import {createHistoryView} from './history-view.mjs?v=home-ai-20261102';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=home-ai-20261102';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=home-ai-20261102';
+import {holdDraft} from './coordination.mjs?v=home-ai-20261102';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=home-ai-20261102';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=home-ai-20261102';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

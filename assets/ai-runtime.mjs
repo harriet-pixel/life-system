@@ -1,10 +1,10 @@
-import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=companion-controls-20261102';
-import {createPersonalBackend} from './ai-worker-auth.mjs?v=companion-controls-20261102';
-import {AI_WORKER_URL} from './ai-worker-config.mjs?v=companion-controls-20261102';
-import {createPageAIConnection} from './ai-client.mjs?v=companion-controls-20261102';
-import {AI_BACKEND_URL} from './ai-config.mjs?v=companion-controls-20261102';
-import {getAIAccessToken} from './ai-auth.mjs?v=companion-controls-20261102';
-import {dataStore} from './data.mjs?v=companion-controls-20261102';
+import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=home-ai-20261102';
+import {createPersonalBackend} from './ai-worker-auth.mjs?v=home-ai-20261102';
+import {AI_WORKER_URL} from './ai-worker-config.mjs?v=home-ai-20261102';
+import {createPageAIConnection} from './ai-client.mjs?v=home-ai-20261102';
+import {AI_BACKEND_URL} from './ai-config.mjs?v=home-ai-20261102';
+import {getAIAccessToken} from './ai-auth.mjs?v=home-ai-20261102';
+import {dataStore} from './data.mjs?v=home-ai-20261102';
 let shared;
 export function getSharedAIConnection(){
  if(!shared){

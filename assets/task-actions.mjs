@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=companion-controls-20261102';
-import {getCompletionFlow} from './task-completion.mjs?v=companion-controls-20261102';
-import {dataStore} from './data.mjs?v=companion-controls-20261102';
-import {createTaskService} from './tasks-service.mjs?v=companion-controls-20261102';
-import {allocation,localDate} from './tasks-model.mjs?v=companion-controls-20261102';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=companion-controls-20261102';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-controls-20261102';
+import {setOperationNotice} from './operation-notice.mjs?v=home-ai-20261102';
+import {getCompletionFlow} from './task-completion.mjs?v=home-ai-20261102';
+import {dataStore} from './data.mjs?v=home-ai-20261102';
+import {createTaskService} from './tasks-service.mjs?v=home-ai-20261102';
+import {allocation,localDate} from './tasks-model.mjs?v=home-ai-20261102';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=home-ai-20261102';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=home-ai-20261102';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);
