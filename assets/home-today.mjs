@@ -1,7 +1,7 @@
-import {dataStore} from './data.mjs?v=chat-layout-20261102';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=chat-layout-20261102';
+import {dataStore} from './data.mjs?v=single-points-20261102';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=single-points-20261102';
 
-import {sortDay,listSettings} from './task-view-model.mjs?v=chat-layout-20261102';
+import {sortDay,listSettings} from './task-view-model.mjs?v=single-points-20261102';
 
 // One renderer and one validated store for early reading and interactive mounting.
 export function renderHomeToday(root,actions=null){

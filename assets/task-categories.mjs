@@ -1,7 +1,7 @@
-import {mountColorField} from './color-field.mjs?v=chat-layout-20261102';
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=chat-layout-20261102';
-import {dataStore} from './data.mjs?v=chat-layout-20261102';
-import {holdDraft} from './coordination.mjs?v=chat-layout-20261102';
+import {mountColorField} from './color-field.mjs?v=single-points-20261102';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=single-points-20261102';
+import {dataStore} from './data.mjs?v=single-points-20261102';
+import {holdDraft} from './coordination.mjs?v=single-points-20261102';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

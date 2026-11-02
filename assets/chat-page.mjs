@@ -1,6 +1,6 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-layout-20261102';
-import {createChatController,chatConnected} from './chat-controller.mjs?v=chat-layout-20261102';
-import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=chat-layout-20261102';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=single-points-20261102';
+import {createChatController,chatConnected} from './chat-controller.mjs?v=single-points-20261102';
+import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=single-points-20261102';
 export function mountChat(root,context,{store,getCharacter,getSnapshot,images,notify,onDraft}){
  const $=s=>root.querySelector(s),input=$('#chat-input'),send=$('#chat-send'),area=$('#chat-messages');
  const connection=getSharedAIConnection(),drafts=new Map(),positions=new Map(),nodes=new Map();let viewed=null,rendered=null,subscription=null,active=false,ui={turns:[],messages:[],busy:false,loading:false,connection:connection.getState()},sending=false,scrollBottom=true;
