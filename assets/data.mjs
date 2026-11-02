@@ -1,21 +1,21 @@
-import {walletSnapshots} from './wallet-recovery.mjs?v=stats-affinity-20261031';
-import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=stats-affinity-20261031';
-import {attemptJournalRescue} from './storage-vault.mjs?v=stats-affinity-20261031';
-import {storageFailure} from './storage-diagnostics.mjs?v=stats-affinity-20261031';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=stats-affinity-20261031';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=stats-affinity-20261031';
-import {integrateAffinity} from './affinity-integration.mjs?v=stats-affinity-20261031';
-import {settleAffinity} from './affinity-settlement.mjs?v=stats-affinity-20261031';
-import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=stats-affinity-20261031';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=stats-affinity-20261031';
-import {setOperationNotice} from './operation-notice.mjs?v=stats-affinity-20261031';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=stats-affinity-20261031';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=stats-affinity-20261031';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=stats-affinity-20261031';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=stats-affinity-20261031';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=stats-affinity-20261031';
-import { migrateImages } from './image-store.mjs?v=stats-affinity-20261031';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=stats-affinity-20261031';
+import {walletSnapshots} from './wallet-recovery.mjs?v=daily-polish-20261102';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=daily-polish-20261102';
+import {attemptJournalRescue} from './storage-vault.mjs?v=daily-polish-20261102';
+import {storageFailure} from './storage-diagnostics.mjs?v=daily-polish-20261102';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=daily-polish-20261102';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=daily-polish-20261102';
+import {integrateAffinity} from './affinity-integration.mjs?v=daily-polish-20261102';
+import {settleAffinity} from './affinity-settlement.mjs?v=daily-polish-20261102';
+import {emptyCharacters,validateCharacters} from './characters-model.mjs?v=daily-polish-20261102';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=daily-polish-20261102';
+import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261102';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=daily-polish-20261102';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=daily-polish-20261102';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=daily-polish-20261102';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=daily-polish-20261102';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=daily-polish-20261102';
+import { migrateImages } from './image-store.mjs?v=daily-polish-20261102';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=daily-polish-20261102';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -88,7 +88,9 @@ export function createDataStore(storage,{now=Date.now}={}) {
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
     try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);loadedRaw=raw;timing?.phase('storage-write',writeAt);}
     catch(error) { throw storageFailure(error,storage,{operation:operation?.type??'primary-write',attemptedBytes:JSON.stringify(next).length*2}); }
-    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(({metadataOnly,omit,keys,types},fn)=>{try{if(types&&!types.includes(operation?.type))return;if(metadataOnly){if(operation){const record=state.history.at(-1);fn(null,copy({id:operation.id,type:operation.type,label:operation.label??record?.label,delta:operation.delta??record?.delta}));}}else fn(copy(keys?project(state,keys):omit?.length?Object.fromEntries(Object.entries(state).filter(([key])=>!omit.includes(key))):state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
+    if(operation&&/^(task\.completed|habit\.(check|bonus)|wallet\.spent|chat\.assessed|stats\.manual)/.test(operation.type)){const prior=new Map((state.companion?.characters??[]).map(c=>[c.characterId,c]));operation.growth={level:Math.max(0,next.stats.level-state.stats.level),levelTo:next.stats.level,affinity:(next.companion?.characters??[]).flatMap(c=>{const old=prior.get(c.characterId);return old&&old.createdAt===c.createdAt&&c.affinity>old.affinity?[{name:c.settings.name,amount:c.affinity-old.affinity,characterId:c.characterId}]:[]})};}
+    if(operation?.growth&&operation.growth.level===0&&!operation.growth.affinity.length)delete operation.growth;
+    state = next;cacheRecovery({...checked,document:state},checkedAt);const subscribersAt=performance.now();notify();commitListeners.forEach(({metadataOnly,omit,keys,types},fn)=>{try{if(types&&!types.includes(operation?.type))return;if(metadataOnly){if(operation){const record=state.history.at(-1);fn(null,copy({id:operation.id,type:operation.type,label:operation.label??record?.label,delta:operation.delta??record?.delta,...(operation.growth?{growth:operation.growth}:{})}));}}else fn(copy(keys?project(state,keys):omit?.length?Object.fromEntries(Object.entries(state).filter(([key])=>!omit.includes(key))):state),operation);}catch{}});timing?.phase('subscribers',subscribersAt);
   };
   const api = {
     get: () => copy(currentRecovery().document),
@@ -155,7 +157,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=stats-affinity-20261031');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next);return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=daily-polish-20261102');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;

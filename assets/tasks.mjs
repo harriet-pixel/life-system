@@ -1,18 +1,18 @@
-import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=stats-affinity-20261031';
-import {createListSettings} from './task-day-settings.mjs?v=stats-affinity-20261031';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=stats-affinity-20261031';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=stats-affinity-20261031';
-import {createDateResidents} from './task-date-residents.mjs?v=stats-affinity-20261031';
-import {createActivityHeightSync} from './activity-height.mjs?v=stats-affinity-20261031';
-import {createMobileTabPositioner} from './tab-position.mjs?v=stats-affinity-20261031';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=stats-affinity-20261031';
-import {createTaskPool} from './task-pool.mjs?v=stats-affinity-20261031';
-import {dataStore} from './data.mjs?v=stats-affinity-20261031';
-import {localDate,addDays,rowsForDate,weekday,isOverdue} from './tasks-model.mjs?v=stats-affinity-20261031';
-import {taskActions} from './task-actions.mjs?v=stats-affinity-20261031';
-import {mountTaskCompanion} from './task-companion.mjs?v=stats-affinity-20261031';
-import {createTaskEditor} from './task-editor.mjs?v=stats-affinity-20261031';
-import {createCategoryManager} from './task-categories.mjs?v=stats-affinity-20261031';
+import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=daily-polish-20261102';
+import {createListSettings} from './task-day-settings.mjs?v=daily-polish-20261102';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=daily-polish-20261102';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261102';
+import {createDateResidents} from './task-date-residents.mjs?v=daily-polish-20261102';
+import {createActivityHeightSync} from './activity-height.mjs?v=daily-polish-20261102';
+import {createMobileTabPositioner} from './tab-position.mjs?v=daily-polish-20261102';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=daily-polish-20261102';
+import {createTaskPool} from './task-pool.mjs?v=daily-polish-20261102';
+import {dataStore} from './data.mjs?v=daily-polish-20261102';
+import {localDate,addDays,rowsForDate,weekday,isOverdue} from './tasks-model.mjs?v=daily-polish-20261102';
+import {taskActions} from './task-actions.mjs?v=daily-polish-20261102';
+import {mountTaskCompanion} from './task-companion.mjs?v=daily-polish-20261102';
+import {createTaskEditor} from './task-editor.mjs?v=daily-polish-20261102';
+import {createCategoryManager} from './task-categories.mjs?v=daily-polish-20261102';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');
@@ -94,4 +94,5 @@ export function mountTasks(root,context){
  contentButtons.forEach((b,i)=>{b.onclick=event=>selectContent(i,event);b.addEventListener('keydown',event=>{const targets={ArrowLeft:1-i,ArrowRight:1-i,Home:0,End:1};if(!(event.key in targets))return;event.preventDefault();selectContent(targets[event.key]);contentButtons[contentTab].focus({preventScroll:true});});});context.onSuspend(()=>positionTabs.cancel());context.onResume(()=>selectContent(contentTab));
  context.subscribe(actions.completions,render);
  context.subscribe(dataStore,render,{changesOnly:true,keys:['tasks']});context.listen(desktop,'change',render);
+ context.setHooks({onNavigationEntry:()=>selectContent(0)});
 }

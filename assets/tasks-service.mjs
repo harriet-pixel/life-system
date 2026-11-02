@@ -1,7 +1,7 @@
-import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=stats-affinity-20261031';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=stats-affinity-20261031';
-import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate} from './tasks-model.mjs?v=stats-affinity-20261031';
-import {expiresAt} from './recovery.mjs?v=stats-affinity-20261031';
+import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=daily-polish-20261102';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=daily-polish-20261102';
+import {emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate} from './tasks-model.mjs?v=daily-polish-20261102';
+import {expiresAt} from './recovery.mjs?v=daily-polish-20261102';
 export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.randomUUID(),emit=()=>{}}={}){
  const snapshot=()=>store.get();
  let viewQueue=Promise.resolve();
@@ -28,6 +28,21 @@ export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.random
   async edit(values,taskId=null,expectedVersion=null,arrangement=undefined){const preparedAt=performance.now();if(typeof values.name!=='string'||!values.name.trim())throw new Error('請輸入事項名稱。');if(values.end&&values.end<values.start)throw new Error('結束日期不能早於開始日期。');const suppliedFixed=values.fixedAllocation;values={...Object.fromEntries(['name','categoryId','points','kind','date','start','end','days'].map(k=>[k,values[k]])),overdue:'keep'};const {base,tasks}=fresh();let task=tasks.definitions.find(t=>t.id===taskId);if(taskId&&(!task||task.deleted||task.version!==expectedVersion))throw new Error('事項已在其他操作中修改，請重新開啟編輯。');
    {const fixed=suppliedFixed??task?.fixedAllocation;if(fixed)values.fixedAllocation=validateFixedAllocation(fixed,values.points);}
    if(task&&task.kind!==values.kind)throw new Error('既有事項不可變更類型，請新增另一事項。');
+   const completedOccurrence=task&&(task.kind==='once'?tasks.occurrences.find(o=>o.taskId===task.id&&o.status==='done'):arrangement?.fromDate?occurrence(tasks,task,arrangement.fromDate):null);
+   if(completedOccurrence?.status==='done'){
+    const c=tasks.completions.find(c=>c.id===completedOccurrence.completionId&&c.cancelledAt===null);if(!c)throw new Error('原完成紀錄已變更，請重新開啟。');deletionEvidence(base,c);
+    const date=task.kind==='once'?values.date:(arrangement?.date??c.date);if(!validDate(date)||date>localDate(now()))throw new Error('已完成事件請選擇今天或更早的有效日期。');
+    if(task.kind==='repeat'&&(date<task.start||task.end&&date>task.end))throw new Error('日期超出重複事件有效期限。');
+    const target=date===c.date?null:occurrence(tasks,task,date);if(task.kind==='repeat'&&target)throw new Error('目標日期已有安排或例外紀錄，請選擇其他日期。');
+    const brief=arrangement&&Object.hasOwn(arrangement,'brief')?arrangement.brief:c.brief??'';if(!validBrief(brief))throw new Error('簡述請使用單行文字。');
+    c.editOriginal??={name:c.name,date:c.date,occurrenceId:c.occurrenceId,brief:c.brief??'',allocationBasis:c.allocation?.basis??null};
+    if(task.kind==='repeat'&&date!==c.date)putOccurrence(tasks,{...completedOccurrence,status:'moved',completionId:null});
+    c.name=values.name.trim();c.date=date;c.occurrenceId=occurrenceId(task,date);c.brief=brief;
+    if(c.allocation){const context=JSON.parse(c.allocation.basis);context.name=c.name;context.brief=brief;c.allocation.basis=JSON.stringify(context);}
+    putOccurrence(tasks,{...completedOccurrence,id:c.occurrenceId,date,status:'done',completionId:c.id,brief});
+    task.version++;if(task.kind==='once'){task.date=date;task.name=c.name;}
+    await save(base,tasks,'更正已完成事件名稱／日期','task.corrected');return task.id;
+   }
    if(task?.kind==='repeat'&&arrangement?.fromDate){const source=occurrence(tasks,task,arrangement.fromDate);if(!source||!['pending','done'].includes(source.status))throw new Error('原日期安排已變更，請重新選取事項。');putOccurrence(tasks,source);}
    if(task){if(task.kind==='repeat'&&task.end&&(!values.end||values.end>task.end)&&task.checkedThrough>task.end)task.checkedThrough=task.end;if(task.kind==='once'&&values.date!==task.date){const o=tasks.occurrences.find(o=>o.taskId===task.id);if(o&&!['pending','unarranged'].includes(o.status))throw new Error('已完成或不再處理的事項無法改日期。');if(values.date){schedule(tasks,task.id,values.date,o?.status==='unarranged'?null:o?.date??task.date);}else{clearSchedule(tasks,task,o?.date??task.date);}}Object.assign(task,values,{version:task.version+1});}else{task={...values,id:id(),version:1,createdAt:now().toISOString(),deleted:false,checkedThrough:null};tasks.definitions.push(task);}
    if(arrangement&&task.kind==='repeat'){const from=arrangement.fromDate??null,date=arrangement.date??null;if(from&&date!==from){if(date)schedule(tasks,task.id,date,from);else clearSchedule(tasks,task,from);}else if(!from&&date){const target=occurrence(tasks,task,date);if(!target)schedule(tasks,task.id,date);else if(target.status!=='pending')throw new Error('目標日期已有此事項或例外紀錄，請選擇其他日期。');}}

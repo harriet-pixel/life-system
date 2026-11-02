@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=stats-affinity-20261031';
-import {getCompletionFlow} from './task-completion.mjs?v=stats-affinity-20261031';
-import {dataStore} from './data.mjs?v=stats-affinity-20261031';
-import {createTaskService} from './tasks-service.mjs?v=stats-affinity-20261031';
-import {allocation,localDate} from './tasks-model.mjs?v=stats-affinity-20261031';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=stats-affinity-20261031';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=stats-affinity-20261031';
+import {setOperationNotice} from './operation-notice.mjs?v=daily-polish-20261102';
+import {getCompletionFlow} from './task-completion.mjs?v=daily-polish-20261102';
+import {dataStore} from './data.mjs?v=daily-polish-20261102';
+import {createTaskService} from './tasks-service.mjs?v=daily-polish-20261102';
+import {allocation,localDate} from './tasks-model.mjs?v=daily-polish-20261102';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=daily-polish-20261102';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=daily-polish-20261102';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);

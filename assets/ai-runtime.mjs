@@ -1,10 +1,10 @@
-import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=stats-affinity-20261031';
-import {createPersonalBackend} from './ai-worker-auth.mjs?v=stats-affinity-20261031';
-import {AI_WORKER_URL} from './ai-worker-config.mjs?v=stats-affinity-20261031';
-import {createPageAIConnection} from './ai-client.mjs?v=stats-affinity-20261031';
-import {AI_BACKEND_URL} from './ai-config.mjs?v=stats-affinity-20261031';
-import {getAIAccessToken} from './ai-auth.mjs?v=stats-affinity-20261031';
-import {dataStore} from './data.mjs?v=stats-affinity-20261031';
+import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=daily-polish-20261102';
+import {createPersonalBackend} from './ai-worker-auth.mjs?v=daily-polish-20261102';
+import {AI_WORKER_URL} from './ai-worker-config.mjs?v=daily-polish-20261102';
+import {createPageAIConnection} from './ai-client.mjs?v=daily-polish-20261102';
+import {AI_BACKEND_URL} from './ai-config.mjs?v=daily-polish-20261102';
+import {getAIAccessToken} from './ai-auth.mjs?v=daily-polish-20261102';
+import {dataStore} from './data.mjs?v=daily-polish-20261102';
 let shared;
 export function getSharedAIConnection(){
  if(!shared){
