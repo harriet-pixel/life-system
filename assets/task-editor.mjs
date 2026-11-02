@@ -1,8 +1,8 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=daily-polish-20261102';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=daily-polish-20261102';
-import {dataStore} from './data.mjs?v=daily-polish-20261102';
-import {localDate,addDays} from './tasks-model.mjs?v=daily-polish-20261102';
-import {holdDraft} from './coordination.mjs?v=daily-polish-20261102';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=companion-controls-20261102';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=companion-controls-20261102';
+import {dataStore} from './data.mjs?v=companion-controls-20261102';
+import {localDate,addDays} from './tasks-model.mjs?v=companion-controls-20261102';
+import {holdDraft} from './coordination.mjs?v=companion-controls-20261102';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){

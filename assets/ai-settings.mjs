@@ -1,5 +1,5 @@
-import {MODEL_REASONS} from './ai-capabilities.mjs?v=daily-polish-20261102';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=daily-polish-20261102';
+import {MODEL_REASONS} from './ai-capabilities.mjs?v=companion-controls-20261102';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=companion-controls-20261102';
 const providerNotes={
  gemini:'Gemini 官方 SDK 支援瀏覽器；實際可用性仍依金鑰、地區與官方跨來源政策。',
  openai:'OpenAI／GPT：官方 SDK 要求明確啟用危險瀏覽器模式；本站採官方 REST 直連，以你設定的金鑰連接。',
@@ -38,7 +38,7 @@ export function initializeAISettings(root=document,context){
   $('ai-model-excluded').replaceChildren();for(const item of diagnostic?.excluded??[]){const row=document.createElement('li');row.textContent=item.id+'：'+MODEL_REASONS[item.reason];$('ai-model-excluded').append(row);}
   const selected=$('ai-model');selected.replaceChildren(new Option(state.busy?'正在取得模型…':state.sessionModel?'已保存 '+state.sessionModel+'（待重新驗證）':'請選擇模型',''));state.models.forEach(model=>selected.append(new Option(model.name+'（'+model.id+'）',model.id)));selected.value=state.model;selected.disabled=state.busy||!state.models.length;
   key.disabled=!state.configured||Boolean(personal);key.placeholder=state.hasKey&&!key.value?'金鑰已設定，無法檢視；輸入新金鑰可替換':'';
-  $('ai-connect').disabled=!state.configured||!(personal?state.backendReady:state.hasKey)||state.busy;$('ai-refresh').disabled=$('ai-connect').disabled;
+  $('ai-connect').disabled=!state.configured||!(personal?state.backendReady:state.hasKey)||state.busy;
   $('ai-test').disabled=state.busy||Boolean(personal&&!state.backendReady)||!(state.connected&&state.model||state.restorableModel||state.restorableBackendModel);
   $('ai-connect').textContent='連接AI';
   $('ai-disconnect').textContent='中斷連線';$('ai-disconnect').disabled=personal?!state.connected&&!state.busy:!state.hasKey&&!state.busy;
@@ -46,7 +46,7 @@ export function initializeAISettings(root=document,context){
  $('ai-provider').addEventListener('change',()=>{clearKeyField();connection.setProvider($('ai-provider').value);});
  key.addEventListener('input',()=>connection.setKey(key.value));
  key.addEventListener('blur',clearKeyField);
- $('ai-connect').addEventListener('click',()=>{clearKeyField();connection.connect();});$('ai-refresh').addEventListener('click',()=>{clearKeyField();connection.refresh();});$('ai-model').addEventListener('change',()=>connection.selectModel($('ai-model').value));$('ai-test').addEventListener('click',()=>{clearKeyField();connection.test();});
+ $('ai-connect').addEventListener('click',()=>{clearKeyField();connection.connect();});$('ai-model').addEventListener('change',()=>connection.selectModel($('ai-model').value));$('ai-test').addEventListener('click',()=>{clearKeyField();connection.test();});
  $('ai-disconnect').addEventListener('click',()=>connection.disconnect());
  if(context){context.listen(window,'pagehide',()=>{clearKeyField();});context.onSuspend(clearKeyField);}else window.addEventListener('pagehide',()=>{clearKeyField();});
  return connection;

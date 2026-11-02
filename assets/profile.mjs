@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=daily-polish-20261102';
-import { holdDraft } from './coordination.mjs?v=daily-polish-20261102';
-import { createProfileImages } from './profile-images.mjs?v=daily-polish-20261102';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=daily-polish-20261102';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=daily-polish-20261102';
-import { undoManager } from './undo.mjs?v=daily-polish-20261102';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=daily-polish-20261102';
+import {bindProfileValidation} from './validation.mjs?v=companion-controls-20261102';
+import { holdDraft } from './coordination.mjs?v=companion-controls-20261102';
+import { createProfileImages } from './profile-images.mjs?v=companion-controls-20261102';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=companion-controls-20261102';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=companion-controls-20261102';
+import { undoManager } from './undo.mjs?v=companion-controls-20261102';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=companion-controls-20261102';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);
