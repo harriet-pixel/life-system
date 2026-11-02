@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=greetings-pages-20261102';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=greetings-pages-20261102';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=greetings-pages-20261102';
-import {dataStore} from './data.mjs?v=greetings-pages-20261102';
-import {createTaskService} from './tasks-service.mjs?v=greetings-pages-20261102';
-import {allocation,allocationContext} from './tasks-model.mjs?v=greetings-pages-20261102';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=greetings-pages-20261102';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=greetings-pages-20261102';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=greetings-pages-20261102';
+import {setOperationNotice} from './operation-notice.mjs?v=chat-layout-20261102';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=chat-layout-20261102';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=chat-layout-20261102';
+import {dataStore} from './data.mjs?v=chat-layout-20261102';
+import {createTaskService} from './tasks-service.mjs?v=chat-layout-20261102';
+import {allocation,allocationContext} from './tasks-model.mjs?v=chat-layout-20261102';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=chat-layout-20261102';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-layout-20261102';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=chat-layout-20261102';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}

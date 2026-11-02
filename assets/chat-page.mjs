@@ -1,12 +1,15 @@
-import {getSharedAIConnection} from './ai-runtime.mjs?v=greetings-pages-20261102';
-import {createChatController,chatConnected} from './chat-controller.mjs?v=greetings-pages-20261102';
-import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=greetings-pages-20261102';
+import {mountChatViewport} from './chat-viewport.mjs?v=chat-layout-20261102';
+import {mountChatDisplaySettings} from './chat-display-settings.mjs?v=chat-layout-20261102';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-layout-20261102';
+import {createChatController,chatConnected} from './chat-controller.mjs?v=chat-layout-20261102';
+import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=chat-layout-20261102';
 export function mountChat(root,context,{store,getCharacter,getSnapshot,images,notify,onDraft}){
  const $=s=>root.querySelector(s),input=$('#chat-input'),send=$('#chat-send'),area=$('#chat-messages');
- const connection=getSharedAIConnection(),drafts=new Map(),positions=new Map(),nodes=new Map();let viewed=null,rendered=null,subscription=null,active=false,ui={turns:[],messages:[],busy:false,loading:false,connection:connection.getState()},sending=false,scrollBottom=true;
+ const connection=getSharedAIConnection(),drafts=new Map(),nodes=new Map();let viewed=null,rendered=null,subscription=null,active=false,ui={turns:[],messages:[],busy:false,loading:false,connection:connection.getState()},sending=false,scrollBottom=true;
+ const viewport=mountChatViewport(root,context),displaySettings=mountChatDisplaySettings(root,context,store,notify);
  const visible=()=>context.active&&!$('#chat-panel').hidden;
  const error=message=>notify(message);let lastHelp='';
- function saveView(){if(viewed){drafts.set(viewed,input.value);positions.set(viewed,area.scrollTop);}}
+ function saveView(){if(viewed){drafts.set(viewed,input.value);}}
  const key=c=>c?c.characterId+':'+c.createdAt:null;
  function eligibility(){const c=getCharacter(),state=getSnapshot();return Boolean(c&&!c.archived&&state.companion.activeCharacterId===c.characterId);}
  function controls(){const c=getCharacter(),connected=chatConnected(ui.connection),ready=eligibility();input.disabled=!ready;input.maxLength=CHAT_INPUT_LIMIT;input.placeholder=ready?'輸入訊息':'先將此角色設為夥伴再開始聊天';
@@ -26,7 +29,7 @@ export function mountChat(root,context,{store,getCharacter,getSnapshot,images,no
   const signature=JSON.stringify(next.messages.map(m=>[m.messageId,m.status]));const near=area.scrollHeight-area.scrollTop-area.clientHeight<64,oldTop=area.scrollTop,areaTop=area.getBoundingClientRect().top,anchor=[...area.querySelectorAll('[data-message-id]')].find(node=>node.getBoundingClientRect().bottom>areaTop),anchorId=anchor?.dataset.messageId,anchorOffset=anchor?anchor.getBoundingClientRect().top-areaTop:0;
   if(signature!==rendered){const fragment=document.createDocumentFragment(),keep=new Set();for(const m of next.messages.slice(-CHAT_DOM_LIMIT)){keep.add(m.messageId);fragment.append(messageNode(m));}for(const id of nodes.keys())if(!keep.has(id))nodes.delete(id);
    if(!next.messages.length){const empty=document.createElement('p');empty.className='chat-empty';empty.textContent=next.loading?'正在讀取此角色的短期訊息…':'目前沒有有效的短期訊息。訊息各自保留24小時，有效全文納入手動備份。';fragment.append(empty);}area.replaceChildren(fragment);rendered=signature;
-   if(scrollBottom){area.scrollTop=positions.get(viewed)??area.scrollHeight;scrollBottom=false;}else if(near)area.scrollTop=area.scrollHeight;else{const retained=anchorId?nodes.get(anchorId):null;area.scrollTop=retained?area.scrollTop+retained.getBoundingClientRect().top-area.getBoundingClientRect().top-anchorOffset:oldTop;}
+   if(scrollBottom){area.scrollTop=area.scrollHeight;scrollBottom=false;}else if(near)area.scrollTop=area.scrollHeight;else{const retained=anchorId?nodes.get(anchorId):null;area.scrollTop=retained?area.scrollTop+retained.getBoundingClientRect().top-area.getBoundingClientRect().top-anchorOffset:oldTop;}
   }else for(const m of next.messages)messageNode(m);
   const last=next.messages.findLast(m=>m.role==='assistant');images.displayEmotion(last?.emotionId??'neutral');images.update();
   const pending=ui.turns.find(t=>t.assistant&&t.phase!=='complete'&&!t.invalid)??(controller.pending&&ui.turns.some(t=>t.chatTurnId===controller.pending.chatTurnId&&!t.invalid)?controller.pending:null);$('#chat-local-recover').dataset.turnId=pending?.chatTurnId??'';$('#chat-local-recover').hidden=!pending;$('#chat-local-recover').disabled=ui.busy;
@@ -36,13 +39,12 @@ export function mountChat(root,context,{store,getCharacter,getSnapshot,images,no
  async function run(work){if(sending)return;sending=true;notify('');controls();try{await work();}catch(e){error(e.message);}finally{sending=false;render(ui);}}
  input.addEventListener('input',()=>{if(viewed)drafts.set(viewed,input.value);controls();onDraft();});
  const jump=document.createElement('button');jump.type='button';jump.className='chat-jump-input';jump.setAttribute('aria-label','移至最下方訊息輸入框');jump.title='移至輸入框';jump.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4v14m-6-6 6 6 6-6M5 21h14"/></svg>';$('#chat-panel').append(jump);
- jump.onclick=()=>{const behavior=matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth';area.scrollTop=area.scrollHeight;if(viewed)positions.set(viewed,area.scrollTop);if(!input.disabled)input.focus({preventScroll:true});root.querySelector('.chat-composer').scrollIntoView({behavior,block:'end'});};
+ jump.onclick=()=>{const behavior=matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth';area.scrollTop=area.scrollHeight;if(!input.disabled)input.focus({preventScroll:true});root.querySelector('.chat-composer').scrollIntoView({behavior,block:'end'});};
  send.onclick=()=>void run(()=>controller.send(input.value));
  input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){event.preventDefault();if(!send.disabled)send.click();}});
  $('#chat-local-recover').onclick=()=>void run(()=>controller.retry($('#chat-local-recover').dataset.turnId,true));
- area.addEventListener('scroll',()=>{if(viewed)positions.set(viewed,area.scrollTop);},{passive:true});
- function activate(){if(!visible()){controller.suspend();active=false;saveView();subscription?.();subscription=null;return;}if(!active){active=true;subscription=controller.observe();controller.update(getSnapshot());void controller.resume();}else controller.update(getSnapshot());}
+ function activate(latest=false){if(!visible()){controller.suspend();active=false;saveView();subscription?.();subscription=null;return;}if(latest||!active){scrollBottom=true;rendered=null;area.scrollTop=area.scrollHeight;}viewport.update();if(!active){active=true;subscription=controller.observe();controller.update(getSnapshot());void controller.resume();}else controller.update(getSnapshot());}
  context.listen(document,'visibilitychange',()=>{if(!document.hidden&&visible())void controller.refresh();});
  context.onSuspend(()=>{saveView();controller.suspend();subscription?.();subscription=null;active=false;});context.onResume(activate);
- return {update(){const c=getCharacter(),changed=key(c)!==viewed;if(changed){saveView();controller.cancel();viewed=key(c);input.value=drafts.get(viewed)??'';nodes.clear();rendered=null;scrollBottom=true;ui={...ui,turns:[],messages:[]};}controller.update(getSnapshot());if(changed&&visible())void controller.refresh();},activate,hasDraft:()=>[...drafts.values()].some(s=>s.trim())||Boolean(input.value.trim()),busy:()=>false};
+ return {update(){const c=getCharacter(),changed=key(c)!==viewed;if(changed){saveView();controller.cancel();viewed=key(c);input.value=drafts.get(viewed)??'';nodes.clear();rendered=null;scrollBottom=true;ui={...ui,turns:[],messages:[]};}controller.update(getSnapshot());if(changed&&visible())void controller.refresh();},activate,hasDraft:()=>[...drafts.values()].some(s=>s.trim())||Boolean(input.value.trim())||displaySettings.hasDraft(),busy:()=>displaySettings.busy()};
 }

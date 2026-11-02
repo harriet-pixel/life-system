@@ -8,6 +8,7 @@ function normalizeSettings(value={}) {
   if(!validHex(appearance.color)||!Object.hasOwn(FONT_NAMES,appearance.font)) throw new Error('外觀設定格式不正確。');
   const {history,ai,...other}=value;
   const preference=ai??DEFAULT_SETTINGS.ai;
+  if(value.companionDisplay!==undefined){const d=value.companionDisplay;if(!d||typeof d!=='object'||Array.isArray(d)||Object.keys(d).length!==2||!Number.isInteger(d.floatingAvatarSize)||!(d.floatingAvatarSize===0||d.floatingAvatarSize>=48&&d.floatingAvatarSize<=160)||!Number.isInteger(d.chatAvatarSize)||d.chatAvatarSize<24||d.chatAvatarSize>96)throw new Error('頭像尺寸設定不正確。');}
   if(value.companionImages!==undefined&&(!value.companionImages||typeof value.companionImages!=='object'||Object.keys(value.companionImages).length!==1||!['direct','fade'].includes(value.companionImages.transition)))throw new Error('夥伴圖片切換設定不正確。');
   if(!preference||typeof preference!=='object'||Array.isArray(preference)||Object.keys(preference).some(key=>!['provider','model'].includes(key))||!['gemini','deepseek','openai','claude'].includes(preference.provider)||typeof preference.model!=='string'||preference.model.length>207)throw new Error('AI 偏好格式不正確；不接受金鑰或連線狀態。');
   return {...other,ai:{provider:preference.provider,model:preference.model},appearance:{color:appearance.color.toLowerCase(),font:appearance.font}};
@@ -36,6 +37,7 @@ function applyAppearance(appearance,root=document.documentElement) {
   if(!document.querySelector('link[data-selected-font="'+appearance.font+'"]')){const link=document.createElement('link');link.rel='stylesheet';link.href=href;link.dataset.selectedFont=appearance.font;document.head.append(link);}
  }
 }
-globalThis.LifeAppearance={DEFAULT_APPEARANCE,DEFAULT_SETTINGS,FONT_NAMES,normalizeSettings,validHex,luminance,themeTokens,applyAppearance};
-if(typeof document!=='undefined')try{const saved=JSON.parse(localStorage.getItem('life-system.data.v1')||'{}');applyAppearance(normalizeSettings(saved.settings).appearance);}catch{applyAppearance(DEFAULT_APPEARANCE);}
+function applyCompanionDisplay(settings,root=document.documentElement){const d=settings?.companionDisplay;if(d?.floatingAvatarSize)root.style.setProperty('--floating-avatar-size',d.floatingAvatarSize+'px');else root.style.removeProperty('--floating-avatar-size');root.style.setProperty('--chat-avatar-size',(d?.chatAvatarSize??32)+'px');}
+globalThis.LifeAppearance={applyCompanionDisplay,DEFAULT_APPEARANCE,DEFAULT_SETTINGS,FONT_NAMES,normalizeSettings,validHex,luminance,themeTokens,applyAppearance};
+if(typeof document!=='undefined')try{const saved=JSON.parse(localStorage.getItem('life-system.data.v1')||'{}');const settings=normalizeSettings(saved.settings);applyAppearance(settings.appearance);applyCompanionDisplay(settings);}catch{applyAppearance(DEFAULT_APPEARANCE);}
 })();

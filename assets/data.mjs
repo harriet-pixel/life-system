@@ -1,21 +1,21 @@
-import {walletSnapshots} from './wallet-recovery.mjs?v=greetings-pages-20261102';
-import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=greetings-pages-20261102';
-import {attemptJournalRescue} from './storage-vault.mjs?v=greetings-pages-20261102';
-import {storageFailure} from './storage-diagnostics.mjs?v=greetings-pages-20261102';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=greetings-pages-20261102';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=greetings-pages-20261102';
-import {integrateAffinity} from './affinity-integration.mjs?v=greetings-pages-20261102';
-import {settleAffinity} from './affinity-settlement.mjs?v=greetings-pages-20261102';
-import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=greetings-pages-20261102';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=greetings-pages-20261102';
-import {setOperationNotice} from './operation-notice.mjs?v=greetings-pages-20261102';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=greetings-pages-20261102';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=greetings-pages-20261102';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=greetings-pages-20261102';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=greetings-pages-20261102';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=greetings-pages-20261102';
-import { migrateImages } from './image-store.mjs?v=greetings-pages-20261102';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=greetings-pages-20261102';
+import {walletSnapshots} from './wallet-recovery.mjs?v=chat-layout-20261102';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=chat-layout-20261102';
+import {attemptJournalRescue} from './storage-vault.mjs?v=chat-layout-20261102';
+import {storageFailure} from './storage-diagnostics.mjs?v=chat-layout-20261102';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=chat-layout-20261102';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=chat-layout-20261102';
+import {integrateAffinity} from './affinity-integration.mjs?v=chat-layout-20261102';
+import {settleAffinity} from './affinity-settlement.mjs?v=chat-layout-20261102';
+import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=chat-layout-20261102';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=chat-layout-20261102';
+import {setOperationNotice} from './operation-notice.mjs?v=chat-layout-20261102';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=chat-layout-20261102';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=chat-layout-20261102';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=chat-layout-20261102';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=chat-layout-20261102';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=chat-layout-20261102';
+import { migrateImages } from './image-store.mjs?v=chat-layout-20261102';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=chat-layout-20261102';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -157,7 +157,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=greetings-pages-20261102');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=chat-layout-20261102');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;
@@ -237,7 +237,7 @@ export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : nu
 if (dataStore) {
   try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,'復原資料整理失敗，原資料已保留。'+error.message);}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
   let expiryTimer;
-  let appliedAppearance;dataStore.subscribe(state=>{const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true,keys:['settings']});
+  let appliedAppearance,appliedDisplay;dataStore.subscribe(state=>{const display=JSON.stringify(state.settings.companionDisplay);if(display!==appliedDisplay){globalThis.LifeAppearance.applyCompanionDisplay(state.settings);appliedDisplay=display;}const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true,keys:['settings']});
   for(const method of ['transact','undo','redo','setAIPreferences','settleAffinities','setAffinityPolicy','prepareChat','commitChatAssessment','setReplyLibrary']) {
     const original=dataStore[method];
     dataStore[method]=async(...args)=>{
