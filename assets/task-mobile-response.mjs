@@ -1,6 +1,6 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=shared-affinity-20261102';
-import {validDailySource} from './daily-events.mjs?v=shared-affinity-20261102';
-import {dataStore} from './data.mjs?v=shared-affinity-20261102';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=greetings-pages-20261102';
+import {validDailySource} from './daily-events.mjs?v=greetings-pages-20261102';
+import {dataStore} from './data.mjs?v=greetings-pages-20261102';
 // Presentation only: formal local commits and their paired character replies.
 // Recovery produces a fresh reply; route restore and storage sync never replay one.
 export function createMobileTaskResponse(root,context,{kind='tasks',selector='.tasks-dashboard>.companion'}={}){
@@ -26,5 +26,5 @@ export function createMobileTaskResponse(root,context,{kind='tasks',selector='.t
  if(window.visualViewport){context.listen(window.visualViewport,'resize',schedule);context.listen(window.visualViewport,'scroll',schedule);}
  const observer=new MutationObserver(()=>{if(document.querySelector('dialog[open]')){candidate=null;hide();}schedule();});const observe=()=>{observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['open']});observer.observe(document.documentElement,{attributes:true,attributeFilter:['style','data-font','data-keyboard']});};observe();context.onSuspend(()=>{observer.disconnect();cancelAnimationFrame(frame);clear();});context.onResume(observe);
  context.subscribe(dataStore,schedule,{changesOnly:true,keys:[]});
- return {reply(actions,replayed=false){if(replayed||!context.active||!mobile.matches)return;const ids=actions.filter(a=>a.dailyEvent||a.type===(kind==='habits'?'habit.checked-in':'task.processing')).map(a=>{if(a.dailyEvent)commits.set(a.actionId,{dailyEvent:a.dailyEvent});return a.actionId;});candidate=ids.length?{ids}:null;hide();schedule();},state(value){if(value==='queued'||value==='cancelled'){candidate=null;hide();}}};
+ return {greet(text){if(!context.active||document.hidden||document.querySelector('dialog[open]'))return;companion.querySelector('#companion-dialogue').textContent=text;if(mobile.matches){candidate=null;shown=null;companion.classList.add('is-floating-response');floating.reply();}},reply(actions,replayed=false){if(replayed||!context.active||!mobile.matches)return;const ids=actions.filter(a=>a.dailyEvent||a.type===(kind==='habits'?'habit.checked-in':'task.processing')).map(a=>{if(a.dailyEvent)commits.set(a.actionId,{dailyEvent:a.dailyEvent});return a.actionId;});candidate=ids.length?{ids}:null;hide();schedule();},state(value){if(value==='queued'||value==='cancelled'){candidate=null;hide();}}};
 }

@@ -1,2 +1,2 @@
 // Shared browser-safe adapter logic; backend authentication/limits stay in server.mjs.
-export * from '../assets/ai-errors.mjs?v=shared-affinity-20261102';
+export * from '../assets/ai-errors.mjs?v=greetings-pages-20261102';

@@ -1,8 +1,8 @@
-import {effectiveCharacter} from './characters-model.mjs?v=shared-affinity-20261102';
-import {emptyReplyLibrary,upgradeReplyManifest,validateCategoryKey,validateReplyManifest,DEFAULT_REPLY_POOLS,categoryKey,validateReplyPools} from './reply-manifest.mjs?v=shared-affinity-20261102';
-import {readReplyRows,stageReplyRows} from './reply-store.mjs?v=shared-affinity-20261102';
-import {replyPersonaKey,writeReply,usableReplies} from './reply-model.mjs?v=shared-affinity-20261102';
-import {holdDraft} from './coordination.mjs?v=shared-affinity-20261102';
+import {effectiveCharacter} from './characters-model.mjs?v=greetings-pages-20261102';
+import {emptyReplyLibrary,upgradeReplyManifest,validateCategoryKey,validateReplyManifest,DEFAULT_REPLY_POOLS,categoryKey,validateReplyPools} from './reply-manifest.mjs?v=greetings-pages-20261102';
+import {readReplyRows,stageReplyRows} from './reply-store.mjs?v=greetings-pages-20261102';
+import {replyPersonaKey,writeReply,usableReplies} from './reply-model.mjs?v=greetings-pages-20261102';
+import {holdDraft} from './coordination.mjs?v=greetings-pages-20261102';
 export async function readReplyCategory(store,characterId,key){const state=store.getFields?store.getFields(['companion','replyLibrary','revision']):store.get(),c=effectiveCharacter(state.companion,state.companion.characters.find(c=>c.characterId===characterId));if(!c)throw new Error('角色已刪除。');validateReplyManifest(state.replyLibrary,state.companion);const ref=state.replyLibrary?.version===2?(state.replyLibrary?.characters[characterId]?.categories[key]??null):null;return {character:c,ref,epoch:state.replyLibrary?.epoch??null,rows:await readReplyRows(ref,{characterId,key}),signature:await replyPersonaKey(c)};}
 export async function editReplyCategory(store,{characterId,key,expectedRef,expectedEpoch,expectedSignature,action,values,guard=()=>true}){
  const release=await holdDraft('companion');try{
