@@ -9,7 +9,7 @@ import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relatio
 
 // The shared shell keeps this module lazy. Its CSS is loaded only on this route.
 if(typeof document!=='undefined'){
- const url=new URL('./characters.css?v=companion-scroll-20261102',import.meta.url).href;
+ const url=new URL('./characters.css?v=card-edit-20261102',import.meta.url).href;
  const existing=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===url);
  if(!existing?.sheet){
   existing?.remove();
@@ -237,7 +237,7 @@ export function mountCharacters(root,context){
  greetings=mountGreetings(root,{context,store:dataStore,getCharacter:()=>readError?null:current,onState:()=>{controls();draftNotice();}});
  images=mountCharacterImages(root,context,{getCharacter:()=>readError?null:current,getSettings:()=>snapshot?.settings,store:dataStore,notify,onState:()=>{draftNotice();}});
  context.setHooks({hasDraft:()=>dirty()||Boolean(chat?.hasDraft()),busy:()=>busy||images.busy()||Boolean(replies?.busy())||Boolean(cards?.busy())||Boolean(greetings?.busy())});
- void import('./character-card-page.mjs?v=single-points-20261102').then(m=>{cards=m.mountCharacterCards(root,context,{store:dataStore,getCharacter:()=>readError?null:current,hasRoleDraft:()=>roleDirty,notify,onState:draftNotice});cards.update();}).catch(e=>notify(e.message));
+ void import('./character-card-page.mjs?v=card-edit-20261102').then(m=>{cards=m.mountCharacterCards(root,context,{store:dataStore,getCharacter:()=>readError?null:current,hasRoleDraft:()=>roleDirty,notify,onState:draftNotice,onImported(characterId){if(!context.active)return;if(selected!==characterId){select.value=characterId;select.dispatchEvent(new Event('change'));}if(selected!==characterId){notify('角色卡已匯入；請選取匯入角色後開啟「角色設定」調整。');return;}base=null;draft=null;render(dataStore.getFields(['revision','companion','affinity','replyLibrary','settings']));groupTab(0);if(settingsModal.open($('#character-settings-open')))fitVisible();}});cards.update();}).catch(e=>notify(e.message));
  $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=single-points-20261102').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
  context.subscribe(dataStore,render,{changesOnly:true,keys:['revision','companion','affinity','replyLibrary','settings']});
  context.listen(window,'resize',()=>{fitVisible();sizeChat();},{passive:true});
