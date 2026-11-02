@@ -1,6 +1,6 @@
 import {mountGreetings} from './character-greetings-page.mjs?v=batch-wallet-20261103';
 import {guardedDialog} from './companion-dialog.mjs?v=batch-wallet-20261103';
-import {mountCharacterImages} from './character-images-ui.mjs?v=batch-wallet-20261103';
+import {mountCharacterImages} from './character-images-ui.mjs?v=chat-avatar-20261103';
 import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=batch-wallet-20261103';
 import {dataStore} from './data.mjs?v=batch-wallet-20261103';
 import {holdDraft} from './coordination.mjs?v=batch-wallet-20261103';

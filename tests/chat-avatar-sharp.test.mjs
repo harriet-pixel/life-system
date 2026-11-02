@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {chatAvatarPixels} from '../assets/chat-avatar.mjs';
+test('chat crops cover display pixels and density with bounded resolution',()=>{for(const [width,density] of [[32,1],[44,2],[96,3],[160,2],[320,2],[320,3]]){const pixels=chatAvatarPixels(width,density);assert.ok(pixels>=width*density);assert.ok(pixels<=1024);assert.equal(pixels%64,0);}assert.equal(chatAvatarPixels(1000,4),1024);assert.equal(chatAvatarPixels(NaN,0),64);});
