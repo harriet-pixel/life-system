@@ -1,12 +1,12 @@
-import {mountColorField} from './color-field.mjs?v=stats-affinity-20261031';
-import {mountTaskCompanion} from './task-companion.mjs?v=stats-affinity-20261031';
-import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=stats-affinity-20261031';
-import {createMobileTabPositioner} from './tab-position.mjs?v=stats-affinity-20261031';
-import {dataStore} from './data.mjs?v=stats-affinity-20261031';
-import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=stats-affinity-20261031';
-import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=habit-carry-20261101';
-import {statusButtons} from './habit-quick.mjs?v=habit-carry-20261101';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=stats-affinity-20261031';
+import {mountColorField} from './color-field.mjs?v=daily-polish-20261102';
+import {mountTaskCompanion} from './task-companion.mjs?v=daily-polish-20261102';
+import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=daily-polish-20261102';
+import {createMobileTabPositioner} from './tab-position.mjs?v=daily-polish-20261102';
+import {dataStore} from './data.mjs?v=daily-polish-20261102';
+import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=daily-polish-20261102';
+import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=daily-polish-20261102';
+import {statusButtons} from './habit-quick.mjs?v=daily-polish-20261102';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261102';
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 export function mountHabits(root,context){
  const $=s=>root.querySelector(s),today=()=>taipeiDate();let selectedMonth=today().slice(0,7),half=periodInfo(today()).id.slice(-1),busy=false,formBase='',editingPeriod=null,bonusId=null,settingRevision=null,bonusRevision=null,singleHabit=null,settingsSection='habits',selectedCard=0,selectedYear=taipeiDate().slice(0,4),yearStart=Number(taipeiDate().slice(0,4))-5;
@@ -91,4 +91,5 @@ export function mountHabits(root,context){
  context.onResume(locateToday);context.listen(document,'life-system:route-ready',e=>{if(e.detail.page==='habits')locateToday();});context.listen(document,'click',e=>{const a=e.target.closest('nav a');if(a&&new URL(a.href,location.href).pathname.endsWith('/habits.html'))requestAnimationFrame(locateToday);});
  context.setHooks({reveal:url=>{const value=new URL(url,location.href).searchParams.get('habitId');if(!value)return null;try{const identity=parseHabitIdentity(value);if(identity.periodId!==periodInfo(today()).id)throw new Error('這個習慣連結已不屬於目前週期。');if(!dialog.open)openSettings(identity.index);return null;}catch(error){say(error.message);return null;}}});
  context.subscribe(dataStore,render,{changesOnly:true,keys:['habits'],distinct:true});context.listen(window,'focus',render);context.listen(window,'resize',()=>{if($('#annual').open)renderCharts();});context.listen(document.fonts,'loadingdone',()=>{chartSignature=null;if($('#annual').open)renderCharts();});context.listen(document,'visibilitychange',()=>{if(!document.hidden)render();});let timer;const start=()=>timer=setInterval(render,60000);start();context.onSuspend(()=>clearInterval(timer));context.onResume(start);
+ context.setHooks({onNavigationEntry:()=>{selectTab(0);locateToday();}});
 }

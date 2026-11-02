@@ -188,3 +188,7 @@ html:has(body[data-page="tasks"]){scrollbar-gutter:stable}
 
 .task-date-shortcuts{display:inline-flex;align-items:center;gap:0;flex:none}
 .task-dialog .task-date-shortcuts button{border:0;background:transparent;min-width:40px;min-height:44px;padding:8px;color:var(--color-primary)}
+
+#task-multi-schedule .task-multi-month button{border:0;background:transparent;box-shadow:none;min-width:44px;min-height:44px}#task-multi-schedule .task-inline-days{display:flex;gap:8px;margin-block:8px}
+
+.task-reward-text[data-reward-kind=level]{color:#a66b10}.task-reward-text[data-reward-kind=affinity]{color:#a02157}

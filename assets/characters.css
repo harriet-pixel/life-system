@@ -35,3 +35,7 @@
 #greeting-generate svg{width:24px;height:24px}#greeting-generate{flex:0 0 44px;min-width:44px;min-height:44px;display:inline-grid;place-items:center}
 
 @media(width<1024px){.chat-room{height:var(--chat-room-space,calc(100svh - var(--bottom-nav-height,64px) - 24px));max-height:none}.chat-messages{min-height:0}}
+
+.character-context[hidden]{display:none!important}
+
+.companion-daily-header{display:none}@media(width<1024px){.companion-daily-header{display:grid;gap:1em;margin-bottom:1em}.companion-relation-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:1em;color:var(--color-primary);font-size:1.5rem}.companion-header-notice{height:3.4em;line-height:1.7;font-size:.875rem;min-width:0}.companion-header-notice p{margin:0;height:1.7em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.character-workspace>.page-title-row{height:0;min-height:0;margin:0;padding:0;overflow:hidden}.character-toolbar{margin:0 0 1em}.character-draft:empty{display:none}.companion-header-notice #operation-status{font:inherit;color:var(--color-muted)}}

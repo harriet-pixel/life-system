@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=stats-affinity-20261031';
-import { holdDraft } from './coordination.mjs?v=stats-affinity-20261031';
-import { createProfileImages } from './profile-images.mjs?v=stats-affinity-20261031';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=stats-affinity-20261031';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=stats-affinity-20261031';
-import { undoManager } from './undo.mjs?v=stats-affinity-20261031';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=stats-affinity-20261031';
+import {bindProfileValidation} from './validation.mjs?v=daily-polish-20261102';
+import { holdDraft } from './coordination.mjs?v=daily-polish-20261102';
+import { createProfileImages } from './profile-images.mjs?v=daily-polish-20261102';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=daily-polish-20261102';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=daily-polish-20261102';
+import { undoManager } from './undo.mjs?v=daily-polish-20261102';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=daily-polish-20261102';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

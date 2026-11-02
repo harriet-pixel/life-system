@@ -1,18 +1,18 @@
-import {mountColorField} from './color-field.mjs?v=stats-affinity-20261031';
-import {documentTime} from './cloud-backup-policy.mjs?v=stats-affinity-20261031';
-import {cloudBackupLabel} from './cloud-backup-display.mjs?v=stats-affinity-20261031';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=stats-affinity-20261031';
-import {getCloudBackup} from './cloud-backup.mjs?v=stats-affinity-20261031';
-import {initializeAISettings} from './ai-settings.mjs?v=stats-affinity-20261031';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=stats-affinity-20261031';
-import {dataStore,persistentUndo} from './data.mjs?v=stats-affinity-20261031';
-import {createMobileTabPositioner} from './tab-position.mjs?v=stats-affinity-20261031';
-import {createHistoryView} from './history-view.mjs?v=stats-affinity-20261031';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=stats-affinity-20261031';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=stats-affinity-20261031';
-import {holdDraft} from './coordination.mjs?v=stats-affinity-20261031';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=stats-affinity-20261031';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=stats-affinity-20261031';
+import {mountColorField} from './color-field.mjs?v=daily-polish-20261102';
+import {documentTime} from './cloud-backup-policy.mjs?v=daily-polish-20261102';
+import {cloudBackupLabel} from './cloud-backup-display.mjs?v=daily-polish-20261102';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261102';
+import {getCloudBackup} from './cloud-backup.mjs?v=daily-polish-20261102';
+import {initializeAISettings} from './ai-settings.mjs?v=daily-polish-20261102';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=daily-polish-20261102';
+import {dataStore,persistentUndo} from './data.mjs?v=daily-polish-20261102';
+import {createMobileTabPositioner} from './tab-position.mjs?v=daily-polish-20261102';
+import {createHistoryView} from './history-view.mjs?v=daily-polish-20261102';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=daily-polish-20261102';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=daily-polish-20261102';
+import {holdDraft} from './coordination.mjs?v=daily-polish-20261102';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=daily-polish-20261102';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=daily-polish-20261102';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

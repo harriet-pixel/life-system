@@ -1,18 +1,18 @@
-import {appendStatsAffinity} from './stats-affinity.mjs?v=stats-affinity-20261031';
-import {nextHomeGreeting} from './characters-model.mjs?v=stats-affinity-20261031';
-import {mountHabitQuick} from './habit-quick.mjs?v=habit-carry-20261101';
-import {renderHomeToday} from './home-today.mjs?v=stats-affinity-20261031';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=stats-affinity-20261031';
-import {createTaskEditor} from './task-editor.mjs?v=stats-affinity-20261031';
-import {createCategoryManager} from './task-categories.mjs?v=stats-affinity-20261031';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=stats-affinity-20261031';
-import {taskActions} from './task-actions.mjs?v=stats-affinity-20261031';
-import {localDate} from './tasks-model.mjs?v=stats-affinity-20261031';
-import { createMobileTabPositioner } from './tab-position.mjs?v=stats-affinity-20261031';
-import { createActivityHeightSync } from './activity-height.mjs?v=stats-affinity-20261031';
-import { undoManager } from './undo.mjs?v=stats-affinity-20261031';
-import {createSharedCompanionView} from './companion-events.mjs?v=stats-affinity-20261031';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=stats-affinity-20261031';
+import {appendStatsAffinity} from './stats-affinity.mjs?v=daily-polish-20261102';
+import {nextHomeGreeting} from './characters-model.mjs?v=daily-polish-20261102';
+import {mountHabitQuick} from './habit-quick.mjs?v=daily-polish-20261102';
+import {renderHomeToday} from './home-today.mjs?v=daily-polish-20261102';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=daily-polish-20261102';
+import {createTaskEditor} from './task-editor.mjs?v=daily-polish-20261102';
+import {createCategoryManager} from './task-categories.mjs?v=daily-polish-20261102';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=daily-polish-20261102';
+import {taskActions} from './task-actions.mjs?v=daily-polish-20261102';
+import {localDate} from './tasks-model.mjs?v=daily-polish-20261102';
+import { createMobileTabPositioner } from './tab-position.mjs?v=daily-polish-20261102';
+import { createActivityHeightSync } from './activity-height.mjs?v=daily-polish-20261102';
+import { undoManager } from './undo.mjs?v=daily-polish-20261102';
+import {createSharedCompanionView} from './companion-events.mjs?v=daily-polish-20261102';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=daily-polish-20261102';
 
 
 export function mountHome(root,context){
@@ -40,7 +40,7 @@ function showPlaceholder(label) {
 }
 let dailyVisual=null,visualRequest=0;
 let greetingIdentity='';
-function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=stats-affinity-20261031').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=daily-polish-20261102').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
 context.onSuspend(()=>visualRequest++);
 function showHomeGreeting(actor){dialogue.textContent=currentGreeting;if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
 context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){if(greetingIdentity)currentGreeting=nextHomeGreeting(c);greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
