@@ -9,7 +9,7 @@ import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relatio
 
 // The shared shell keeps this module lazy. Its CSS is loaded only on this route.
 if(typeof document!=='undefined'){
- const url=new URL('./characters.css?v=single-points-20261102',import.meta.url).href;
+ const url=new URL('./characters.css?v=companion-scroll-20261102',import.meta.url).href;
  const existing=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===url);
  if(!existing?.sheet){
   existing?.remove();
@@ -26,7 +26,7 @@ export function mountCharacters(root,context){
  let snapshot,selected=null,base=null,draft=null,stage=1,current=null,readError=false;
  let roleDirty=false,policyDirty=false,policyBase=null,busy=false,release=null,held=null,draftToken=0,optionSignature='';
  let images,chat=null,chatImport=null,replies=null,replyImport=null,cards=null,cardImport=null,greetings=null;
- const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=single-points-20261102').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,notify,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;notify('聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。');throw error;});};
+ const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=companion-scroll-20261102').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,notify,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;notify('聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。');throw error;});};
  const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft())||Boolean(replies?.hasDraft())||Boolean(cards?.hasDraft())||Boolean(greetings?.hasDraft());
  const notify=message=>{$('#operation-status').textContent=message;$('#operation-status').title=message;};
  const notice=$('#operation-status'),mobileHeader=matchMedia('(width < 1024px)');const headerActions=['#character-create','#character-activate'].map(selector=>{const button=$(selector),anchor=document.createComment('desktop companion action');button.before(anchor);return {button,anchor};});const placeNotice=()=>{if(mobileHeader.matches){$('[data-companion-notice]').append(notice);$('[data-companion-actions]').append(...headerActions.map(a=>a.button));}else{$('[data-companion-desktop-notice]').append(notice);headerActions.forEach(({button,anchor})=>anchor.after(button));}};context.listen(mobileHeader,'change',placeNotice);context.onResume(placeNotice);placeNotice();
@@ -219,8 +219,15 @@ export function mountCharacters(root,context){
  const dangerModal=guardedDialog($('#character-danger-dialog'),{busy:()=>busy});$('#character-danger-open').onclick=()=>dangerModal.open($('#character-danger-open'));$('#character-danger-close').onclick=dangerModal.close;
  const groups=['basic','core','relation','styles'],groupLabels=['A 固定特質','B 角色表現','C 關係設定','D 七階段關係'];
  const groupButtons=groups.map((id,i)=>{const b=document.createElement('button');b.type='button';b.id='persona-tab-'+i;b.setAttribute('role','tab');b.setAttribute('aria-controls','character-'+id+'-section');b.textContent=groupLabels[i];$('#character-'+id+'-section').setAttribute('aria-labelledby',b.id);$('#persona-tabs').append(b);return b;});
- function groupTab(index){groupButtons.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;$('#character-'+groups[i]+'-section').hidden=i!==index;});fitVisible();}
+ function groupTab(index){groupButtons.forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1;$('#character-'+groups[i]+'-section').hidden=i!==index;});const strip=$('#persona-tabs'),rect=groupButtons[index].getBoundingClientRect(),bounds=strip.getBoundingClientRect();strip.scrollLeft+=rect.left<bounds.left?rect.left-bounds.left:rect.right>bounds.right?rect.right-bounds.right:0;fitVisible();}
  groupButtons.forEach((b,i)=>{b.onclick=()=>groupTab(i);b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const n=e.key==='Home'?0:e.key==='End'?3:(i+(e.key==='ArrowRight'?1:3))%4;groupTab(n);groupButtons[n].focus();};});groupTab(0);
+ // Touch uses native overflow; mouse dragging is local to the settings tab strip.
+ const personaTabs=$('#persona-tabs');let tabDrag=null,dragged=false;
+ personaTabs.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;dragged=false;tabDrag={id:e.pointerId,x:e.clientX,left:personaTabs.scrollLeft};});
+ personaTabs.addEventListener('pointermove',e=>{if(tabDrag?.id!==e.pointerId||!(e.buttons&1))return;const dx=e.clientX-tabDrag.x;if(!dragged&&Math.abs(dx)<6)return;dragged=true;personaTabs.setPointerCapture(e.pointerId);personaTabs.classList.add('is-dragging');personaTabs.scrollLeft=tabDrag.left-dx;e.preventDefault();});
+ const stopTabDrag=()=>{tabDrag=null;personaTabs.classList.remove('is-dragging');};
+ personaTabs.addEventListener('pointerup',stopTabDrag);personaTabs.addEventListener('pointercancel',()=>{stopTabDrag();dragged=false;});
+ personaTabs.addEventListener('click',e=>{if(dragged){dragged=false;e.preventDefault();e.stopImmediatePropagation();}},true);
  const tabs=[$('#chat-tab'),$('#character-tab')];
  function tab(index){
   tabs.forEach((button,i)=>{button.setAttribute('aria-selected',String(i===index));button.tabIndex=i===index?0:-1;$('#'+button.getAttribute('aria-controls')).hidden=i!==index;});

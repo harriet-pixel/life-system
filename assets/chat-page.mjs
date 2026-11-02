@@ -35,6 +35,8 @@ export function mountChat(root,context,{store,getCharacter,getSnapshot,images,no
  const controller=createChatController({store,connection,getCharacter,isVisible:visible,onChange:next=>render(next),onError:error,onUserSaved:turn=>{const origin=turn.characterId+':'+turn.snapshot.characterCreatedAt;if(drafts.get(origin)?.trim()===turn.user.text)drafts.set(origin,'');if(viewed===origin&&input.value.trim()===turn.user.text)input.value='';onDraft();}});
  async function run(work){if(sending)return;sending=true;notify('');controls();try{await work();}catch(e){error(e.message);}finally{sending=false;render(ui);}}
  input.addEventListener('input',()=>{if(viewed)drafts.set(viewed,input.value);controls();onDraft();});
+ const jump=document.createElement('button');jump.type='button';jump.className='chat-jump-input';jump.setAttribute('aria-label','移至最下方訊息輸入框');jump.title='移至輸入框';jump.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4v14m-6-6 6 6 6-6M5 21h14"/></svg>';$('#chat-panel').append(jump);
+ jump.onclick=()=>{const behavior=matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth';area.scrollTop=area.scrollHeight;if(viewed)positions.set(viewed,area.scrollTop);if(!input.disabled)input.focus({preventScroll:true});root.querySelector('.chat-composer').scrollIntoView({behavior,block:'end'});};
  send.onclick=()=>void run(()=>controller.send(input.value));
  input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){event.preventDefault();if(!send.disabled)send.click();}});
  $('#chat-local-recover').onclick=()=>void run(()=>controller.retry($('#chat-local-recover').dataset.turnId,true));
