@@ -1,10 +1,10 @@
-import {personaFingerprintInput} from './persona-prompt.mjs?v=chat-layout-20261102';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-layout-20261102';
-import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=chat-layout-20261102';
-import {usableReplies,pickReply,replyPrompt,parseDailyReply,substituteReply} from './reply-model.mjs?v=chat-layout-20261102';
-import {readReplyCategory} from './reply-service.mjs?v=chat-layout-20261102';
-import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=chat-layout-20261102';
-import {validDailySource,dailyContext} from './daily-events.mjs?v=chat-layout-20261102';
+import {personaFingerprintInput} from './persona-prompt.mjs?v=batch-wallet-20261103';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=batch-wallet-20261103';
+import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=batch-wallet-20261103';
+import {usableReplies,pickReply,replyPrompt,parseDailyReply,substituteReply} from './reply-model.mjs?v=batch-wallet-20261103';
+import {readReplyCategory} from './reply-service.mjs?v=batch-wallet-20261103';
+import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=batch-wallet-20261103';
+import {validDailySource,dailyContext} from './daily-events.mjs?v=batch-wallet-20261103';
 const last=new Map();export const DAILY_FALLBACK='慢慢來，依照自己的步調繼續就好。';
 const snapshot=(store,event)=>store.getFields?store.getFields(event?.domain==='wallet'?['revision','companion','replyLibrary','walletRecord:'+event.sourceId]:['revision','companion','replyLibrary','tasks','habits','profile']):store.get();
 export async function dailyResponse(store,event,{valid=()=>true,random=Math.random,connection=getSharedAIConnection(),batch=[event],onCancel=()=>{}}={}){

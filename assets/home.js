@@ -1,18 +1,18 @@
-import {appendStatsAffinity} from './stats-affinity.mjs?v=chat-layout-20261102';
-import {nextHomeGreeting} from './characters-model.mjs?v=chat-layout-20261102';
-import {mountHabitQuick} from './habit-quick.mjs?v=chat-layout-20261102';
-import {renderHomeToday} from './home-today.mjs?v=chat-layout-20261102';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=chat-layout-20261102';
-import {createTaskEditor} from './task-editor.mjs?v=chat-layout-20261102';
-import {createCategoryManager} from './task-categories.mjs?v=chat-layout-20261102';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=chat-layout-20261102';
-import {taskActions} from './task-actions.mjs?v=chat-layout-20261102';
-import {localDate} from './tasks-model.mjs?v=chat-layout-20261102';
-import { createMobileTabPositioner } from './tab-position.mjs?v=chat-layout-20261102';
-import { createActivityHeightSync } from './activity-height.mjs?v=chat-layout-20261102';
-import { undoManager } from './undo.mjs?v=chat-layout-20261102';
-import {createSharedCompanionView} from './companion-events.mjs?v=chat-layout-20261102';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=chat-layout-20261102';
+import {appendStatsAffinity} from './stats-affinity.mjs?v=batch-wallet-20261103';
+import {nextHomeGreeting} from './characters-model.mjs?v=batch-wallet-20261103';
+import {mountHabitQuick} from './habit-quick.mjs?v=batch-wallet-20261103';
+import {renderHomeToday} from './home-today.mjs?v=batch-wallet-20261103';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=batch-wallet-20261103';
+import {createTaskEditor} from './task-editor.mjs?v=batch-wallet-20261103';
+import {createCategoryManager} from './task-categories.mjs?v=batch-wallet-20261103';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=batch-wallet-20261103';
+import {taskActions} from './task-actions.mjs?v=batch-wallet-20261103';
+import {localDate} from './tasks-model.mjs?v=batch-wallet-20261103';
+import { createMobileTabPositioner } from './tab-position.mjs?v=batch-wallet-20261103';
+import { createActivityHeightSync } from './activity-height.mjs?v=batch-wallet-20261103';
+import { undoManager } from './undo.mjs?v=batch-wallet-20261103';
+import {createSharedCompanionView} from './companion-events.mjs?v=batch-wallet-20261103';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=batch-wallet-20261103';
 
 
 export function mountHome(root,context){
@@ -40,7 +40,7 @@ function showPlaceholder(label) {
 }
 let dailyVisual=null,visualRequest=0;
 let greetingIdentity='';
-function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=chat-layout-20261102').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=batch-wallet-20261103').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
 context.onSuspend(()=>visualRequest++);
 function showHomeGreeting(actor){dialogue.textContent=currentGreeting;if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
 context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){if(greetingIdentity)currentGreeting=nextHomeGreeting(c);greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});

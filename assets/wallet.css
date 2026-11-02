@@ -10,3 +10,7 @@
 #main[data-page-view=wallet] .wallet-record-name{border:0;border-radius:0;background:transparent;box-shadow:none;cursor:pointer}
 #main[data-page-view=wallet] .wallet-record-name:is(:hover,:active,[data-pressed]){border:0;background:transparent;box-shadow:none}
 #main[data-page-view=wallet] .wallet-record-name:not(:focus-visible){outline:none}
+
+#wallet-spend[open]{height:min(640px,calc(var(--task-dialog-height,100dvh) - 24px));display:flex;flex-direction:column;overflow:hidden}#wallet-spend-form{flex:1;min-height:0;height:100%;max-height:none}#wallet-spend-form>header,#wallet-spend-form>footer{flex:0 0 auto}#wallet-spend-form>.wallet-dialog-content{flex:1;min-height:0;overflow:auto}#wallet-spend .wallet-recurring-choice{border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--color-primary);padding:8px 0}#wallet-spend .wallet-recurring-choice[aria-pressed=true]{font-weight:700;text-decoration:underline;text-underline-offset:5px}#wallet-spend .wallet-recurring-actions{display:flex;align-items:center;justify-content:flex-start;gap:8px}#wallet-spend #wallet-edit-recurring{border:0;background:transparent;width:44px;flex:0 0 44px;padding:10px}#wallet-edit-recurring svg{width:24px;height:24px}.wallet-item-note{display:block;font-size:var(--text-small);color:var(--color-muted);font-weight:400;white-space:pre-wrap;text-decoration:none}
+
+#wallet-repeat-panel input[name=name]{border:0;border-radius:0;background:transparent;box-shadow:none;padding-inline:0}
