@@ -1,6 +1,6 @@
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=task-instances-20261103';
-import {validDailySource} from './daily-events.mjs?v=task-instances-20261103';
-import {dataStore} from './data.mjs?v=task-instances-20261103';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=task-yesterday-20261103';
+import {validDailySource} from './daily-events.mjs?v=task-yesterday-20261103';
+import {dataStore} from './data.mjs?v=task-yesterday-20261103';
 // Presentation only: formal local commits and their paired character replies.
 // Recovery produces a fresh reply; route restore and storage sync never replay one.
 export function createMobileTaskResponse(root,context,{kind='tasks',selector='.tasks-dashboard>.companion'}={}){
