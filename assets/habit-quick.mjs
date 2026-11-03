@@ -1,8 +1,8 @@
-import {setOperationNotice} from './operation-notice.mjs?v=chat-edge-20261103';
-import {todayBonusTotals} from './habit-bonus-summary.mjs?v=chat-edge-20261103';
-import {dataStore} from './data.mjs?v=chat-edge-20261103';
-import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=chat-edge-20261103';
-import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=chat-edge-20261103';
+import {setOperationNotice} from './operation-notice.mjs?v=task-instances-20261103';
+import {todayBonusTotals} from './habit-bonus-summary.mjs?v=task-instances-20261103';
+import {dataStore} from './data.mjs?v=task-instances-20261103';
+import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=task-instances-20261103';
+import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=task-instances-20261103';
 const pendingChoices=new Map();
 export function statusButtons(current,action,disabled=false,identity=null){
  const pending=identity&&pendingChoices.get(identity),group=document.createElement('div');group.className='habit-statuses';group.setAttribute('role','group');group.setAttribute('aria-label','完成程度');

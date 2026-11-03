@@ -1,8 +1,8 @@
-import {mountChatViewport} from './chat-viewport.mjs?v=chat-edge-20261103';
-import {mountChatDisplaySettings} from './chat-display-settings.mjs?v=chat-edge-20261103';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=chat-edge-20261103';
-import {createChatController,chatConnected} from './chat-controller.mjs?v=chat-edge-20261103';
-import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=chat-edge-20261103';
+import {mountChatViewport} from './chat-viewport.mjs?v=task-instances-20261103';
+import {mountChatDisplaySettings} from './chat-display-settings.mjs?v=task-instances-20261103';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-instances-20261103';
+import {createChatController,chatConnected} from './chat-controller.mjs?v=task-instances-20261103';
+import {CHAT_DOM_LIMIT,CHAT_INPUT_LIMIT} from './chat-model.mjs?v=task-instances-20261103';
 export function mountChat(root,context,{store,getCharacter,getSnapshot,images,notify,onDraft}){
  const $=s=>root.querySelector(s),input=$('#chat-input'),send=$('#chat-send'),area=$('#chat-messages');
  const connection=getSharedAIConnection(),drafts=new Map(),nodes=new Map();let viewed=null,rendered=null,subscription=null,active=false,ui={turns:[],messages:[],busy:false,loading:false,connection:connection.getState()},sending=false,scrollBottom=true;

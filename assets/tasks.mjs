@@ -1,18 +1,18 @@
-import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=chat-edge-20261103';
-import {createListSettings} from './task-day-settings.mjs?v=chat-edge-20261103';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=chat-edge-20261103';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=chat-edge-20261103';
-import {createDateResidents} from './task-date-residents.mjs?v=chat-edge-20261103';
-import {createActivityHeightSync} from './activity-height.mjs?v=chat-edge-20261103';
-import {createMobileTabPositioner} from './tab-position.mjs?v=chat-edge-20261103';
-import {createMultiSchedule} from './task-multi-schedule.mjs?v=chat-edge-20261103';
-import {createTaskPool} from './task-pool.mjs?v=chat-edge-20261103';
-import {dataStore} from './data.mjs?v=chat-edge-20261103';
-import {localDate,addDays,rowsForDate,weekday,isOverdue} from './tasks-model.mjs?v=chat-edge-20261103';
-import {taskActions} from './task-actions.mjs?v=chat-edge-20261103';
-import {mountTaskCompanion} from './task-companion.mjs?v=chat-edge-20261103';
-import {createTaskEditor} from './task-editor.mjs?v=chat-edge-20261103';
-import {createCategoryManager} from './task-categories.mjs?v=chat-edge-20261103';
+import {boardTasks,listSettings,sortDay,spacingPixels} from './task-view-model.mjs?v=task-instances-20261103';
+import {createListSettings} from './task-day-settings.mjs?v=task-instances-20261103';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=task-instances-20261103';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-instances-20261103';
+import {createDateResidents} from './task-date-residents.mjs?v=task-instances-20261103';
+import {createActivityHeightSync} from './activity-height.mjs?v=task-instances-20261103';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-instances-20261103';
+import {createMultiSchedule} from './task-multi-schedule.mjs?v=task-instances-20261103';
+import {createTaskPool} from './task-pool.mjs?v=task-instances-20261103';
+import {dataStore} from './data.mjs?v=task-instances-20261103';
+import {localDate,addDays,rowsForDate,weekday,isOverdue} from './tasks-model.mjs?v=task-instances-20261103';
+import {taskActions} from './task-actions.mjs?v=task-instances-20261103';
+import {mountTaskCompanion} from './task-companion.mjs?v=task-instances-20261103';
+import {createTaskEditor} from './task-editor.mjs?v=task-instances-20261103';
+import {createCategoryManager} from './task-categories.mjs?v=task-instances-20261103';
 export function mountTasks(root,context){
  const $=s=>root.querySelector(s),actions=taskActions(root,context);mountTaskCompanion(root,context);
  const desktop=matchMedia('(min-width:1024px)');
@@ -40,7 +40,7 @@ export function mountTasks(root,context){
  const configureSettings=(date=null)=>{dateEntry=Boolean(date);settingsOpen=true;panelTitle.replaceChildren(...(dateEntry?[el('span','新增事件至 ','task-date-title-prefix'),document.createTextNode(date)]:[document.createTextNode('待辦事項設定')]));tabs.setAttribute('aria-label',dateEntry?'新增方式':'待辦事項設定');boardTab.hidden=!dateEntry;listTab.hidden=dateEntry;categoryTab.textContent=dateEntry?'重複性事件':'管理分類';panelHeader.hidden=false;panel.classList.add('task-settings-panel');panel.classList.toggle('task-global-settings',!dateEntry);panel.classList.toggle('task-date-entry',dateEntry);sizePanel();tabs.hidden=false;eventPane.setAttribute('role','tabpanel');eventPane.setAttribute('aria-labelledby',eventTab.id);const other=dateEntry?residentPane:categoryPane;other.setAttribute('role','tabpanel');other.setAttribute('aria-labelledby',categoryTab.id);if(dateEntry){residents.open(date);board.open(date);boardPane.setAttribute('role','tabpanel');boardPane.setAttribute('aria-labelledby',boardTab.id);}else{listEditor.load();listPane.setAttribute('role','tabpanel');listPane.setAttribute('aria-labelledby',listTab.id);categories.attach(categoryPane,{pause:()=>editor.pause(),resume:()=>{editor.updateCategories();editor.resume();},close:()=>panel.close()});}selectTab('event');};
  panel.addEventListener('cancel',event=>{if(categories.busy()||residents.busy()||board.busy()||listEditor.busy()||!warnDraft())event.preventDefault();});
  panel.addEventListener('close',()=>{if(editor.hasDraft())return;if(settingsOpen&&!dateEntry)categories.detach();settingsOpen=false;dateEntry=false;tabs.hidden=true;panelHeader.hidden=true;panel.classList.remove('task-settings-panel','task-global-settings','task-date-entry');eventPane.hidden=false;categoryPane.hidden=true;residentPane.hidden=true;boardPane.hidden=true;listPane.hidden=true;boardTab.hidden=true;listTab.hidden=true;eventPane.removeAttribute('role');eventPane.removeAttribute('aria-labelledby');panel.setAttribute('aria-labelledby','task-editor-title');});
- async function openEditor(task=null,date=null,dateButton=false){await editor.open(task,date);if(dateButton)configureSettings(date);else if(!task&&!desktop.matches)configureSettings();}
+ async function openEditor(task=null,date=null,dateButton=false,executionId=null){await editor.open(task,date,executionId);if(dateButton)configureSettings(date);else if(!task&&!desktop.matches)configureSettings();}
  const openSettings=async()=>{await editor.open();configureSettings();};$('#task-settings').onclick=()=>openSettings().catch(e=>actions.say(e.message));$('#open-task-settings').onclick=()=>openSettings().catch(e=>actions.say(e.message));
  panel.querySelector('#task-add-category').onclick=()=>{const trigger=panel.querySelector('#task-add-category');editor.pause();categories.create(id=>{editor.updateCategories();if(id)editor.selectCategory(id);editor.resume();trigger.focus({preventScroll:true});});};
  context.setHooks({hasDraft:()=>editor.hasDraft()||categories.hasDraft(),busy:()=>context.active&&(editor.busy()||categories.busy()||Boolean(completionBusy?.())||pool.busy()||residents.busy()||board.busy()||listEditor.busy())});
@@ -55,36 +55,36 @@ export function mountTasks(root,context){
  menu.addEventListener('pointerdown',event=>{outsidePress=outsideMenu(event);});menu.addEventListener('click',event=>{if(outsidePress&&outsideMenu(event))menu.close();outsidePress=false;});
  menu.addEventListener('close',()=>{if(menuFocus?.isConnected)menuFocus.focus({preventScroll:true});else $(desktop.matches?'#new-task':'#task-settings').focus({preventScroll:true});});root.append(menu);
  function openMenu(task,o=null,pool=false){menuFocus=document.activeElement;menu.replaceChildren(el('h2',task.name));menu.firstElementChild.id='task-item-menu-title';const color=dataStore.getFields(['tasks']).tasks.categories.find(c=>c.id===task.categoryId)?.color;if(color)menu.style.setProperty('--menu-task-color',color);else menu.style.removeProperty('--menu-task-color');menu.classList.toggle('task-pool-menu',pool);const controls=el('div',undefined,'task-menu-actions');
-  if(pool)controls.append(button('安排日期',()=>{menu.close();if(task.kind==='repeat'&&!o)multiSchedule.open(task);else multiSchedule.open(task,{single:true,from:o?.date??null,date:selected});}));
-  controls.append(button('編輯事件',()=>{menu.close();return openEditor(task,o?.date??null);}));
-  const remove=button(task.kind==='repeat'&&o?'刪除此日安排':'刪除事件',async()=>{
-   if(o?.status==='done'){menu.close();await actions.deleteCompleted(task.id,o.date);return;}
-   if(!confirm(task.kind==='repeat'&&o?'只刪除此日安排？其他日期與週期保留。':task.kind==='repeat'?'刪除整個常駐任務及未完成安排？已完成歷史與獎勵保留。':'刪除此事件？'))return;
-   await actions.attempt(()=>actions.service.remove(task.id,o?.date??null));menu.close();
+  if(pool)controls.append(button('安排日期',()=>{menu.close();if(task.kind==='repeat'&&!o)multiSchedule.open(task);else multiSchedule.open(task,{single:true,from:o?.date??null,executionId:o?.id??null,date:selected});}));
+  controls.append(button('編輯事件',()=>{menu.close();return openEditor(task,o?.date??null,false,o?.id);}));
+  const remove=button(task.kind==='repeat'&&o?'刪除此筆安排':'刪除事件',async()=>{
+   if(o?.status==='done'){menu.close();await actions.deleteCompleted(task.id,o.date,o.id);return;}
+   if(!confirm(task.kind==='repeat'&&o?'只刪除此筆安排？同日其他筆、其他日期與週期保留。':task.kind==='repeat'?'刪除整個常駐任務及未完成安排？已完成歷史與獎勵保留。':'刪除此事件？'))return;
+   await actions.attempt(()=>actions.service.remove(task.id,o?.date??null,o?.id));menu.close();
   });controls.append(remove);
-  if(task.kind==='repeat'&&o)controls.append(button('刪除整個重複事項',async()=>{if(!confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留；如需撤回某次完成，請刪除此日安排。'))return;await actions.attempt(()=>actions.service.remove(task.id));menu.close();}));
-  if(pool){const complete=button('完成事件',async()=>{const today=localDate();if(o&&o.date!==today)await actions.service.arrange(task.id,today,o.date);menu.close();return actions.complete(task.id,today);});complete.className='task-pool-complete';complete.disabled=Boolean(o&&o.status!=='pending')||actions.isPending(task.id,o?.date??localDate());controls.append(complete);}
+  if(task.kind==='repeat'&&o)controls.append(button('刪除整個重複事項',async()=>{if(!confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留；如需撤回某次完成，請刪除此筆安排。'))return;await actions.attempt(()=>actions.service.remove(task.id));menu.close();}));
+  if(pool){const complete=button('完成事件',async()=>{const today=localDate();let executionId=o?.id;if(o&&o.date!==today)executionId=await actions.service.arrange(task.id,today,o.date,o.id);else if(!o&&task.kind==='repeat')executionId=await actions.service.arrange(task.id,today);menu.close();return actions.complete(task.id,today,executionId);});complete.className='task-pool-complete';complete.disabled=Boolean(o&&o.status!=='pending')||actions.isPending(task.id,o?.date??localDate(),o?.id);controls.append(complete);}
   if(o?.status==='done')menu.append(el('p','刪除此完成安排會以當次保存的獎勵資料完整撤回；不影響其他次數。','small-note'));
   const closeButton=button('關閉',()=>menu.close());closeButton.className='task-item-close';closeButton.textContent='×';closeButton.setAttribute('aria-label','關閉');menu.append(closeButton,controls);menu.showModal();
  }
  const pool=createTaskPool(root,context,actions,{openMenu,askDate});
- function dailyRow(r){const {task,occurrence:o}=r,node=el('article',undefined,'task-daily-row');node.dataset.taskId=task.id;node.dataset.date=o.date;
-  const check=el('label',undefined,'task-check-control'),input=el('input');input.type='checkbox';const pending=actions.isPending(task.id,o.date);input.checked=o.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));node.classList.toggle('is-processing',pending);node.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${r.name}`:`${input.checked?'取消完成':'完成'} ${r.name}`);input.onchange=()=>{if(actions.isPending(task.id,o.date))return;input.checked=true;if(o.status==='done')actions.cancel(task.id,o.date).catch(()=>{});else actions.complete(task.id,o.date,node);};check.append(input);
+ function dailyRow(r){const {task,occurrence:o}=r,node=el('article',undefined,'task-daily-row');node.dataset.taskId=task.id;node.dataset.executionId=o.id;node.dataset.date=o.date;
+  const check=el('label',undefined,'task-check-control'),input=el('input');input.type='checkbox';const pending=actions.isPending(task.id,o.date,o.id);input.checked=o.status==='done'||pending;input.disabled=pending;input.setAttribute('aria-busy',String(pending));node.classList.toggle('is-processing',pending);node.setAttribute('aria-busy',String(pending));input.setAttribute('aria-label',pending?`處理中，尚未提交完成 ${r.name}`:`${input.checked?'取消完成':'完成'} ${r.name}`);input.onchange=()=>{if(actions.isPending(task.id,o.date,o.id))return;input.checked=true;if(o.status==='done')actions.cancel(task.id,o.date,o.id).catch(()=>{});else actions.complete(task.id,o.date,o.id);};check.append(input);
   const name=button(r.name,()=>openMenu(task,o));name.className='task-daily-name';if(r.brief){const brief=el('span',r.brief,'task-occurrence-brief');name.append(brief);}const category=renderingData.categories.find(c=>c.id===task.categoryId);if(category?.color)name.style.color=category.color;node.append(check,name);return node;
  }
  function choose(date,follow=false){selected=date;followToday=follow;month=date.slice(0,7);limits={};render();}
- function render(snapshot){const renderedAt=performance.now();syncCalendar();const focused=document.activeElement,focusedDate=focused?.closest('#month-grid')?focused.getAttribute('aria-label')?.slice(0,10):null,focusedRow=focused?.closest('.task-daily-row'),focusedTask=focusedRow?.dataset.taskId,focusedRowDate=focusedRow?.dataset.date,focusedCheckbox=focused?.matches('input[type=checkbox]');const today=localDate();if(today!==lastToday){if(followToday&&month===lastToday.slice(0,7))month=today.slice(0,7);if(followToday&&selected===lastToday)selected=today;lastToday=today;}const data=snapshot?.tasks??dataStore.getFields(['tasks']).tasks;renderingData=data;const visible=selected===today?[today,addDays(today,1)]:[addDays(selected,-1),selected,addDays(selected,1)];
+ function render(snapshot){const renderedAt=performance.now();syncCalendar();const focused=document.activeElement,focusedDate=focused?.closest('#month-grid')?focused.getAttribute('aria-label')?.slice(0,10):null,focusedRow=focused?.closest('.task-daily-row'),focusedTask=focusedRow?.dataset.taskId,focusedExecution=focusedRow?.dataset.executionId,focusedRowDate=focusedRow?.dataset.date,focusedCheckbox=focused?.matches('input[type=checkbox]');const today=localDate();if(today!==lastToday){if(followToday&&month===lastToday.slice(0,7))month=today.slice(0,7);if(followToday&&selected===lastToday)selected=today;lastToday=today;}const data=snapshot?.tasks??dataStore.getFields(['tasks']).tasks;renderingData=data;const visible=selected===today?[today,addDays(today,1)]:[addDays(selected,-1),selected,addDays(selected,1)];
  $('#schedule').replaceChildren(...visible.map(date=>{
   const day=el('section',undefined,'task-day'),heading=el('div',undefined,'task-day-heading');day.dataset.date=date;
   const title=`${date}（${['日','一','二','三','四','五','六'][weekday(date)]}）${date===today?' 今天':date===addDays(today,-1)?' 昨天':date===addDays(today,1)?' 明天':''}`;
   const add=button('＋',()=>openEditor(null,date,true));add.className='task-day-add';add.setAttribute('aria-label',`新增 ${date} 的事項`);heading.append(el('h2',title),add);day.append(heading);
   const prefs=listSettings(data);day.dataset.spacing=prefs.spacing;day.style.setProperty('--task-row-space',spacingPixels(prefs.spacing)+'px');const all=rowsForDate(data,date),moved=all.some(r=>isOverdue(r.occurrence,today)),rows=sortDay(data,all.filter(r=>!isOverdue(r.occurrence,today)),prefs);if(!rows.length)day.append(el('p',moved?'逾期待辦已移至懸而未決。':'尚無事項','small-note'));const limit=limits[date]??30;
   rows.slice(0,limit).forEach(r=>day.append(dailyRow(r)));if(rows.length>limit)day.append(button(`顯示更多（共 ${rows.length} 筆）`,()=>{limits[date]=limit+30;render();}));
-  day.ondragover=e=>e.preventDefault();day.ondrop=e=>{e.preventDefault();try{const item=JSON.parse(e.dataTransfer.getData('text/plain'));run(()=>actions.service.arrange(item.taskId,date,item.date));}catch{actions.say('無法辨識拖曳的事項。');}};return day;
+  day.ondragover=e=>e.preventDefault();day.ondrop=e=>{e.preventDefault();try{const item=JSON.parse(e.dataTransfer.getData('text/plain'));run(()=>actions.service.arrange(item.taskId,date,item.date,item.executionId));}catch{actions.say('無法辨識拖曳的事項。');}};return day;
  }));
  const boardCount=boardTasks(data).length;$('[data-board-count]').textContent=boardCount;$('.task-board-count').title=`任務看板 ${boardCount} 則`;pool.render(data,today);
  $('#month-label').textContent=month;const first=month+'-01',next=new Date(first+'T12:00:00');next.setMonth(next.getMonth()+1);const count=Number(addDays(localDate(next),-1).slice(-2));const cells=[];for(const name of ['一','二','三','四','五','六','日'])cells.push(el('span',name));for(let i=0;i<(weekday(first)+6)%7;i++)cells.push(el('span',''));for(let i=1;i<=count;i++){const date=month+'-'+String(i).padStart(2,'0');const b=button(String(i),()=>choose(date));b.setAttribute('aria-label',`${date}${date===today?' 今天':''}${date===selected?' 已選取':''}`);if(date===today)b.setAttribute('aria-current','date');b.setAttribute('aria-pressed',String(date===selected));cells.push(b);}$('#month-grid').replaceChildren(...cells);
- if(!focused?.isConnected&&!root.querySelector('dialog[open]')){const replacement=focusedDate?[...$('#month-grid').querySelectorAll('button')].find(b=>b.getAttribute('aria-label').startsWith(focusedDate)):focusedTask?[...$('#schedule').querySelectorAll('.task-daily-row')].find(n=>n.dataset.taskId===focusedTask&&n.dataset.date===focusedRowDate)?.querySelector(focusedCheckbox?'input':'.task-daily-name'):null;const target=replacement?.disabled?replacement.closest('.task-daily-row')?.querySelector('.task-daily-name'):replacement;target?.focus({preventScroll:true});}
+ if(!focused?.isConnected&&!root.querySelector('dialog[open]')){const replacement=focusedDate?[...$('#month-grid').querySelectorAll('button')].find(b=>b.getAttribute('aria-label').startsWith(focusedDate)):focusedTask?[...$('#schedule').querySelectorAll('.task-daily-row')].find(n=>n.dataset.executionId===focusedExecution&&n.dataset.taskId===focusedTask&&n.dataset.date===focusedRowDate)?.querySelector(focusedCheckbox?'input':'.task-daily-name'):null;const target=replacement?.disabled?replacement.closest('.task-daily-row')?.querySelector('.task-daily-name'):replacement;target?.focus({preventScroll:true});}
  currentSaveTrace()?.phase('render',renderedAt);}
  $('#new-task').onclick=()=>openEditor(null,localDate(),true).catch(e=>actions.say(e.message));$('#manage-categories').onclick=()=>categories.open().catch(e=>actions.say(e.message));$('#today').onclick=()=>choose(localDate(),true);$('#toggle-calendar').onclick=()=>{mobileCalendarOpen=!mobileCalendarOpen;syncCalendar();};
  for(const [id,delta]of [['previous-month',-1],['next-month',1]])$('#'+id).onclick=()=>{const d=new Date(month+'-01T12:00:00');d.setMonth(d.getMonth()+delta);month=localDate(d).slice(0,7);render();};
