@@ -1,9 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {createDataStore} from '../assets/data.mjs?v=task-instances-20261103';
-import {createTaskService} from '../assets/tasks-service.mjs?v=task-instances-20261103';
-import {rowsForDate,validateTasks,fixedAllocationFor} from '../assets/tasks-model.mjs?v=task-instances-20261103';
-import {validateDocument,encodeBackup,readBackup,dataCount} from '../assets/backup.mjs?v=task-instances-20261103';
-import {changeCharacters} from '../assets/characters-model.mjs?v=task-instances-20261103';
+import {createDataStore} from '../assets/data.mjs?v=task-yesterday-20261103';
+import {createTaskService} from '../assets/tasks-service.mjs?v=task-yesterday-20261103';
+import {rowsForDate,validateTasks,fixedAllocationFor} from '../assets/tasks-model.mjs?v=task-yesterday-20261103';
+import {validateDocument,encodeBackup,readBackup,dataCount} from '../assets/backup.mjs?v=task-yesterday-20261103';
+import {changeCharacters} from '../assets/characters-model.mjs?v=task-yesterday-20261103';
 const a=n=>({physique:0,wisdom:n,charisma:0,resilience:0,perception:0}),fixed=n=>({points:n,source:'manual',abilities:a(n)});
 function fixture(){let raw;const storage={getItem:()=>raw??null,setItem:(_,v)=>raw=v},now=()=>new Date('2026-11-02T04:00:00Z'),store=createDataStore(storage,{now:()=>+now()}),service=createTaskService(store,{now});return{store,service,reload:()=>createDataStore(storage,{now:()=>+now()})};}
 async function seed(f,{legacy=false,days=[0,1,2,3,4,5,6]}={}){return f.service.edit({name:'重複閱讀',kind:'repeat',points:1,categoryId:null,date:null,start:'2026-11-01',end:null,days,...(legacy?{}:{fixedAllocation:fixed(1)})});}

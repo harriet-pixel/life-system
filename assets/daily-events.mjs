@@ -1,6 +1,6 @@
-import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=task-instances-20261103';
-import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=task-instances-20261103';
-import {relationshipStage,effectiveCharacter} from './characters-model.mjs?v=task-instances-20261103';
+import {localDate,rowsForDate,validDate} from './tasks-model.mjs?v=task-yesterday-20261103';
+import {taipeiDate,POINTS,activePeriod} from './habits-model.mjs?v=task-yesterday-20261103';
+import {relationshipStage,effectiveCharacter} from './characters-model.mjs?v=task-yesterday-20261103';
 export const DAILY_OPERATIONS=Object.freeze(['wallet.spent','task.completed','task.completed.batch','task.cancelled','task.deleted-completed','task.deleted','task.updated','task.batch','task.created','habit.check','habit.bonus','habit.bonus-cancel','habit.updated','life.undo','life.redo']);
 export function formalDailyEvents(operation,state){
  if(!DAILY_OPERATIONS.includes(operation.type))return [];

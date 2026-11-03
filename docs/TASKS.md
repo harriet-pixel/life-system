@@ -37,7 +37,7 @@
 
 `task-diagnostics.mjs` 的 `taskTimings()` 記錄 queue／allocation／allocation-recommendation／companion／commit 的 durationMs、status、time，最多120筆、只在文件記憶體。queue 記錄既有完成佇列等待；allocation 標示fixed時只讀設定，不查詢或生成能力。legacy人工分配的allocation包含使用者等待，推薦獨立記錄有效／stale／失敗。companion仍是既有mock、450ms合併後約550ms生成，對話情緒成對更新；完成／獎勵動畫不await它，亦不新增固定停等。沒有金鑰、提示內容或回應原文，無產品除錯欄位、不納入備份。
 
-逾期批次視窗的全選只作用於全部合格、目前列出的穩定執行 ID，部分選取顯示 indeterminate，提交仍重驗資格。常駐任務的安排入口改用 `task-multi-schedule.mjs` 跨月多選月曆；已有安排與終止例外的日期可再選，新增獨立一筆，原紀錄保持不變；起訖限制不自動延長。跨月保留選取，可清除、取消，確認透過 `arrangeMany` 先檢查整批，再以一次交易保存；無效日期或版本衝突完整拒絕，Undo／Redo 一次處理。其他既有單次改期不變。
+逾期批次視窗的全選只作用於全部合格、目前列出的穩定執行 ID，部分選取顯示 indeterminate，提交仍重驗資格。常駐任務的安排入口改用 `task-multi-schedule.mjs` 跨月多選月曆，日期快捷鍵由左至右為「昨、今、明」，使用裝置當地日期並沿用有效期限與原安排日期限制；已有安排與終止例外的日期可再選，新增獨立一筆，原紀錄保持不變；起訖限制不自動延長。跨月保留選取，可清除、取消，確認透過 `arrangeMany` 先檢查整批，再以一次交易保存；無效日期或版本衝突完整拒絕，Undo／Redo 一次處理。其他既有單次改期不變。
 
 頁籤加入上下置中的 Tasks／Task Pool；工具預設收合，固定兩列（名稱／分類、排序／批次），欄位標籤與控制水平置中；工具下無分隔線，池三區內容 padding-inline:1em，不內縮工具與頁籤。共用導覽僅在溢出時攔截垂直滾輪（含邊界），不攔截水平觸控板及縮放；跨頁不重綁。
 

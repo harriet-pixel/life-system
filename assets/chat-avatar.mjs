@@ -1,4 +1,4 @@
-import {acquireAvatarURL} from './daily-avatar.mjs?v=task-instances-20261103';
+import {acquireAvatarURL} from './daily-avatar.mjs?v=task-yesterday-20261103';
 // Transient, reference-counted square crops from original images, never stored assets.
 const crops=new Map();
 export function chatAvatarPixels(width,density=1){const size=Number.isFinite(width)&&width>0?width:44,ratio=Number.isFinite(density)&&density>0?density:1;return Math.min(1024,Math.max(64,Math.ceil(size*ratio/64)*64));}

@@ -1,4 +1,4 @@
-import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=task-instances-20261103';
+import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=task-yesterday-20261103';
 import {configuration,jsonBody,json,validToken,edgeFetch} from './security.mjs';
 export {PersonalGate} from './gate.mjs';
 const cookieName='__Host-life-oauth';
