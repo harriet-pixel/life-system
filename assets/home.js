@@ -1,19 +1,19 @@
-import {greetingPageEnabled} from './settings-model.mjs?v=chat-edge-20261103';
-import {appendStatsAffinity} from './stats-affinity.mjs?v=chat-edge-20261103';
-import {nextHomeGreeting} from './characters-model.mjs?v=chat-edge-20261103';
-import {mountHabitQuick} from './habit-quick.mjs?v=chat-edge-20261103';
-import {renderHomeToday} from './home-today.mjs?v=chat-edge-20261103';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=chat-edge-20261103';
-import {createTaskEditor} from './task-editor.mjs?v=chat-edge-20261103';
-import {createCategoryManager} from './task-categories.mjs?v=chat-edge-20261103';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=chat-edge-20261103';
-import {taskActions} from './task-actions.mjs?v=chat-edge-20261103';
-import {localDate} from './tasks-model.mjs?v=chat-edge-20261103';
-import { createMobileTabPositioner } from './tab-position.mjs?v=chat-edge-20261103';
-import { createActivityHeightSync } from './activity-height.mjs?v=chat-edge-20261103';
-import { undoManager } from './undo.mjs?v=chat-edge-20261103';
-import {createSharedCompanionView} from './companion-events.mjs?v=chat-edge-20261103';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=chat-edge-20261103';
+import {greetingPageEnabled} from './settings-model.mjs?v=task-instances-20261103';
+import {appendStatsAffinity} from './stats-affinity.mjs?v=task-instances-20261103';
+import {nextHomeGreeting} from './characters-model.mjs?v=task-instances-20261103';
+import {mountHabitQuick} from './habit-quick.mjs?v=task-instances-20261103';
+import {renderHomeToday} from './home-today.mjs?v=task-instances-20261103';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-instances-20261103';
+import {createTaskEditor} from './task-editor.mjs?v=task-instances-20261103';
+import {createCategoryManager} from './task-categories.mjs?v=task-instances-20261103';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=task-instances-20261103';
+import {taskActions} from './task-actions.mjs?v=task-instances-20261103';
+import {localDate} from './tasks-model.mjs?v=task-instances-20261103';
+import { createMobileTabPositioner } from './tab-position.mjs?v=task-instances-20261103';
+import { createActivityHeightSync } from './activity-height.mjs?v=task-instances-20261103';
+import { undoManager } from './undo.mjs?v=task-instances-20261103';
+import {createSharedCompanionView} from './companion-events.mjs?v=task-instances-20261103';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=task-instances-20261103';
 
 
 export function mountHome(root,context){
@@ -42,7 +42,7 @@ function showPlaceholder(label) {
 }
 let dailyVisual=null,visualRequest=0;
 let greetingIdentity='';
-function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=chat-edge-20261103').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=task-instances-20261103').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
 context.onSuspend(()=>visualRequest++);
 function showHomeGreeting(actor){dialogue.textContent=greetingEnabled()?currentGreeting:'';if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
 context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){if(greetingIdentity)currentGreeting=nextHomeGreeting(c);greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});
@@ -93,7 +93,7 @@ const itemMenu=document.createElement('dialog');itemMenu.id='home-task-item-menu
 const menuButton=(label,work)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>Promise.resolve().then(work).catch(e=>tasks.say(e.message));return b;};
 itemMenu.addEventListener('click',e=>{const r=itemMenu.getBoundingClientRect();if(e.target===itemMenu&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))itemMenu.close();});
 itemMenu.addEventListener('close',()=>{(menuTrigger?.isConnected?menuTrigger:root.querySelector('#home-new-event'))?.focus({preventScroll:true});});
-tasks.openMenu=(task,o)=>{menuTrigger=document.activeElement;const title=document.createElement('h2');title.id='home-task-menu-title';title.textContent=task.name;const close=menuButton('×',()=>itemMenu.close());close.className='task-item-close';close.setAttribute('aria-label','關閉');const controls=document.createElement('div');controls.className='task-menu-actions';controls.append(menuButton('編輯事件',()=>{itemMenu.close();return editor.open(task,o.date);}),menuButton(task.kind==='repeat'?'刪除此日安排':'刪除事件',async()=>{if(o.status==='done'){itemMenu.close();return tasks.deleteCompleted(task.id,o.date);}if(!window.confirm('刪除此日安排？其他日期與完成歷史保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id,o.date));itemMenu.close();}));if(task.kind==='repeat')controls.append(menuButton('刪除整個重複事項',async()=>{if(!window.confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id));itemMenu.close();}));itemMenu.replaceChildren(title,close,controls);itemMenu.showModal();};
+tasks.openMenu=(task,o)=>{menuTrigger=document.activeElement;const title=document.createElement('h2');title.id='home-task-menu-title';title.textContent=task.name;const close=menuButton('×',()=>itemMenu.close());close.className='task-item-close';close.setAttribute('aria-label','關閉');const controls=document.createElement('div');controls.className='task-menu-actions';controls.append(menuButton('編輯事件',()=>{itemMenu.close();return editor.open(task,o.date,o.id);}),menuButton(task.kind==='repeat'?'刪除此筆安排':'刪除事件',async()=>{if(o.status==='done'){itemMenu.close();return tasks.deleteCompleted(task.id,o.date,o.id);}if(!window.confirm('刪除此筆安排？其他日期與完成歷史保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id,o.date,o.id));itemMenu.close();}));if(task.kind==='repeat')controls.append(menuButton('刪除整個重複事項',async()=>{if(!window.confirm('刪除整個重複事項及全部未完成安排？已完成歷史與獎勵保留。'))return;await tasks.attempt(()=>tasks.service.remove(task.id));itemMenu.close();}));itemMenu.replaceChildren(title,close,controls);itemMenu.showModal();};
 let selectedPanel=0;
 const homeNotice=root.querySelector('#operation-status'),noticeAnchor=document.createComment('home notice');homeNotice.before(noticeAnchor);const noticeMedia=matchMedia('(min-width:1024px)');const homeNoticeTop=document.createElement('div');homeNoticeTop.className='home-notice-top';homeNoticeTop.setAttribute('aria-label','首頁通知');root.querySelector('.intro').append(homeNoticeTop);const syncHomeNotice=()=>{homeNotice.hidden=false;if(noticeMedia.matches)root.querySelector('.companion').append(homeNotice);else (root.querySelector('[data-daily-notice]')??homeNoticeTop).append(homeNotice);};context.listen(noticeMedia,'change',syncHomeNotice);context.onResume(syncHomeNotice);
 

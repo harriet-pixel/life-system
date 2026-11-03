@@ -1,7 +1,7 @@
-import {dataStore} from './data.mjs?v=chat-edge-20261103';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=chat-edge-20261103';
+import {dataStore} from './data.mjs?v=task-instances-20261103';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=task-instances-20261103';
 
-import {sortDay,listSettings} from './task-view-model.mjs?v=chat-edge-20261103';
+import {sortDay,listSettings} from './task-view-model.mjs?v=task-instances-20261103';
 
 // One renderer and one validated store for early reading and interactive mounting.
 export function renderHomeToday(root,actions=null){
@@ -14,20 +14,20 @@ export function renderHomeToday(root,actions=null){
  const snapshot=dataStore.getFields(['tasks']),rows=sortDay(snapshot.tasks,rowsForDate(snapshot.tasks,localDate()),listSettings(snapshot.tasks));
  todayList.replaceChildren(...rows.map(row=>{
   const li=document.createElement('li'),label=document.createElement('div');
-  li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;
+  li.dataset.executionId=row.occurrence.id;li.dataset.rewardTask=row.task.id;li.dataset.rewardDate=row.occurrence.date;
   label.className='task-row';
   const input=document.createElement('input');input.type='checkbox';input.dataset.task='';
-  const pending=Boolean(actions?.isPending(row.task.id,row.occurrence.date));
+  const pending=Boolean(actions?.isPending(row.task.id,row.occurrence.date,row.occurrence.id));
   input.checked=row.occurrence.status==='done'||pending;input.disabled=!actions||pending;
   input.setAttribute('aria-busy',String(!actions||pending));
   li.classList.toggle('is-processing',pending);li.setAttribute('aria-busy',String(pending));
   input.setAttribute('aria-label',!actions?`操作準備中：${row.name}`:pending?`處理中，尚未提交完成 ${row.name}`:`${input.checked?'取消完成':'完成'} ${row.name}`);
   if(actions)input.onchange=()=>{
    const done=row.occurrence.status==='done';
-   if(actions.isPending(row.task.id,row.occurrence.date))return;
+   if(actions.isPending(row.task.id,row.occurrence.date,row.occurrence.id))return;
    input.checked=true;
-   if(done)actions.cancel(row.task.id,row.occurrence.date).catch(()=>{});
-   else actions.complete(row.task.id,row.occurrence.date);
+   if(done)actions.cancel(row.task.id,row.occurrence.date,row.occurrence.id).catch(()=>{});
+   else actions.complete(row.task.id,row.occurrence.date,row.occurrence.id);
   };
   const name=document.createElement('button');name.type='button';name.disabled=!actions;name.onclick=()=>actions?.openMenu(row.task,row.occurrence);name.className='task-content';name.textContent=row.name;
   const color=snapshot.tasks.categories.find(c=>c.id===row.task.categoryId)?.color;

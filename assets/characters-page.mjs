@@ -1,15 +1,15 @@
-import {mountGreetings} from './character-greetings-page.mjs?v=chat-edge-20261103';
-import {guardedDialog} from './companion-dialog.mjs?v=chat-edge-20261103';
-import {mountCharacterImages} from './character-images-ui.mjs?v=chat-edge-20261103';
-import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=chat-edge-20261103';
-import {dataStore} from './data.mjs?v=chat-edge-20261103';
-import {holdDraft} from './coordination.mjs?v=chat-edge-20261103';
-import {createCharacterService} from './characters-service.mjs?v=chat-edge-20261103';
-import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter,effectiveCharacter} from './characters-model.mjs?v=chat-edge-20261103';
+import {mountGreetings} from './character-greetings-page.mjs?v=task-instances-20261103';
+import {guardedDialog} from './companion-dialog.mjs?v=task-instances-20261103';
+import {mountCharacterImages} from './character-images-ui.mjs?v=task-instances-20261103';
+import {DEFAULT_PENALTIES,validatePenaltySettings} from './affinity-model.mjs?v=task-instances-20261103';
+import {dataStore} from './data.mjs?v=task-instances-20261103';
+import {holdDraft} from './coordination.mjs?v=task-instances-20261103';
+import {createCharacterService} from './characters-service.mjs?v=task-instances-20261103';
+import {PERSONA_GROUPS,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES,relationshipStage,normalizeCharacter,effectiveCharacter} from './characters-model.mjs?v=task-instances-20261103';
 
 // The shared shell keeps this module lazy. Its CSS is loaded only on this route.
 if(typeof document!=='undefined'){
- const url=new URL('./characters.css?v=chat-edge-20261103',import.meta.url).href;
+ const url=new URL('./characters.css?v=task-instances-20261103',import.meta.url).href;
  const existing=[...document.querySelectorAll('link[rel=stylesheet]')].find(link=>link.href===url);
  if(!existing?.sheet){
   existing?.remove();
@@ -27,7 +27,7 @@ export function mountCharacters(root,context){
  let pendingSharing=null;
  let roleDirty=false,policyDirty=false,policyBase=null,busy=false,release=null,held=null,draftToken=0,optionSignature='';
  let images,chat=null,chatImport=null,replies=null,replyImport=null,cards=null,cardImport=null,greetings=null;
- const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=chat-edge-20261103').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,notify,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;notify('聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。');throw error;});};
+ const loadChat=()=>{if(chat)return Promise.resolve(chat);return chatImport??=import('./chat-page.mjs?v=task-instances-20261103').then(module=>{chat=module.mountChat(root,context,{store:dataStore,getCharacter:()=>readError?null:current,getSnapshot:()=>snapshot,images,notify,onDraft:()=>context.notify()});chat.activate();return chat;}).catch(error=>{chatImport=null;notify('聊天室載入失敗，角色設定仍可使用；請切換頁籤後重試。');throw error;});};
  const dirty=()=>roleDirty||policyDirty||Boolean(images?.hasDraft())||Boolean(replies?.hasDraft())||Boolean(cards?.hasDraft())||Boolean(greetings?.hasDraft());
  const notify=message=>{$('#operation-status').textContent=message;$('#operation-status').title=message;};
  const notice=$('#operation-status'),mobileHeader=matchMedia('(width < 1024px)');const headerActions=['#character-create','#character-activate'].map(selector=>{const button=$(selector),anchor=document.createComment('desktop companion action');button.before(anchor);return {button,anchor};});const placeNotice=()=>{if(mobileHeader.matches){$('[data-companion-notice]').append(notice);$('[data-companion-actions]').append(...headerActions.map(a=>a.button));}else{$('[data-companion-desktop-notice]').append(notice);headerActions.forEach(({button,anchor})=>anchor.after(button));}};context.listen(mobileHeader,'change',placeNotice);context.onResume(placeNotice);placeNotice();
@@ -239,8 +239,8 @@ export function mountCharacters(root,context){
  greetings=mountGreetings(root,{context,store:dataStore,getCharacter:()=>readError?null:current,onState:()=>{controls();draftNotice();}});
  images=mountCharacterImages(root,context,{getCharacter:()=>readError?null:current,getSettings:()=>snapshot?.settings,store:dataStore,notify,onState:()=>{draftNotice();}});
  context.setHooks({hasDraft:()=>dirty()||Boolean(chat?.hasDraft()),busy:()=>busy||images.busy()||Boolean(replies?.busy())||Boolean(cards?.busy())||Boolean(greetings?.busy())});
- void import('./character-card-page.mjs?v=chat-edge-20261103').then(m=>{cards=m.mountCharacterCards(root,context,{store:dataStore,getCharacter:()=>readError?null:current,hasRoleDraft:()=>roleDirty,notify,onState:draftNotice,onImported(characterId){if(!context.active)return;if(selected!==characterId){select.value=characterId;select.dispatchEvent(new Event('change'));}if(selected!==characterId){notify('角色卡已匯入；請選取匯入角色後開啟「角色設定」調整。');return;}base=null;draft=null;render(dataStore.getFields(['revision','companion','affinity','replyLibrary','settings']));groupTab(0);if(settingsModal.open($('#character-settings-open')))fitVisible();}});cards.update();}).catch(e=>notify(e.message));
- $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=chat-edge-20261103').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
+ void import('./character-card-page.mjs?v=task-instances-20261103').then(m=>{cards=m.mountCharacterCards(root,context,{store:dataStore,getCharacter:()=>readError?null:current,hasRoleDraft:()=>roleDirty,notify,onState:draftNotice,onImported(characterId){if(!context.active)return;if(selected!==characterId){select.value=characterId;select.dispatchEvent(new Event('change'));}if(selected!==characterId){notify('角色卡已匯入；請選取匯入角色後開啟「角色設定」調整。');return;}base=null;draft=null;render(dataStore.getFields(['revision','companion','affinity','replyLibrary','settings']));groupTab(0);if(settingsModal.open($('#character-settings-open')))fitVisible();}});cards.update();}).catch(e=>notify(e.message));
+ $('#reply-library-section').addEventListener('toggle',()=>{if(!$('#reply-library-section').open)return;replyImport??=import('./reply-page.mjs?v=task-instances-20261103').then(m=>{replies=m.mountReplyManager(root,context,{store:dataStore,getCharacter:()=>readError?null:current,notify,onState:()=>context.notify()});return replies;}).catch(e=>{replyImport=null;notify(e.message);throw e;});void replyImport.then(r=>r.update()).catch(()=>{});});
  context.subscribe(dataStore,render,{changesOnly:true,keys:['revision','companion','affinity','replyLibrary','settings']});
  context.listen(window,'resize',()=>{fitVisible();sizeChat();},{passive:true});
  if(window.visualViewport)context.listen(window.visualViewport,'resize',sizeChat,{passive:true});

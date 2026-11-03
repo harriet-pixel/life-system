@@ -1,4 +1,4 @@
-import {IMAGE_LIMITS,validateCharacterImages} from './character-images-model.mjs?v=chat-edge-20261103';
+import {IMAGE_LIMITS,validateCharacterImages} from './character-images-model.mjs?v=task-instances-20261103';
 // Used only during explicit save/backup/restore/maintenance, never first paint.
 export async function validateRoleImageAssets(document,assets,{allowMissing=false}={}){
  const uses=new Map();for(const c of document.companion?.characters??[])for(const item of Object.values(validateCharacterImages(c.imageSettings).emotions))for(const key of ['image','thumbnail']){if(!uses.has(item[key]))uses.set(item[key],new Set());uses.get(item[key]).add(key);}

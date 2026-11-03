@@ -1,21 +1,21 @@
-import {walletSnapshots} from './wallet-recovery.mjs?v=chat-edge-20261103';
-import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=chat-edge-20261103';
-import {attemptJournalRescue} from './storage-vault.mjs?v=chat-edge-20261103';
-import {storageFailure} from './storage-diagnostics.mjs?v=chat-edge-20261103';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=chat-edge-20261103';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=chat-edge-20261103';
-import {integrateAffinity} from './affinity-integration.mjs?v=chat-edge-20261103';
-import {settleAffinity} from './affinity-settlement.mjs?v=chat-edge-20261103';
-import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=chat-edge-20261103';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=chat-edge-20261103';
-import {setOperationNotice} from './operation-notice.mjs?v=chat-edge-20261103';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=chat-edge-20261103';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=chat-edge-20261103';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=chat-edge-20261103';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=chat-edge-20261103';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=chat-edge-20261103';
-import { migrateImages } from './image-store.mjs?v=chat-edge-20261103';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=chat-edge-20261103';
+import {walletSnapshots} from './wallet-recovery.mjs?v=task-instances-20261103';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=task-instances-20261103';
+import {attemptJournalRescue} from './storage-vault.mjs?v=task-instances-20261103';
+import {storageFailure} from './storage-diagnostics.mjs?v=task-instances-20261103';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=task-instances-20261103';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=task-instances-20261103';
+import {integrateAffinity} from './affinity-integration.mjs?v=task-instances-20261103';
+import {settleAffinity} from './affinity-settlement.mjs?v=task-instances-20261103';
+import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=task-instances-20261103';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=task-instances-20261103';
+import {setOperationNotice} from './operation-notice.mjs?v=task-instances-20261103';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=task-instances-20261103';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=task-instances-20261103';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=task-instances-20261103';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=task-instances-20261103';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=task-instances-20261103';
+import { migrateImages } from './image-store.mjs?v=task-instances-20261103';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=task-instances-20261103';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -157,7 +157,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=chat-edge-20261103');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=task-instances-20261103');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;

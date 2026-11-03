@@ -1,4 +1,4 @@
-import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=chat-edge-20261103';
+import {validateCharacterImages,EMOTIONS as IMAGE_EMOTIONS} from './character-images-model.mjs?v=task-instances-20261103';
 // Manual character settings; image metadata is validated separately.
 export const RELATIONSHIP_STAGES=Object.freeze([
  ['初識',0],['熟悉',50],['友好',150],['信任',350],['默契',500],['深厚情誼',700],['長久羈絆',1000]

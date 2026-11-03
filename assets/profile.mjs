@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=chat-edge-20261103';
-import { holdDraft } from './coordination.mjs?v=chat-edge-20261103';
-import { createProfileImages } from './profile-images.mjs?v=chat-edge-20261103';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=chat-edge-20261103';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=chat-edge-20261103';
-import { undoManager } from './undo.mjs?v=chat-edge-20261103';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=chat-edge-20261103';
+import {bindProfileValidation} from './validation.mjs?v=task-instances-20261103';
+import { holdDraft } from './coordination.mjs?v=task-instances-20261103';
+import { createProfileImages } from './profile-images.mjs?v=task-instances-20261103';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=task-instances-20261103';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=task-instances-20261103';
+import { undoManager } from './undo.mjs?v=task-instances-20261103';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=task-instances-20261103';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);
