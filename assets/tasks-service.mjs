@@ -1,7 +1,7 @@
-import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=task-yesterday-20261103';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=task-yesterday-20261103';
-import {nextOccurrenceId,occurrenceSourceId,emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate,taskForOccurrence} from './tasks-model.mjs?v=task-yesterday-20261103';
-import {expiresAt} from './recovery.mjs?v=task-yesterday-20261103';
+import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=drive-transfer-20261104';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=drive-transfer-20261104';
+import {nextOccurrenceId,occurrenceSourceId,emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate,taskForOccurrence} from './tasks-model.mjs?v=drive-transfer-20261104';
+import {expiresAt} from './recovery.mjs?v=drive-transfer-20261104';
 export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.randomUUID(),emit=()=>{}}={}){
  const snapshot=()=>store.get();
  let viewQueue=Promise.resolve();

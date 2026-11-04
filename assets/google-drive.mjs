@@ -1,7 +1,11 @@
-import {backupDeviceName} from './cloud-backup-display.mjs?v=task-yesterday-20261103';
-import {createRememberedDriveAuth,createDriveLink,DRIVE_LINK_KEY,DRIVE_AUTH_KEY} from './drive-auth-session.mjs?v=task-yesterday-20261103';
-import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=task-yesterday-20261103';
-import {MAX_FILE_BYTES,backupFilename,readBackup} from './backup.mjs?v=task-yesterday-20261103';
+import {backupDeviceName} from './cloud-backup-display.mjs?v=drive-transfer-20261104';
+import {createRememberedDriveAuth,createDriveLink,DRIVE_LINK_KEY,DRIVE_AUTH_KEY} from './drive-auth-session.mjs?v=drive-transfer-20261104';
+import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=drive-transfer-20261104';
+import {MAX_FILE_BYTES,backupFilename,readBackup} from './backup.mjs?v=drive-transfer-20261104';
+export const driveTransferTimeout=bytes=>Math.min(900000,Math.max(120000,60000+Math.ceil(Math.max(0,Number(bytes)||0)/65536)*1000));
+export function driveTransferError(error,phase='傳輸',signal=null){const timedOut=error?.name==='TimeoutError'||signal?.reason?.name==='TimeoutError';return Object.assign(new Error(timedOut?`Google Drive ${phase}逾時；網路可用時仍可能因備份較大或 Google 回應較慢而發生，請稍後手動重試。本機資料與既有備份保留。`:`Google Drive ${phase}中斷；這不代表裝置沒有網路，可能是 Google 連線或瀏覽器阻擋。請稍後重試，若持續發生請檢查瀏覽器對本站的封鎖設定。本機資料與既有備份保留。`),{code:timedOut?'drive-timeout':'drive-network',transient:true});}
+const responseSignals=new WeakMap();
+async function driveJSON(response){try{return await response.json();}catch(error){if(error instanceof SyntaxError)throw new Error('Google Drive 回應格式不完整，請稍後手動重試；本機資料保留。');throw driveTransferError(error,'讀取回應',responseSignals.get(response));}}
 const SCOPE='https://www.googleapis.com/auth/drive.appdata';
 export const driveConfigured=Boolean(GOOGLE_CLIENT_ID);
 let token=null,expires=0,loading,sdkState='idle',sdkError='';const listeners=new Set();const session=createRememberedDriveAuth({getItem:k=>globalThis.localStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.localStorage.setItem(k,v),removeItem:k=>globalThis.localStorage?.removeItem(k)},{getItem:k=>globalThis.sessionStorage?.getItem(k)??null,setItem:(k,v)=>globalThis.sessionStorage.setItem(k,v),removeItem:k=>globalThis.sessionStorage?.removeItem(k)},GOOGLE_CLIENT_ID);
@@ -45,9 +49,9 @@ export async function ensureDriveAccess(){if(!getDriveState().connected)await co
 export async function driveRequest(url,options={}) {
   getDriveState();if(!token||Date.now()>=expires){expireDriveAccess();throw Object.assign(new Error('Google 尚未連接或授權已過期，請手動重新連接。'),{code:'auth'});}
   const headers=new Headers(options.headers);headers.set('Authorization','Bearer '+token);
-  const {timeoutMs=30000,...requestOptions}=options;const signal=timeoutMs?AbortSignal.any([AbortSignal.timeout(timeoutMs),...(options.signal?[options.signal]:[])]):options.signal;let response;try{response=await fetch(url,{...requestOptions,headers,signal});}catch{throw Object.assign(new Error('Google Drive 網路連線失敗；本機資料保留。'),{transient:true});}
+  const {timeoutMs=30000,...requestOptions}=options;const signal=timeoutMs?AbortSignal.any([AbortSignal.timeout(timeoutMs),...(options.signal?[options.signal]:[])]):options.signal;let response;try{response=await fetch(url,{...requestOptions,headers,signal});}catch(error){throw driveTransferError(error,'連線',signal);}
   if(!response.ok){if(response.status===401)expireDriveAccess();const raw=response.headers.get('Retry-After'),retryAfterMs=raw?(Number.isFinite(Number(raw))?Number(raw)*1000:Math.max(0,Date.parse(raw)-Date.now())):0;let quota=false;if(response.status===403){try{const body=await response.clone().json();quota=body.error?.errors?.some(e=>/rateLimit|quota|dailyLimit|userRateLimit/i.test(e.reason));}catch{}}throw Object.assign(new Error(response.status===401?'Google 授權已過期，請重新連接。':response.status===403?'Google Drive 權限或儲存容量不足，操作未完成。':'Google Drive 操作失敗（HTTP '+response.status+'），請稍後重試。'),{code:response.status===401?'auth':'drive',status:response.status,transient:response.status===429||response.status>=500||quota,retryAfterMs:Number.isFinite(retryAfterMs)?retryAfterMs:0});}
-  return response;
+  responseSignals.set(response,signal);return response;
 }
 export async function uploadDriveBackup(blob,payload,{dataUpdatedAt=null,dataHash=null,snapshotHash=null}={}) {
   const envelope=JSON.parse(await blob.text());if(envelope.encrypted!==false)throw new Error('新雲端備份使用未加密格式。');
@@ -56,7 +60,7 @@ export async function uploadDriveBackup(blob,payload,{dataUpdatedAt=null,dataHas
     body:JSON.stringify({name:backupFilename(),parents:['appDataFolder'],appProperties:{lifeSystemFormat:'1',lifeSystemBackup:'plain-v1',backupStatus:'pending',backupTime:payload.createdAt,deviceName:backupDeviceName(),...(dataUpdatedAt?{dataUpdatedAt}:{}),...(dataHash?{dataHash}:{}),...(snapshotHash?{snapshotHash}:{})},mimeType:'application/json'})});
   const location=response.headers.get('Location');
   if(!location||!/^https:\/\/(www|content)\.googleapis\.com\/upload\/drive\//.test(location))throw new Error('Google 上傳位置驗證失敗，已停止。');
-  const uploaded=await(await driveRequest(location,{method:'PUT',headers:{'Content-Type':'application/json'},body:blob})).json();
+  const uploaded=await driveJSON(await driveRequest(location,{method:'PUT',headers:{'Content-Type':'application/json'},body:blob,timeoutMs:driveTransferTimeout(blob.size)}));
   const file=(await listDriveBackups({includePending:true})).find(file=>file.id===uploaded.id);
   if(!file)throw new Error('雲端尚未確認新備份，舊備份全部保留；請稍後手動重試。');
   const downloaded=await downloadDriveBackup(file);
@@ -70,17 +74,17 @@ export async function uploadDriveBackup(blob,payload,{dataUpdatedAt=null,dataHas
 export async function listDriveBackups({includePending=false}={}) {
   const files=[];let pageToken;
   do{const params=new URLSearchParams({spaces:'appDataFolder',q:"trashed = false and appProperties has { key='lifeSystemFormat' and value='1' }",fields:'nextPageToken,files(id,name,size,createdTime,modifiedTime,appProperties)',pageSize:'100',orderBy:'createdTime desc'});if(pageToken)params.set('pageToken',pageToken);
-    const data=await(await driveRequest('https://www.googleapis.com/drive/v3/files?'+params)).json();files.push(...(data.files??[]));pageToken=data.nextPageToken;
+    const data=await driveJSON(await driveRequest('https://www.googleapis.com/drive/v3/files?'+params));files.push(...(data.files??[]));pageToken=data.nextPageToken;
     if(files.length>5000)throw new Error('雲端備份清單過多，請先至帳戶管理檢查應用程式資料。');
   }while(pageToken);
   return files.filter(f=>f.appProperties?.lifeSystemFormat==='1'&&!f.appProperties?.lifeSystemSyncVersion&&(includePending||f.appProperties?.backupStatus!=='pending'));
 }
 export async function downloadDriveBackup(file) {
   if(!/^[a-zA-Z0-9_-]+$/.test(file.id)||Number(file.size)>MAX_FILE_BYTES)throw new Error('雲端備份大小或 ID 不正確。');
-  const response=await driveRequest('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(file.id)+'?alt=media');
+  const response=await driveRequest('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(file.id)+'?alt=media',{timeoutMs:driveTransferTimeout(file.size)});
   const length=Number(response.headers.get('Content-Length'));if(length>MAX_FILE_BYTES)throw new Error('雲端備份超過大小上限。');
   const reader=response.body.getReader(),parts=[];let size=0;
-  try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>MAX_FILE_BYTES)throw new Error('雲端備份超過大小上限。');parts.push(value);}}catch(error){await reader.cancel();throw error;}
+  try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>MAX_FILE_BYTES)throw new Error('雲端備份超過大小上限。');parts.push(value);}}catch(error){try{await reader.cancel();}catch{}if(error?.message==='雲端備份超過大小上限。')throw error;throw driveTransferError(error,'下載回讀',responseSignals.get(response));}finally{reader.releaseLock();}
   return new Blob(parts,{type:'application/json'});
 }
 

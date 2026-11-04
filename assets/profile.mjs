@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=task-yesterday-20261103';
-import { holdDraft } from './coordination.mjs?v=task-yesterday-20261103';
-import { createProfileImages } from './profile-images.mjs?v=task-yesterday-20261103';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=task-yesterday-20261103';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=task-yesterday-20261103';
-import { undoManager } from './undo.mjs?v=task-yesterday-20261103';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=task-yesterday-20261103';
+import {bindProfileValidation} from './validation.mjs?v=drive-transfer-20261104';
+import { holdDraft } from './coordination.mjs?v=drive-transfer-20261104';
+import { createProfileImages } from './profile-images.mjs?v=drive-transfer-20261104';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=drive-transfer-20261104';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=drive-transfer-20261104';
+import { undoManager } from './undo.mjs?v=drive-transfer-20261104';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=drive-transfer-20261104';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

@@ -1,4 +1,4 @@
-import {initializeTabSwipe} from './tab-swipe.mjs?v=task-yesterday-20261103';
+import {initializeTabSwipe} from './tab-swipe.mjs?v=drive-transfer-20261104';
 // One document controller for geometric tab indicators. Press feedback is CSS only.
 let controller;
 export function initializeUIFeedback(){

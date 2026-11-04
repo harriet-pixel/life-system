@@ -1,12 +1,12 @@
-import {mountColorField} from './color-field.mjs?v=task-yesterday-20261103';
-import {mountTaskCompanion} from './task-companion.mjs?v=task-yesterday-20261103';
-import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=task-yesterday-20261103';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-yesterday-20261103';
-import {dataStore} from './data.mjs?v=task-yesterday-20261103';
-import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=task-yesterday-20261103';
-import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=task-yesterday-20261103';
-import {statusButtons} from './habit-quick.mjs?v=task-yesterday-20261103';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-yesterday-20261103';
+import {mountColorField} from './color-field.mjs?v=drive-transfer-20261104';
+import {mountTaskCompanion} from './task-companion.mjs?v=drive-transfer-20261104';
+import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=drive-transfer-20261104';
+import {createMobileTabPositioner} from './tab-position.mjs?v=drive-transfer-20261104';
+import {dataStore} from './data.mjs?v=drive-transfer-20261104';
+import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=drive-transfer-20261104';
+import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=drive-transfer-20261104';
+import {statusButtons} from './habit-quick.mjs?v=drive-transfer-20261104';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=drive-transfer-20261104';
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 export function mountHabits(root,context){
  const $=s=>root.querySelector(s),today=()=>taipeiDate();let selectedMonth=today().slice(0,7),half=periodInfo(today()).id.slice(-1),busy=false,formBase='',editingPeriod=null,bonusId=null,settingRevision=null,bonusRevision=null,singleHabit=null,settingsSection='habits',selectedCard=0,selectedYear=taipeiDate().slice(0,4),yearStart=Number(taipeiDate().slice(0,4))-5;

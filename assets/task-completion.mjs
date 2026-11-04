@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=task-yesterday-20261103';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-yesterday-20261103';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=task-yesterday-20261103';
-import {dataStore} from './data.mjs?v=task-yesterday-20261103';
-import {createTaskService} from './tasks-service.mjs?v=task-yesterday-20261103';
-import {allocation,allocationContext} from './tasks-model.mjs?v=task-yesterday-20261103';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-yesterday-20261103';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=task-yesterday-20261103';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-yesterday-20261103';
+import {setOperationNotice} from './operation-notice.mjs?v=drive-transfer-20261104';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=drive-transfer-20261104';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=drive-transfer-20261104';
+import {dataStore} from './data.mjs?v=drive-transfer-20261104';
+import {createTaskService} from './tasks-service.mjs?v=drive-transfer-20261104';
+import {allocation,allocationContext} from './tasks-model.mjs?v=drive-transfer-20261104';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=drive-transfer-20261104';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=drive-transfer-20261104';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=drive-transfer-20261104';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}
