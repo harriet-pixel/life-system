@@ -1,19 +1,19 @@
-import {greetingPageEnabled} from './settings-model.mjs?v=task-yesterday-20261103';
-import {appendStatsAffinity} from './stats-affinity.mjs?v=task-yesterday-20261103';
-import {nextHomeGreeting} from './characters-model.mjs?v=task-yesterday-20261103';
-import {mountHabitQuick} from './habit-quick.mjs?v=task-yesterday-20261103';
-import {renderHomeToday} from './home-today.mjs?v=task-yesterday-20261103';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-yesterday-20261103';
-import {createTaskEditor} from './task-editor.mjs?v=task-yesterday-20261103';
-import {createCategoryManager} from './task-categories.mjs?v=task-yesterday-20261103';
-import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=task-yesterday-20261103';
-import {taskActions} from './task-actions.mjs?v=task-yesterday-20261103';
-import {localDate} from './tasks-model.mjs?v=task-yesterday-20261103';
-import { createMobileTabPositioner } from './tab-position.mjs?v=task-yesterday-20261103';
-import { createActivityHeightSync } from './activity-height.mjs?v=task-yesterday-20261103';
-import { undoManager } from './undo.mjs?v=task-yesterday-20261103';
-import {createSharedCompanionView} from './companion-events.mjs?v=task-yesterday-20261103';
-import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=task-yesterday-20261103';
+import {greetingPageEnabled} from './settings-model.mjs?v=drive-transfer-20261104';
+import {appendStatsAffinity} from './stats-affinity.mjs?v=drive-transfer-20261104';
+import {nextHomeGreeting} from './characters-model.mjs?v=drive-transfer-20261104';
+import {mountHabitQuick} from './habit-quick.mjs?v=drive-transfer-20261104';
+import {renderHomeToday} from './home-today.mjs?v=drive-transfer-20261104';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=drive-transfer-20261104';
+import {createTaskEditor} from './task-editor.mjs?v=drive-transfer-20261104';
+import {createCategoryManager} from './task-categories.mjs?v=drive-transfer-20261104';
+import {mountHomeCompanionFloat} from './home-companion-float.mjs?v=drive-transfer-20261104';
+import {taskActions} from './task-actions.mjs?v=drive-transfer-20261104';
+import {localDate} from './tasks-model.mjs?v=drive-transfer-20261104';
+import { createMobileTabPositioner } from './tab-position.mjs?v=drive-transfer-20261104';
+import { createActivityHeightSync } from './activity-height.mjs?v=drive-transfer-20261104';
+import { undoManager } from './undo.mjs?v=drive-transfer-20261104';
+import {createSharedCompanionView} from './companion-events.mjs?v=drive-transfer-20261104';
+import { dataStore, profileSummary, visibleExperience } from './data.mjs?v=drive-transfer-20261104';
 
 
 export function mountHome(root,context){
@@ -42,7 +42,7 @@ function showPlaceholder(label) {
 }
 let dailyVisual=null,visualRequest=0;
 let greetingIdentity='';
-function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=task-yesterday-20261103').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
+function showDaily(reply){const request=++visualRequest;void import('./daily-visuals.mjs?v=drive-transfer-20261104').then(m=>{if(!context.active||request!==visualRequest)return;dailyVisual??=m.mountDailyVisuals(root,context,dataStore);dailyVisual.show(reply);}).catch(()=>{});}
 context.onSuspend(()=>visualRequest++);
 function showHomeGreeting(actor){dialogue.textContent=greetingEnabled()?currentGreeting:'';if(actor)showDaily({characterId:actor.characterId,characterCreatedAt:actor.createdAt,emotion:'neutral',daily:true});else visualRequest++;}
 context.subscribe(dataStore,({activeCharacter:c})=>{const signature=JSON.stringify([c?.characterId,c?.createdAt,c?.settings?.name,c?.greetings,c?.imageSettings]);if(signature!==greetingIdentity){if(greetingIdentity)currentGreeting=nextHomeGreeting(c);greetingIdentity=signature;showHomeGreeting(c);}},{changesOnly:true,keys:['activeCharacter'],distinct:true});

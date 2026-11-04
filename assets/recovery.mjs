@@ -1,5 +1,5 @@
-import {walletMatches,applyWalletSnapshot} from './wallet-recovery.mjs?v=task-yesterday-20261103';
-import {applyAffinityPlan} from './affinity-model.mjs?v=task-yesterday-20261103';
+import {walletMatches,applyWalletSnapshot} from './wallet-recovery.mjs?v=drive-transfer-20261104';
+import {applyAffinityPlan} from './affinity-model.mjs?v=drive-transfer-20261104';
 // One policy for startup, replay, mutations, image references and backups.
 export const RECOVERY_LIMIT=15, DAY=86400000, HISTORY_VERSION=1;
 const shortKeys=new Set(['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','settings']);

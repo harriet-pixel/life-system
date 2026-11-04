@@ -1,18 +1,18 @@
-import {mountColorField} from './color-field.mjs?v=task-yesterday-20261103';
-import {documentTime} from './cloud-backup-policy.mjs?v=task-yesterday-20261103';
-import {cloudBackupLabel} from './cloud-backup-display.mjs?v=task-yesterday-20261103';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-yesterday-20261103';
-import {getCloudBackup} from './cloud-backup.mjs?v=task-yesterday-20261103';
-import {initializeAISettings} from './ai-settings.mjs?v=task-yesterday-20261103';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=task-yesterday-20261103';
-import {dataStore,persistentUndo} from './data.mjs?v=task-yesterday-20261103';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-yesterday-20261103';
-import {createHistoryView} from './history-view.mjs?v=task-yesterday-20261103';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=task-yesterday-20261103';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=task-yesterday-20261103';
-import {holdDraft} from './coordination.mjs?v=task-yesterday-20261103';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=task-yesterday-20261103';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=task-yesterday-20261103';
+import {mountColorField} from './color-field.mjs?v=drive-transfer-20261104';
+import {documentTime} from './cloud-backup-policy.mjs?v=drive-transfer-20261104';
+import {cloudBackupLabel} from './cloud-backup-display.mjs?v=drive-transfer-20261104';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=drive-transfer-20261104';
+import {getCloudBackup} from './cloud-backup.mjs?v=drive-transfer-20261104';
+import {initializeAISettings} from './ai-settings.mjs?v=drive-transfer-20261104';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=drive-transfer-20261104';
+import {dataStore,persistentUndo} from './data.mjs?v=drive-transfer-20261104';
+import {createMobileTabPositioner} from './tab-position.mjs?v=drive-transfer-20261104';
+import {createHistoryView} from './history-view.mjs?v=drive-transfer-20261104';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=drive-transfer-20261104';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=drive-transfer-20261104';
+import {holdDraft} from './coordination.mjs?v=drive-transfer-20261104';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=drive-transfer-20261104';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=drive-transfer-20261104';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

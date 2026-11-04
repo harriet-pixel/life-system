@@ -1,4 +1,4 @@
-import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=task-yesterday-20261103';
+import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=drive-transfer-20261104';
 import {createServer} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {createJWTVerifier} from './auth.mjs';

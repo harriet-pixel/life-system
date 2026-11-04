@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=task-yesterday-20261103';
+import {integerValue} from './validation.mjs?v=drive-transfer-20261104';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

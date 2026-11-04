@@ -1,7 +1,7 @@
-import {mountColorField} from './color-field.mjs?v=task-yesterday-20261103';
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-yesterday-20261103';
-import {dataStore} from './data.mjs?v=task-yesterday-20261103';
-import {holdDraft} from './coordination.mjs?v=task-yesterday-20261103';
+import {mountColorField} from './color-field.mjs?v=drive-transfer-20261104';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=drive-transfer-20261104';
+import {dataStore} from './data.mjs?v=drive-transfer-20261104';
+import {holdDraft} from './coordination.mjs?v=drive-transfer-20261104';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');
