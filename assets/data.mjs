@@ -1,22 +1,23 @@
-import {readStoredDocument,storedDocumentText,writeStoredDocument} from './storage-codec.mjs?v=storage-quota-20261106';
-import {walletSnapshots} from './wallet-recovery.mjs?v=storage-quota-20261106';
-import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=storage-quota-20261106';
-import {attemptJournalRescue} from './storage-vault.mjs?v=storage-quota-20261106';
-import {storageFailure} from './storage-diagnostics.mjs?v=storage-quota-20261106';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=storage-quota-20261106';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=storage-quota-20261106';
-import {integrateAffinity} from './affinity-integration.mjs?v=storage-quota-20261106';
-import {settleAffinity} from './affinity-settlement.mjs?v=storage-quota-20261106';
-import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=storage-quota-20261106';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=storage-quota-20261106';
-import {setOperationNotice} from './operation-notice.mjs?v=storage-quota-20261106';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=storage-quota-20261106';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=storage-quota-20261106';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=storage-quota-20261106';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=storage-quota-20261106';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=storage-quota-20261106';
-import { migrateImages } from './image-store.mjs?v=storage-quota-20261106';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=storage-quota-20261106';
+import {nextTaskExpiry} from './task-retention.mjs?v=task-retention-20261106';
+import {readStoredDocument,storedDocumentText,writeStoredDocument} from './storage-codec.mjs?v=task-retention-20261106';
+import {walletSnapshots} from './wallet-recovery.mjs?v=task-retention-20261106';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=task-retention-20261106';
+import {attemptJournalRescue} from './storage-vault.mjs?v=task-retention-20261106';
+import {storageFailure} from './storage-diagnostics.mjs?v=task-retention-20261106';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=task-retention-20261106';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=task-retention-20261106';
+import {integrateAffinity} from './affinity-integration.mjs?v=task-retention-20261106';
+import {settleAffinity} from './affinity-settlement.mjs?v=task-retention-20261106';
+import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=task-retention-20261106';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=task-retention-20261106';
+import {setOperationNotice} from './operation-notice.mjs?v=task-retention-20261106';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=task-retention-20261106';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=task-retention-20261106';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=task-retention-20261106';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=task-retention-20261106';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=task-retention-20261106';
+import { migrateImages } from './image-store.mjs?v=task-retention-20261106';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=task-retention-20261106';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -77,7 +78,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
   // Read-only recovery proof is reusable while the state identity and expiry window
   // are unchanged. Every mutation still gets an isolated copy and full write checks.
   let recoveryCache=null;
-  function cacheRecovery(result,time){const deadline=Math.min(Infinity,...result.document.undoHistory.map(expiresAt));recoveryCache={state,result,time,deadline};if(result.blocked)recoveryNotice='復原鏈已無法安全延續，相關復原已停止；目前資料與行動紀錄保留。';return result;}
+  function cacheRecovery(result,time){const deadline=Math.min(nextTaskExpiry(result.document.tasks),...result.document.undoHistory.map(expiresAt));recoveryCache={state,result,time,deadline};if(result.blocked)recoveryNotice='復原鏈已無法安全延續，相關復原已停止；目前資料與行動紀錄保留。';return result;}
   function currentRecovery(){const time=now();if(!recoveryCache||recoveryCache.state!==state||time<recoveryCache.time||time>=recoveryCache.deadline)return cacheRecovery(maintainRecovery(state,time),time);return recoveryCache.result;}
   const effective=()=>{const result=currentRecovery();return {...result,document:copy(result.document)};};
   const project=(document,keys)=>keys===null?document:Object.fromEntries(keys.map(key=>{if(key.startsWith('walletRecord:'))return [key,document.wallet?.records[key.slice(13)]??null];if(key==='activeCharacter'){const c=effectiveCharacter(document.companion,document.companion?.characters?.find(c=>c.characterId===document.companion.activeCharacterId&&!c.archived));return [key,c?{characterId:c.characterId,createdAt:c.createdAt,affinity:c.affinity,settings:{name:c.settings?.name??''},greetings:c.greetings,pageGreetings:c.pageGreetings,imageSettings:c.imageSettings}:null];}return [key,Object.hasOwn(document,key)?document[key]:undefined];}));
@@ -158,7 +159,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=storage-quota-20261106');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=task-retention-20261106');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;

@@ -1,12 +1,12 @@
-import {setOperationNotice} from './operation-notice.mjs?v=storage-quota-20261106';
-import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=storage-quota-20261106';
-import {recordTaskTiming} from './task-diagnostics.mjs?v=storage-quota-20261106';
-import {dataStore} from './data.mjs?v=storage-quota-20261106';
-import {createTaskService} from './tasks-service.mjs?v=storage-quota-20261106';
-import {allocation,allocationContext} from './tasks-model.mjs?v=storage-quota-20261106';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=storage-quota-20261106';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=storage-quota-20261106';
-import {createRewardFeedback} from './task-reward-feedback.mjs?v=storage-quota-20261106';
+import {setOperationNotice} from './operation-notice.mjs?v=task-retention-20261106';
+import {beginCompletionCompanion,finishCompletionCompanion,invalidateCompletionCompanion} from './companion-events.mjs?v=task-retention-20261106';
+import {recordTaskTiming} from './task-diagnostics.mjs?v=task-retention-20261106';
+import {dataStore} from './data.mjs?v=task-retention-20261106';
+import {createTaskService} from './tasks-service.mjs?v=task-retention-20261106';
+import {allocation,allocationContext} from './tasks-model.mjs?v=task-retention-20261106';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-retention-20261106';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-retention-20261106';
+import {createRewardFeedback} from './task-reward-feedback.mjs?v=task-retention-20261106';
 // One in-memory queue per document. Neither optimistic checks nor unfinished jobs are persisted.
 let instance;
 export function ownsCompletionAI(){return Boolean(instance?.ownsAI());}

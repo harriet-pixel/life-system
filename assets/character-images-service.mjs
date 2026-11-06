@@ -1,8 +1,8 @@
-import {holdDraft} from './coordination.mjs?v=storage-quota-20261106';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=storage-quota-20261106';
-import {validateCharacters} from './characters-model.mjs?v=storage-quota-20261106';
-import {updateCharacterImage} from './character-images-model.mjs?v=storage-quota-20261106';
-import {readImageBlob} from './image-store.mjs?v=storage-quota-20261106';
+import {holdDraft} from './coordination.mjs?v=task-retention-20261106';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=task-retention-20261106';
+import {validateCharacters} from './characters-model.mjs?v=task-retention-20261106';
+import {updateCharacterImage} from './character-images-model.mjs?v=task-retention-20261106';
+import {readImageBlob} from './image-store.mjs?v=task-retention-20261106';
 // Editor protects staging; the service also holds the existing draft lock
 // through asset verification and commit, including non-UI callers.
 // Global revision is checked again inside the existing write lock.

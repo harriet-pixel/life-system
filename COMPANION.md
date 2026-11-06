@@ -209,3 +209,7 @@ chat-avatar-sharp.cjs在375／1280px及2倍像素密度，以1200×1600棋盤格
 夥伴主頁籤使用待辦相同樣式，初始HTML與程式預設聊天室。右上設定圖示為筆，勾選框與自動尺寸文字同排。新增home／tasks／habits／wallet四頁的自動招呼開關，存在settings.companionDisplay.greetingPages；缺省全開，僅控制進入／返回時的歡迎文字／浮窗，正式生活操作回應保留，備份包含選擇。
 
 chat-edge-preferences.cjs驗證375／1280px的預設頁籤、樣式一致、筆圖示、label同排、四頁關閉招呼與完成事件仍回應；一般／75%縮放、visualViewport與Android內容視窗縮小情境，檢查輸入框底部貼齊、整頁位置不變。單元驗證舊設定相容、頁面map型別及完整備份。395項單元測試及chat-layout-controls、chat-keyboard-navigation、chat-height、chat-avatar-sharp、page-greetings與settings-cache回歸均通過；鍵盤情境為瀏覽器模擬，尚未實機驗收。
+
+### 下載角色圖檔
+
+夥伴角色設定的立繪／情緒圖片管理視窗新增「下載角色圖檔」。下載目前情緒已儲存的完整立繪Blob，不取160px縮圖、不重壓縮，不輸出未儲存草稿；檔名為角色名與情緒，副檔名沿PNG／JPEG／WebP格式。沒有正式圖片時停用，本機缺檔提示從含圖備份還原。下載不修改角色、圖片設定、數值或交易紀錄。

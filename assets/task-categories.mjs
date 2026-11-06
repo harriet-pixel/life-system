@@ -1,7 +1,7 @@
-import {mountColorField} from './color-field.mjs?v=storage-quota-20261106';
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=storage-quota-20261106';
-import {dataStore} from './data.mjs?v=storage-quota-20261106';
-import {holdDraft} from './coordination.mjs?v=storage-quota-20261106';
+import {mountColorField} from './color-field.mjs?v=task-retention-20261106';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=task-retention-20261106';
+import {dataStore} from './data.mjs?v=task-retention-20261106';
+import {holdDraft} from './coordination.mjs?v=task-retention-20261106';
 
 export function createCategoryManager(root,context,actions){
  const dialog=document.createElement('dialog');

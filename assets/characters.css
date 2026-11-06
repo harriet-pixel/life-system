@@ -67,3 +67,5 @@ html.chat-input-active{overflow-anchor:none}
 
 @media(width<1024px){#main .chat-room.is-keyboard-docked .chat-composer{display:flex;flex-direction:column;padding-bottom:0}#main .chat-room.is-keyboard-docked .chat-composer>div{order:2;margin-bottom:0}#main .chat-room.is-keyboard-docked .chat-composer>button{order:1}}
 #chat-display-settings .chat-checkbox-option{display:flex;flex-direction:row;align-items:center;gap:8px;min-height:44px}#chat-display-settings .chat-checkbox-option input{flex:0 0 20px;width:20px;margin:0}#chat-display-settings fieldset{min-width:0}
+/* Image management includes a download action; keep mobile labels horizontal. */
+@media(width<451px){#character-image-dialog footer button{flex:1 1 calc(50% - 4px);white-space:nowrap;padding-inline:8px}}

@@ -1,12 +1,12 @@
-import {mountColorField} from './color-field.mjs?v=storage-quota-20261106';
-import {mountTaskCompanion} from './task-companion.mjs?v=storage-quota-20261106';
-import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=storage-quota-20261106';
-import {createMobileTabPositioner} from './tab-position.mjs?v=storage-quota-20261106';
-import {dataStore} from './data.mjs?v=storage-quota-20261106';
-import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=storage-quota-20261106';
-import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=storage-quota-20261106';
-import {statusButtons} from './habit-quick.mjs?v=storage-quota-20261106';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=storage-quota-20261106';
+import {mountColorField} from './color-field.mjs?v=task-retention-20261106';
+import {mountTaskCompanion} from './task-companion.mjs?v=task-retention-20261106';
+import {allocationFields,readAllocation,readTargetAllocations,putAllocation,ACHIEVEMENTS} from './habit-manual.mjs?v=task-retention-20261106';
+import {createMobileTabPositioner} from './tab-position.mjs?v=task-retention-20261106';
+import {dataStore} from './data.mjs?v=task-retention-20261106';
+import {taipeiDate,periodInfo,infoForId,effectiveVersion,activePeriod,monthStats,POINTS,parseHabitIdentity} from './habits-model.mjs?v=task-retention-20261106';
+import {habitService,allocateHabit,habitReply,mountHabitReply,invalidateHabitReply} from './habit-actions.mjs?v=task-retention-20261106';
+import {statusButtons} from './habit-quick.mjs?v=task-retention-20261106';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-retention-20261106';
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 export function mountHabits(root,context){
  const $=s=>root.querySelector(s),today=()=>taipeiDate();let selectedMonth=today().slice(0,7),half=periodInfo(today()).id.slice(-1),busy=false,formBase='',editingPeriod=null,bonusId=null,settingRevision=null,bonusRevision=null,singleHabit=null,settingsSection='habits',selectedCard=0,selectedYear=taipeiDate().slice(0,4),yearStart=Number(taipeiDate().slice(0,4))-5;
