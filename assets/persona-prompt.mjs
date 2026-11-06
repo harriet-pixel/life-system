@@ -1,4 +1,4 @@
-import {normalizeCharacter,relationshipStage,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES} from './characters-model.mjs?v=drive-transfer-20261104';
+import {normalizeCharacter,relationshipStage,CHARACTER_FIELDS,STYLE_FIELDS,RELATIONSHIP_STAGES} from './characters-model.mjs?v=storage-quota-20261106';
 const cut=(s,n)=>String(s??'').slice(0,n);
 // One canonical A/B/C/D definition; callers choose a bounded projection.
 export function compactPersona(raw,{stage=relationshipStage(raw.affinity).stage,chat=false}={}){

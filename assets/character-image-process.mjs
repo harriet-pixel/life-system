@@ -1,5 +1,5 @@
-import {IMAGE_LIMITS} from './character-images-model.mjs?v=drive-transfer-20261104';
-import {encodeCanvas,decodeImage,createImageCropper} from './avatar-crop.mjs?v=drive-transfer-20261104';
+import {IMAGE_LIMITS} from './character-images-model.mjs?v=storage-quota-20261106';
+import {encodeCanvas,decodeImage,createImageCropper} from './avatar-crop.mjs?v=storage-quota-20261106';
 export {createImageCropper,decodeImage};
 const fail=()=>{throw new Error('請選擇內容完整的 PNG、JPEG 或 WebP；不接受 SVG、GIF 或動畫圖片。');};
 // Read dimensions BEFORE decoding to reject decompression bombs. Animated formats

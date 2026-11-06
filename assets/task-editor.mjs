@@ -1,8 +1,8 @@
-import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=drive-transfer-20261104';
-import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=drive-transfer-20261104';
-import {dataStore} from './data.mjs?v=drive-transfer-20261104';
-import {localDate,addDays,occurrence,taskForOccurrence} from './tasks-model.mjs?v=drive-transfer-20261104';
-import {holdDraft} from './coordination.mjs?v=drive-transfer-20261104';
+import {beginSaveTrace,captureSubmitStart,setSaving} from './save-diagnostics.mjs?v=storage-quota-20261106';
+import {createFixedAllocationEditor} from './task-fixed-editor.mjs?v=storage-quota-20261106';
+import {dataStore} from './data.mjs?v=storage-quota-20261106';
+import {localDate,addDays,occurrence,taskForOccurrence} from './tasks-model.mjs?v=storage-quota-20261106';
+import {holdDraft} from './coordination.mjs?v=storage-quota-20261106';
 
 // The editor owns one draft. Its date picker is a nested modal and never submits that draft.
 export function createTaskEditor(root,context,actions){

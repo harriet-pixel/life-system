@@ -1,8 +1,8 @@
-import {effectiveCharacter} from './characters-model.mjs?v=drive-transfer-20261104';
-import {emptyReplyLibrary,upgradeReplyManifest,validateCategoryKey,validateReplyManifest,DEFAULT_REPLY_POOLS,categoryKey,validateReplyPools} from './reply-manifest.mjs?v=drive-transfer-20261104';
-import {readReplyRows,stageReplyRows} from './reply-store.mjs?v=drive-transfer-20261104';
-import {replyPersonaKey,writeReply,usableReplies} from './reply-model.mjs?v=drive-transfer-20261104';
-import {holdDraft} from './coordination.mjs?v=drive-transfer-20261104';
+import {effectiveCharacter} from './characters-model.mjs?v=storage-quota-20261106';
+import {emptyReplyLibrary,upgradeReplyManifest,validateCategoryKey,validateReplyManifest,DEFAULT_REPLY_POOLS,categoryKey,validateReplyPools} from './reply-manifest.mjs?v=storage-quota-20261106';
+import {readReplyRows,stageReplyRows} from './reply-store.mjs?v=storage-quota-20261106';
+import {replyPersonaKey,writeReply,usableReplies} from './reply-model.mjs?v=storage-quota-20261106';
+import {holdDraft} from './coordination.mjs?v=storage-quota-20261106';
 export async function readReplyCategory(store,characterId,key){const state=store.getFields?store.getFields(['companion','replyLibrary','revision']):store.get(),c=effectiveCharacter(state.companion,state.companion.characters.find(c=>c.characterId===characterId));if(!c)throw new Error('角色已刪除。');validateReplyManifest(state.replyLibrary,state.companion);const ref=state.replyLibrary?.version===2?(state.replyLibrary?.characters[characterId]?.categories[key]??null):null;return {character:c,ref,epoch:state.replyLibrary?.epoch??null,rows:await readReplyRows(ref,{characterId,key}),signature:await replyPersonaKey(c)};}
 export async function editReplyCategory(store,{characterId,key,expectedRef,expectedEpoch,expectedSignature,action,values,guard=()=>true}){
  const release=await holdDraft('companion');try{
