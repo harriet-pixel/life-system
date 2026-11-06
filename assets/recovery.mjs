@@ -1,5 +1,6 @@
-import {walletMatches,applyWalletSnapshot} from './wallet-recovery.mjs?v=storage-quota-20261106';
-import {applyAffinityPlan} from './affinity-model.mjs?v=storage-quota-20261106';
+import {retireCompletedTasks} from './task-retention.mjs?v=task-retention-20261106';
+import {walletMatches,applyWalletSnapshot} from './wallet-recovery.mjs?v=task-retention-20261106';
+import {applyAffinityPlan} from './affinity-model.mjs?v=task-retention-20261106';
 // One policy for startup, replay, mutations, image references and backups.
 export const RECOVERY_LIMIT=15, DAY=86400000, HISTORY_VERSION=1;
 const shortKeys=new Set(['profile','photo','avatar','photoEdit','avatarEdit','portraits','currentPortraitId','settings']);
@@ -50,6 +51,7 @@ export function maintainRecovery(document,now=Date.now()){
  // Enforce the operation-count boundary before time filtering: expiration must
  // never make an older operation outside the latest 15 recoverable again.
  const recent=new Set(chronological(doc.history).slice(-RECOVERY_LIMIT).map(r=>r.id));
+ retireCompletedTasks(doc,now);
  let records=chronological(doc.undoHistory).filter(r=>recent.has(r.id)&&recoveryLifetime(r)>0&&Number.isFinite(Date.parse(r.time))&&Date.parse(r.time)<=now&&expiresAt(r)>now&&(!r.undone||r.redoable===true));
  const retained=new Set();let blocked=false;
  // Prove the entire available chain in advance. Stop at the first conflict;

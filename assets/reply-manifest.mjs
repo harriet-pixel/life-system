@@ -1,2 +1,2 @@
 // Optional reply modules share the existing lightweight role validator.
-export {emptyReplyLibrary,REPLY_EVENTS,REPLY_EMOTIONS,DEFAULT_REPLY_POOLS,replyCheck,categoryKey,validateCategoryKey,validateReplyPools,validateReplyManifest,upgradeReplyManifest,replyRefs} from './characters-model.mjs?v=storage-quota-20261106';
+export {emptyReplyLibrary,REPLY_EVENTS,REPLY_EMOTIONS,DEFAULT_REPLY_POOLS,replyCheck,categoryKey,validateCategoryKey,validateReplyPools,validateReplyManifest,upgradeReplyManifest,replyRefs} from './characters-model.mjs?v=task-retention-20261106';

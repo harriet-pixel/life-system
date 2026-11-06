@@ -1,10 +1,10 @@
-import {personaFingerprintInput} from './persona-prompt.mjs?v=storage-quota-20261106';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=storage-quota-20261106';
-import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=storage-quota-20261106';
-import {usableReplies,pickReply,replyPrompt,parseDailyReply,substituteReply} from './reply-model.mjs?v=storage-quota-20261106';
-import {readReplyCategory} from './reply-service.mjs?v=storage-quota-20261106';
-import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=storage-quota-20261106';
-import {validDailySource,dailyContext} from './daily-events.mjs?v=storage-quota-20261106';
+import {personaFingerprintInput} from './persona-prompt.mjs?v=task-retention-20261106';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=task-retention-20261106';
+import {categoryKey,DEFAULT_REPLY_POOLS} from './reply-manifest.mjs?v=task-retention-20261106';
+import {usableReplies,pickReply,replyPrompt,parseDailyReply,substituteReply} from './reply-model.mjs?v=task-retention-20261106';
+import {readReplyCategory} from './reply-service.mjs?v=task-retention-20261106';
+import {claimReplyEvent,pruneReplyEvents} from './reply-store.mjs?v=task-retention-20261106';
+import {validDailySource,dailyContext} from './daily-events.mjs?v=task-retention-20261106';
 const last=new Map();export const DAILY_FALLBACK='慢慢來，依照自己的步調繼續就好。';
 const snapshot=(store,event)=>store.getFields?store.getFields(event?.domain==='wallet'?['revision','companion','replyLibrary','walletRecord:'+event.sourceId]:['revision','companion','replyLibrary','tasks','habits','profile']):store.get();
 export async function dailyResponse(store,event,{valid=()=>true,random=Math.random,connection=getSharedAIConnection(),batch=[event],onCancel=()=>{}}={}){

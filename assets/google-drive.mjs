@@ -1,7 +1,7 @@
-import {backupDeviceName} from './cloud-backup-display.mjs?v=storage-quota-20261106';
-import {createRememberedDriveAuth,createDriveLink,DRIVE_LINK_KEY,DRIVE_AUTH_KEY} from './drive-auth-session.mjs?v=storage-quota-20261106';
-import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=storage-quota-20261106';
-import {MAX_FILE_BYTES,backupFilename,readBackup} from './backup.mjs?v=storage-quota-20261106';
+import {backupDeviceName} from './cloud-backup-display.mjs?v=task-retention-20261106';
+import {createRememberedDriveAuth,createDriveLink,DRIVE_LINK_KEY,DRIVE_AUTH_KEY} from './drive-auth-session.mjs?v=task-retention-20261106';
+import {GOOGLE_CLIENT_ID} from './google-config.mjs?v=task-retention-20261106';
+import {MAX_FILE_BYTES,backupFilename,readBackup} from './backup.mjs?v=task-retention-20261106';
 export const driveTransferTimeout=bytes=>Math.min(900000,Math.max(120000,60000+Math.ceil(Math.max(0,Number(bytes)||0)/65536)*1000));
 export function driveTransferError(error,phase='傳輸',signal=null){const timedOut=error?.name==='TimeoutError'||signal?.reason?.name==='TimeoutError';return Object.assign(new Error(timedOut?`Google Drive ${phase}逾時；網路可用時仍可能因備份較大或 Google 回應較慢而發生，請稍後手動重試。本機資料與既有備份保留。`:`Google Drive ${phase}中斷；這不代表裝置沒有網路，可能是 Google 連線或瀏覽器阻擋。請稍後重試，若持續發生請檢查瀏覽器對本站的封鎖設定。本機資料與既有備份保留。`),{code:timedOut?'drive-timeout':'drive-network',transient:true});}
 const responseSignals=new WeakMap();

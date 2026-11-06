@@ -1,10 +1,10 @@
-import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=storage-quota-20261106';
-import {createPersonalBackend} from './ai-worker-auth.mjs?v=storage-quota-20261106';
-import {AI_WORKER_URL} from './ai-worker-config.mjs?v=storage-quota-20261106';
-import {createPageAIConnection} from './ai-client.mjs?v=storage-quota-20261106';
-import {AI_BACKEND_URL} from './ai-config.mjs?v=storage-quota-20261106';
-import {getAIAccessToken} from './ai-auth.mjs?v=storage-quota-20261106';
-import {dataStore} from './data.mjs?v=storage-quota-20261106';
+import {createAISession,AI_SESSION_KEY} from './ai-session.mjs?v=task-retention-20261106';
+import {createPersonalBackend} from './ai-worker-auth.mjs?v=task-retention-20261106';
+import {AI_WORKER_URL} from './ai-worker-config.mjs?v=task-retention-20261106';
+import {createPageAIConnection} from './ai-client.mjs?v=task-retention-20261106';
+import {AI_BACKEND_URL} from './ai-config.mjs?v=task-retention-20261106';
+import {getAIAccessToken} from './ai-auth.mjs?v=task-retention-20261106';
+import {dataStore} from './data.mjs?v=task-retention-20261106';
 let shared;
 export function getSharedAIConnection(){
  if(!shared){
