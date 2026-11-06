@@ -1,18 +1,18 @@
-import {mountColorField} from './color-field.mjs?v=task-retention-20261106';
-import {documentTime} from './cloud-backup-policy.mjs?v=task-retention-20261106';
-import {cloudBackupLabel} from './cloud-backup-display.mjs?v=task-retention-20261106';
-import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=task-retention-20261106';
-import {getCloudBackup} from './cloud-backup.mjs?v=task-retention-20261106';
-import {initializeAISettings} from './ai-settings.mjs?v=task-retention-20261106';
-import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=task-retention-20261106';
-import {dataStore,persistentUndo} from './data.mjs?v=task-retention-20261106';
-import {createMobileTabPositioner} from './tab-position.mjs?v=task-retention-20261106';
-import {createHistoryView} from './history-view.mjs?v=task-retention-20261106';
-import {auditImages,deleteUnusedImages} from './image-references.mjs?v=task-retention-20261106';
-import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=task-retention-20261106';
-import {holdDraft} from './coordination.mjs?v=task-retention-20261106';
-import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=task-retention-20261106';
-import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=task-retention-20261106';
+import {mountColorField} from './color-field.mjs?v=record-retention-20261106';
+import {documentTime} from './cloud-backup-policy.mjs?v=record-retention-20261106';
+import {cloudBackupLabel} from './cloud-backup-display.mjs?v=record-retention-20261106';
+import {initializeTaskDialogs} from './task-dialog-viewport.mjs?v=record-retention-20261106';
+import {getCloudBackup} from './cloud-backup.mjs?v=record-retention-20261106';
+import {initializeAISettings} from './ai-settings.mjs?v=record-retention-20261106';
+import {validateNewPassword,validateRestorePassword,validHex} from './validation.mjs?v=record-retention-20261106';
+import {dataStore,persistentUndo} from './data.mjs?v=record-retention-20261106';
+import {createMobileTabPositioner} from './tab-position.mjs?v=record-retention-20261106';
+import {createHistoryView} from './history-view.mjs?v=record-retention-20261106';
+import {auditImages,deleteUnusedImages} from './image-references.mjs?v=record-retention-20261106';
+import {normalizeSettings,applyAppearance} from './settings-model.mjs?v=record-retention-20261106';
+import {holdDraft} from './coordination.mjs?v=record-retention-20261106';
+import {withBackup,inspectBackupFile,readBackup,restoreBackup,downloadBlob} from './backup.mjs?v=record-retention-20261106';
+import {driveConfigured,driveAuth,getDriveState,prepareDriveAuth,connectDrive,ensureDriveAccess,disconnectDrive} from './google-drive.mjs?v=record-retention-20261106';
 
 export function mountSettings(root,context){
 initializeTaskDialogs(root,context);

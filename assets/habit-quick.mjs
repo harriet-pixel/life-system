@@ -1,8 +1,8 @@
-import {setOperationNotice} from './operation-notice.mjs?v=task-retention-20261106';
-import {todayBonusTotals} from './habit-bonus-summary.mjs?v=task-retention-20261106';
-import {dataStore} from './data.mjs?v=task-retention-20261106';
-import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=task-retention-20261106';
-import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=task-retention-20261106';
+import {setOperationNotice} from './operation-notice.mjs?v=record-retention-20261106';
+import {todayBonusTotals} from './habit-bonus-summary.mjs?v=record-retention-20261106';
+import {dataStore} from './data.mjs?v=record-retention-20261106';
+import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=record-retention-20261106';
+import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=record-retention-20261106';
 const pendingChoices=new Map();
 export function statusButtons(current,action,disabled=false,identity=null){
  const pending=identity&&pendingChoices.get(identity),group=document.createElement('div');group.className='habit-statuses';group.setAttribute('role','group');group.setAttribute('aria-label','完成程度');

@@ -1,4 +1,4 @@
-import {readStoredDocument} from './storage-codec.mjs?v=task-retention-20261106';
+import {readStoredDocument} from './storage-codec.mjs?v=record-retention-20261106';
 // Emergency preservation only: no Drive calls, no credentials, no primary edits.
 export const JOURNAL_KEY='life-system.cloud-sync-state.v1';
 export const VAULT_DB='life-system.recovery-vault.v1';

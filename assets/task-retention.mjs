@@ -1,4 +1,4 @@
-import {fixedAllocationFor,occurrenceSourceId} from './tasks-model.mjs?v=task-retention-20261106';
+import {fixedAllocationFor,occurrenceSourceId} from './tasks-model.mjs?v=record-retention-20261106';
 export const COMPLETED_TASK_TTL=2*86400000;
 export function nextTaskExpiry(tasks){const groups=new Map();for(const c of tasks?.completions??[])groups.set(c.transactionId,Math.max(groups.get(c.transactionId)??0,Date.parse(c.time)));return Math.min(Infinity,...[...groups.values()].map(time=>time+COMPLETED_TASK_TTL+1));}
 // Retire details, never replay a reward transaction or change balances. A repeat

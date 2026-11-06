@@ -1,4 +1,4 @@
-import {readStoredDocument,writeStoredDocument} from './storage-codec.mjs?v=task-retention-20261106';
+import {readStoredDocument,writeStoredDocument} from './storage-codec.mjs?v=record-retention-20261106';
 // Image bytes live once in IndexedDB; the existing atomic journal stores references.
 export const IMAGE_DATABASE = 'life-system.images.v1';
 const PREFIX = 'asset:';
