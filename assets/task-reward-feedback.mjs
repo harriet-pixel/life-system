@@ -1,4 +1,4 @@
-import {ABILITIES} from './abilities.mjs?v=drive-transfer-20261104';
+import {ABILITIES} from './abilities.mjs?v=storage-quota-20261106';
 // Only committed local completions enter this document-local, serial visual queue.
 export function createRewardFeedback(root,context){
  const queue=[],seen=new Set();let nodes=[],timer,playing=false,layoutCurrent;

@@ -1,0 +1,11 @@
+import LZString from './vendor/lz-string.mjs';
+// This is a local storage envelope only. DataStore and all exported backups keep
+// the original document schema, including every eligible recovery snapshot.
+const FORMAT='life-system.local-lz-v1',THRESHOLD=256*1024,MAX_TEXT=64*1024*1024;
+let cachedRaw,cachedText;
+const fail=()=>{throw new Error('本機壓縮資料無法完整核對，原資料已保留，請勿清除瀏覽器儲存。');};
+function checksum(text){let hash=2166136261;for(let i=0;i<text.length;i++)hash=Math.imul(hash^text.charCodeAt(i),16777619);return (hash>>>0).toString(16);}
+export function storedDocumentText(raw){if(raw===null||raw===undefined)return raw;if(raw===cachedRaw)return cachedText;const envelope=JSON.parse(raw);if(!Object.hasOwn(envelope,'storageFormat'))return raw;if(envelope.storageFormat!==FORMAT||typeof envelope.data!=='string'||!Number.isSafeInteger(envelope.textLength)||envelope.textLength<0||envelope.textLength>MAX_TEXT)fail();const text=LZString.decompressFromUTF16(envelope.data,envelope.textLength);if(typeof text!=='string'||text.length!==envelope.textLength||checksum(text)!==envelope.checksum)fail();const value=JSON.parse(text);if(value.revision!==envelope.revision||JSON.stringify(value.settings)!==JSON.stringify(envelope.settings))fail();cachedRaw=raw;cachedText=text;return text;}
+export const readStoredDocument=raw=>JSON.parse(storedDocumentText(raw));
+export function encodeStoredDocument(document,{force=false,text=JSON.stringify(document)}={}){if(!force&&text.length<THRESHOLD||text.length>MAX_TEXT)return text;const packed=JSON.stringify({storageFormat:FORMAT,revision:document.revision,settings:document.settings,textLength:text.length,checksum:checksum(text),data:LZString.compressToUTF16(text)});if(packed.length>=text.length)return text;if(storedDocumentText(packed)!==text)fail();return packed;}
+export function writeStoredDocument(storage,key,document,{text=JSON.stringify(document)}={}){let raw=encodeStoredDocument(document,{text});try{storage.setItem(key,raw);}catch(error){if(!['QuotaExceededError','NS_ERROR_DOM_QUOTA_REACHED'].includes(error?.name)&&![22,1014].includes(error?.code))throw error;const smaller=encodeStoredDocument(document,{force:true,text});if(smaller.length>=raw.length)throw error;storage.setItem(key,smaller);raw=smaller;}return raw;}

@@ -1,3 +1,4 @@
+import {readStoredDocument,writeStoredDocument} from './storage-codec.mjs?v=storage-quota-20261106';
 // Image bytes live once in IndexedDB; the existing atomic journal stores references.
 export const IMAGE_DATABASE = 'life-system.images.v1';
 const PREFIX = 'asset:';
@@ -48,16 +49,15 @@ export async function prepareImageReferences(value) {
 }
 export async function migrateImages(storage,key) {
   const raw=storage.getItem(key);if(!raw)return;
-  const value=JSON.parse(raw);
+  const value=readStoredDocument(raw);
   // Only image-bearing data is migrated. Private text is never inspected as an image.
   let changed=false;
   const roots=[value,...[...(value.history??[]),...(value.undoHistory??[])].flatMap(record=>[record.before,record.after])];
   for(const root of roots)for(const field of ['photo','avatar','photoEdit','avatarEdit','portraits'])if(root && Object.hasOwn(root,field)){const original=JSON.stringify(root[field]);root[field]=await prepareImageReferences(root[field]);if(JSON.stringify(root[field])!==original)changed=true;}
   if(changed){
     value.revision=(value.revision??0)+1;
-    const next=JSON.stringify(value);
     if(storage.getItem(key)!==raw)throw new Error('資料已在其他頁面更新，請重新整理後重試圖片升級。');
-    try{storage.setItem(key,next);}catch{throw new Error('圖片升級尚未完成，原本的圖片與資料已保留。請確認瀏覽器儲存權限。');}
+    try{writeStoredDocument(storage,key,value);}catch{throw new Error('圖片升級尚未完成，原本的圖片與資料已保留。請確認瀏覽器儲存權限。');}
   }
 }
 // No automatic garbage collection. Permanent deletion is settings-only.

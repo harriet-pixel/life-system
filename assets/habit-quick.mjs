@@ -1,8 +1,8 @@
-import {setOperationNotice} from './operation-notice.mjs?v=drive-transfer-20261104';
-import {todayBonusTotals} from './habit-bonus-summary.mjs?v=drive-transfer-20261104';
-import {dataStore} from './data.mjs?v=drive-transfer-20261104';
-import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=drive-transfer-20261104';
-import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=drive-transfer-20261104';
+import {setOperationNotice} from './operation-notice.mjs?v=storage-quota-20261106';
+import {todayBonusTotals} from './habit-bonus-summary.mjs?v=storage-quota-20261106';
+import {dataStore} from './data.mjs?v=storage-quota-20261106';
+import {activePeriod,effectiveVersion,taipeiDate,POINTS,habitIdentity} from './habits-model.mjs?v=storage-quota-20261106';
+import {habitService,habitReply,invalidateHabitReply} from './habit-actions.mjs?v=storage-quota-20261106';
 const pendingChoices=new Map();
 export function statusButtons(current,action,disabled=false,identity=null){
  const pending=identity&&pendingChoices.get(identity),group=document.createElement('div');group.className='habit-statuses';group.setAttribute('role','group');group.setAttribute('aria-label','完成程度');

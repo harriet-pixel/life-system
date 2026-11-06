@@ -1,21 +1,22 @@
-import {walletSnapshots} from './wallet-recovery.mjs?v=drive-transfer-20261104';
-import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=drive-transfer-20261104';
-import {attemptJournalRescue} from './storage-vault.mjs?v=drive-transfer-20261104';
-import {storageFailure} from './storage-diagnostics.mjs?v=drive-transfer-20261104';
-import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=drive-transfer-20261104';
-import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=drive-transfer-20261104';
-import {integrateAffinity} from './affinity-integration.mjs?v=drive-transfer-20261104';
-import {settleAffinity} from './affinity-settlement.mjs?v=drive-transfer-20261104';
-import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=drive-transfer-20261104';
-import {emptyHabits,validateHabits} from './habits-model.mjs?v=drive-transfer-20261104';
-import {setOperationNotice} from './operation-notice.mjs?v=drive-transfer-20261104';
-import {emptyTasks,validateTasks} from './tasks-model.mjs?v=drive-transfer-20261104';
-import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=drive-transfer-20261104';
-import {validateProfileFields,validateActivities} from './validation.mjs?v=drive-transfer-20261104';
-import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=drive-transfer-20261104';
-import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=drive-transfer-20261104';
-import { migrateImages } from './image-store.mjs?v=drive-transfer-20261104';
-import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=drive-transfer-20261104';
+import {readStoredDocument,storedDocumentText,writeStoredDocument} from './storage-codec.mjs?v=storage-quota-20261106';
+import {walletSnapshots} from './wallet-recovery.mjs?v=storage-quota-20261106';
+import {emptyWallet,validateWallet,validateWalletEvidence} from './wallet-model.mjs?v=storage-quota-20261106';
+import {attemptJournalRescue} from './storage-vault.mjs?v=storage-quota-20261106';
+import {storageFailure} from './storage-diagnostics.mjs?v=storage-quota-20261106';
+import {validateReplyManifest,emptyReplyLibrary} from './characters-model.mjs?v=storage-quota-20261106';
+import {emptyAffinity,validateAffinity,setPenaltyPolicy,observeEligibility} from './affinity-model.mjs?v=storage-quota-20261106';
+import {integrateAffinity} from './affinity-integration.mjs?v=storage-quota-20261106';
+import {settleAffinity} from './affinity-settlement.mjs?v=storage-quota-20261106';
+import {emptyCharacters,validateCharacters,relationshipStage,effectiveCharacter} from './characters-model.mjs?v=storage-quota-20261106';
+import {emptyHabits,validateHabits} from './habits-model.mjs?v=storage-quota-20261106';
+import {setOperationNotice} from './operation-notice.mjs?v=storage-quota-20261106';
+import {emptyTasks,validateTasks} from './tasks-model.mjs?v=storage-quota-20261106';
+import {RECOVERY_LIMIT,maintainRecovery,undoCandidate,redoCandidate,expectedMatches,applySnapshot,actionMetadata,expiresAt} from './recovery.mjs?v=storage-quota-20261106';
+import {validateProfileFields,validateActivities} from './validation.mjs?v=storage-quota-20261106';
+import { coordinatedWrite,pendingFeedbackFrame } from './coordination.mjs?v=storage-quota-20261106';
+import { DEFAULT_SETTINGS, normalizeSettings, applyAppearance } from './settings-model.mjs?v=storage-quota-20261106';
+import { migrateImages } from './image-store.mjs?v=storage-quota-20261106';
+import { normalizeStats, validateStats, createInitialStats, visibleExperience } from './abilities.mjs?v=storage-quota-20261106';
 // A single atomic localStorage document owns data and its reversible journal.
 export {RECOVERY_LIMIT};
 export const STATS_RULES_VERSION = 2;
@@ -37,13 +38,13 @@ export function isPristineDocument(document){
 
 export function migrateStatsRules(storage) {
   const raw=storage.getItem(STORAGE_KEY);if(!raw)return;
-  const value=JSON.parse(raw);
+  const value=readStoredDocument(raw);
   if(!value?.profile||!value.stats||!Array.isArray(value.history)||!Number.isSafeInteger(value.revision))throw new Error('既有資料無法安全讀取，已停止數值升級。');
   if(value.statsRulesVersion===STATS_RULES_VERSION)return;
   if(value.statsRulesVersion!==undefined&&value.statsRulesVersion!==1)throw new Error('不支援的數值規則版本，原資料已保留。');
   const next={...value,stats:createInitialStats(),history:value.history,statsRulesVersion:STATS_RULES_VERSION,revision:value.revision+1};
   if(storage.getItem(STORAGE_KEY)!==raw)throw new Error('其他分頁已更新資料，請重新整理後重試。');
-  storage.setItem(STORAGE_KEY,JSON.stringify(next));
+  writeStoredDocument(storage,STORAGE_KEY,next);
 }
 export function createDataStore(storage,{now=Date.now}={}) {
   let state, busy=false,recoveryNotice=null,loadedRaw;
@@ -51,7 +52,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
   const load = () => {
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) {loadedRaw=raw;return initial();}
-    const value = JSON.parse(raw);
+    const value = readStoredDocument(raw);
     if (!value || !Array.isArray(value.history) || !value.profile || !value.stats || !value.activities || !Number.isInteger(value.revision)) throw new Error('儲存資料無法讀取；已保留原資料，請勿清除瀏覽器儲存。');
     value.companion ??= emptyCharacters();if(value.companion.version===1){try{value.companion=validateCharacters(value.companion);}catch{recoveryNotice='角色格式遷移暫停，原始內容已保留；其他本機資料仍可讀取。';}}
     value.affinity ??= emptyAffinity();
@@ -86,7 +87,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     if (current.revision !== state.revision) { state = current; notify(); throw new Error('資料已在其他頁面更新，請重試。'); }
     const recoveryAt=performance.now(),checkedAt=now(),checked=maintainRecovery(next,checkedAt);next=checked.document;timing?.phase('recovery-write-check',recoveryAt);
     next.revision = Math.max(state.revision + 1,next.revision ?? 0);
-    try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();storage.setItem(STORAGE_KEY,raw);loadedRaw=raw;timing?.phase('storage-write',writeAt);}
+    try {const serializedAt=performance.now(),raw=JSON.stringify(next);timing?.phase('serialize',serializedAt);const writeAt=performance.now();loadedRaw=writeStoredDocument(storage,STORAGE_KEY,next,{text:raw});timing?.phase('storage-write',writeAt);}
     catch(error) { throw storageFailure(error,storage,{operation:operation?.type??'primary-write',attemptedBytes:JSON.stringify(next).length*2}); }
     if(operation&&/^(task\.completed|habit\.(check|bonus)|wallet\.spent|chat\.assessed|stats\.manual)/.test(operation.type)){const prior=new Map((state.companion?.characters??[]).map(c=>[c.characterId,c]));operation.growth={level:Math.max(0,next.stats.level-state.stats.level),levelTo:next.stats.level,affinity:(next.companion?.characters??[]).flatMap(c=>{const old=prior.get(c.characterId);const view=effectiveCharacter(next.companion,c),previous=effectiveCharacter(state.companion,old),stage=relationshipStage(view.affinity);return old&&old.characterId===next.companion.activeCharacterId&&old.createdAt===c.createdAt&&stage.stage>relationshipStage(previous.affinity).stage?[{name:c.settings.name,amount:view.affinity-previous.affinity,characterId:c.characterId,stage:stage.stage,stageName:stage.name}]:[]})};}
     if(operation?.growth&&operation.growth.level===0&&!operation.growth.affinity.length)delete operation.growth;
@@ -95,7 +96,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
   const api = {
     get: () => copy(currentRecovery().document),
     getFields: keys => copy(project(currentRecovery().document,keys)),
-    maintain() {const result=effective();const raw=storage.getItem(STORAGE_KEY);if(raw&&JSON.stringify(result.document)!==raw)persist(result.document);return result;},
+    maintain() {const result=effective();const raw=storage.getItem(STORAGE_KEY);if(raw&&JSON.stringify(result.document)!==storedDocumentText(raw))persist(result.document);return result;},
     notify,
     subscribeCommits(fn,{metadataOnly=false,omit=null,keys=null,types=null}={}){commitListeners.set(fn,{metadataOnly,omit,keys,types});return()=>commitListeners.delete(fn);},
     setBusy(value) {busy=value;notify({statusOnly:true});},
@@ -157,7 +158,7 @@ export function createDataStore(storage,{now=Date.now}={}) {
     },
     setReplyLibrary(value,expectedRevision,valid=()=>true) {if(!valid()||state.revision!==expectedRevision)throw new Error('回覆庫等待期間資料已更新，請重試。');const next=effective().document;next.replyLibrary=validateReplyManifest(value,next.companion);persist(next);return true;},
     prepareChat() {const next=effective().document;next.affinity=validateAffinity(next.affinity,next.companion);if(!next.affinity.chatEpoch){next.affinity.chatEpoch=crypto.randomUUID();persist(next);}return next.affinity.chatEpoch;},
-    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=drive-transfer-20261104');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
+    async commitChatAssessment(turn,valid=()=>true) {const {commitChat}=await import('./chat-affinity.mjs?v=storage-quota-20261106');if(!valid())throw new Error('此聊天請求已失效，未提交評估。');const next=effective().document,result=commitChat(next,turn,new Date(now()).toISOString());if(result.changed)persist(next,null,{id:'chat:'+turn.chatTurnId,type:'chat.assessed',label:'聊天評估完成',delta:{experience:0,currency:0,level:0,abilities:[]}});return copy(result.receipt);},
     setAIPreferences(value) {
       const ai=normalizeSettings({ai:value}).ai;
       const next=effective().document;
@@ -235,7 +236,7 @@ if (typeof window !== 'undefined') {
 }
 export const dataStore = typeof window !== 'undefined' ? openBrowserStore() : null;
 if (dataStore) {
-  try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,'復原資料整理失敗，原資料已保留。'+error.message);}document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}
+  try{await coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();});}catch(error){const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,'復原資料整理失敗，原資料已保留。'+error.message);}if(error.code!=='storage-quota'){document.querySelectorAll('input,button').forEach(control=>control.disabled=true);throw error;}}
   let expiryTimer;
   let appliedAppearance,appliedDisplay;dataStore.subscribe(state=>{const display=JSON.stringify(state.settings.companionDisplay);if(display!==appliedDisplay){globalThis.LifeAppearance.applyCompanionDisplay(state.settings);appliedDisplay=display;}const appearance=JSON.stringify(state.settings.appearance);if(appearance!==appliedAppearance){applyAppearance(state.settings.appearance);appliedAppearance=appearance;}clearTimeout(expiryTimer);const deadline=dataStore.getState().nextExpiry;if(Number.isFinite(deadline))expiryTimer=setTimeout(()=>coordinatedWrite(()=>{dataStore.refresh();dataStore.maintain();}).catch(error=>{const e=document.querySelector('#operation-status');if(e){e.hidden=false;setOperationNotice(e,error.message);}}),Math.min(2147483647,Math.max(1,deadline-Date.now())));},{changesOnly:true,keys:['settings']});
   for(const method of ['transact','undo','redo','setAIPreferences','settleAffinities','setAffinityPolicy','prepareChat','commitChatAssessment','setReplyLibrary']) {
