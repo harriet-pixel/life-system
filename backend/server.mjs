@@ -1,4 +1,4 @@
-import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=task-retention-20261106';
+import {AI_TEST_TEXT} from '../assets/ai-prompts.mjs?v=record-retention-20261106';
 import {createServer} from 'node:http';
 import {pathToFileURL} from 'node:url';
 import {createJWTVerifier} from './auth.mjs';

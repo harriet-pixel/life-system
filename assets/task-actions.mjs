@@ -1,10 +1,10 @@
-import {setOperationNotice} from './operation-notice.mjs?v=task-retention-20261106';
-import {getCompletionFlow} from './task-completion.mjs?v=task-retention-20261106';
-import {dataStore} from './data.mjs?v=task-retention-20261106';
-import {createTaskService} from './tasks-service.mjs?v=task-retention-20261106';
-import {allocation,localDate} from './tasks-model.mjs?v=task-retention-20261106';
-import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=task-retention-20261106';
-import {getSharedAIConnection} from './ai-runtime.mjs?v=task-retention-20261106';
+import {setOperationNotice} from './operation-notice.mjs?v=record-retention-20261106';
+import {getCompletionFlow} from './task-completion.mjs?v=record-retention-20261106';
+import {dataStore} from './data.mjs?v=record-retention-20261106';
+import {createTaskService} from './tasks-service.mjs?v=record-retention-20261106';
+import {allocation,localDate} from './tasks-model.mjs?v=record-retention-20261106';
+import {ABILITIES,ALLOCATION_PRINCIPLES} from './abilities.mjs?v=record-retention-20261106';
+import {getSharedAIConnection} from './ai-runtime.mjs?v=record-retention-20261106';
 export function taskActions(root,context){
  const completions=getCompletionFlow();
  const status=root.querySelector('#operation-status'),say=text=>setOperationNotice(status,text);

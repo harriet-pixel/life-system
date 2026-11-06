@@ -1,4 +1,4 @@
-import {integerValue} from './validation.mjs?v=task-retention-20261106';
+import {integerValue} from './validation.mjs?v=record-retention-20261106';
 export {integerValue};
 // Shared order and stable IDs for charts, settings and future allocation adapters.
 export const ABILITIES = Object.freeze([

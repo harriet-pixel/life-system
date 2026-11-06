@@ -1,23 +1,23 @@
-import {backupDeviceName} from './cloud-backup-display.mjs?v=task-retention-20261106';
-import {replyRefs} from './reply-manifest.mjs?v=task-retention-20261106';
+import {backupDeviceName} from './cloud-backup-display.mjs?v=record-retention-20261106';
+import {replyRefs} from './reply-manifest.mjs?v=record-retention-20261106';
 // Load the reusable reply asset store only when a manifest actually references it.
-const replyStore=()=>import('./reply-store.mjs?v=task-retention-20261106');
+const replyStore=()=>import('./reply-store.mjs?v=record-retention-20261106');
 const readReplyRows=async(...args)=>(await replyStore()).readReplyRows(...args);
 const validateReplyAssets=async(...args)=>(await replyStore()).validateReplyAssets(...args);
 const importReplyAssets=async(...args)=>(await replyStore()).importReplyAssets(...args);
-import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=task-retention-20261106';
-import {createSyncEngine} from './cloud-sync-engine.mjs?v=task-retention-20261106';
-import {createSyncDrive} from './cloud-sync-drive.mjs?v=task-retention-20261106';
-import {dataStore,isPristineDocument} from './data.mjs?v=task-retention-20261106';
-import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=task-retention-20261106';
-import {getCloudBackup} from './cloud-backup.mjs?v=task-retention-20261106';
-import {maintenance} from './coordination.mjs?v=task-retention-20261106';
-import {validateDocument} from './backup.mjs?v=task-retention-20261106';
-import {maintainRecovery} from './recovery.mjs?v=task-retention-20261106';
-import {documentImageReferences} from './image-references.mjs?v=task-retention-20261106';
-import {readImageBlob,listImageAssets,stageImageAssets} from './image-store.mjs?v=task-retention-20261106';
-import {validateRoleImageAssets} from './character-image-integrity.mjs?v=task-retention-20261106';
-import {same,logicalDocument} from './cloud-sync-model.mjs?v=task-retention-20261106';
+import {AUTO_SYNC_ENABLED,autoSyncEnabled,setSyncRuntime,getSyncRuntime} from './cloud-sync-status.mjs?v=record-retention-20261106';
+import {createSyncEngine} from './cloud-sync-engine.mjs?v=record-retention-20261106';
+import {createSyncDrive} from './cloud-sync-drive.mjs?v=record-retention-20261106';
+import {dataStore,isPristineDocument} from './data.mjs?v=record-retention-20261106';
+import {driveAuth,getDriveState,connectDrive} from './google-drive.mjs?v=record-retention-20261106';
+import {getCloudBackup} from './cloud-backup.mjs?v=record-retention-20261106';
+import {maintenance} from './coordination.mjs?v=record-retention-20261106';
+import {validateDocument} from './backup.mjs?v=record-retention-20261106';
+import {maintainRecovery} from './recovery.mjs?v=record-retention-20261106';
+import {documentImageReferences} from './image-references.mjs?v=record-retention-20261106';
+import {readImageBlob,listImageAssets,stageImageAssets} from './image-store.mjs?v=record-retention-20261106';
+import {validateRoleImageAssets} from './character-image-integrity.mjs?v=record-retention-20261106';
+import {same,logicalDocument} from './cloud-sync-model.mjs?v=record-retention-20261106';
 // Explicitly feature gated. A false gate performs no Drive reads, writes or local applies.
 export async function startCloudSync({enabled=autoSyncEnabled(),store=dataStore,storage=localStorage,remote=createSyncDrive(),onState=()=>{}}={}){
  if(!enabled||!AUTO_SYNC_ENABLED)return {enabled:false,close(){},getState:()=>({state:'待同步',pending:0,checked:false,confirmed:false,message:'目前使用手動備份模式。'})};

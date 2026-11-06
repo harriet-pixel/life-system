@@ -1,4 +1,4 @@
-import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=task-retention-20261106';
+import {AIError,fail,readJSON} from '../../assets/ai-errors.mjs?v=record-retention-20261106';
 import {configuration,jsonBody,json,validToken,edgeFetch} from './security.mjs';
 export {PersonalGate} from './gate.mjs';
 const cookieName='__Host-life-oauth';

@@ -1,7 +1,7 @@
-import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=task-retention-20261106';
-import {currentSaveTrace} from './save-diagnostics.mjs?v=task-retention-20261106';
-import {nextOccurrenceId,occurrenceSourceId,emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate,taskForOccurrence} from './tasks-model.mjs?v=task-retention-20261106';
-import {expiresAt} from './recovery.mjs?v=task-retention-20261106';
+import {boardTasks,DAY_DEFAULTS,validateViews,validateListSettings} from './task-view-model.mjs?v=record-retention-20261106';
+import {currentSaveTrace} from './save-diagnostics.mjs?v=record-retention-20261106';
+import {nextOccurrenceId,occurrenceSourceId,emptyTasks,validateTasks,localDate,catchUp,categoryName,occurrence,occurrenceId,putOccurrence,schedule,clearSchedule,allocation,categoryColor,isOverdue,deletionEvidence,validBrief,allocationKey,inResidentLibrary,validDate,validateFixedAllocation,fixedAllocationFor,rowsForDate,taskForOccurrence} from './tasks-model.mjs?v=record-retention-20261106';
+import {expiresAt} from './recovery.mjs?v=record-retention-20261106';
 export function createTaskService(store,{now=()=>new Date(),id=()=>crypto.randomUUID(),emit=()=>{}}={}){
  const snapshot=()=>store.get();
  let viewQueue=Promise.resolve();

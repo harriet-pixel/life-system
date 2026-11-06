@@ -175,3 +175,5 @@ Google有效access token保存於專用localStorage，最長一小時、提前�
 驗證：408項單元測試通過。`tests/storage-codec.test.mjs`涵蓋無損往返、損毀封裝、配額失敗原子性、跨分頁舊寫入拒絕、Undo／Redo及備份還原。`tests/storage-quota.cjs`在390px、台北時區的Chromium原生配額測試中，約2.46MB主文件壓縮至約61KB，400筆事件與有效Undo均完整；重載、含圖備份、圖片遷移與位元組一致的還原前archive通過。強制完全無法寫入時仍可啟動並驗證匯出既有資料。既有`tests/emergency-storage.cjs`同步journal保護及還原失敗流程亦通過；未宣稱已讀取使用者裝置資料。
 
 已完成待辦另依使用者指定的48小時保留政策清理明細與相關復原內容，已入帳數值保留；這與無損壓縮是分開的資料生命週期，詳見docs/TASKS.md。
+
+帳本四個月及彈性習慣15天明細／本月上月唯讀表格的保留界線另依docs/WALLET.md與docs/HABITS.md執行。習慣圖表使用永久統計合計，清理不改已入帳數值，舊備份匯入亦套用。

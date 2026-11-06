@@ -312,3 +312,7 @@ settings.companionDisplay選填{floatingAvatarSize,chatAvatarSize,greetingPages?
 夥伴兩主頁籤共用待辦task-content-tabs樣式，桌面有英文副標、行動版20px及相同底線。HTML初始與mount結束都預設聊天室，重新整理不先顯示角色設定；History返回仍沿既有DOM草稿。頭像顯示設定入口改筆，checkbox label固定同一flex row。
 
 companionDisplay選填greetingPages={home,tasks,habits,wallet}，四個boolean，缺省全部啟用以相容舊設定。頭像顯示窗提供勾選各頁自動招呼並隨原設定儲存／取消、同欄位衝突保留。只控制進入／返回時的招呼（桌面文字及行動浮窗），不阻擋正式完成事件、打卡、消費等回應；不自動生成AI或改變正式數值。完整備份保留選擇。
+
+## 帳本與彈性習慣保留界線（2026-11-06）
+
+使用者指定帳本僅保留本月及前3個月的逐筆紀錄，常用項目保留；彈性習慣今天及前15天可編輯，較早明細清理但本月／上月保留唯讀M／P／E結果，上月以前格位／週期設定移除。月份及年度圖表使用永久半月數值合計，不因明細清除而減少；已入帳數值與好感度不回扣。維護與備份／還原／相依Undo須共用保留規則，額外加分紀錄不在本次清理範圍。詳見docs/HABITS.md及docs/WALLET.md。

@@ -1,6 +1,6 @@
-import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=task-retention-20261106';
-import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=task-retention-20261106';
-import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=task-retention-20261106';
+import {assembleAIPrompt,AI_LANGUAGE_RULE} from './ai-prompts.mjs?v=record-retention-20261106';
+import {AIError, fail, readJSON, providerError} from './ai-errors.mjs?v=record-retention-20261106';
+import {assessModel, MODEL_ID} from './ai-capabilities.mjs?v=record-retention-20261106';
 export const PROVIDERS = Object.freeze({
   gemini: {origin:'https://generativelanguage.googleapis.com', models:'/v1beta/models'},
   deepseek: {origin:'https://api.deepseek.com', models:'/models'},

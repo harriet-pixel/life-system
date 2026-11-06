@@ -1,4 +1,4 @@
-import {openDatabase,isImageReference} from './image-store.mjs?v=task-retention-20261106';
-import {downloadBlob} from './backup.mjs?v=task-retention-20261106';
-import {EMOTIONS} from './character-images-model.mjs?v=task-retention-20261106';
+import {openDatabase,isImageReference} from './image-store.mjs?v=record-retention-20261106';
+import {downloadBlob} from './backup.mjs?v=record-retention-20261106';
+import {EMOTIONS} from './character-images-model.mjs?v=record-retention-20261106';
 export async function downloadCharacterImage(character,emotion){const item=character?.imageSettings?.emotions?.[emotion];if(!item||!isImageReference(item.image))throw new Error('此情緒尚未儲存圖片，請先儲存圖片設定。');const db=await openDatabase(),asset=await new Promise((resolve,reject)=>{const r=db.transaction('images').objectStore('images').get(item.image);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(new Error('圖片讀取失敗，請稍後再試。'));});if(!asset?.blob)throw new Error('本機找不到此角色圖檔，請先從含圖片的備份還原。');const extension={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[asset.blob.type];if(!extension)throw new Error('圖片格式不支援下載。');const name=String(character.settings.name||'角色').replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,80),label=EMOTIONS.find(e=>e.id===emotion)?.name??emotion;downloadBlob(asset.blob,`${name}-${label}.${extension}`);}

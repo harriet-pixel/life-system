@@ -1,9 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {createDataStore,STORAGE_KEY} from '../assets/data.mjs';
-import {createTaskService} from '../assets/tasks-service.mjs?v=task-retention-20261106';
+import {createTaskService} from '../assets/tasks-service.mjs?v=record-retention-20261106';
 import {validateDocument,encodeBackup,readBackup,dataCount} from '../assets/backup.mjs';
-import {rowsForDate,validateTasks} from '../assets/tasks-model.mjs?v=task-retention-20261106';
-import {nextTaskExpiry,COMPLETED_TASK_TTL} from '../assets/task-retention.mjs?v=task-retention-20261106';
+import {rowsForDate,validateTasks} from '../assets/tasks-model.mjs?v=record-retention-20261106';
+import {nextTaskExpiry,COMPLETED_TASK_TTL} from '../assets/task-retention.mjs?v=record-retention-20261106';
 import {changeCharacters} from '../assets/characters-model.mjs';
 const start=Date.parse('2026-11-06T04:00:00Z'),date='2026-11-06',abilities={physique:0,wisdom:1,charisma:0,resilience:0,perception:0};
 function fixture(){let time=start,raw=null,sequence=0;const storage={getItem:()=>raw,setItem:(_,v)=>raw=v},store=createDataStore(storage,{now:()=>time}),service=createTaskService(store,{now:()=>new Date(time),id:()=>`retention-${++sequence}`}),values=extra=>({name:'即將清理的事件',categoryId:null,points:1,kind:'once',date,start:date,end:null,days:[],fixedAllocation:{points:1,source:'manual',abilities},...extra});return {store,service,storage,values,setTime:t=>time=t,time:()=>time,raw:()=>raw};}

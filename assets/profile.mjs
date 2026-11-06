@@ -1,10 +1,10 @@
-import {bindProfileValidation} from './validation.mjs?v=task-retention-20261106';
-import { holdDraft } from './coordination.mjs?v=task-retention-20261106';
-import { createProfileImages } from './profile-images.mjs?v=task-retention-20261106';
-import { imageURL, prepareImageReferences } from './image-store.mjs?v=task-retention-20261106';
-import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=task-retention-20261106';
-import { undoManager } from './undo.mjs?v=task-retention-20261106';
-import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=task-retention-20261106';
+import {bindProfileValidation} from './validation.mjs?v=record-retention-20261106';
+import { holdDraft } from './coordination.mjs?v=record-retention-20261106';
+import { createProfileImages } from './profile-images.mjs?v=record-retention-20261106';
+import { imageURL, prepareImageReferences } from './image-store.mjs?v=record-retention-20261106';
+import { ABILITIES, validateManualStats, createInitialStats } from './abilities.mjs?v=record-retention-20261106';
+import { undoManager } from './undo.mjs?v=record-retention-20261106';
+import { dataStore, formatSI, validateProfile, abilityRatios, profileSummary, visibleExperience } from './data.mjs?v=record-retention-20261106';
 
 export function mountProfile(root,context){
 const $ = selector => root.querySelector(selector);

@@ -1,7 +1,7 @@
-import {dataStore} from './data.mjs?v=task-retention-20261106';
-import {rowsForDate,localDate} from './tasks-model.mjs?v=task-retention-20261106';
+import {dataStore} from './data.mjs?v=record-retention-20261106';
+import {rowsForDate,localDate} from './tasks-model.mjs?v=record-retention-20261106';
 
-import {sortDay,listSettings} from './task-view-model.mjs?v=task-retention-20261106';
+import {sortDay,listSettings} from './task-view-model.mjs?v=record-retention-20261106';
 
 // One renderer and one validated store for early reading and interactive mounting.
 export function renderHomeToday(root,actions=null){

@@ -1,11 +1,11 @@
-import {emptyWallet,validateWallet,validateWalletEvidence,walletName,walletAmount,walletNote} from './wallet-model.mjs?v=task-retention-20261106';
+import {emptyWallet,validateWallet,validateWalletEvidence,walletName,walletAmount,walletNote} from './wallet-model.mjs?v=record-retention-20261106';
 export function createWalletService(store,{now=()=>new Date(),id=()=>crypto.randomUUID()}={}){
  const snapshot=()=>store.getFields?store.getFields(['revision','wallet','stats','history','affinity']):store.get();
  async function save(base,wallet,stats,type,transactionId,label){wallet.stateId=transactionId;return store.transact({id:transactionId,expectedRevision:base.revision,type,label,target:'wallet',changes:{wallet:validateWallet(wallet),...(stats?{stats}:{})}});}
  return {
   async spend(input,submissionId){
    if(typeof submissionId!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(submissionId))throw new Error('消費確認識別碼無效。');
-   const base=snapshot();if(base.history.some(r=>r.id===submissionId))return false;
+   const base=snapshot();if(base.history.some(r=>r.id===submissionId)||Object.hasOwn(base.affinity?.sources??{},'wallet:'+submissionId))return false;
    const wallet=validateWallet(base.wallet??emptyWallet()),name=walletName(input.name),cost=walletAmount(input.cost),note=walletNote(input.note),sourceId=input.sourceId??null;
    if(sourceId&&!Object.hasOwn(wallet.items,sourceId))throw new Error('常用項目已刪除，請改用單次消費；輸入已保留。');
    if(base.stats.currency<cost)throw new Error('系統貨幣餘額不足，請調整花費；輸入已保留。');
